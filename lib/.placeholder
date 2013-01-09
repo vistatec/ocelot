@@ -1,0 +1,2 @@
+# Allow submission of lib directory to prevent ant from complaining.
+# Remove when actual libraries are linked.

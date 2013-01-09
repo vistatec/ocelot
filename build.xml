@@ -1,0 +1,146 @@
+<project name="ReviewerWorkbench" default="build" basedir=".">
+
+  <property name="src.dir"            value="${basedir}/src"/>
+  <property name="test.src.dir"       value="${basedir}/test"/>
+  <property name="lib.dir"            value="${basedir}/lib"/>
+  <property name="build.dir"          value="${basedir}/build"/>
+  <property name="src.classes.dir"    value="${build.dir}/classes"/>
+  <property name="test.classes.dir"   value="${build.dir}/test"/>
+  <property name="javadoc.dir"        value="${basedir}/doc"/>
+
+  <property name="package" value="com/spartansoftwareinc"/>
+  <property name="ReviewerWorkbench.jar" value="${build.dir}/ReviewerWorkbench.jar" />
+
+  <path id="project.class.path">
+      <pathelement location="${src.classes.dir}" />
+      <fileset dir="${lib.dir}">
+          <include name="**/*.jar" />
+      </fileset>
+   </path>
+
+  <path id="test.class.path">
+      <path refid="project.class.path" />
+      <pathelement location="${test.classes.dir}" />
+  </path>
+
+  <target name="clean">
+      <delete failonerror="false" dir="${build.dir}"/>
+      <delete failonerror="false" dir="${javadoc.dir}"/>
+  </target>
+
+  <target name="build.src">
+    <echo message="Compiling source from ${src.dir} to ${src.classes.dir}."/>
+    <mkdir dir="${src.classes.dir}" />
+    <javac srcdir="${src.dir}"
+           includes="${package}/**/*.java"
+           includeantruntime="false"
+           destdir="${src.classes.dir}"
+           debug="on"
+           optimize="on"
+           deprecation="on"
+           fork="yes"
+           memoryMaximumSize="256m"
+           encoding="UTF-8"
+           source="1.6"
+           target="1.6" >
+      <classpath refid="project.class.path"/>
+      <compilerarg value="-Xswitchcheck" compiler="modern"/>
+      <compilerarg value="-nowarn" compiler="modern"/>
+    </javac>
+  </target>
+
+  <target name="build.test" depends="build.src">
+    <echo message="Compiling source from ${test.src.dir} to ${test.classes.dir}."/>
+    <mkdir dir="${test.classes.dir}" />
+    <javac srcdir="${test.src.dir}"
+           includes="${package}/**/*.java"
+           includeantruntime="false"
+           destdir="${test.classes.dir}"
+           debug="on"
+           optimize="on"
+           deprecation="on"
+           fork="yes"
+           memoryMaximumSize="256m"
+           encoding="UTF-8"
+           source="1.6"
+           target="1.6" >
+      <classpath refid="test.class.path"/>
+      <compilerarg value="-Xswitchcheck" compiler="modern"/>
+      <compilerarg value="-nowarn" compiler="modern"/>
+    </javac>
+  </target>
+
+  <target name="build.jar" depends="build.src,buildversion">
+      <jar compress="false" jarfile="${ReviewerWorkbench.jar}">
+          <manifest>
+              <attribute name="Created-By" value="Spartan Software, Inc."/>
+              <attribute name="Built-By" value="${user.name}"/>
+              <attribute name="Git-Commit" value="${build.gitcommit}"/>
+              <attribute name="Main-Class" value="com.spartansoftwareinc.ReviewerWorkbench"/>
+              <attribute name="Class-Path" value="."/>
+          </manifest>
+          <fileset dir="${src.classes.dir}"/>
+      </jar>
+  </target>
+
+  <target name="javadoc" depends="buildversion">
+      <javadoc access="public"
+          author="false"
+          destdir="${javadoc.dir}"
+          windowtitle="Reviewer Workbench ${build.gitcommit}"
+          nodeprecated="false"
+          nodeprecatedlist="false"
+          noindex="false"
+          nonavbar="false"
+          notree="false"
+          source="1.6"
+          sourcepath="${src.dir}"
+          packagenames="com.spartansoftwareinc"
+          splitindex="true"
+          use="true"
+          version="true">
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+            <doctitle><![CDATA[<h1>Reviewer Workbench ${build.gitcommit}</h1>]]></doctitle>
+            <classpath>
+                <fileset dir="${lib.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+      </javadoc>
+  </target>
+
+  <target name="build" depends="buildversion,build.jar,javadoc,build.test">
+  </target>
+
+  <target name="buildversion">
+      <exec executable="git" outputproperty="build.gitcommit">
+          <arg value="describe"/>
+          <arg value="--tags"/>
+          <arg value="--always"/>
+          <arg value="--long"/>
+          <arg value="HEAD"/>
+      </exec>
+      <loadfile property="version" srcFile="${src.dir}/${package}/Version.java.template">
+          <filterchain>
+              <expandproperties/>
+          </filterchain>
+      </loadfile>
+      <echo file="Version.java" message="${version}" />
+      <copy todir="${src.dir}/${package}">
+          <fileset dir="." includes="Version.java">
+              <different targetdir="${src.dir}/${package}"
+                         ignoreFileTimes="true" />
+          </fileset>
+      </copy>
+  </target>
+
+  <target name="test" depends="build.test">
+    <junit fork="no" printsummary="yes" haltonfailure="no">
+      <classpath refid="test.class.path" />
+
+      <test name="com.spartansoftwareinc.ReviewerWorkbench.AllTests" />
+
+    </junit>
+  </target>
+
+</project>
