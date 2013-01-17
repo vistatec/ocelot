@@ -35,8 +35,8 @@ public class SegmentView extends JScrollPane {
         tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new SegmentSelectionHandler());
-        sourceTargetTable.setDefaultRenderer(LanguageQualityIssue.class,
-                new LQIRenderer());
+        sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
+                new DataCategoryFlagRenderer());
 
         TableColumnModel tableColumns = sourceTargetTable.getColumnModel();
         int minWidth = 15, prefWidth = 15, maxWidth = 20;
@@ -97,10 +97,9 @@ public class SegmentView extends JScrollPane {
 
         @Override
         public Class getColumnClass(int columnIndex) {
-            if (segments.size() == 0) {
-                return Object.class;
-            }
-            return getValueAt(0, columnIndex).getClass();
+            if (columnIndex == 0) { return Integer.class; }
+            if (columnIndex == 1 || columnIndex == 2) { return String.class; }
+            return DataCategoryFlag.class;
         }
 
         @Override
@@ -142,9 +141,9 @@ public class SegmentView extends JScrollPane {
         }
     }
 
-    public class LQIRenderer extends JLabel implements TableCellRenderer {
+    public class DataCategoryFlagRenderer extends JLabel implements TableCellRenderer {
 
-        public LQIRenderer() {
+        public DataCategoryFlagRenderer() {
             setOpaque(true);
         }
 
