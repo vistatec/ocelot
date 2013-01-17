@@ -5,12 +5,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -236,7 +232,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
             }
             lqi.setEnabled(enabled);
             segAttrView.getSelectedSegment().addLQI(lqi);
-            segAttrView.addLQI(lqi);
+            segAttrView.loadLQI(segAttrView.getSelectedSegment().getLQI());
             segAttrView.setSelectedIndex(0);
             clearForm();
 

@@ -52,6 +52,9 @@ public class SegmentView extends JScrollPane {
     }
 
     public void parseSegmentsFromFile() {
+        sourceTargetTable.clearSelection();
+        clearSegments();
+        attrView.clearTree();
         // TODO: Actually parse the file and retrieve segments/metadata.
         int documentSegNum = 1;
         Segment num1 = new Segment(documentSegNum++, "heat sink", "dissipateur de chaleur");
@@ -71,12 +74,17 @@ public class SegmentView extends JScrollPane {
         setViewportView(sourceTargetTable);
     }
 
+    private void clearSegments() {
+        segments.deleteSegments();
+    }
+
     class SegmentSelectionHandler implements ListSelectionListener {
 
         @Override
         public void valueChanged(ListSelectionEvent e) {
             ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-            if (lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex()) {
+            if (lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex() &&
+                lsm.getMinSelectionIndex() >= 0) {
                 attrView.setSelectedSegment(
                         segments.getSegment(lsm.getMinSelectionIndex()));
             } else {
@@ -138,6 +146,10 @@ public class SegmentView extends JScrollPane {
 
         public Segment getSegment(int row) {
             return segments.get(row);
+        }
+
+        private void deleteSegments() {
+            segments.clear();
         }
     }
 

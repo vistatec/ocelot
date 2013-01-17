@@ -56,6 +56,7 @@ public class SegmentAttributeView extends JTabbedPane implements TreeSelectionLi
         this.selectedSegment = seg;
         if (seg.containsLQI()) { loadLQI(seg.getLQI()); }
         addLQIView.updateSegment();
+        lqiDetailView.clearDisplay();
     }
 
     public void loadLQI(LinkedList<LanguageQualityIssue> lqiList) {
@@ -74,9 +75,11 @@ public class SegmentAttributeView extends JTabbedPane implements TreeSelectionLi
         node.setUserObject(lqi);
         lqiRoot.add(node);
     }
-    
-    private void clearTree() {
+
+    protected void clearTree() {
         root.removeAllChildren();
+        lqiRoot = null;
         treeModel.reload();
+        lqiDetailView.clearDisplay();
     }
 }
