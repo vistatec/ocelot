@@ -13,11 +13,11 @@ import javax.swing.tree.DefaultTreeModel;
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  */
 public class SegmentAttributeView extends JTabbedPane implements TreeSelectionListener {
-    private NewLanguageQualityIssueView addLQIView;
+    protected NewLanguageQualityIssueView addLQIView;
     private LanguageQualityIssueView lqiDetailView;
 
     private JScrollPane treeView;
-    private JTree tree;
+    protected JTree tree;
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode lqiRoot;

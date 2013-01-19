@@ -5,6 +5,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -31,7 +33,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
     private JFrame frame;
     private SegmentAttributeView segAttrView;
     private JLabel sourceTargetSegment;
-    private JComboBox typeList;
+    protected JComboBox typeList;
     private JTextArea commentContent;
     private SpinnerModel severityRating;
     private JTextField profileRefLink;
@@ -168,12 +170,31 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
     }
 
     private void addSave(GridBagConstraints gridBag) {
+        KeyListener enter = new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent ke) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent ke) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke) {
+                if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                    clearForm();
+                }
+            }
+        };
+
         save = new JButton("Save");
         save.addActionListener(this);
+        save.addKeyListener(enter);
         save.setEnabled(segAttrView.getSelectedSegment() != null);
 
         clear = new JButton("Clear");
         clear.addActionListener(this);
+        clear.addKeyListener(enter);
 
         JPanel actionPanel = new JPanel();
         actionPanel.add(save);

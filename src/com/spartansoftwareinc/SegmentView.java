@@ -20,7 +20,7 @@ import javax.swing.table.TableColumnModel;
  */
 public class SegmentView extends JScrollPane {
 
-    private JTable sourceTargetTable;
+    protected JTable sourceTargetTable;
     private SegmentTableModel segments;
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;

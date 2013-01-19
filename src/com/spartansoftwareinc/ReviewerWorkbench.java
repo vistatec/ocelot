@@ -1,9 +1,13 @@
 package com.spartansoftwareinc;
 
 import java.awt.BorderLayout;
+import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.KeyEventDispatcher;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -17,6 +21,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -29,7 +34,7 @@ import org.xml.sax.SAXException;
  * Main UI Thread class. Handles menu and file operations
  *
  */
-public class ReviewerWorkbench extends JPanel implements Runnable, ActionListener {
+public class ReviewerWorkbench extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
     JFrame mainframe;
@@ -67,6 +72,8 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         mainSplitPane.setOneTouchExpandable(true);
 
         add(mainSplitPane);
+
+        DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
     }
 
     @Override
@@ -89,10 +96,13 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     private void initializeMenuBar() {
         menuBar = new JMenuBar();
         menuFile = new JMenu("File");
+        menuFile.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menuFile);
 
         menuOpen = new JMenuItem("Open");
         menuOpen.addActionListener(this);
+        menuOpen.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK));
         menuFile.add(menuOpen);
 
         menuExit = new JMenuItem("Exit");
@@ -100,6 +110,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuFile.add(menuExit);
 
         menuHelp = new JMenu("Help");
+        menuHelp.setMnemonic(KeyEvent.VK_H);
         menuBar.add(menuHelp);
 
         menuAbout = new JMenuItem("About");
@@ -142,6 +153,22 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         }
         ReviewerWorkbench r = new ReviewerWorkbench();
         SwingUtilities.invokeLater(r);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent ke) {
+        if (ke.getID() == KeyEvent.KEY_PRESSED) {
+            if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_1) {
+                segmentAttrView.setSelectedIndex(0);
+                segmentAttrView.tree.requestFocus();
+            } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_2) {
+                segmentView.sourceTargetTable.requestFocus();
+            } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
+                segmentAttrView.setSelectedIndex(1);
+                segmentAttrView.addLQIView.typeList.requestFocus();
+            }
+        }
+        return false;
     }
 
     class OpenThread implements Runnable {
