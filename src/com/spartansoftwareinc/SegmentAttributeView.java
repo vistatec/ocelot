@@ -54,6 +54,7 @@ public class SegmentAttributeView extends JTabbedPane implements TreeSelectionLi
     
     public void setSelectedSegment(Segment seg) {
         this.selectedSegment = seg;
+        clearTree();
         if (seg.containsLQI()) { loadLQI(seg.getLQI()); }
         addLQIView.updateSegment();
         lqiDetailView.clearDisplay();
