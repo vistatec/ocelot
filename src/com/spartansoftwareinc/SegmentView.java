@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -29,14 +30,16 @@ public class SegmentView extends JScrollPane {
     private SegmentTableModel segments;
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
-    private static final int NUMFLAGS = 5;
-    private static final int NONFLAGCOLS = 3;
+    private TableColumnModel tableColumnModel;
 
     public SegmentView(SegmentAttributeView attr) {
         attrView = attr;
 
         segments = new SegmentTableModel();
         sourceTargetTable = new JTable(segments);
+
+        tableColumnModel = sourceTargetTable.getColumnModel();
+
         tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new SegmentSelectionHandler());
@@ -48,16 +51,16 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
                 new DataCategoryFlagRenderer());
 
-        TableColumnModel tableColumns = sourceTargetTable.getColumnModel();
         int minWidth = 15, prefWidth = 15, maxWidth = 20;
-        for (int i = NONFLAGCOLS; i < NONFLAGCOLS + NUMFLAGS; i++) {
-            tableColumns.getColumn(i).setMinWidth(minWidth);
-            tableColumns.getColumn(i).setPreferredWidth(prefWidth);
-            tableColumns.getColumn(i).setMaxWidth(maxWidth);
+        tableColumnModel.getColumn(0).setMinWidth(minWidth);
+        tableColumnModel.getColumn(0).setPreferredWidth(prefWidth);
+        tableColumnModel.getColumn(0).setMaxWidth(maxWidth);
+        for (int i = SegmentTableModel.NONFLAGCOLS;
+             i < SegmentTableModel.NONFLAGCOLS+SegmentTableModel.NUMFLAGS; i++) {
+            tableColumnModel.getColumn(i).setMinWidth(minWidth);
+            tableColumnModel.getColumn(i).setPreferredWidth(prefWidth);
+            tableColumnModel.getColumn(i).setMaxWidth(maxWidth);
         }
-        tableColumns.getColumn(0).setMinWidth(minWidth);
-        tableColumns.getColumn(0).setPreferredWidth(prefWidth);
-        tableColumns.getColumn(0).setMaxWidth(maxWidth);
         setViewportView(sourceTargetTable);
     }
 
@@ -90,6 +93,11 @@ public class SegmentView extends JScrollPane {
             segments.addSegment(seg);
         }
 
+        // Adjust the segment number column width
+        tableColumnModel.getColumn(
+                segments.getColumnIndex(SegmentTableModel.COLSEGNUM))
+                .setPreferredWidth(this.getFontMetrics(this.getFont())
+                .stringWidth("" + documentSegNum));
 
         setViewportView(sourceTargetTable);
     }
@@ -129,19 +137,44 @@ public class SegmentView extends JScrollPane {
     }
 
     class SegmentTableModel extends AbstractTableModel {
-
-        private String[] columns = {"#", "Source", "Target"};
         private LinkedList<Segment> segments = new LinkedList<Segment>();
+        protected HashMap<String, Integer> colNameToIndex;
+        protected HashMap<Integer, String> colIndexToName;
+        private static final int NUMFLAGS = 5;
+        private static final int NONFLAGCOLS = 3;
+        private static final String COLSEGNUM = "#";
+        private static final String COLSEGSRC = "source";
+        private static final String COLSEGTGT = "target";
+
+        public SegmentTableModel() {
+            colNameToIndex = new HashMap<String, Integer>();
+            colNameToIndex.put(COLSEGNUM, 0);
+            colNameToIndex.put(COLSEGSRC, 1);
+            colNameToIndex.put(COLSEGTGT, 2);
+            colIndexToName = new HashMap<Integer, String>();
+            for (String key : colNameToIndex.keySet()) {
+                colIndexToName.put(colNameToIndex.get(key), key);
+            }
+        }
 
         @Override
         public String getColumnName(int col) {
-            return col < 3 ? columns[col] : "";
+            return col < NONFLAGCOLS ? colIndexToName.get(col) : "";
+        }
+
+        public int getColumnIndex(String col) {
+            return colNameToIndex.get(col);
         }
 
         @Override
         public Class getColumnClass(int columnIndex) {
-            if (columnIndex == 0) { return Integer.class; }
-            if (columnIndex == 1 || columnIndex == 2) { return String.class; }
+            if (columnIndex == getColumnIndex(COLSEGNUM)) {
+                return Integer.class;
+            }
+            if (columnIndex == getColumnIndex(COLSEGSRC) ||
+                columnIndex == getColumnIndex(COLSEGTGT)) {
+                return String.class;
+            }
             return DataCategoryFlag.class;
         }
 
@@ -157,13 +190,13 @@ public class SegmentView extends JScrollPane {
 
         @Override
         public Object getValueAt(int row, int col) {
-            if (col == 0) {
+            if (col == getColumnIndex(COLSEGNUM)) {
                 return getSegment(row).getSegmentNumber();
             }
-            if (col == 1) {
+            if (col == getColumnIndex(COLSEGSRC)) {
                 return getSegment(row).getSource();
             }
-            if (col == 2) {
+            if (col == getColumnIndex(COLSEGTGT)) {
                 return getSegment(row).getTarget();
             }
             Object ret = segments.get(row).getTopDataCategory(col - NONFLAGCOLS);
