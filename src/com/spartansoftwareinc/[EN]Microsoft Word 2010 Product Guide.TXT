@@ -1,0 +1,443 @@
+﻿Microsoft Word 2010 Product Guide
+If you are one of the millions of people worldwide who rely on Microsoft® Word to create documents for business, school, or personal projects, you might have some expectations for what you’ll find in this new version. Whether you want faster, more convenient ways to accomplish everyday tasks or new technologies that help take your results to a new level, Microsoft Word 2010 has the tools you need.
+Create better documents that help your important content shine.
+Work more quickly and easily when working with others on documents.
+Access and edit your documents when it’s convenient for you—online or on the road— rather than being tied to your computer.
+New and improved tools for formatting and managing documents make it easier than ever to create incredible content. Working with others on documents no longer means waiting your turn. And, you can access and work on your files where and when your best ideas occur.
+Welcome to Word 2010—our most powerful, intuitive, and customizable release yet.
+Today’s documents range from simple letters and lists, to forms, complex reports and papers that used to require a professional print shop. But one thing is common to all of them—your documents represent your ideas. That’s why you want them to be more than just words on paper.
+Word 2010 gives you the tools to create the professional, polished documents that help you express yourself effectively.
+Give your text the power to jump off the page
+Effective document design is about helping you convey your important information. When you need your text to be as powerful as your images, Word 2010 offers flexible and easy-to-use tools that give new life to your words.
+Apply impressive text effects—such as gradient fills and reflections—directly to the text in your document, as easily as applying bold or underline.
+Put a creative flourish on your documents by getting the most out of OpenType fonts.
+New OpenType typography features provide support for ligatures, stylistic sets, and more.
+Create visually compelling documents
+Whether good or bad, the colors, effects, and graphics in documents always get noticed. So, if you’re not a graphic designer and you don’t have a lot of time to spend on the look of your documents, how can you create a customized, well-crafted look? Word 2010 provides an array of new and improved features that help you look like a design pro and help your documents make the right statement every time.
+Use new and improved picture editing tools—including professional-quality artistic effects and advanced correction, color and cropping tools—and fine-tune the pictures in your documents without the need for additional photo-editing programs.
+Take advantage of more professionally-designed, customizable Office themes and coordinating Word templates. Use themes to apply consistent colors, fonts, and graphic formatting effects throughout all of your Microsoft Office 2010 documents in just a few clicks.
+Explore a wide selection of additional SmartArt graphics—including many new layouts for organization charts and picture diagrams—to create inspiring graphics just by typing a bulleted list.
+Get easier access to the right tools, at the right time
+New and improved features can help you be more productive, but only if you can find them when you need them. Fortunately, the enhanced, customizable Ribbon in Word 2010 makes it easy to uncover more commands so you can focus on the end product, not how to get there.
+Want an easier time making sure the document you’re working on is finished and ready to share? Wishing for a faster, more direct way to print something? The new Microsoft Office Backstage™ view can help you achieve all of this and more. You can now more easily print, share, and manage your documents, and customize your Word 2010 experience, all from one convenient location.
+Save time and simplify your work
+No matter what type of documents you create, you want to focus on your content, not the tasks associated with creating and managing documents. Word 2010 delivers new and improved tools that simplify and save time at every step.
+Find your way with the improved Navigation Pane with integrated Find tools in Word 2010. Jump to the right place in your document, easily rearrange content, and find what you need quickly with a new results list and automatic hit highlighting.
+Recover files that you closed without saving! You can now recover files after you accidentally close without saving, even if you had never saved the document.
+Save time and improve results with intuitive features such as the new Paste with Live Preview and an improved Contextual Spell Checker. Getting it right the first time is always faster than doing it over.
+Keep your thoughts and ideas organized and accessible while planning and authoring your document by using the new Linked Notes feature with Word 2010 and Microsoft OneNote® 2010.
+You may need to share documents with colleagues, classmates or friends, or perhaps you need to work with others on a team project. Regardless, the complications and delays that can arise when sharing or working together on content can be frustrating to say the least. That is, until now. Word 2010 makes waiting your turn a thing of the past and gives you new and improved tools that make sharing your work simple and hassle-free.
+Redefine working together on documents
+Word 2010 provides easy ways to bring people together. New and improved technologies help break down barriers so you can share and collaborate more efficiently and effectively.
+You can now edit the same document, at the same time, as other people in other locations. 1 You can even communicate instantly as you work, directly from Word.2
+Collaborate with confidence using new, improved and simplified security tools. For example, the new Protected View helps you make informed decisions when opening unknown files, before exposing your computer to possible vulnerabilities.
+Break down language barriers with improved translation tools and language settings.
+If your ideas, deadlines, and work emergencies don’t always occur conveniently when you are at your desk, you are certainly not alone. Fortunately, Word 2010 gives you the power to get things done when and where you want.
+1 Co-authoring requires Microsoft SharePoint® Foundation 2010 for business or a free Windows Live™ ID for personal use. Co- authoring via Windows Live will become available in the second half of calendar year 2010.
+2 Instant messaging requires one of the following: Microsoft Office Communications Server 2007 R2 with Microsoft Office Communicator 2007 R2; Windows Live Messenger, or another instant messaging application that supports IMessenger. Voice calls require Office Communications Server 2007 R2 with Office Communicator 2007 R2 or an instant messaging application that supports IMessengerAdvanced.
+Microsoft Word Mobile 2010 gives you a lightweight editor for your documents that’s especially designed for easy use on your Windows phone.4
+Whether you’re writing that career-making report, revising your term paper, working with a volunteer team on the next big fundraiser, or getting things done on the run, Word 2010 makes it easier to get what you need done more quickly, with more flexibility, and with better results.
+3 Microsoft Office Web Apps require an appropriate device, Internet connection, supported Internet Explorer, Firefox, or Safari browser, and either SharePoint Foundation 2010 for business or a free Windows Live ID for personal use. Editing in Word Web App via Windows Live will become available in the second half of calendar year 2010. There are some differences between the features of Office Web Apps and the Office 2010 applications.
+4 An appropriate device is required. Some mobile functionality requires an Internet connection. Office Mobile 2010 is not included in Office 2010 applications, suites, or Office Web Apps. It will be available at the general availability of Office 2010 on Windows phones (Windows Mobile 6.5 or above). There are some differences between the features of Office Mobile 2010 and the Office 2010 applications.
+Text Effects New!
+You already use graphics and images to call attention to important content in your documents. Now, you can apply the same types of formatting that you use for those graphics and images directly to document text. Unlike WordArt from earlier versions of Word, you apply text effects to actual document text, so you can still edit and spell check that text and even add text effects to paragraph, character, list, or table styles.
+Available text effects include gradient fills, custom shadows, reflection, glow, soft edges, bevels and more, as well as a range of preset gallery options that enable you to quickly apply a coordinated set of effects.
+Figure 1: Find the Text Effects gallery in the Font group on the Home tab.
+Note: When you access the command labeled WordArt from the Insert tab in Word 2010, you now get an editable text box within which you can use the same text effects discussed here. These same effects are also available to any text in Microsoft PowerPoint® 2010 and to text in graphics in Microsoft Excel® 2010. Text effects were introduced in PowerPoint and Excel in Office 2007 and are referred to as WordArt in those applications.
+Quick Tip: For additional text effects that you do not see in the Text Effects gallery, click the dialog box launcher icon in the Font group. At the bottom of the Font dialog box, click Text Effects to open a dialog box that includes effects such as gradient fills, gradient lines, and 3-D bevels.
+OpenType Typography New!
+In Word 2010, it’s easy to make an impact with your text by taking advantage of the typography capabilities in many OpenType fonts. For example, explore the OpenType typography features in existing fonts such as Calibri, Corbel, and Cambria. Or try Gabriola, a new font in Office 2010  that offers a rich array of Stylistic Sets.
+Word 2010 provides support for the following OpenType typography features:
+Ligatures: Ligatures give your document the look of professional typesetting by combining character pairs, as shown in Figure 2.
+Figure 2: Standard ligatures applied to text in the Constantia font.
+Stylistic Sets: Use stylistic sets to add flair to your documents, as shown in Figure 3.
+Figure 3: Text in the Gabriola font, using stylistic sets 1, 4, and 7.
+Alternate Number Forms and Number Spacing: Control the appearance and layout of numbers in your text using number forms and number spacing alternatives, as you see in Figure 4.
+Figure 4: Number Forms and Number Spacing applied to text in the Cambria font.
+OpenType Kerning: When you apply the font kerning in Word that you already know, Word 2010 now uses the OpenType values when available in the font for a more precise result as specified by the font designer.
+Note: Several OpenType typography features are also available in Microsoft Publisher 2010.
+Create visually compelling documents
+Picture Editing Tools New and Improved!
+Word 2010 gives you the freedom to be your own graphic artist with a range of new and improved tools for working with images.
+Apply all new Artistic Effects, such as paint strokes, glass, pencil sketch, and pastels.
+Grab only what you want from your image and leave the rest behind with the new Remove Background tool.
+Figure 5: An original image (top left) and the same image with the glow edges (center) and glass (right) artistic effects applied, and with background elements removed (bottom). Picture styles and effects are also applied to the top row of images to provide shapes, reflection, gradient border, shadow, bevel, and 3-D rotation.
+Explore new Sharpen and Soften correction tools along with improved Brightness and Contrast.
+Experiment with new color tools including Color Saturation and Color Tone, as well as an improved Recolor tool.
+Perfect your pictures quickly with an advanced cropping tool that enables you to crop to a shape or to a selected aspect ratio, or to pan and zoom in on key image elements just by dragging and resizing the picture within the crop area.
+Figure 6: An advanced cropping tool displays your full image in shadow while you crop.
+Quick Tip: Use Live Preview to save time when editing photos. Point to an option in the Correction, Color, or Artistic Effects galleries to see the settings applied to your selected picture. And, if you don’t see exactly what you want in the galleries, click … Options at the bottom of any of those galleries for a dialog box that offers advanced formatting choices.
+Note: The same new and improved picture editing tools are also available in PowerPoint 2010, Excel 2010, and Microsoft Outlook® 2010.
+Insert Screenshot New!
+Want even more ways to add the impact of images to your documents? Take screenshots in your other open windows directly from Word 2010. Or, select from a gallery of available screenshots automatically populated by your open windows.
+Note: The ability to take screenshots directly from Office 2010 programs is also available in PowerPoint, Excel, Outlook, Publisher and OneNote.
+Additional Office Themes Improved!
+You want all your documents to have a consistent, professional look—but who has the time for all that formatting? You do, because Office themes enable you to apply a coordinated set of fonts, colors, and graphic effects to your entire document in just a couple of clicks.
+Themes were introduced in Office 2007 for Word, PowerPoint, Excel, and Outlook, enabling you to apply a consistent, professional look to all of your content. Office 2010 adds 20 additional built-in, professionally-designed themes for a total of 40 built-in designs, as well as easy access to many additional themes on Office.com. Customize or create your own themes for an effortless way to implement your own personal or business branding, or use the designs provided to quickly add impact to any content.
+Figure 7: Find the Themes group on the Page Layout tab in Word.
+Quick Tips:
+In Word 2010, you can also apply theme effects or other theme fills to shapes. The other theme fills available are the PowerPoint slide backgrounds from your theme—making it easy to coordinate all of your Office 2010 documents. To access the fills that match your PowerPoint slide backgrounds, select the shape to fill and then, on the Drawing Tools Format tab, in the Shape Styles group, expand the Shape Styles gallery and then point to Other Theme Fills. (Note that these same fills are also available to shapes in PowerPoint and Excel and were introduced in those programs in Office 2007.)
+Word 2010 also includes several new, professionally-designed templates that coordinate with Office themes. For example, create a new document based on the Adjacency Report template and then point to different themes in the Themes gallery to see how the graphic elements in that template change,  as shown in Figure 8. Notice that shapes used as backgrounds on the first two pages of this template use the slide background fills noted in the preceding tip. To access templates that are installed with Word 2010, click the File tab to open the new Backstage view, click New and then click Sample Templates.
+Figure 8: Original Adjacency Report template (top) and, clockwise from top with Black Tie, Austin, Angles, and Hardcover themes applied.
+Quick Tips: You can mix and match theme elements to create a custom look in no time. Select separate theme colors, theme fonts, and theme formatting effects from their respective galleries on the Page Layout tab, in the Themes group. Then, use the Save Current Theme option at the bottom of the Themes gallery to save your selections as a custom theme that you can apply to content in Word, PowerPoint, Excel, Outlook, and even Microsoft Access® 2010.
+In addition to the 40 built-in themes available from the Themes gallery, explore the Office.com category in that gallery and check it often—select themes appear automatically as they become available.
+Additional SmartArt Graphics Improved!
+You know that a graphic can often help display your important points more effectively than just text. That’s why it’s so important to choose the right type of graphic for your content and make it look its best. Fortunately, Office 2010 adds dozens of additional SmartArt layouts for a total of more than 130 different diagrams that you can create as easily as typing a bulleted list.
+These popular graphics, introduced in Office 2007, make it possible for anyone to create truly impressive diagrams. SmartArt layouts include a broad range of options from lists to process, cycle, and relationship diagrams that can help you convey related ideas and non-linear concepts with greater visual impact.
+The new layouts added in Office 2010 include additional organization charts, picture diagrams, and many more. You also get improved tools for working with picture diagrams, such as the ability to easily add or replace images from within the text pane or replace selected images in your diagram using the Change Picture Command on the Picture Tools Format tab.
+Figure 9: The Choose a SmartArt Graphic dialog box, available on the Insert tab in the Illustrations group.
+Quick Tips:
+When you insert or select a SmartArt graphic, the SmartArt Tools Design and Layout tabs become available on the Ribbon. On the SmartArt Tools Design tab, find galleries of formatting effect styles and color options that automatically coordinate with your theme. Also find the Layouts gallery on that tab, from which you can select a different layout and just click to apply it to your selected diagram. Content you’ve already added to your graphic automatically updates in the new layout.
+When you insert a SmartArt graphic, a text pane automatically appears. Type in that text pane to populate shapes in your graphic with text, press ENTER to add new shapes, and use the TAB and SHIFT+TAB keys just as you do in a bulleted list, to promote or demote shapes or text within shapes.
+Notice the Office.com category in the SmartArt dialog box. Check that category periodically for select new layouts that are added automatically as they become available.
+Note: SmartArt graphics are also available in PowerPoint 2010, Excel 2010, and Outlook 2010.
+Shapes and Shape Effects Improved!
+Word 2010 provides full support for Office Art. That means you now have many of the advanced capabilities for working with shapes in Word that you have in PowerPoint and Excel. Select from additional shape types and enjoy more tools, timesavers, and formatting flexibility. For example, just select a shape and start typing to add text.
+Additionally, you can apply the same formatting effects to shapes that you can apply to other graphics in your documents, such as bevels, reflections, and soft edges. As with SmartArt graphic styles and chart styles, shape styles now also coordinate automatically with your theme fonts, colors, and effects.
+Figure 10: The Shape Styles group on the Drawing Tools Format tab provides styles that automatically coordinate with your active document theme as well as a wide selection of effects.
+Quick Tips:
+Try new keyboard shortcuts for working with shapes. Select the shape and then use SHIFT+ the arrow keys on your keyboard to resize the shape. Or, hold the ALT keys while you press left or right arrow keys to rotate a shape. Add CTRL to these key combinations to resize or rotate in smaller increments.
+Also new to Word 2010, check out the Selection Pane. Find this pane on the Home tab, in the Editing group or on the Drawing Tools Format or Picture Tools Format tabs, in the Arrange group. the Selection Pane enables you to easily select, rename, reorder or hide graphics in your document.
+Expand the Shape Styles gallery for the option Other Theme Fills, which enables you to apply the PowerPoint slide backgrounds from your theme as shape fills. See the information on Office themes earlier in this guide for more detail and examples.
+Get easier access to the right tools, at the right time
+Ribbon Improved!
+Locate the commands you need when you want them and where you want them. The improved, customizable Ribbon, available in all Office 2010 applications, replaces traditional menus and toolbars to give you a more personalized work experience. It’s designed to help you more easily find and use the full range of features that Word provides—so that you can get more done in less time.
+Create your own tabs or customize built-in tabs on the Ribbon to personalize the Word 2010 experience to your work style.
+The standard tabs that you see on the Ribbon are organized to display commands relevant to a given task, so that you can find what you need more quickly.
+The Ribbon also provides contextual tabs to give you exactly the right tools for the task. For example, when you click in a table, contextual tabs appear on the Ribbon to provide easy access to all the features you need for working with that table.
+Figure 11: Contextual tabs automatically display when you need them.
+Microsoft Office Backstage View New!
+On the left edge of the Ribbon you see the File tab. Just click that tab for an all-access pass that makes it easier than ever to manage your files and customize your Word experience.
+The new Backstage view replaces the traditional File menu to provide a single location for all of your document management tasks. For example:
+When you first open Backstage view, you’re on the Info tab. From this one location, you can manage document protection options, view and edit file properties, inspect the document for proprietary information you may not want to share, and much more.
+From the Save & Send tab in Backstage view, you can send your document as a Word 2010 attachment, or as a PDF or XPS file. You can also publish your document as a blog post or save the document to an online location for access to incredible new collaboration features discussed later in this guide.
+The Print tab, shown in Figure 12, provides a new, integrated print experience with a full page Print Preview right alongside all of the print options you need.
+Figure 12: The new integrated Print environment available from Backstage view.
+Quick Tip: Check out the Recent tab in Backstage view for lists of both recently accessed files and recently accessed locations. Pin files or locations to that tab to move them to the top and keep them easily accessible. In addition, you can remove a recently used file or location by right-clicking the list item and then clicking Remove from list..
+The Ribbon helps you create your content. Backstage view helps you manage it.
+Save time and simplify your work
+Navigation Pane Improved!
+The improved Navigation Pane in Word 2010 (formerly called the Document Map) transforms the document navigation user experience, providing a visual representation of the heading structure of your document.
+Using the Navigation Pane, you can do the following:
+Browse headings to quickly find your place within a document and just click to go to that location.
+Drag and drop to quickly and easily rearrange headings and the content beneath them.
+Locate where someone else is currently editing in the document, or where their most recent changes were.
+Figure 13: Drag and drop headings in the improved Navigation Pane to quickly rearrange document content.
+Find Tools Improved!
+The improved Find experience is now seamlessly integrated in the Navigation Pane. Word 2010 automatically searches as you type the term you’re looking for, visually highlighting all matches.
+The new results view in the Navigation pane shows a quick preview of all search matches—click any preview to jump to that point in the document.
+The headings view highlights the areas in the document in which results appear.
+The thumbnails view filters to show you just the set of pages that contain a search result.
+From the Navigation Pane, you can also browse the document by object type, including graphics, tables, equations, footnotes, endnotes, and comments.
+The familiar Find and Replace dialog box is still available for more advanced searches and Replace tasks.
+Figure 14: The improved Find tools, integrated into the Navigation pane, include the new search results pane shown here.
+Quick Tip: Use the familiar CTRL+F shortcut to activate the Search Document box in the Navigation pane. To access the Find and Replace dialog box, click the arrow on the right edge of the Search Document box and then click Advanced Find. Or, press CTRL+H to open the Find and Replace dialog box to the Replace tab and CTRL+G to open that dialog box to the Go To tab.
+Recover Unsaved Versions New!
+We’ve all done it. You work for a while, get the content just right, and then close the document without saving. Maybe you thought the save prompt was for a different file that you didn’t want or maybe you were just distracted while closing the file. The result is the same—your work and the time you spent to create it have been lost. Well, not anymore!
+Expanding on the AutoRecover capabilities that you may know from earlier versions of Microsoft Office, Office 2010 now recovers versions of files that you close without saving.5 Easily access  and manage recovered documents right from the Info tab in Backstage view, as shown here.
+Figure 15: Access recovered versions of your documents on the Info tab in Backstage view, under the Versions heading.
+You can recover drafts of documents that were never saved. Find this option in Backstage view, on the Info tab, under the Manage Versions button.
+Also access up to the last five autosave versions of your previously saved active document from the Info tab in Backstage view. By default, the last autosave version remains available temporarily if you close the document without saving.
+Recovering available unsaved documents and autosave versions requires you elect to save AutoRecover information. To keep an autosave version until your next editing session you must also elect to keep the last autosaved version when you close without saving. To access these options, in Backstage view click Options and then click Save.
+Quick Tips:
+Need to quickly access other content in the folder where your active document is stored? In Backstage view, on the Info tab, just click Open File Location. Find this option under the heading Related Documents in the Properties pane shown in Figure 15.
+Learn more about working with recovered versions in the Power User Tips section of this guide.
+Paste with Live Preview New!
+Save time when reusing content within Word 2010 or across applications. Paste with Live Preview enables you to preview various Paste Options, such as Keep Source Formatting or Keep Text only, so you can see how your pasted content will look prior to actually pasting. Instead of using Undo and trying again, Paste with Live Preview now helps you get it right the first time.
+Figure 16: Point to a paste option to preview results and then click to select the option you prefer.
+Quick Tip: You can still access paste options after you paste and change your mind without having to undo actions. Click the icon that appears alongside pasted content to expand Paste Options. Or, if you prefer to use the keyboard, press CTRL to expand Paste Options and then use the left and right arrow keys to move through options. If you select a new option, the result automatically updates.
+Note: Paste with Live Preview is also available in PowerPoint 2010, Excel 2010, Outlook 2010, and for text in Publisher 2010.
+OneNote Linked Notes New!
+You do research and gather content while working on documents. But, how do you keep all of the pieces connected and find the information you need when you need it?
+OneNote 2010 makes it easy by creating links not just to the document you’re working on, but to the location where you were working in the document when you took a given note. Dock OneNote on the side of your desktop and take notes while you work on your Word 2010 document. As you see in Figure 17, OneNote adds an icon in the margin beside your notes. Just click that icon when reviewing your notes later to open the source file and jump straight to the information you need.
+Figure 17: The OneNote Linked Notes feature adds an icon in the margin of each paragraph as you take notes in the docked OneNote pane, indicating the source program and providing a link to your location in the source file at the time you took the note.
+Quick Tip: To take Linked Notes while working in Word, start with a previously-saved document in Word 2010 file format and take your notes in a OneNote 2010 notebook.
+Note: This OneNote 2010 feature is also available when working in PowerPoint 2010 or when browsing the Web using Windows® Internet Explorer® 6 or later.
+Contextual Spell Checker Improved!
+The improved contextual spell-checker in Word 2010 delivers a context-sensitive speller that corrects your spelling errors when a word is correctly spelled but misused. For example, ―economical condition will be flagged so you can correctly communicate ―economic condition.‖
+Redefine working together on documents
+Co-authoring New!
+Save time, simplify tasks, and improve your teamwork. Co-authoring capabilities in Word 2010 enable you to simultaneously edit the same document with colleagues or friends.6 Automatically see who else is editing and where they are working in the document. You can even initiate a conversation with other editors instantly, right from Word 2010.7
+Figure 18: Clearly see where another editor is working in the same document and connect with them without leaving Word.
+Wherever you see the name of another editor, as shown in Figure 18, you see presence information that tells you the person’s availability. Point to the person’s name for a contact card from which you can begin a conversation.
+Just save the document to see changes from other editors as you work. Your changes also become available to other editors each time you save.
+6 Co-authoring requires SharePoint Foundation 2010 for business or a Windows Live ID for personal use. Co-authoring in Word 2010 via Windows Live will become available in the second half of calendar year 2010.
+7 Instant messaging requires one of the following: Microsoft Office Communications Server 2007 R2 with Microsoft Office Communicator 2007 R2; Windows Live Messenger, or another instant messaging application that supports IMessenger. Voice calls require Office Communications Server 2007 R2 with Office Communicator 2007 R2 or an instant messaging application that supports IMessengerAdvanced.
+View the names of all current editors at-a-glance from a pop-up list on the Status bar at the bottom of the screen. Or, as shown in Figure 19, see and connect with other editors, check sync status, and more from the Info tab in Backstage view.8
+If another editor goes offline while they have the file open for editing, you can still access the document and make your changes. When that person is next online and saves the  file, the changes they made are merged with yours and you can then see their changes.
+Figure 19: When in a co- authoring session, you see availability of updates from other editors and can contact other current editors from Backstage view.
+Quick Tip: Corporate users in companies running Microsoft SharePoint® Foundation 2010 can use co- authoring within their firewall. With Microsoft Office Communicator now integrated with several Office 2010 applications, you can view presence information and initiate instant messaging or voice calls directly from Word.
+If you're in a small company or use Word 2010 for your home or school work, you can take advantage of co-authoring capabilities through Windows Live™. All you need is a free Windows Live ID to simultaneously edit documents with others. An instant messenger account (such as the free Windows Live Messenger) is required to view availability of other document authors and start an instant messaging conversation.9
+8 Communication with other authors from the People Currently Editing pane in Backstage view requires Microsoft Office Communications Server 2007 R2 with Microsoft Office Communicator 2007 R2, or another instant messaging application that supports IMessengerAdvanced.
+Streamlined Communications New!
+Connect with your contacts without leaving Word 2010.
+As shown in Figure 18 and Figure 19, you see the presence icon	or presence bar  in several places while in a co-authoring session in Word 2010. In addition to co-authoring, you can also see presence information for authors, managers, and last editors in the Properties pane on the Info tab in Backstage view.
+When combined with Office Communicator or your favorite instant messaging application, you can view information about that person and initiate contact instantly via their contact card, as shown in Figure 20.10
+Figure 20: Hover your mouse pointer on a person’s name or presence icon to view their contact card and initiate a conversation instantly. Or expand that card to see additional information about your contact.
+10 Instant messaging and presence information requires one of the following: Microsoft Office Communications Server 2007 R2 with Microsoft Office Communicator 2007 R2; Windows Live Messenger, or another instant messaging application that supports IMessenger. Voice calls require Office Communications Server 2007 R2 with Office Communicator 2007 R2 or an instant messaging application that supports IMessengerAdvanced.
+Microsoft Exchange users see calendar status on the top portion of the contact card and in the expanded details.
+Note: Presence information and contact card are also available when using co-authoring in PowerPoint 2010 and from File Properties in Backstage view in PowerPoint and Excel 2010. In Outlook 2010, these features are available from many types of Outlook items, such as meeting requests and e-mail messages. Additionally, in Microsoft SharePoint® Workspace 2010, presence and contact card are available from the Members pane in a Microsoft Office Groove workspace. A separate instant messaging program is not required when using presence in a Groove workspace.
+Protected View New!
+Like many people, you probably receive more files today by e-mail attachment or by downloading from the Web than by any other means. So, how do you help protect your computer when opening files from potentially unknown sources?
+Office 2010 introduces Protected View in Word, Excel, and PowerPoint, to help you make more informed decisions before exposing your computer to possible vulnerabilities. By default, documents that originate from an Internet source—or that may otherwise be likely to include potentially harmful content—are automatically opened in a Protected View. When this happens, you see a warning on the Message bar, as shown in Figure 21, along with the option to Enable Editing.
+Figure 21: Documents that originate from an Internet source open automatically in Protected View.
+Quick Tip: You can control which originating sources trigger Protected View. You can also set specific file types to open in Protected View regardless of where they originate.
+To do either of these tasks, click the File tab to open Backstage view and then click Options. In the Word Options dialog box, click Trust Center and then click Trust Center Settings. Then, to manage Protected View settings, click Protected View. Or, to enable protected view for specific file types, click File Block Settings.
+Trusted Documents New!
+You want to be highly protected from potential threats to your computer and to your files. But why go through repeated security checks after you confirm that a file is trusted?
+Office 2010 introduces the Trusted Documents feature for the documents you work with that contain active content, such as macros. Now, after you confirm that active content in a document is trusted to enable, you don’t have to repeat yourself. Word 2010 remembers the documents you trust so that you can avoid being prompted each time you open the document.
+Quick Tip: What if you accidentally trust a document that you shouldn’t or content is added to a document that you previously trusted? The Trust Center, available through the Word Options dialog box, gives you one-click access to reset trusted documents or to disable the ability to trust documents automatically.
+Accessibility Checker New!
+The new Accessibility Checker inspects your document for content that may be difficult for those with disabilities to read. When issues are found, the tool provides an explanation of the issues along with step-by-step help for correcting them.
+Quick Tip: When formatting a document to help ensure improved accessibility, note that Word 2010 offers expanded alternative text options. Add alternative text for both title and description in pictures and in tables. Find Alt Text options in the Format Picture dialog box and the Table Properties dialog box.
+Language Tools Improved!
+If you’re one of the many people who work across multiple languages, you now have more flexibility to work as you choose. Simplify and customize your multilingual experience with separate language settings for editing, Help, display, and ScreenTips.
+Figure 22: Easily set separate editing, Help, display, and ScreenTip languages.
+Quick Tips:
+If you add a language for which proofing tools or keyboard layout are not installed, you see notification with links to help you easily correct the issue, as shown in Figure 22.
+When you set your language preferences in Word 2010, you set them for all applicable Office 2010 languages, including Excel 2010, PowerPoint 2010, Outlook 2010, OneNote 2010, Publisher 2010, and (excluding ScreenTip settings) Access 2010, SharePoint Workspace 2010 and Microsoft InfoPath 2010.
+Translation Tools Improved!
+Word 2010 makes it easier than ever to communicate across multiple languages. Get easy access to translation tools from the Review tab in Word 2010, as shown in Figure 23. Or, use the improved Mini Translator (formerly called Translation ScreenTips) for on-the-spot translations.
+Figure 23: Translation tools are available from the Review tab, in the Language group.
+Figure 24: Enable the Mini Translator from the translation options on the Review tab. Then, just hover your mouse pointer on a word in your document for instant translation.
+Quick Tip: English assistance and Windows English text-to-speech playback (along with additional text- to-speech languages for download) are available from the toolbar at the bottom of the Mini Translator, shown in Figure 24.11
+Share through Communicator “14” New!
+Sometimes you need a virtual meeting space to collaborate on a project with colleagues. With Word 2010 and Microsoft Communicator ―14‖, you can now initiate a virtual meeting without leaving your work—share your application window as easily as sending an instant message. Or, share a document quickly and easily when you send it via instant message right from Word.
+Quick Tip: Start a sharing session from the Save & Send tab in Backstage view in just a few clicks. Instantly see your colleagues’ availability and share your application window. Your colleagues get a clear view of the application and see any changes you make in real-time.
+Note: Share through Office Communicator is also available in PowerPoint 2010 and Excel 2010.
+Content Controls Improved!
+Content controls were introduced in Word 2007 for reusing dynamic content throughout your documents and easily creating powerful forms. Word 2010 adds the widely requested check box control for even more versatile form design.
+Figure 25: Find content controls on the Developer tab, in the Controls group.
+Quick Tips:
+If you don’t see the Developer tab shown in Figure 25, click the File tab to open Backstage view and then click Options. Click Customize Ribbon and then, under the heading Customize the Ribbon that appears on the right side of that dialog box, check the box labeled Developer to enable that tab.
+Using Office Open XML, developers can create powerful, flexible templates and documents with content that updates automatically by binding content controls to external data, such as data stored in a Microsoft SharePoint list.
+Content controls bound to commonly used document properties are automatically available for your use in documents, no developer required. On the Insert tab, in the Text group, click Quick Parts and then click Document Property to select from a list of available controls. For example, insert the Title control on your cover page, in headers, or wherever the document title is required. Then, if the title changes, just update one instance of that control and the rest update automatically.
+Word Web App New!
+When you want to leave your computer behind or need easy, shareable tools for collaborating with others, do you have what you need to get things done easily and effectively? Now you do.
+Save your Word documents online and then access, edit, and share them from virtually any computer with an Internet connection.13 Get high-fidelity online viewing for the rich documents that you create in Word 2010 and easily make light edits on the go using some of the same tools that you know from Word.14
+Figure 26: View documents in high fidelity and easily make light edits with Word Web App.
+13 Office Web Apps require an appropriate device, Internet connection, supported Internet Explorer, Firefox, or Safari browser, and either SharePoint Foundation 2010 (for business) or a free Windows Live ID (for personal use). Editing documents in Word Web App via Windows Live will become available in the second half of calendar year 2010. There are some differences between the features of Office Web Apps and the Office 2010 applications.
+14 Microsoft Silverlight™ is not required for any functionality but is recommended for best results when viewing Word documents in Office Web Apps.
+Copy text from your document or search for document text directly in Word Web App when in view mode. The search pane provides a linked summary of search results and automatic highlighting of search hits in the document, similar to the improved search experience in Word 2010.
+Use familiar formatting and editing tools that you know from Word, including AutoCorrect, spell-checking as you type, font and paragraph formatting, and styles.
+Insert pictures, tables, and even Office.com Clip Art.
+Microsoft Office Web Apps—including Word Web App, Microsoft Excel® Web App, Microsoft PowerPoint® Web App, and Microsoft OneNote® Web App—give you flexible access, a familiar editing environment, and a selection of features that you already know to help you get your work done on your terms.
+Quick Tips:
+Word Web App makes it easy to share files with people who work on earlier versions of Microsoft Office for Windows or Mac, or even with those who don’t have Microsoft Office installed on their computer.
+If your company runs Office Web Apps on Microsoft SharePoint 2010, access and view the documents you save to your SharePoint site from your smartphone using a mobile version of Word Web App.15
+15 Supported mobile viewers for Word, Excel, and PowerPoint Web Apps on SharePoint 2010 include Internet Explorer on Windows Mobile 5 or later, Safari 4 on iPhone 3G or 3GS, BlackBerry 4.x and later, Nokia S60, NetFront 3.4, 3.5 and later, Opera Mobile 8.65 and later, and Openwave 6.2, 7.0 and later.
+Word Mobile 2010 Improved!
+Sometimes you’ve got to work when you’re moving between point A and point B. Fortunately, the improved Word Mobile 2010 enables you to easily take action while you’re on the road.16
+Enjoy a familiar experience when creating or editing Word documents on your mobile device. Essential authoring capabilities include font and paragraph formatting, bullets and numbering, spell check, and AutoCorrect.
+Use the new selection mode to select your content with precision.
+Figure 27: Open documents that were created in a desktop application and view them on your Windows phone in high- fidelity, using Text Reflow technology in Word Mobile 2010.
+Quick Tip:  Easily distribute documents right from your Windows phone. Send your Word documents by e-mail or save them directly back to SharePoint 2010 by using the new SharePoint Workspace Mobile 2010 application.
+16 An appropriate device is required. Some mobile functionality requires an Internet connection. Office Mobile 2010 includes Word Mobile 2010, Excel Mobile 2010, PowerPoint Mobile 2010, OneNote Mobile 2010 and SharePoint Workspace Mobile 2010. Outlook Mobile 2010 comes pre-installed on Windows phones and is the default e-mail client. Office Mobile 2010 is not included in Office 2010 applications, suites, or Office Web Apps. It will be available at the general availability of Microsoft Office 2010 on Windows phones (Windows Mobile 6.5 or above). There are some differences between the features of Office Mobile 2010 and the Office 2010 applications.
+Are you the office, family, or class Word guru? Do you support, teach, or create documents and templates for other Word users? If you are a Word power user or would like to be, check out a few tips and tricks to help you do even more with Word 2010.
+Easily format graphics across your Word 2010 documents
+Do you want consistent, professional, eye-catching formatting and effects for all of the graphics in your Word 2010 documents? Getting there might be much easier than you think.
+The quick style galleries available on the Drawing Tools Format tab, SmartArt Tools Design tab, and Chart Tools Design tab automatically coordinate with the colors, fonts, and graphic formatting effects of your active document theme.
+Try out different theme effects without changing other elements of your theme. On the Page Layout tab, in the Themes group, point to options in the Effects gallery to see a Live Preview of those effects on the graphics in your document. When you find effects that you like, just click once to apply them to all of the Office 2010 graphics in your document. (Note that you have to have applied quick styles that use theme effects to your graphics in order to see formatting change when you make selections in the Theme Effects gallery.)
+Apply many of the same custom effects—such as shadows, bevels, and gradient fills—to text, shapes, SmartArt graphics, charts, and pictures in your Word 2010 documents.   Word provides galleries of easy-to-use choices for formatting any of these content types. But, if you need to customize effects beyond what you see in the galleries, check out the format dialog box for each. Format Text Effects, Format Shape, Format Picture, and several chart element format dialog boxes give you the tools to customize effects such   as multi-stop gradient fills and lines, bevels, lighting, reflections, and more.17
+To quickly access Format Shape, Format Picture, or the chart element format dialog boxes, right- click the object and then click the format option at the bottom of the shortcut menu. To access Format Text Effects, press CTRL+D to open the Font dialog box and then click Text Effects.
+Explore Recover Unsaved Documents and autosave versions
+When you work on a document for a while and then close it without saving, Word 2010 automatically saves a copy for you. As you may have already learned in this guide, this exciting new development in AutoRecover capabilities enables you to easily retrieve documents, even if you never saved the file. Use the following tips to help you get more from these great new timesaving tools:
+While working on a previously saved document, access up to the last five autosave versions while you are still in the document, without leaving Word. So, if you accidentally delete something and later need it back, you may be able to retrieve that content from an earlier autosave version.
+To access available autosave versions, click the File tab to open Backstage view. Find available autosave versions under the Versions heading on the Info tab.
+By default, Word 2010 automatically saves the last autosave version of your file if you close without saving.
+17 In Excel charts, reflection effects are available when formatting text.
+To turn off this capability, in Backstage view, click Options. In the Word Options dialog box, on the Save tab, find the setting Keep the last autosaved version if I close without saving.
+Note: Your autosave files are stored in the same location as your AutoRecover files. Your AutoRecover file location can be found in Word Options, on the Save tab.
+Recover all available unsaved documents (files that were never previously saved) from one convenient location.
+On the Info tab in Backstage view, click Manage Versions and then click Recover Unsaved Documents. Or, at the bottom of the Recent tab in Backstage view, click Recover Unsaved Documents. The dialog box that opens displays your UnsavedFiles folder, containing available unsaved documents.
+18 The ability to retrieve content from an autosave version is limited to five versions and requires that you elect to save AutoRecover information and keep the last autosave version when you close without saving. To access these options, in Backstage view click Options and then click Save.
+The files that you see in the UnsavedFiles folder are automatically deleted after four days.
+If you ever need to work on a shared or public computer, such as in an Internet café or school computer lab, it’s easy to ensure that unsaved documents are not retained. Create a new document (CTRL+N) but do not save it. Then, in Backstage view, on the Info tab, click Manage Versions and then click Delete all Unsaved Documents.
+Note: The Delete All Unsaved Documents option only appears if you are working on a file that has never been previously saved. If you view Manage Versions options for a previously saved file, the Delete All Unsaved Documents option will not be available.
+Customize the Ribbon
+Customizing your Word 2010 experience has never been easier. Add your own groups to any built-in Ribbon tab, or create your own tabs.
+To customize the Ribbon, click the File tab to open Backstage view. Click Options and then click Customize Ribbon. From this location, customize tabs to include your favorite commands from any built-in tab as well as many commands that don’t appear on the Ribbon or even your own macros.
+Notice that you can also clear the check box beside any tab listed in this dialog box to prevent it from appearing on the Ribbon.
+In addition to customizing the tabs that you always see on the Ribbon, you can customize contextual tabs as well. Those are the tool tabs that appear when you’re working on specific types of content, such as pictures or tables. To access these additional tabs when customizing the Ribbon, select Tool Tabs from the list labeled Customize the Ribbon, as you see in the preceding image.
+To start customizing the Ribbon, just select the tab before which you want to place your new custom tab and then click New Tab. Or, expand a tab to view its groups, select the group after which you want to place a custom group, and then click New Group. You can then add commands from the left side of the dialog box.
+To share your custom Ribbon with other Word 2010 users, you can use the Import/Export option at the bottom of the dialog box. Just export your custom Ribbon settings and share the exported file so that others can import your customizations on their PC.
+Customize documents and save time using Office Open XML
+With all of the great new features in Word 2010 and Office 2010, you never have to leave the Office 2010 programs to create the extraordinary documents you’ve always wanted. But, if you are an advanced user and you want to see just how far you can take the great content you create with Office 2010, you might want to check out what’s going on under the hood of your documents.
+The Office Open XML Formats are the file formats for your Office 2010 documents, and were first introduced in Office 2007. A lot of the great functionality that you use in Office 2010 is built using the Office Open XML language—such as document themes, SmartArt, and the Ribbon. And, if you are an advanced Microsoft Office user, you might be amazed at the time you can save and the types of customizations you can do when you begin to explore Office Open XML.
+You don’t need to be a professional developer to learn and use the basics of Office Open XML. For example, consider the following:
+If you already customize Office themes and you’d like to learn how to create a complete custom theme from scratch, including your own custom theme effects, explore the Theme Builder.
+The Office team at Microsoft created the Theme Builder tool, which is in a public beta release at this time of this publication. The Theme Builder actually writes the Office Open XML for you, giving you an interface from which you can create your own custom theme effects. On the Help menu of the Theme Builder, you’ll also find a detailed theme creation guide and themes SDK documentation, for in-depth guidance and best practices when creating custom themes.
+Download the Theme Builder from Microsoft Connect.
+With just a few Office Open XML basics under your belt, you can customize formatting and save time on many tasks. Consider the following examples:
+You use the Change Shape feature to change the rectangles in your SmartArt graphic to ovals. It works great and may be exactly what you need most of the time. But  when you add a new shape, it’s still a rectangle. Would you like to change that shape in the SmartArt layout instead, so that anyone who edits the graphic gets the shape you want them to use? All it takes is one simple find and replace in Office Open XML.
+You are about to hand the courier that important proposal document when you learn that the client changed their logo last week. The logo appears dozens of times in the document and the clock is ticking. Wouldn’t it be nice if you could paste the new  logo once and Word would place it everywhere it needed to be, with formatting and positioning automatically retained? When you understand the core Office Open XML structure of your Word 2010 documents, you can—and you might even be able to do it without writing a single word of Office Open XML.
+You’re creating a new Word 2010 template to share with others and you would like to create a custom Ribbon just for that template. You know that Office 2010 gives you the power to customize the Ribbon for each application, but how can you get that done for just a single template? Office Open XML makes it easy.
+These are just a few of many tasks that advanced Office 2010 users can easily accomplish using basic Office Open XML. Explore the resources that follow to help you get started with Office Open XML and for the steps you need to accomplish these tasks and more:
+Note: The following resources were written for Office 2007 but are equally applicable to the tasks discussed here for Office 2010.
+Office Open XML I: Exploring the Open XML File Formats
+Office Open XML II: Editing documents in the XML
+A Guide to Customizing the Office 2007 Ribbon
+OpenType typography
+Co-authoring
+To see this feature, save your document to a SharePoint Foundation 2010 site or a Windows Live SkyDrive folder, and then have someone else open the document for editing while you are still in it.
+You can automatically see where other editors are currently working in the document. You can also view a list of other editors from the Info tab in Backstage view or on the Status bar at the bottom of your screen.
+Note: Co-authoring via Windows Live will become available in the second half of calendar year 2010.
+Improved!	Streamlined communications
+Wherever you see presence information that shows availability of other document editors, point to the person’s name for a contact card from which you can initiate a conversation.
+Note: Instant messaging and presence information requires one of the following: Office Communications Server 2007 R2 with Office Communicator 2007 R2, Windows Live Messenger, or another instant messaging application that supports IMessenger. Voice calls require Office Communications Server 2007 R2 with Office Communicator 2007 R2 or an instant messaging application that supports IMessengerAdvanced.
+New!
+Protected View
+Opening in Protected View is automatic when you open a file that originated from an Internet location. A message bar appears below the Ribbon to indicate that your file has been opened in Protected View and gives you the option to enable editing.
+To manage Protected View settings, click the File tab to open Backstage view and then click Options. Click Trust Center and then click Trust Center Settings. Find options for working with Protected View on both the Protect View and File Block Settings tabs of the Trust Center dialog box.
+Accessibility Checker
+Click the File tab to open Backstage view. On the Info tab, click Check for Issues and then click Check Accessibility.
+New!	Trusted Documents	To manage trusted documents:
+Click the File tab to open Backstage view and then click Options. In the Word Options dialog box, click Trust Center and then click Trust Center Settings. In the Trust Center dialog box, click Trusted Documents.
+To add a trusted document:
+When you open a document containing active content such as macros, on the Message Bar, click Enable Content.
+Improved!
+Language tools
+Office Themes
+SmartArt Graphics
+Select from several new SmartArt layouts—including new organization charts and picture diagrams—to build professional graphics as easily as typing a bulleted list.
+Shape Effects
+Get an array of advanced formatting effects— such as reflections, bevels, and improved shadows and gradients—as well as shape styles that coordinate with the same theme effects used for charts and diagrams.
+Selection Pane
+Use the new Selection Pane to easily select, rename, or hide graphics in your documents.
+Save time and simplify your work
+Navigation Pane
+Use the improved Navigation Pane (formerly called the Document Map) to easily browse document headings and rearrange document content by dragging and dropping right in the pane.
+Find Tools
+The Find capabilities in Word 2010 are now integrated into the Navigation pane to provide automatic hit highlighting and an easily accessible results list.
+Recover Unsaved Versions
+Backstage View
+Get one central, intuitive, integrated location for all of your document management tasks.
+Redefine working together on documents
+Co-authoring
+Edit the same document at the same time with other people in different locations.
+Streamlined Communications
+Instantly initiate a conversation with others who are simultaneously editing a document with you, right from Word.
+Protected View
+Documents received in e-mail or downloaded from the Web automatically open in Protected	i View so that you can make a more informed decision before exposing your computer to potential vulnerabilities.
+File Block Settings
+Select from a range of document types that can contain active content and direct Word to prevent the file type from opening or saving, or to open the file type using Protected View.20
+Trusted Documents
+Let Word know when you trust a document that contains active content (such as macros) so that	t you are not prompted with a security warning each time you open the same file.
+Accessibility Checker
+Check your document for content that people with disabilities might find difficult to read and	a get explanations with step-by-step instructions for how to correct the issues.
+20 The ability to modify File Block settings from within the application is new in Word 2010. Built-in File Block functionality was added in Word 2007, available through a patch for Word 2003, and could only be modified via the Windows Registry.
+Translation Tools
+Use on-demand translation, full document translations, and a Mini Translator (formerly called Translation Screen Tips) to easily work across languages.
+Language Tools
+In Word 2010, you can set separate languages for editing, Help, display and ScreenTips.
+Start a sharing session with a couple of clicks. Your colleagues get a clear view of the application and instantly see the changes you make.21
+Send your document by instant message directly from Word 2010.21
+21 Requires Microsoft Communicator ―14‖ and Microsoft Communications Server ―14‖.
+Content Controls
+Create dynamic forms for yourself and others to use, add boilerplate content that dynamically updates, and bind content in your documents to file properties or other external sources, such as a SharePoint list.
+Work when and where you choose
+Word Web App
+View and do lightweight editing of your	o documents online from virtually any computer with an Internet connection.
+Word Mobile
+1. What is Word 2010?
+Word 2010 is the most flexible and intuitive release yet of the popular word processing software you already know. Designed to provide you with the finest document formatting tools, Word 2010 helps you create better documents in less time and manage your documents more easily than ever. In addition, this release of Word gives you tools that make it easier than you might imagine to work with others on your documents or to work when and where you choose.
+2. How can I use Word 2010?
+Use Word 2010 to create documents that help your important content shine. From the most basic letter to the most complex report, take advantage of tools ranging from design themes that you can apply throughout your document in a couple of clicks, to beautiful graphics  that you can create as easily as typing a bulleted list, to professional-quality photo-editing tools. You can also use Word 2010 to share content easily with others, such as by writing and publishing blog posts directly from Word or seamlessly editing documents at the same time as others on your team.
+3. What are some of the major updates to Word 2010 from earlier versions?
+Explore Word 2010: At-a-Glance.
+1. Are there special system requirements for running Word 2010?
+Office 2010 was built to maximize performance across the hardware you already own, while also positioning you for future hardware innovations such as 64-bit chips, advanced graphics cards, multi-core processors and alternative form factor devices.
+Following are minimum system requirements for Microsoft Office Professional Plus 2010:
+500 MHz processor; 1 GHz required for Outlook with Business Contact Manager Memory
+256 MB RAM; 512 MB recommended for graphics features, Outlook Instant Search, Outlook with Business Contact Manager, and certain advanced functionality.
+Hard disk
+3.0 GB available disk space Display
+1024x768 or higher resolution monitor Operating system Windows XP with Service Pack (SP) 3 (32-bit operating system (OS) only) or Windows Vista® with SP1, Windows 7, Windows Server® 2003 R2 with MSXML 6.0, Windows Server 2008, or later 32- or 64-bit OS.
+Graphics Graphics hardware acceleration requires a DirectX® 9.0c graphics card with 64 MB or more video memory.
+Additional Notes
+Certain advanced functionality requires connectivity to Microsoft Exchange Server 2010, Microsoft SharePoint Server 2010, Microsoft Office Communications Server 2007 R2, and/or Microsoft SharePoint Foundation 2010.
+Certain features require Windows Search 4.0.
+Internet functionality requires an Internet connection.
+Certain online functionality requires a Windows Live ID.
+Certain features require Internet Explorer (IE) 6 or later, 32-bit browser only.
+Viewing a PowerPoint presentation broadcast requires one of the following browsers: Internet Explorer 7 or later for Windows, Safari 4 or later for Mac, or Firefox 3.5 or later for Windows, Mac or Linux.
+Certain OneNote features require Windows Desktop Search 3.0, Windows Media® Player 9, Microsoft ActiveSync® 4.1, microphone, audio output device, video recording device, TWAIN-compatible digital camera, or scanner. Send to OneNote Print Driver and Integration with Business Connectivity Services require Microsoft .NET Framework 3.5 and/or Windows XPS features.
+Product functionality and graphics may vary based on your system configuration. Some features may require additional or advanced hardware or server connectivity; visit http://www.office.com/products.
+To obtain system requirements for all Microsoft Office 2010 suites and standalone applications, visit Office.com.
+2. Can I open previous versions of Word documents in Word 2010?
+Yes, you can open files created with Word 97 or later in Word 2010.
+3. Can I open Word 2010 documents using previous versions of Word?
+Yes, by using a free compatibility pack, you can open documents in Word 2002 or later that are saved to the Word 2010 default file formats. You also have the option in Word 2010 to save your documents to the file formats used by Word 97 through Word 2003.22
+4. Do I need other products in order to use Word 2010 features?
+None of the document creation or formatting tools in Word 2010 requires other products. However, the following new collaboration tools do have additional requirements:
+Co-authoring: Requires either SharePoint Foundation 2010 (for business) or a free Windows Live ID (for personal use).
+See availability of other document editors and communicate with them instantly from within Word 2010: Instant messaging and presence information require one of the following: Microsoft Office Communications Server 2007 R2 with Microsoft Office Communicator 2007 R2; Windows Live Messenger, or another instant messaging application that supports IMessenger. Voice calls require Office Communications Server 2007 R2 with Office Communicator 2007 R2 or an instant messaging application that supports IMessengerAdvanced.
+5. Which browsers are supported for the new Word Web App?
+Supported browsers include Windows Internet Explorer 7 or later for Windows, Safari 4 or later for Mac, and Firefox 3.5 or later for Windows, Mac, or Linux.
+1. Are there free Word 2010 resources and training available from Microsoft?
+You can access numerous free, self-help resources on Office.com. Resources range from how-to training and demos to obtaining answers from your peers and independent experts–such as the Microsoft Most Valuable Professionals—in the Microsoft Office communities.
+2. Can I customize Word 2010 based on how I use the product?
+You can customize many aspects of Word 2010, including the following:
+Customize tabs on the Ribbon or create your own tabs. Click the File tab to open Backstage view. Click Options and then click Customize Ribbon.
+Create custom keyboard shortcuts. Click the File tab to open Backstage view and then click Options. Click Customize Ribbon and then, next to the Keyboard Shortcuts heading, click Customize.
+Set separate language settings for editing, Help, display and ScreenTips. On the Review tab, in the Language group, click Language and then click Language Preferences.
+Set your preferences for a wide range of document and program behavior, ranging from how proofing and AutoCorrect features behave, to how document content displays and prints and how to help protect your system and better secure your documents. Find all of these settings and many more in the Word Options dialog box. To do this, click the File tab to open Backstage view and then click Options.
+Set a default language for translation. On the Review tab, in the Language group, click Translate and then click Choose Translation Language.
+Customize and create your own templates and reusable content. You can customize formatting and layout for your documents and document content when you work in Word 2010. From customizing the Normal (default) template that contains your default page setup, font and paragraph formatting, to customizing built-in templates, building blocks, Office themes, and styles, it’s easy to make your documents your own. Find help for these features through the Help button on the right edge of the Ribbon in Word 2010, or on Office.com.
+3. Can I access my documents when I am away from my primary computer?
+Using the new Word Web App, you can save your documents online and then access, view, edit, and share them from virtually any computer with an Internet connection. Additionally, using Word Mobile 2010, you can access and edit your documents from your Windows phone.23
+4. How do I access Word 2010 documents from a Web browser?
+Save your documents to a SharePoint 2010 site or a Windows Live SkyDrive folder and then view and edit them using Word Web App.24
+5. What can I do with my Word 2010 documents in Word Web App?
+View your Word 2010 documents with high-fidelity, and search for or copy document content when viewing a document in Word Web App. When editing documents in Word Web App, use some of the same formatting and editing features you use every day in Word 2010, including automatic spell check, AutoCorrect, font and paragraph formatting, styles, and tools for working with tables and pictures.
+6. How do I edit Word 2010 documents from my phone?
+Use Word Mobile 2010, which will be available as part of Office Mobile 2010, concurrent with the release of Office 2010.25
+7. What can I do with my Word 2010 documents in Word Mobile 2010?
+Word Mobile 2010 provides an enhanced mobile version of Word specifically suited to your Windows phone. View, search, and do lightweight editing of your Word 2010 documents on the go.
+Word 2010 is available for purchase as part of all Office 2010 suites. To view a suite comparison for Microsoft Office 2010 so you can determine which suite is right for you, visit Office.com.
+2. Will Word 2010 be available for standalone purchase?
+3. Can I try Word 2010 before I buy it?
+Yes. Following general availability of Office 2010, you will be able to obtain a trial version. Visit Office.com for more information.
+4. Is there a Macintosh version of Word 2010?
+The current version of Word for the Mac is Word 2008. Word 2008 is highly compatible with Word 2010 and enables you to easily share documents with others who work on the Mac platform. The Office for Mac team will have a new release, Office for Mac 2011, available in late 2010. Office for Mac 2011 will provide even greater compatibility with Office 2010. For information on Word 2008 for Mac and news on the upcoming version, visit the Mactopia Web site.
+5. Is there a cost for using Word Web App?
+Office Web Apps are available in two ways:
+Businesses that have a volume license agreement for Office 2010 have access to install Office Web Apps on SharePoint 2010 in their organization.
+Individuals can access Office Web Apps via Windows Live SkyDrive, using a free Windows Live ID.
+1. What is co-authoring in Word 2010 and what are the benefits of using it?
+Co-authoring is an exciting new development in Word 2010 that enables you to simultaneously edit the same document with others who are working in different locations. You no longer have to wait for one person to finish writing or editing their portion of the document before you can work on it.
+2. Which Office 2010 applications enable co-authoring?
+Office 2010 enables co-authoring in Word 2010, PowerPoint 2010, and OneNote 2010.26 Co- authoring is also enabled in OneNote Web App and Excel Web App.
+3. What are the requirements for using co-authoring in Word 2010?
+Co-authoring requires SharePoint Foundation 2010 for business or, for consumers, a free Windows Live ID.
+4. How does the new co-authoring capability in Word 2010 avoid editing conflicts?
+The area in a document where an author is currently editing is automatically locked to other authors. Authors can also lock an area of the document to prevent other editors from making changes to it.
+5. Which fonts can be used with the new typography features?
+The new typography features support OpenType typography elements that are available in several of the fonts that come with Word 2010, including Calibri, Cambria, Consolas, Constantia, Corbel, Candara, Gabriola27, and Segoe. Additionally, you can use any OpenType fonts you own which contain typography features supported by Word 2010, including ligatures, stylistic sets, number spacing, number forms, contextual alternates, and OpenType kerning.
+6. Are recovered unsaved versions of documents stored on my computer?
+Recovered unsaved documents are stored on your computer for four days and automatically deleted. You can also manually delete recovered versions when needed, such as when working on a public computer.
+7. Is there a way to easily remove potentially private metadata and other hidden content—such as editing history—from a document before sharing it?
+Yes. The easiest way to do this is to use the Document Inspector, which enables you to search for and remove a wide range of potentially private metadata and hidden content. To access the Document Inspector, click the File tab to open Backstage view. Then, on the Info tab, click Check for Issues and then click Inspect Document.
+27 Gabriola is available as a part of any Office 2010 suite, or in the Word 2010 standalone product when on a computer running Microsoft Windows 7.
+Note: Document Inspector is extensible. If your organization requires other types of content to be identified and removed, your developer can write custom modules to include in the Document Inspector tool.
+8. What are text effects and what are the benefits of using them instead of WordArt in documents?
+Text effects are advanced formatting effects, such as reflections, bevels, and gradient fills, which you can apply directly to your document text. Unlike the WordArt that was available in previous versions of Word, you apply text effects directly to document text, so text can still be edited and spell-checked. You can even include text effects in Word styles, such as your document’s heading styles.
+Note that the feature referred to as WordArt in Word 2010 is updated to use text effects rather than create a separate object for your text. When you use WordArt (available from the Insert tab), you get an editable text box with text effects applied.
+Office Mobile 2010 is not included in Office 2010 applications, suites, or Web Apps.
+Office Mobile 2010 will be released on Windows phones (Windows Mobile 6.5 or above) by the general availability of Office 2010.
+Office Web Apps are online companions to Microsoft Office and require the following:
+For businesses and institutions: Requires SharePoint Foundation 2010.
+For personal use: Requires a free Windows Live ID. OneNote Web App and editing via Word Web App will become available on Windows Live in the second half of calendar year 2010.
+Supported browsers for Office Web Apps include Internet Explorer 7 or later for Windows, Safari 4 or later for Mac and Firefox 3.5 or later for Windows, Mac, or Linux.
+Supported mobile viewers for Word, Excel, and PowerPoint Web Apps on SharePoint 2010 include Internet Explorer on Windows Mobile 5 or later, Safari 4 on iPhone 3G or 3GS, BlackBerry 4.x and later, Nokia S60, NetFront 3.4, 3.5 and later, Opera Mobile 8.65 and later, and Openwave 6.2, 7.0 and later.
+Co-authoring for Word 2010 is the capability to simultaneously edit the same Word 2010 document with other people in different locations. This functionality requires the following:
+For businesses and institutions: Requires SharePoint Foundation 2010.
+For personal use: Requires a free Windows Live ID. Co-authoring for Word 2010 will become available on Windows Live in the second half of calendar year 2010.
+Streamlined communications in Office 2010 provides the ability to view the availability of other document editors and communicate with your contacts without leaving Word 2010. These capabilities have the following requirements:
+Instant messaging and presence requires one of the following: Office Communications Server 2007 R2 with Office Communicator 2007 R2; Windows Live Messenger, or another instant messaging application that supports IMessenger.
+Voice calls, as well as some communications options from Backstage view, require Office Communications Server 2007 R2 with Office Communicator 2007 R2 or an instant messaging application that supports IMessengerAdvanced.
+Some links provided in this guide will not be available until after the general availability of Microsoft Office 2010.
+This document is provided ―as-is.‖ Information and views expressed in this document, including URL and other Internet Web site references, may change without notice. You bear the risk of using it.
+Some examples depicted herein are provided for illustration only and are fictitious. No real association or connection is intended or should be inferred.
+This document does not provide you with any legal rights to any intellectual property in any Microsoft product. You may copy and use this document for your internal, reference purposes.
+© 2010 Microsoft Corp. All rights reserved.

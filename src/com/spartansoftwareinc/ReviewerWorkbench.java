@@ -175,7 +175,11 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         // TODO: Retrieve segment data and metadata from file
 
         public void run() {
-            segmentView.parseSegmentsFromFile();
+            try {
+                segmentView.parseSegmentsFromFile();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
         }
     }
 }
