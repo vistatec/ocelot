@@ -11,6 +11,7 @@ import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -35,6 +36,11 @@ public class SegmentView extends JScrollPane {
         tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new SegmentSelectionHandler());
+
+        DefaultTableCellRenderer segNumAlign = new DefaultTableCellRenderer();
+        segNumAlign.setHorizontalAlignment(JLabel.LEFT);
+        segNumAlign.setVerticalAlignment(JLabel.TOP);
+        sourceTargetTable.setDefaultRenderer(Integer.class, segNumAlign);
         sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
                 new DataCategoryFlagRenderer());
 
