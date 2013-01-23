@@ -2,15 +2,20 @@ package com.spartansoftwareinc;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.font.LineBreakMeasurer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
@@ -18,6 +23,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 /**
@@ -50,6 +56,8 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.setDefaultRenderer(Integer.class, segNumAlign);
         sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
                 new DataCategoryFlagRenderer());
+        sourceTargetTable.setDefaultRenderer(String.class,
+                new SegmentTextRenderer());
 
         int minWidth = 15, prefWidth = 15, maxWidth = 20;
         tableColumnModel.getColumn(0).setMinWidth(minWidth);
@@ -218,6 +226,61 @@ public class SegmentView extends JScrollPane {
 
         private void deleteSegments() {
             segments.clear();
+        }
+    }
+
+    public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable jtable, Object o, boolean isSelected, boolean hasFocus, int row, int col) {
+            String text = (String) o;
+            setLineWrap(true);
+            setWrapStyleWord(true);
+            setText(text);
+            setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
+            setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+
+            // Compute the largest row height between source and target cells.
+            TableColumnModel colModel = jtable.getColumnModel();
+            int myRowHeight = checkOptimalRowHeight(colModel.getColumn(col), text);
+            int otherRowHeight;
+            if (col == segments.getColumnIndex(SegmentTableModel.COLSEGSRC)) {
+                String tgtText = (String)jtable.getModel().getValueAt(row,
+                        segments.getColumnIndex(SegmentTableModel.COLSEGTGT));
+                otherRowHeight = checkOptimalRowHeight(colModel.getColumn(
+                        segments.getColumnIndex(SegmentTableModel.COLSEGTGT)),
+                        tgtText);
+            } else {
+                String srcText = (String)jtable.getModel().getValueAt(row,
+                        segments.getColumnIndex(SegmentTableModel.COLSEGSRC));
+                otherRowHeight = checkOptimalRowHeight(colModel.getColumn(
+                        segments.getColumnIndex(SegmentTableModel.COLSEGTGT)),
+                        srcText);
+            }
+
+            jtable.setRowHeight(row, myRowHeight > otherRowHeight
+                    ? myRowHeight : otherRowHeight);
+            return this;
+        }
+
+        // All height and width integers are in pixels
+        public int checkOptimalRowHeight(TableColumn col, String text) {
+            FontMetrics font = this.getFontMetrics(this.getFont());
+            int colWidth = col.getWidth();
+            int lines = 0;
+
+            AttributedString attrStr = new AttributedString(text);
+            AttributedCharacterIterator charIter = attrStr.getIterator();
+            LineBreakMeasurer lineMeasurer = new LineBreakMeasurer(charIter, font.getFontRenderContext());
+            lineMeasurer.setPosition(charIter.getBeginIndex());
+            while(lineMeasurer.getPosition() < charIter.getEndIndex()) {
+                lineMeasurer.nextLayout(colWidth);
+                lines++;
+            }
+
+            int charHeight = font.getHeight();
+
+            return (lines+2)*charHeight;
         }
     }
 
