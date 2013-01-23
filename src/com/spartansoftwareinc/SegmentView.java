@@ -2,14 +2,12 @@ package com.spartansoftwareinc;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.awt.font.LineBreakMeasurer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.JLabel;
@@ -18,12 +16,14 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 /**
@@ -37,6 +37,7 @@ public class SegmentView extends JScrollPane {
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
+    protected LinkedList<Integer[]> rowHeights = new LinkedList<Integer[]>();
 
     public SegmentView(SegmentAttributeView attr) {
         attrView = attr;
@@ -46,6 +47,26 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
         tableColumnModel = sourceTargetTable.getColumnModel();
+        tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
+
+            @Override
+            public void columnAdded(TableColumnModelEvent tcme) {}
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent tcme) {}
+
+            @Override
+            public void columnMoved(TableColumnModelEvent tcme) {}
+
+            @Override
+            public void columnMarginChanged(ChangeEvent ce) {
+                segments.updateRowHeights();
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent lse) {}
+        });
+
 
         tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -100,6 +121,7 @@ public class SegmentView extends JScrollPane {
                 }
             }
             segments.addSegment(seg);
+            initializeRowHeight(seg);
         }
 
         // Adjust the segment number column width
@@ -109,6 +131,29 @@ public class SegmentView extends JScrollPane {
                 .stringWidth(" " + documentSegNum));
 
         setViewportView(sourceTargetTable);
+    }
+
+    public void initializeRowHeight(Segment seg) {
+        Integer[] rowHeight = new Integer[SegmentTableModel.NONFLAGCOLS + SegmentTableModel.NUMFLAGS];
+
+        int srcIdx = segments.getColumnIndex(SegmentTableModel.COLSEGSRC);
+        int tgtIdx = segments.getColumnIndex(SegmentTableModel.COLSEGTGT);
+
+        JTextArea textMeasure = new JTextArea();
+        textMeasure.setLineWrap(true);
+        textMeasure.setWrapStyleWord(true);
+
+        int srcColWidth = tableColumnModel.getColumn(srcIdx).getWidth();
+        textMeasure.setText(seg.getSource());
+        textMeasure.setSize(new Dimension(srcColWidth, 1));
+        rowHeight[srcIdx] = textMeasure.getPreferredSize().height;
+
+        int tgtColWidth = tableColumnModel.getColumn(tgtIdx).getWidth();
+        textMeasure.setText(seg.getTarget());
+        textMeasure.setSize(new Dimension(tgtColWidth, 1));
+        rowHeight[tgtIdx] = textMeasure.getPreferredSize().height;
+
+        rowHeights.add(rowHeight);
     }
 
     private void clearSegments() {
@@ -228,6 +273,19 @@ public class SegmentView extends JScrollPane {
         private void deleteSegments() {
             segments.clear();
         }
+
+        protected void updateRowHeights() {
+            for (int row = 0; row < getRowCount(); row++) {
+                FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
+                int rowHeight = font.getHeight();
+                for (int col = 0; col < getColumnCount(); col++) {
+                    if (rowHeights.get(row)[col] != null) {
+                        rowHeight = Math.max(rowHeight, rowHeights.get(row)[col]);
+                    }
+                }
+                sourceTargetTable.setRowHeight(row, rowHeight);
+            }
+        }
     }
 
     public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {
@@ -241,49 +299,10 @@ public class SegmentView extends JScrollPane {
             setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
             setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
 
-            // Compute the largest row height between source and target cells.
-            TableColumnModel colModel = jtable.getColumnModel();
-            int myRowHeight = checkOptimalRowHeight(colModel.getColumn(col), text);
-            int otherRowHeight;
-            if (col == segments.getColumnIndex(SegmentTableModel.COLSEGSRC)) {
-                String tgtText = (String)jtable.getModel().getValueAt(row,
-                        segments.getColumnIndex(SegmentTableModel.COLSEGTGT));
-                otherRowHeight = checkOptimalRowHeight(colModel.getColumn(
-                        segments.getColumnIndex(SegmentTableModel.COLSEGTGT)),
-                        tgtText);
-            } else {
-                String srcText = (String)jtable.getModel().getValueAt(row,
-                        segments.getColumnIndex(SegmentTableModel.COLSEGSRC));
-                otherRowHeight = checkOptimalRowHeight(colModel.getColumn(
-                        segments.getColumnIndex(SegmentTableModel.COLSEGTGT)),
-                        srcText);
-            }
-
-            int rowHeight = myRowHeight > otherRowHeight ? myRowHeight : otherRowHeight;
-            if (jtable.getRowHeight(row) != rowHeight) {
-                jtable.setRowHeight(row, rowHeight);
-            }
+            // Need to set width to force text area to calculate a pref height
+            setSize(new Dimension(jtable.getColumnModel().getColumn(col).getWidth(), jtable.getRowHeight(row)));
+            rowHeights.get(row)[col] = getPreferredSize().height;
             return this;
-        }
-
-        // All height and width integers are in pixels
-        public int checkOptimalRowHeight(TableColumn col, String text) {
-            FontMetrics font = this.getFontMetrics(this.getFont());
-            int colWidth = col.getWidth();
-            int lines = 0;
-
-            AttributedString attrStr = new AttributedString(text);
-            AttributedCharacterIterator charIter = attrStr.getIterator();
-            LineBreakMeasurer lineMeasurer = new LineBreakMeasurer(charIter, font.getFontRenderContext());
-            lineMeasurer.setPosition(charIter.getBeginIndex());
-            while(lineMeasurer.getPosition() < charIter.getEndIndex()) {
-                lineMeasurer.nextLayout(colWidth);
-                lines++;
-            }
-
-            int charHeight = font.getHeight();
-
-            return (lines+2)*charHeight;
         }
     }
 
