@@ -299,6 +299,7 @@ public class SegmentView extends JScrollPane {
             setBackground(flag.getFlagBackgroundColor());
             setBorder(flag.getFlagBorder());
             setText(flag.getFlagText());
+            setHorizontalAlignment(CENTER);
             return this;
         }
     }
