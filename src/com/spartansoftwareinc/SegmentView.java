@@ -70,14 +70,14 @@ public class SegmentView extends JScrollPane {
         attrView.clearTree();
         // TODO: Actually parse the file and retrieve segments/metadata.
         InputStream sampleEnglishDocStream =
-                SegmentView.class.getResourceAsStream("[EN]Microsoft Word 2010 Product Guide.TXT");
+                SegmentView.class.getResourceAsStream("sample_english.txt");
         BufferedReader sampleEnglishDoc =
-                new BufferedReader(new InputStreamReader(sampleEnglishDocStream));
+                new BufferedReader(new InputStreamReader(sampleEnglishDocStream, "UTF-8"));
 
         InputStream sampleFrenchDocStream =
-                SegmentView.class.getResourceAsStream("[FR]Microsoft Word 2010 Product Guide.TXT");
+                SegmentView.class.getResourceAsStream("sample_french.txt");
         BufferedReader sampleFrenchDoc =
-                new BufferedReader(new InputStreamReader(sampleFrenchDocStream));
+                new BufferedReader(new InputStreamReader(sampleFrenchDocStream, "UTF-8"));
 
         int documentSegNum = 1;
         String nextEnglishLine, nextFrenchLine;
