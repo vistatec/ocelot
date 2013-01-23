@@ -43,6 +43,7 @@ public class SegmentView extends JScrollPane {
 
         segments = new SegmentTableModel();
         sourceTargetTable = new JTable(segments);
+        sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
         tableColumnModel = sourceTargetTable.getColumnModel();
 
@@ -59,15 +60,15 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.setDefaultRenderer(String.class,
                 new SegmentTextRenderer());
 
-        int minWidth = 15, prefWidth = 15, maxWidth = 20;
-        tableColumnModel.getColumn(0).setMinWidth(minWidth);
-        tableColumnModel.getColumn(0).setPreferredWidth(prefWidth);
-        tableColumnModel.getColumn(0).setMaxWidth(maxWidth);
+        tableColumnModel.getColumn(0).setMinWidth(15);
+        tableColumnModel.getColumn(0).setPreferredWidth(20);
+        tableColumnModel.getColumn(0).setMaxWidth(50);
+        int flagMinWidth = 15, flagPrefWidth = 15, flagMaxWidth = 20;
         for (int i = SegmentTableModel.NONFLAGCOLS;
              i < SegmentTableModel.NONFLAGCOLS+SegmentTableModel.NUMFLAGS; i++) {
-            tableColumnModel.getColumn(i).setMinWidth(minWidth);
-            tableColumnModel.getColumn(i).setPreferredWidth(prefWidth);
-            tableColumnModel.getColumn(i).setMaxWidth(maxWidth);
+            tableColumnModel.getColumn(i).setMinWidth(flagMinWidth);
+            tableColumnModel.getColumn(i).setPreferredWidth(flagPrefWidth);
+            tableColumnModel.getColumn(i).setMaxWidth(flagMaxWidth);
         }
         setViewportView(sourceTargetTable);
     }
@@ -105,7 +106,7 @@ public class SegmentView extends JScrollPane {
         tableColumnModel.getColumn(
                 segments.getColumnIndex(SegmentTableModel.COLSEGNUM))
                 .setPreferredWidth(this.getFontMetrics(this.getFont())
-                .stringWidth("" + documentSegNum));
+                .stringWidth(" " + documentSegNum));
 
         setViewportView(sourceTargetTable);
     }
