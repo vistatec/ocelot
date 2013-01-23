@@ -259,8 +259,10 @@ public class SegmentView extends JScrollPane {
                         srcText);
             }
 
-            jtable.setRowHeight(row, myRowHeight > otherRowHeight
-                    ? myRowHeight : otherRowHeight);
+            int rowHeight = myRowHeight > otherRowHeight ? myRowHeight : otherRowHeight;
+            if (jtable.getRowHeight(row) != rowHeight) {
+                jtable.setRowHeight(row, rowHeight);
+            }
             return this;
         }
 
