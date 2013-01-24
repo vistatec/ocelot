@@ -137,11 +137,14 @@
   </target>
 
   <target name="test" depends="build.test">
-    <junit fork="no" printsummary="yes" haltonfailure="no">
+    <junit fork="no" printsummary="yes" haltonfailure="no"
+             showoutput="yes">
       <classpath refid="test.class.path" />
 
-      <test name="com.spartansoftwareinc.ReviewerWorkbench.AllTests" />
-
+      <test name="com.spartansoftwareinc.TestMatchers" />
+      <test name="com.spartansoftwareinc.TestRules" />
+        
+      <formatter type="brief" usefile="false" />
     </junit>
   </target>
 
