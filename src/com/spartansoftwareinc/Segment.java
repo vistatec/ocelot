@@ -1,6 +1,9 @@
 package com.spartansoftwareinc;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Represents source, target segments with ITS metadata
@@ -43,5 +46,11 @@ public class Segment {
 
     public LanguageQualityIssue getTopDataCategory(int pos) {
         return pos >= lqiList.size() ? null : lqiList.get(pos);
+    }
+    
+    public Collection<ITSMetadata> getAllITSMetadata() {
+    	List<ITSMetadata> its = new ArrayList<ITSMetadata>();
+    	its.addAll(lqiList);
+    	return its;
     }
 }

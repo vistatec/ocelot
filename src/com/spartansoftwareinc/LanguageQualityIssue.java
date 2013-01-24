@@ -2,18 +2,30 @@ package com.spartansoftwareinc;
 
 import java.awt.Color;
 import java.net.URL;
+import java.util.EnumMap;
+import java.util.Map;
+
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
 /**
  * Represents Language Quality Issue Data Category in the ITS 2.0 spec.
  */
-public class LanguageQualityIssue implements DataCategoryFlag {
+public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
     private String type, comment;
     private int severity;
     private URL profileReference;
     private boolean enabled;
-
+    
+    public Map<DataCategoryField, Object> getFieldValues() {
+    	Map<DataCategoryField, Object> map = 
+    			new EnumMap<DataCategoryField, Object>(DataCategoryField.class);
+    	map.put(DataCategoryField.LQI_TYPE, type);
+    	map.put(DataCategoryField.LQI_COMMENT, comment);
+    	map.put(DataCategoryField.LQI_SEVERITY, severity);
+    	return map;
+    }
+    
     public String getType() {
         return type;
     }
