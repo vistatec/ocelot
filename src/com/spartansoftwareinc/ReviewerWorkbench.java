@@ -82,12 +82,9 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             JOptionPane.showMessageDialog(this, "Reviewer's Workbench, version " + Version.get(), "About", JOptionPane.INFORMATION_MESSAGE);
 
         } else if (e.getSource() == this.menuOpen) {
-            int returnVal = fc.showOpenDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                this.openFile = fc.getSelectedFile();
-                Thread t = new Thread(new OpenThread());
-                t.start();
-            }
+            OpenView open = new OpenView(segmentView);
+            SwingUtilities.invokeLater(open);
+
         } else if (e.getSource() == this.menuRules) {
             FilterView rules = new FilterView(segmentView);
             SwingUtilities.invokeLater(rules);
@@ -183,17 +180,5 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             }
         }
         return false;
-    }
-
-    class OpenThread implements Runnable {
-        // TODO: Retrieve segment data and metadata from file
-
-        public void run() {
-            try {
-                segmentView.parseSegmentsFromFile();
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
-        }
     }
 }

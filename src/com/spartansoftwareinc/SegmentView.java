@@ -4,9 +4,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -106,28 +106,21 @@ public class SegmentView extends JScrollPane {
         setViewportView(sourceTargetTable);
     }
 
-    public void parseSegmentsFromFile() throws IOException {
+    public void parseSegmentsFromFile(File sourceFile, File targetFile) throws IOException {
         sourceTargetTable.clearSelection();
         segments.deleteSegments();
         sourceTargetTable.setRowSorter(null);
         attrView.clearTree();
         setViewportView(null);
         // TODO: Actually parse the file and retrieve segments/metadata.
-        InputStream sampleEnglishDocStream =
-                SegmentView.class.getResourceAsStream("sample_english.txt");
-        BufferedReader sampleEnglishDoc =
-                new BufferedReader(new InputStreamReader(sampleEnglishDocStream, "UTF-8"));
-
-        InputStream sampleFrenchDocStream =
-                SegmentView.class.getResourceAsStream("sample_french.txt");
-        BufferedReader sampleFrenchDoc =
-                new BufferedReader(new InputStreamReader(sampleFrenchDocStream, "UTF-8"));
+        BufferedReader source = new BufferedReader(new FileReader(sourceFile));
+        BufferedReader target = new BufferedReader(new FileReader(targetFile));
 
         int documentSegNum = 1;
-        String nextEnglishLine, nextFrenchLine;
-        while ((nextEnglishLine = sampleEnglishDoc.readLine()) != null
-                && (nextFrenchLine = sampleFrenchDoc.readLine()) != null) {
-            Segment seg = new Segment(documentSegNum++, nextEnglishLine, nextFrenchLine);
+        String nextSourceLine, nextTargetLine;
+        while ((nextSourceLine = source.readLine()) != null
+                && (nextTargetLine = target.readLine()) != null) {
+            Segment seg = new Segment(documentSegNum++, nextSourceLine, nextTargetLine);
             for (int i = 0; i < 5; i++) {
                 double addChance = Math.random();
                 if (addChance < 0.6) {
