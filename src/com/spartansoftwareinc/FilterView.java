@@ -35,6 +35,8 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 1;
+        
+        FilterRules filterRules = segmentView.filterRules;
 
         JLabel title = new JLabel("Show segments matching rules:");
         gridBag.gridx = 0;
@@ -42,19 +44,21 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         add(title, gridBag);
 
         all = new JRadioButton(allString);
-        all.setSelected(true);
+        all.setSelected(filterRules.all);
         all.addActionListener(this);
         gridBag.gridx = 0;
         gridBag.gridy = 1;
         add(all, gridBag);
 
         allWithMetadata = new JRadioButton(metadataString);
+        allWithMetadata.setSelected(filterRules.allWithMetadata);
         allWithMetadata.addActionListener(this);
         gridBag.gridx = 0;
         gridBag.gridy = 2;
         add(allWithMetadata, gridBag);
 
         custom = new JRadioButton(customString);
+        custom.setSelected(!filterRules.all && !filterRules.allWithMetadata);
         custom.addActionListener(this);
         gridBag.gridx = 0;
         gridBag.gridy = 3;
@@ -66,10 +70,10 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(custom);
 
         int gridy = 4;
-        for (String rule : segmentView.filterRules.rules.keySet()) {
+        for (String rule : filterRules.rules.keySet()) {
             JCheckBox ruleButton = new JCheckBox(rule);
-            ruleButton.setEnabled(false);
-            ruleButton.setSelected(false);
+            ruleButton.setEnabled(custom.isSelected());
+            ruleButton.setSelected(filterRules.rules.get(rule).getEnabled());
             ruleButton.addItemListener(this);
             gridBag.gridwidth = 1;
             gridBag.gridx = 0;
