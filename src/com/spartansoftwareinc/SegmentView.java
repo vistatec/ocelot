@@ -1,6 +1,5 @@
 package com.spartansoftwareinc;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -8,23 +7,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -38,35 +35,19 @@ public class SegmentView extends JScrollPane {
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
     protected LinkedList<Integer[]> rowHeights = new LinkedList<Integer[]>();
+    protected TableRowSorter sort;
+    protected FilterRules filterRules;
 
-    public SegmentView(SegmentAttributeView attr) {
+    public SegmentView(SegmentAttributeView attr) throws IOException {
         attrView = attr;
+        initializeTable();
+        filterRules = new FilterRules();
+    }
 
+    public void initializeTable() {
         segments = new SegmentTableModel();
         sourceTargetTable = new JTable(segments);
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
-
-        tableColumnModel = sourceTargetTable.getColumnModel();
-        tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
-
-            @Override
-            public void columnAdded(TableColumnModelEvent tcme) {}
-
-            @Override
-            public void columnRemoved(TableColumnModelEvent tcme) {}
-
-            @Override
-            public void columnMoved(TableColumnModelEvent tcme) {}
-
-            @Override
-            public void columnMarginChanged(ChangeEvent ce) {
-                segments.updateRowHeights();
-            }
-
-            @Override
-            public void columnSelectionChanged(ListSelectionEvent lse) {}
-        });
-
 
         tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -81,6 +62,7 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.setDefaultRenderer(String.class,
                 new SegmentTextRenderer());
 
+        tableColumnModel = sourceTargetTable.getColumnModel();
         tableColumnModel.getColumn(0).setMinWidth(15);
         tableColumnModel.getColumn(0).setPreferredWidth(20);
         tableColumnModel.getColumn(0).setMaxWidth(50);
@@ -91,13 +73,45 @@ public class SegmentView extends JScrollPane {
             tableColumnModel.getColumn(i).setPreferredWidth(flagPrefWidth);
             tableColumnModel.getColumn(i).setMaxWidth(flagMaxWidth);
         }
+
+        tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
+
+            @Override
+            public void columnAdded(TableColumnModelEvent tcme) {}
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent tcme) {}
+
+            @Override
+            public void columnMoved(TableColumnModelEvent tcme) {}
+
+            @Override
+            public void columnMarginChanged(ChangeEvent ce) {
+                updateRowHeights();
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent lse) {}
+        });
+        setViewportView(sourceTargetTable);
+    }
+
+    public void reloadTable() {
+        sourceTargetTable.clearSelection();
+        sourceTargetTable.setRowSorter(null);
+        attrView.clearTree();
+        setViewportView(null);
+        segments.fireTableDataChanged();
+        addFilters();
         setViewportView(sourceTargetTable);
     }
 
     public void parseSegmentsFromFile() throws IOException {
         sourceTargetTable.clearSelection();
-        clearSegments();
+        segments.deleteSegments();
+        sourceTargetTable.setRowSorter(null);
         attrView.clearTree();
+        setViewportView(null);
         // TODO: Actually parse the file and retrieve segments/metadata.
         InputStream sampleEnglishDocStream =
                 SegmentView.class.getResourceAsStream("sample_english.txt");
@@ -123,6 +137,7 @@ public class SegmentView extends JScrollPane {
             segments.addSegment(seg);
             initializeRowHeight(seg);
         }
+        addFilters();
 
         // Adjust the segment number column width
         tableColumnModel.getColumn(
@@ -131,6 +146,12 @@ public class SegmentView extends JScrollPane {
                 .stringWidth(" " + documentSegNum));
 
         setViewportView(sourceTargetTable);
+    }
+
+    public void addFilters() {
+        sort = new TableRowSorter(segments);
+        sourceTargetTable.setRowSorter(sort);
+        sort.setRowFilter(filterRules);
     }
 
     public void initializeRowHeight(Segment seg) {
@@ -156,8 +177,17 @@ public class SegmentView extends JScrollPane {
         rowHeights.add(rowHeight);
     }
 
-    private void clearSegments() {
-        segments.deleteSegments();
+    protected void updateRowHeights() {
+        for (int row = 0; row < sourceTargetTable.getRowCount(); row++) {
+            FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
+            int rowHeight = font.getHeight();
+            for (int col = 0; col < sourceTargetTable.getColumnCount(); col++) {
+                if (rowHeights.get(row)[col] != null) {
+                    rowHeight = Math.max(rowHeight, rowHeights.get(row)[col]);
+                }
+            }
+            sourceTargetTable.setRowHeight(row, rowHeight);
+        }
     }
 
     private LanguageQualityIssue generateRandomIssue() {
@@ -182,108 +212,10 @@ public class SegmentView extends JScrollPane {
             ListSelectionModel lsm = (ListSelectionModel) e.getSource();
             if (lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex() &&
                 lsm.getMinSelectionIndex() >= 0) {
-                attrView.setSelectedSegment(
-                        segments.getSegment(lsm.getMinSelectionIndex()));
+                int modelRowIndex = sort.convertRowIndexToModel(lsm.getMinSelectionIndex());
+                attrView.setSelectedSegment(segments.getSegment(modelRowIndex));
             } else {
                 // TODO: Log non-single selection error
-            }
-        }
-    }
-
-    class SegmentTableModel extends AbstractTableModel {
-        private LinkedList<Segment> segments = new LinkedList<Segment>();
-        protected HashMap<String, Integer> colNameToIndex;
-        protected HashMap<Integer, String> colIndexToName;
-        private static final int NUMFLAGS = 5;
-        private static final int NONFLAGCOLS = 3;
-        private static final String COLSEGNUM = "#";
-        private static final String COLSEGSRC = "source";
-        private static final String COLSEGTGT = "target";
-
-        public SegmentTableModel() {
-            colNameToIndex = new HashMap<String, Integer>();
-            colNameToIndex.put(COLSEGNUM, 0);
-            colNameToIndex.put(COLSEGSRC, 1);
-            colNameToIndex.put(COLSEGTGT, 2);
-            colIndexToName = new HashMap<Integer, String>();
-            for (String key : colNameToIndex.keySet()) {
-                colIndexToName.put(colNameToIndex.get(key), key);
-            }
-        }
-
-        @Override
-        public String getColumnName(int col) {
-            return col < NONFLAGCOLS ? colIndexToName.get(col) : "";
-        }
-
-        public int getColumnIndex(String col) {
-            return colNameToIndex.get(col);
-        }
-
-        @Override
-        public Class getColumnClass(int columnIndex) {
-            if (columnIndex == getColumnIndex(COLSEGNUM)) {
-                return Integer.class;
-            }
-            if (columnIndex == getColumnIndex(COLSEGSRC) ||
-                columnIndex == getColumnIndex(COLSEGTGT)) {
-                return String.class;
-            }
-            return DataCategoryFlag.class;
-        }
-
-        @Override
-        public int getRowCount() {
-            return segments.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return NONFLAGCOLS + NUMFLAGS;
-        }
-
-        @Override
-        public Object getValueAt(int row, int col) {
-            if (col == getColumnIndex(COLSEGNUM)) {
-                return getSegment(row).getSegmentNumber();
-            }
-            if (col == getColumnIndex(COLSEGSRC)) {
-                return getSegment(row).getSource();
-            }
-            if (col == getColumnIndex(COLSEGTGT)) {
-                return getSegment(row).getTarget();
-            }
-            Object ret = segments.get(row).getTopDataCategory(col - NONFLAGCOLS);
-            return ret != null ? ret : new NullDataCategoryFlag();
-        }
-
-        @Override
-        public boolean isCellEditable(int row, int col) {
-            return false;
-        }
-
-        public void addSegment(Segment seg) {
-            segments.add(seg);
-        }
-
-        public Segment getSegment(int row) {
-            return segments.get(row);
-        }
-
-        private void deleteSegments() {
-            segments.clear();
-        }
-
-        protected void updateRowHeights() {
-            for (int row = 0; row < getRowCount(); row++) {
-                FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
-                int rowHeight = font.getHeight();
-                for (int col = 0; col < getColumnCount(); col++) {
-                    if (rowHeights.get(row)[col] != null) {
-                        rowHeight = Math.max(rowHeight, rowHeights.get(row)[col]);
-                    }
-                }
-                sourceTargetTable.setRowHeight(row, rowHeight);
             }
         }
     }
@@ -320,29 +252,6 @@ public class SegmentView extends JScrollPane {
             setText(flag.getFlagText());
             setHorizontalAlignment(CENTER);
             return this;
-        }
-    }
-
-    public class NullDataCategoryFlag implements DataCategoryFlag {
-
-        @Override
-        public Color getFlagBackgroundColor() {
-            return null;
-        }
-
-        @Override
-        public Border getFlagBorder() {
-            return null;
-        }
-
-        @Override
-        public String getFlagText() {
-            return "";
-        }
-
-        @Override
-        public String toString() {
-            return "";
         }
     }
 }

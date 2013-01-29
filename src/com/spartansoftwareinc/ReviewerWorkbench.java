@@ -40,8 +40,8 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     JFrame mainframe;
 
     JMenuBar menuBar;
-    JMenu menuFile, menuHelp;
-    JMenuItem menuOpen, menuSplit, menuExit, menuAbout;
+    JMenu menuFile, menuFilter, menuHelp;
+    JMenuItem menuOpen, menuSplit, menuExit, menuAbout, menuRules;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -52,7 +52,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     JFileChooser fc;
     File openFile;
 
-    public ReviewerWorkbench() {
+    public ReviewerWorkbench() throws IOException {
         super(new BorderLayout());
         lqiView = new LanguageQualityIssueView();
         Dimension segAttrSize = new Dimension(385, 380);
@@ -88,6 +88,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                 Thread t = new Thread(new OpenThread());
                 t.start();
             }
+        } else if (e.getSource() == this.menuRules) {
+            FilterView rules = new FilterView(segmentView);
+            SwingUtilities.invokeLater(rules);
+
         } else if (e.getSource() == this.menuExit) {
             mainframe.dispose();
         }
@@ -108,6 +112,16 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuExit = new JMenuItem("Exit");
         menuExit.addActionListener(this);
         menuFile.add(menuExit);
+
+        menuFilter = new JMenu("Filter");
+        menuFilter.setMnemonic(KeyEvent.VK_T);
+        menuBar.add(menuFilter);
+
+        menuRules = new JMenuItem("Rules");
+        menuRules.addActionListener(this);
+        menuRules.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, Event.CTRL_MASK));
+        menuFilter.add(menuRules);
 
         menuHelp = new JMenu("Help");
         menuHelp.setMnemonic(KeyEvent.VK_H);
