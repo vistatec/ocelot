@@ -56,6 +56,7 @@ public class SegmentAttributeView extends JTabbedPane implements TreeSelectionLi
         this.selectedSegment = seg;
         clearTree();
         if (seg.containsLQI()) { loadLQI(seg.getLQI()); }
+        expandTree();
         addLQIView.updateSegment();
         lqiDetailView.clearDisplay();
     }
@@ -75,6 +76,12 @@ public class SegmentAttributeView extends JTabbedPane implements TreeSelectionLi
         DefaultMutableTreeNode node = new DefaultMutableTreeNode();
         node.setUserObject(lqi);
         lqiRoot.add(node);
+    }
+
+    public void expandTree() {
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
     }
 
     protected void clearTree() {
