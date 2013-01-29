@@ -61,6 +61,10 @@ public class Matchers {
 		@Override
 		public void setPattern(String pattern) {
 			Values v = getValues(pattern);
+                        if (v == null) {
+                            throw new IllegalArgumentException(
+                                    "Unaccepted Numeric Matcher Syntax: "+pattern);
+                        }
 			lowerBound = v.min;
 			upperBound = v.max;
 		}
