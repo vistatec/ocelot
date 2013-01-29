@@ -1,28 +1,16 @@
 package com.spartansoftwareinc;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class RuleFilter implements Filter {
 
 	List<RuleMatcher> matchers;
-        HashMap<String,Pattern> conditions;
         private boolean enabled = false;
-	
+
 	public RuleFilter(List<RuleMatcher> matchers) {
 		this.matchers = matchers;
 	}
-
-        public RuleFilter(String datacategory, Pattern matcher) {
-            conditions = new HashMap<String,Pattern>();
-            conditions.put(datacategory, matcher);
-        }
-
-        public void addRuleCond(String datacategory, Pattern matcher) {
-            conditions.put(datacategory, matcher);
-        }
 
         public boolean getEnabled() {
             return enabled;
@@ -55,19 +43,9 @@ public class RuleFilter implements Filter {
 	 * match that piece of metadata.
 	 */
 	boolean matches(ITSMetadata its) {
-//            for (RuleMatcher matcher : matchers) {
-//                if (!matches(matcher, its)) {
-//                    return false;
-//                }
-//            }
-            for (String datacategory : conditions.keySet()) {
-                Map<DataCategoryField, Object> values = its.getFieldValues();
-                for (Map.Entry<DataCategoryField, Object> e : values.entrySet()) {
-                    if (datacategory.equals(e.getKey().getName())) {
-                        if (!conditions.get(datacategory).matcher(e.getValue().toString()).matches()) {
-                            return false;
-                        }
-                    }
+            for (RuleMatcher matcher : matchers) {
+                if (!matches(matcher, its)) {
+                    return false;
                 }
             }
 
@@ -89,5 +67,5 @@ public class RuleFilter implements Filter {
         }
         return false;
 	}
-	
+
 }
