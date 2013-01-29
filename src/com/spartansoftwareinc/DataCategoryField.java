@@ -3,7 +3,7 @@ package com.spartansoftwareinc;
 public enum DataCategoryField {
 	LQI_TYPE("locQualityIssueType", Matchers.RegexMatcher.class),
 	LQI_COMMENT("locQualityIssueComment", Matchers.RegexMatcher.class),
-	LQI_SEVERITY("locQualityIssueType", Matchers.NumericMatcher.class);
+	LQI_SEVERITY("locQualityIssueSeverity", Matchers.NumericMatcher.class);
 	
 	private String name;
 	private Class<? extends Matcher> clazz;
