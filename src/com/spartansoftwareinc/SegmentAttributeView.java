@@ -1,51 +1,24 @@
 package com.spartansoftwareinc;
 
-import java.util.LinkedList;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTree;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 
 /**
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  */
-public class SegmentAttributeView extends JTabbedPane implements TreeSelectionListener {
+public class SegmentAttributeView extends JTabbedPane {
+    protected SegmentAttributeTreeView treeView;
     protected NewLanguageQualityIssueView addLQIView;
     private LanguageQualityIssueView lqiDetailView;
-
-    private JScrollPane treeView;
-    protected JTree tree;
-    private DefaultTreeModel treeModel;
-    private DefaultMutableTreeNode root;
-    private DefaultMutableTreeNode lqiRoot;
 
     private Segment selectedSegment;
 
     public SegmentAttributeView(LanguageQualityIssueView detailView) {
         this.lqiDetailView = detailView;
-
-        root = new DefaultMutableTreeNode("Data Categories");
-        treeModel = new DefaultTreeModel(root);
-        tree = new JTree(treeModel);
-        tree.addTreeSelectionListener(this);
-        treeView = new JScrollPane(tree);
-        addTab("Main", treeView);
+        treeView = new SegmentAttributeTreeView(this);
+        addTab("Tree", treeView);
 
         addLQIView = new NewLanguageQualityIssueView(this);
         addTab("+", addLQIView);
-    }
-
-    @Override
-    public void valueChanged(TreeSelectionEvent e) {
-        DefaultMutableTreeNode node =
-                (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
-        if (node != null && node.isLeaf() && node != root) {
-            LanguageQualityIssue lqi = (LanguageQualityIssue)node.getUserObject();
-            lqiDetailView.setLQI(selectedSegment, lqi);
-        }
     }
     
     public Segment getSelectedSegment() {
@@ -54,40 +27,18 @@ public class SegmentAttributeView extends JTabbedPane implements TreeSelectionLi
     
     public void setSelectedSegment(Segment seg) {
         this.selectedSegment = seg;
-        clearTree();
-        if (seg.containsLQI()) { loadLQI(seg.getLQI()); }
-        expandTree();
+        treeView.clearTree();
+        if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
+        treeView.expandTree();
         addLQIView.updateSegment();
         lqiDetailView.clearDisplay();
     }
-
-    public void loadLQI(LinkedList<LanguageQualityIssue> lqiList) {
-        if (lqiRoot != null) { root.remove(lqiRoot); }
-        lqiRoot = new DefaultMutableTreeNode("LQI");
-        root.add(lqiRoot);
-
-        for (LanguageQualityIssue lqi : lqiList) {
-            addLQI(lqi);
-        }
-        treeModel.reload();
+    
+    public void setSelectedMetadata(LanguageQualityIssue lqi) {
+        lqiDetailView.setLQI(selectedSegment, lqi);
     }
-
-    public void addLQI(LanguageQualityIssue lqi) {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode();
-        node.setUserObject(lqi);
-        lqiRoot.add(node);
-    }
-
-    public void expandTree() {
-        for (int i = 0; i < tree.getRowCount(); i++) {
-            tree.expandRow(i);
-        }
-    }
-
-    protected void clearTree() {
-        root.removeAllChildren();
-        lqiRoot = null;
-        treeModel.reload();
+    
+    public void deselectMetadata() {
         lqiDetailView.clearDisplay();
     }
 }
