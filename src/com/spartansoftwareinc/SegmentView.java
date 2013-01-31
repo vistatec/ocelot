@@ -99,7 +99,7 @@ public class SegmentView extends JScrollPane {
     public void reloadTable() {
         sourceTargetTable.clearSelection();
         sourceTargetTable.setRowSorter(null);
-        attrView.clearTree();
+        attrView.treeView.clearTree();
         setViewportView(null);
         segments.fireTableDataChanged();
         addFilters();
@@ -110,7 +110,7 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.clearSelection();
         segments.deleteSegments();
         sourceTargetTable.setRowSorter(null);
-        attrView.clearTree();
+        attrView.treeView.clearTree();
         setViewportView(null);
         // TODO: Actually parse the file and retrieve segments/metadata.
         BufferedReader source = new BufferedReader(new FileReader(sourceFile));

@@ -252,8 +252,11 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
                 }
             }
             lqi.setEnabled(enabled);
-            segAttrView.getSelectedSegment().addLQI(lqi);
-            segAttrView.loadLQI(segAttrView.getSelectedSegment().getLQI());
+
+            Segment selectedSeg = segAttrView.getSelectedSegment();
+            selectedSeg.addLQI(lqi);
+            segAttrView.setSelectedSegment(selectedSeg);
+            // Switch to Main segment metadata tab.
             segAttrView.setSelectedIndex(0);
             clearForm();
 
