@@ -49,9 +49,15 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable = new JTable(segments);
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
+        ListSelectionListener selectSegmentHandler = new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                selectedSegment();
+            }
+        };
         tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableSelectionModel.addListSelectionListener(new SegmentSelectionHandler());
+        tableSelectionModel.addListSelectionListener(selectSegmentHandler);
 
         DefaultTableCellRenderer segNumAlign = new DefaultTableCellRenderer();
         segNumAlign.setHorizontalAlignment(JLabel.LEFT);
@@ -63,6 +69,8 @@ public class SegmentView extends JScrollPane {
                 new SegmentTextRenderer());
 
         tableColumnModel = sourceTargetTable.getColumnModel();
+        tableColumnModel.getSelectionModel().addListSelectionListener(
+                selectSegmentHandler);
         tableColumnModel.getColumn(0).setMinWidth(15);
         tableColumnModel.getColumn(0).setPreferredWidth(20);
         tableColumnModel.getColumn(0).setMaxWidth(50);
@@ -198,17 +206,20 @@ public class SegmentView extends JScrollPane {
         return lqi;
     }
 
-    class SegmentSelectionHandler implements ListSelectionListener {
+    public void selectedSegment() {
+        int colIndex = sourceTargetTable.getSelectedColumn();
+        int rowIndex = sourceTargetTable.getSelectedRow();
+        if (rowIndex >= 0) {
+            int modelRowIndex = sort.convertRowIndexToModel(rowIndex);
+            Segment seg = segments.getSegment(modelRowIndex);
+            attrView.setSelectedSegment(seg);
 
-        @Override
-        public void valueChanged(ListSelectionEvent e) {
-            ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-            if (lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex() &&
-                lsm.getMinSelectionIndex() >= 0) {
-                int modelRowIndex = sort.convertRowIndexToModel(lsm.getMinSelectionIndex());
-                attrView.setSelectedSegment(segments.getSegment(modelRowIndex));
-            } else {
-                // TODO: Log non-single selection error
+            if (colIndex >= SegmentTableModel.NONFLAGCOLS) {
+                int adjustedFlagIndex = colIndex - SegmentTableModel.NONFLAGCOLS;
+                LanguageQualityIssue lqi = seg.getTopDataCategory(adjustedFlagIndex);
+                if (lqi != null) {
+                    attrView.setSelectedMetadata(lqi);
+                }
             }
         }
     }
