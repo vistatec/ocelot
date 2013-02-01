@@ -6,14 +6,19 @@ import javax.swing.JTabbedPane;
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  */
 public class SegmentAttributeView extends JTabbedPane {
+    protected SegmentAttributeTableView tableView;
     protected SegmentAttributeTreeView treeView;
     protected NewLanguageQualityIssueView addLQIView;
-    private LanguageQualityIssueView lqiDetailView;
+    private ITSDetailView itsDetailView;
 
     private Segment selectedSegment;
 
-    public SegmentAttributeView(LanguageQualityIssueView detailView) {
-        this.lqiDetailView = detailView;
+    public SegmentAttributeView(ITSDetailView detailView) {
+        itsDetailView = detailView;
+
+        tableView = new SegmentAttributeTableView(this);
+        addTab("Table", tableView);
+
         treeView = new SegmentAttributeTreeView(this);
         addTab("Tree", treeView);
 
@@ -27,18 +32,19 @@ public class SegmentAttributeView extends JTabbedPane {
     
     public void setSelectedSegment(Segment seg) {
         this.selectedSegment = seg;
+        tableView.setSegment(seg);
         treeView.clearTree();
         if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
         treeView.expandTree();
         addLQIView.updateSegment();
-        lqiDetailView.clearDisplay();
+        itsDetailView.clearDisplay();
     }
     
-    public void setSelectedMetadata(LanguageQualityIssue lqi) {
-        lqiDetailView.setLQI(selectedSegment, lqi);
+    public void setSelectedMetadata(ITSMetadata its) {
+        itsDetailView.setMetadata(selectedSegment, its);
     }
     
     public void deselectMetadata() {
-        lqiDetailView.clearDisplay();
+        itsDetailView.clearDisplay();
     }
 }

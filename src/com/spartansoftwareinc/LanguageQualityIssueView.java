@@ -6,12 +6,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 /**
  * Detail view showing ITS metadata on the selected LQI in SegmentAttributeView.
  */
-public class LanguageQualityIssueView extends JScrollPane {
+public class LanguageQualityIssueView extends JPanel {
     private JLabel segmentLabel, typeLabel, commentLabel, severityLabel,
             profileLabel, enabledLabel;
     private JLabel segment, type, comment, severity, profile, enabled;
@@ -88,10 +87,10 @@ public class LanguageQualityIssueView extends JScrollPane {
         add(mainPanel);
         Dimension prefSize = new Dimension(500, 200);
         setPreferredSize(prefSize);
-        setViewportView(mainPanel);
     }
 
-    public void setLQI(Segment selectedSegment, LanguageQualityIssue lqi) {
+    public void setMetadata(Segment selectedSegment, ITSMetadata data) {
+        LanguageQualityIssue lqi = (LanguageQualityIssue) data;
         segmentLabel.setText("Segment #");
         segment.setText(selectedSegment.getSegmentNumber()+"");
         typeLabel.setText("Type");

@@ -48,7 +48,7 @@ public class Segment {
         return pos >= lqiList.size() ? null : lqiList.get(pos);
     }
     
-    public Collection<ITSMetadata> getAllITSMetadata() {
+    public List<ITSMetadata> getAllITSMetadata() {
     	List<ITSMetadata> its = new ArrayList<ITSMetadata>();
     	its.addAll(lqiList);
     	return its;
