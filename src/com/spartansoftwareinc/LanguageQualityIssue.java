@@ -16,7 +16,8 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
     private int severity;
     private URL profileReference;
     private boolean enabled;
-    
+
+    @Override
     public Map<DataCategoryField, Object> getFieldValues() {
     	Map<DataCategoryField, Object> map = 
     			new EnumMap<DataCategoryField, Object>(DataCategoryField.class);
@@ -24,10 +25,6 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
     	map.put(DataCategoryField.LQI_COMMENT, comment);
     	map.put(DataCategoryField.LQI_SEVERITY, severity);
     	return map;
-    }
-    
-    public String getType() {
-        return type;
     }
 
     public void setType(String type) {
@@ -65,7 +62,30 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
+    /**************************************************
+     * ITSMetadata methods used to render a row in the
+     * SegmentAttributeTableView
+     **************************************************/
+    @Override
+    public String getDataCategory() {
+        return "LQI";
+    }
+
+    @Override
+    public String getValue() {
+        return getSeverity()+"";
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    /*******************************************************************
+     * DataCategoryFlag methods used to display flag indicators next to
+     * segments in the segment table.
+     *******************************************************************/
     @Override
     public Color getFlagBackgroundColor() {
         if (severity < 33) {
@@ -76,17 +96,17 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
             return Color.ORANGE;
         }
     }
-    
+
     @Override
     public Border getFlagBorder() {
         return BorderFactory.createLineBorder(Color.BLACK);
     }
-    
+
     @Override
     public String getFlagText() {
         return getType().substring(0,1);
     }
-    
+
     @Override
     public String toString() {
         return getType();
