@@ -3,3 +3,9 @@ src/com/spartansoftwareinc/Version.java
 build
 doc
 tags
+.DS_Store
+/nbproject/
+nb-build.xml
+manifest.mf
+/nbbuild/
+/dist/
