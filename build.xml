@@ -80,8 +80,7 @@
               <attribute name="Class-Path" value="."/>
           </manifest>
           <fileset dir="${src.classes.dir}"/>
-          <zipfileset dir="${src.dir}/${package}" includes="sample_english.txt" fullpath="${package}/sample_english.txt"/>
-          <zipfileset dir="${src.dir}/${package}" includes="sample_french.txt" fullpath="${package}/sample_french.txt"/>
+          <zipfileset dir="${src.dir}/${package}" includes="rules.properties" fullpath="${package}/rules.properties"/>
       </jar>
   </target>
 
