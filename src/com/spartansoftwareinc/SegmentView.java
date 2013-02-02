@@ -1,5 +1,6 @@
 package com.spartansoftwareinc;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -8,11 +9,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -37,11 +40,18 @@ public class SegmentView extends JScrollPane {
     protected LinkedList<Integer[]> rowHeights = new LinkedList<Integer[]>();
     protected TableRowSorter sort;
     protected FilterRules filterRules;
+    protected int selectedRow = -1, selectedCol = -1;
 
     public SegmentView(SegmentAttributeView attr) throws IOException {
         attrView = attr;
+        attrView.setSegmentView(this);
+        UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         filterRules = new FilterRules();
+    }
+
+    public SegmentTableModel getSegments() {
+        return segments;
     }
 
     public void initializeTable() {
@@ -138,6 +148,7 @@ public class SegmentView extends JScrollPane {
             segments.addSegment(seg);
             initializeRowHeight(seg);
         }
+        attrView.tableView.setDocument();
         addFilters();
 
         // Adjust the segment number column width
@@ -209,7 +220,10 @@ public class SegmentView extends JScrollPane {
     public void selectedSegment() {
         int colIndex = sourceTargetTable.getSelectedColumn();
         int rowIndex = sourceTargetTable.getSelectedRow();
-        if (rowIndex >= 0) {
+        if (colIndex == selectedCol && rowIndex == selectedRow) {
+            attrView.tableView.setDocument();
+            sourceTargetTable.clearSelection();
+        } else if (rowIndex >= 0) {
             int modelRowIndex = sort.convertRowIndexToModel(rowIndex);
             Segment seg = segments.getSegment(modelRowIndex);
             attrView.setSelectedSegment(seg);
@@ -234,6 +248,7 @@ public class SegmentView extends JScrollPane {
             setText(text);
             setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
             setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+            setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
 
             // Need to set width to force text area to calculate a pref height
             setSize(new Dimension(jtable.getColumnModel().getColumn(col).getWidth(), jtable.getRowHeight(row)));
@@ -249,10 +264,10 @@ public class SegmentView extends JScrollPane {
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean bln, boolean bln1, int row, int col) {
+        public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             DataCategoryFlag flag = (DataCategoryFlag) obj;
             setBackground(flag.getFlagBackgroundColor());
-            setBorder(flag.getFlagBorder());
+            setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : flag.getFlagBorder());
             setText(flag.getFlagText());
             setHorizontalAlignment(CENTER);
             return this;

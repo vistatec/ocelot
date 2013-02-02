@@ -13,6 +13,7 @@ class SegmentTableModel extends AbstractTableModel {
     private LinkedList<Segment> segments = new LinkedList<Segment>();
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
+    protected HashMap<String, LQIStatistics> lqiStats;
     public static final int NUMFLAGS = 5;
     public static final int NONFLAGCOLS = 3;
     public static final String COLSEGNUM = "#";
@@ -28,6 +29,7 @@ class SegmentTableModel extends AbstractTableModel {
         for (String key : colNameToIndex.keySet()) {
             colIndexToName.put(colNameToIndex.get(key), key);
         }
+        lqiStats = new HashMap<String,LQIStatistics>();
     }
 
     @Override
@@ -83,6 +85,16 @@ class SegmentTableModel extends AbstractTableModel {
 
     public void addSegment(Segment seg) {
         segments.add(seg);
+        for (LanguageQualityIssue lqi : seg.getLQI()) {
+            LQIStatistics stats = lqiStats.get(lqi.getType());
+            if (stats == null) {
+                stats = new LQIStatistics();
+                stats.setRange(lqi.getSeverity());
+                lqiStats.put(lqi.getType(), stats);
+            } else {
+                stats.setRange(lqi.getSeverity());
+            }
+        }
     }
 
     public Segment getSegment(int row) {
@@ -91,5 +103,58 @@ class SegmentTableModel extends AbstractTableModel {
 
     protected void deleteSegments() {
         segments.clear();
+    }
+
+    public class LQIStatistics implements ITSStats{
+        private String dataCategory, type, value;
+
+        @Override
+        public String getDataCategory() {
+            return dataCategory;
+        }
+
+        public void setCategory(String category) {
+            this.dataCategory = category;
+        }
+
+        @Override
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+        private Integer minRange, maxRange, count = 0;
+
+        @Override
+        public String getValue() {
+            if (minRange != null && maxRange != null) {
+                return minRange+"-"+maxRange;
+            } else if (value != null) {
+                return value;
+            }
+            return null;
+        }
+
+        @Override
+        public Integer getCount() {
+            return count;
+        }
+
+        public void setRange(int range) {
+            if (minRange == null || minRange > range) {
+                minRange = range;
+            }
+            if (maxRange == null || maxRange < range) {
+                maxRange = range;
+            }
+            count++;
+        }
+
+        public void setValue(String val) {
+            this.value = val;
+            count++;
+        }
     }
 }
