@@ -6,8 +6,9 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -131,8 +132,8 @@ public class SegmentView extends JScrollPane {
         attrView.treeView.clearTree();
         setViewportView(null);
         // TODO: Actually parse the file and retrieve segments/metadata.
-        BufferedReader source = new BufferedReader(new FileReader(sourceFile));
-        BufferedReader target = new BufferedReader(new FileReader(targetFile));
+        BufferedReader source = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile), "UTF-8"));
+        BufferedReader target = new BufferedReader(new InputStreamReader(new FileInputStream(targetFile), "UTF-8"));
 
         int documentSegNum = 1;
         String nextSourceLine, nextTargetLine;
