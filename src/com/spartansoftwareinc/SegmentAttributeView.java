@@ -6,6 +6,7 @@ import javax.swing.JTabbedPane;
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  */
 public class SegmentAttributeView extends JTabbedPane {
+    protected SegmentView segmentView;
     protected SegmentAttributeTableView tableView;
     protected SegmentAttributeTreeView treeView;
     protected NewLanguageQualityIssueView addLQIView;
@@ -25,7 +26,11 @@ public class SegmentAttributeView extends JTabbedPane {
         addLQIView = new NewLanguageQualityIssueView(this);
         addTab("+", addLQIView);
     }
-    
+
+    public void setSegmentView(SegmentView segView) {
+        this.segmentView = segView;
+    }
+
     public Segment getSelectedSegment() {
         return this.selectedSegment;
     }
