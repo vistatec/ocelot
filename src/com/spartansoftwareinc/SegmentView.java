@@ -4,12 +4,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -26,6 +26,16 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
+import net.sf.okapi.common.Event;
+import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.annotation.GenericAnnotation;
+import net.sf.okapi.common.annotation.GenericAnnotationType;
+import net.sf.okapi.common.annotation.GenericAnnotations;
+import net.sf.okapi.common.filters.IFilter;
+import net.sf.okapi.common.resource.ITextUnit;
+import net.sf.okapi.common.resource.RawDocument;
+import net.sf.okapi.common.resource.TextPart;
+import net.sf.okapi.filters.its.html5.HTML5Filter;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -41,6 +51,7 @@ public class SegmentView extends JScrollPane {
     protected LinkedList<Integer[]> rowHeights = new LinkedList<Integer[]>();
     protected TableRowSorter sort;
     protected FilterRules filterRules;
+    private int documentSegmentNum;
     protected int selectedRow = -1, selectedCol = -1;
 
     public SegmentView(SegmentAttributeView attr) throws IOException {
@@ -131,24 +142,9 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.setRowSorter(null);
         attrView.treeView.clearTree();
         setViewportView(null);
-        // TODO: Actually parse the file and retrieve segments/metadata.
-        BufferedReader source = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile), "UTF-8"));
-        BufferedReader target = new BufferedReader(new InputStreamReader(new FileInputStream(targetFile), "UTF-8"));
+        documentSegmentNum = 1;
 
-        int documentSegNum = 1;
-        String nextSourceLine, nextTargetLine;
-        while ((nextSourceLine = source.readLine()) != null
-                && (nextTargetLine = target.readLine()) != null) {
-            Segment seg = new Segment(documentSegNum++, nextSourceLine, nextTargetLine);
-            for (int i = 0; i < 5; i++) {
-                double addChance = Math.random();
-                if (addChance < 0.6) {
-                    seg.addLQI(generateRandomIssue());
-                }
-            }
-            segments.addSegment(seg);
-            initializeRowHeight(seg);
-        }
+        parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
         attrView.tableView.setDocument();
         addFilters();
 
@@ -156,9 +152,63 @@ public class SegmentView extends JScrollPane {
         tableColumnModel.getColumn(
                 segments.getColumnIndex(SegmentTableModel.COLSEGNUM))
                 .setPreferredWidth(this.getFontMetrics(this.getFont())
-                .stringWidth(" " + documentSegNum));
+                .stringWidth(" " + documentSegmentNum));
 
         setViewportView(sourceTargetTable);
+    }
+
+    public void parseHTML5Files(FileInputStream src, FileInputStream tgt) {
+        RawDocument srcDoc = new RawDocument(src, "UTF-8", LocaleId.fromString("en"));
+        RawDocument tgtDoc = new RawDocument(tgt, "UTF-8", LocaleId.fromString("de"));
+        IFilter srcFilter = new HTML5Filter();
+        IFilter tgtFilter = new HTML5Filter();
+        srcFilter.open(srcDoc);
+        tgtFilter.open(tgtDoc);
+
+        while(srcFilter.hasNext() && tgtFilter.hasNext()) {
+            Event srcEvent = srcFilter.next();
+            Event tgtEvent = tgtFilter.next();
+
+            ITextUnit srcTu, tgtTu;
+            if (srcEvent.isTextUnit() && tgtEvent.isTextUnit()) {
+                srcTu = (ITextUnit) srcEvent.getResource();
+                tgtTu = (ITextUnit) tgtEvent.getResource();
+                Iterator<TextPart> srcTextParts = srcTu.getSource().iterator();
+                Iterator<TextPart> tgtTextParts = tgtTu.getSource().iterator();
+
+                String srcText = "", tgtText = "";
+                while(srcTextParts.hasNext() && tgtTextParts.hasNext()) {
+                    srcText += srcTextParts.next().text.getText();
+                    tgtText += tgtTextParts.next().text.getText();
+                }
+
+                GenericAnnotations srcITSTags = srcTu.getSource().getAnnotation(GenericAnnotations.class);
+                GenericAnnotations tgtITSTags = tgtTu.getSource().getAnnotation(GenericAnnotations.class);
+                List<GenericAnnotation> anns = new LinkedList<GenericAnnotation>();
+                // TODO: get annotations for other data categories
+                if (srcITSTags != null) {
+                    anns.addAll(srcITSTags.getAnnotations(GenericAnnotationType.LQI));
+                }
+                if (tgtITSTags != null) {
+                    anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.LQI));
+                }
+
+                addSegment(srcText, tgtText, anns);
+            }
+        }
+        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
+            System.err.println("Documents not aligned?");
+        }
+    }
+    
+    public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations) {
+        Segment seg = new Segment(documentSegmentNum++, sourceText, targetText);
+        // TODO: parse GenericAnnotations for other data categories.
+        for (GenericAnnotation ga : annotations) {
+            seg.addLQI(new LanguageQualityIssue(ga));
+        }
+        segments.addSegment(seg);
+        initializeRowHeight(seg);
     }
 
     public void addFilters() {
@@ -201,21 +251,6 @@ public class SegmentView extends JScrollPane {
             }
             sourceTargetTable.setRowHeight(row, rowHeight);
         }
-    }
-
-    private LanguageQualityIssue generateRandomIssue() {
-        String[] types = {"terminology", "mistranslation", "omission",
-            "untranslated", "addition", "duplication", "inconsistency",
-            "grammar", "legal", "register", "locale-specific-content",
-            "locale-violation", "style", "characters", "misspelling",
-            "typographical", "formatting", "inconsistent-entities", "numbers",
-            "markup", "pattern-problem", "whitespace", "internationalization",
-            "length", "uncategorized", "other"};
-        LanguageQualityIssue lqi = new LanguageQualityIssue();
-        lqi.setType(types[(int) Math.floor(Math.random() * 26)]);
-        lqi.setComment("testing");
-        lqi.setSeverity((int) Math.round(Math.random() * 100));
-        return lqi;
     }
 
     public void selectedSegment() {

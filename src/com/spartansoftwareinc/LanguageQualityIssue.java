@@ -1,21 +1,49 @@
 package com.spartansoftwareinc;
 
 import java.awt.Color;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
+import net.sf.okapi.common.annotation.GenericAnnotation;
+import net.sf.okapi.common.annotation.GenericAnnotationType;
 
 /**
  * Represents Language Quality Issue Data Category in the ITS 2.0 spec.
  */
 public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
     private String type, comment;
-    private int severity;
+    private double severity;
     private URL profileReference;
     private boolean enabled;
+
+    public LanguageQualityIssue() {}
+    
+    public LanguageQualityIssue(GenericAnnotation ga) {
+        if (ga.getString(GenericAnnotationType.LQI_TYPE) != null) {
+            this.type = ga.getString(GenericAnnotationType.LQI_TYPE);
+        }
+        if (ga.getDouble(GenericAnnotationType.LQI_SEVERITY) != null) {
+            this.severity = ga.getDouble(GenericAnnotationType.LQI_SEVERITY);
+        }
+        if (ga.getString(GenericAnnotationType.LQI_COMMENT) != null) {
+            this.comment = ga.getString(GenericAnnotationType.LQI_COMMENT);
+        }
+        if (ga.getString(GenericAnnotationType.LQI_PROFILEREF) != null) {
+            try {
+                this.profileReference = new URL(GenericAnnotationType.LQI_PROFILEREF);
+            } catch (MalformedURLException ex) {
+                // TODO: Handle url exception appropriately
+                System.err.println(ex.getMessage());
+            }
+        }
+        if (ga.getBoolean(GenericAnnotationType.LQI_ENABLED) != null) {
+            this.enabled = ga.getBoolean(GenericAnnotationType.LQI_ENABLED);
+        }
+    }
 
     @Override
     public Map<DataCategoryField, Object> getFieldValues() {
@@ -39,11 +67,11 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
         this.comment = comment;
     }
 
-    public int getSeverity() {
+    public double getSeverity() {
         return severity;
     }
 
-    public void setSeverity(int severity) {
+    public void setSeverity(double severity) {
         this.severity = severity;
     }
 
