@@ -1,5 +1,7 @@
 package com.spartansoftwareinc;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -21,7 +23,13 @@ public class FilterRules extends RowFilter<SegmentTableModel, Integer> {
 
     public void parseRules() throws IOException {
         Properties p = new Properties();
-        p.load(RuleFilter.class.getResourceAsStream("rules.properties"));
+        File rulesDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
+        File rulesFile = new File(rulesDir, "rules.properties");
+        if (rulesFile.exists()) {
+            p.load(new FileInputStream(rulesFile));
+        } else {
+            p.load(RuleFilter.class.getResourceAsStream("rules.properties"));
+        }
         HashMap<String,LinkedList<RuleMatcher>> matchers =
                 new HashMap<String,LinkedList<RuleMatcher>>();
 
