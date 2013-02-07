@@ -107,6 +107,8 @@ class SegmentTableModel extends AbstractTableModel {
 
     public class LQIStatistics implements ITSStats{
         private String dataCategory, type, value;
+        private Double minRange, maxRange;
+        private Integer count = 0;
 
         @Override
         public String getDataCategory() {
@@ -125,7 +127,6 @@ class SegmentTableModel extends AbstractTableModel {
         public void setType(String type) {
             this.type = type;
         }
-        private Integer minRange, maxRange, count = 0;
 
         @Override
         public String getValue() {
@@ -142,7 +143,7 @@ class SegmentTableModel extends AbstractTableModel {
             return count;
         }
 
-        public void setRange(int range) {
+        public void setRange(double range) {
             if (minRange == null || minRange > range) {
                 minRange = range;
             }

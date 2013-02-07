@@ -27,6 +27,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
+import org.apache.log4j.PropertyConfigurator;
 
 import org.xml.sax.SAXException;
 
@@ -150,6 +151,11 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     }
 
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+        if (System.getProperty("log4j.configuration") == null) {
+            PropertyConfigurator.configure(ReviewerWorkbench.class.getResourceAsStream("log4j.properties"));
+        } else {
+            PropertyConfigurator.configure(System.getProperty("log4j.configuration"));
+        }
         try {
 //            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
