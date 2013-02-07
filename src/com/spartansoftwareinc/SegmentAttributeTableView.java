@@ -8,6 +8,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS metadata.
@@ -19,6 +20,7 @@ public class SegmentAttributeTableView extends JScrollPane {
     protected SegmentAttributeTableModel segAttrModel;
     protected DocumentStatsTableModel docStatsModel;
     private ListSelectionModel tableSelectionModel;
+    private TableRowSorter sort;
     
     public SegmentAttributeTableView(SegmentAttributeView sav) {
         segAttrView = sav;
@@ -36,6 +38,8 @@ public class SegmentAttributeTableView extends JScrollPane {
             data.add(segModel.lqiStats.get(type));
         }
         docStatsModel.addRows(data);
+        sort = new TableRowSorter(docStatsModel);
+        docStatsTable.setRowSorter(sort);
         setViewportView(docStatsTable);
     }
 
@@ -49,6 +53,8 @@ public class SegmentAttributeTableView extends JScrollPane {
         tableSelectionModel.addListSelectionListener(new SegmentAttributeSelectionHandler());
         List<ITSMetadata> itsData = seg.getAllITSMetadata();
         segAttrModel.setRows(itsData);
+        sort = new TableRowSorter(segAttrModel);
+        segAttrTable.setRowSorter(sort);
         setViewportView(segAttrTable);
     }
     
@@ -70,6 +76,15 @@ public class SegmentAttributeTableView extends JScrollPane {
         @Override
         public String getColumnName(int col) {
             return col < NUMCOLS ? colNames[col] : "";
+        }
+
+        @Override
+        public Class getColumnClass(int col) {
+            if (col == 3) {
+                return Integer.class;
+            } else {
+                return String.class;
+            }
         }
 
         @Override
