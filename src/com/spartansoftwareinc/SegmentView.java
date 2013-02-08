@@ -145,7 +145,7 @@ public class SegmentView extends JScrollPane {
         documentSegmentNum = 1;
 
         parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
-        attrView.tableView.setDocument();
+        attrView.aggregateTableView.setDocument();
         addFilters();
 
         // Adjust the segment number column width
@@ -196,9 +196,9 @@ public class SegmentView extends JScrollPane {
                 addSegment(srcText, tgtText, anns);
             }
         }
-        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
-            System.err.println("Documents not aligned?");
-        }
+//        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
+//            System.err.println("Documents not aligned?");
+//        }
     }
     
     public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations) {
@@ -257,7 +257,7 @@ public class SegmentView extends JScrollPane {
         int colIndex = sourceTargetTable.getSelectedColumn();
         int rowIndex = sourceTargetTable.getSelectedRow();
         if (colIndex == selectedCol && rowIndex == selectedRow) {
-            attrView.tableView.setDocument();
+            attrView.aggregateTableView.setDocument();
             sourceTargetTable.clearSelection();
         } else if (rowIndex >= 0) {
             int modelRowIndex = sort.convertRowIndexToModel(rowIndex);
