@@ -177,7 +177,8 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         if (ke.getID() == KeyEvent.KEY_PRESSED) {
             if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_1) {
                 segmentAttrView.setSelectedIndex(0);
-                segmentAttrView.tableView.segAttrTable.requestFocus();
+                segmentAttrView.aggregateTableView.docStatsTable.requestFocus();
+                segmentAttrView.lqiTableView.lqiTable.requestFocus();
             } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_2) {
                 segmentView.sourceTargetTable.requestFocus();
             } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
