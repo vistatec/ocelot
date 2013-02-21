@@ -15,7 +15,7 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
  * Represents Language Quality Issue Data Category in the ITS 2.0 spec.
  */
 public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
-    private String type, comment;
+    private String type, comment, issuesRef;
     private double severity;
     private URL profileReference;
     private boolean enabled;
@@ -23,6 +23,12 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
     public LanguageQualityIssue() {}
     
     public LanguageQualityIssue(GenericAnnotation ga) {
+        if (ga.getString(GenericAnnotationType.LQI_ISSUESREF) != null) {
+            this.issuesRef = ga.getString(GenericAnnotationType.LQI_ISSUESREF);
+            if (this.issuesRef.charAt(0) == '#') {
+                this.issuesRef = this.issuesRef.substring(1);
+            }
+        }
         if (ga.getString(GenericAnnotationType.LQI_TYPE) != null) {
             this.type = ga.getString(GenericAnnotationType.LQI_TYPE);
         }
@@ -89,6 +95,14 @@ public class LanguageQualityIssue implements ITSMetadata, DataCategoryFlag {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getIssuesRef() {
+        return issuesRef;
+    }
+
+    public void setIssuesRef(String issuesRef) {
+        this.issuesRef = issuesRef;
     }
 
     /**************************************************

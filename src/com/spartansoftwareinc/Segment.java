@@ -9,19 +9,29 @@ import java.util.List;
  * Represents source, target segments with ITS metadata
  */
 public class Segment {
-    private int segmentNumber;
+    private int segmentNumber, srcEventNum, tgtEventNum;
     private String source, target;
     private LinkedList<LanguageQualityIssue> lqiList =
             new LinkedList<LanguageQualityIssue>();
 
-    public Segment(int segNum, String source, String target) {
+    public Segment(int segNum, int srcEventNum, int tgtEventNum, String source, String target) {
         this.segmentNumber = segNum;
+        this.srcEventNum = srcEventNum;
+        this.tgtEventNum = tgtEventNum;
         this.source = source;
         this.target = target;
     }
     
     public int getSegmentNumber() {
         return segmentNumber;
+    }
+
+    public int getSourceEventNumber() {
+        return srcEventNum;
+    }
+
+    public int getTargetEventNumber() {
+        return tgtEventNum;
     }
 
     public String getSource() {
