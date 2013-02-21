@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -254,7 +255,14 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
             lqi.setEnabled(enabled);
 
             Segment selectedSeg = segAttrView.getSelectedSegment();
+            if (selectedSeg.containsLQI()) {
+                lqi.setIssuesRef(selectedSeg.getLQI().getFirst().getIssuesRef());
+            } else {
+                // TODO: generate unique LQI issues ref
+                lqi.setIssuesRef(Calendar.getInstance().getTime().toString());
+            }
             selectedSeg.addLQI(lqi);
+            segAttrView.segmentView.updateEvent(selectedSeg);
             segAttrView.setSelectedSegment(selectedSeg);
             // Switch to Main segment metadata tab.
             segAttrView.setSelectedIndex(0);

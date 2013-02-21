@@ -11,7 +11,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -42,7 +44,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
     JMenuBar menuBar;
     JMenu menuFile, menuFilter, menuHelp;
-    JMenuItem menuOpen, menuSplit, menuExit, menuAbout, menuRules;
+    JMenuItem menuOpen, menuSplit, menuExit, menuAbout, menuRules, menuSave;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -92,6 +94,16 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
         } else if (e.getSource() == this.menuExit) {
             mainframe.dispose();
+        } else if (e.getSource() == this.menuSave) {
+            try {
+                segmentView.save();
+            } catch (UnsupportedEncodingException ex) {
+                System.err.println(ex.getMessage());
+            } catch (FileNotFoundException ex) {
+                System.err.println(ex.getMessage());
+            } catch (IOException ex) {
+                System.err.println(ex.getMessage());
+            }
         }
     }
 
@@ -106,6 +118,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuOpen.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK));
         menuFile.add(menuOpen);
+
+        menuSave = new JMenuItem("Save");
+        menuSave.addActionListener(this);
+        menuFile.add(menuSave);
 
         menuExit = new JMenuItem("Exit");
         menuExit.addActionListener(this);

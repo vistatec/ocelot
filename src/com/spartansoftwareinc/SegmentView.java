@@ -4,9 +4,15 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,14 +33,25 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import net.sf.okapi.common.Event;
+import net.sf.okapi.common.IResource;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.GenericAnnotations;
+import net.sf.okapi.common.encoder.EncoderManager;
 import net.sf.okapi.common.filters.IFilter;
+import net.sf.okapi.common.resource.DocumentPart;
+import net.sf.okapi.common.resource.EndSubfilter;
+import net.sf.okapi.common.resource.Ending;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.RawDocument;
+import net.sf.okapi.common.resource.StartDocument;
+import net.sf.okapi.common.resource.StartGroup;
+import net.sf.okapi.common.resource.StartSubDocument;
+import net.sf.okapi.common.resource.StartSubfilter;
+import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextPart;
+import net.sf.okapi.common.skeleton.ISkeletonWriter;
 import net.sf.okapi.filters.its.html5.HTML5Filter;
 
 /**
@@ -45,6 +62,7 @@ public class SegmentView extends JScrollPane {
 
     protected JTable sourceTargetTable;
     private SegmentTableModel segments;
+    private LinkedList<Event> srcEvents = new LinkedList<Event>(), tgtEvents = new LinkedList<Event>();
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
@@ -164,10 +182,13 @@ public class SegmentView extends JScrollPane {
         IFilter tgtFilter = new HTML5Filter();
         srcFilter.open(srcDoc);
         tgtFilter.open(tgtDoc);
+        int srcEventNum = 0, tgtEventNum = 0;
 
         while(srcFilter.hasNext() && tgtFilter.hasNext()) {
             Event srcEvent = srcFilter.next();
             Event tgtEvent = tgtFilter.next();
+            srcEvents.add(srcEvent);
+            tgtEvents.add(tgtEvent);
 
             ITextUnit srcTu, tgtTu;
             if (srcEvent.isTextUnit() && tgtEvent.isTextUnit()) {
@@ -193,16 +214,18 @@ public class SegmentView extends JScrollPane {
                     anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.LQI));
                 }
 
-                addSegment(srcText, tgtText, anns);
+                addSegment(srcText, tgtText, anns, srcEventNum, tgtEventNum);
             }
+            srcEventNum++;
+            tgtEventNum++;
         }
 //        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
 //            System.err.println("Documents not aligned?");
 //        }
     }
     
-    public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations) {
-        Segment seg = new Segment(documentSegmentNum++, sourceText, targetText);
+    public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
+        Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum, sourceText, targetText);
         // TODO: parse GenericAnnotations for other data categories.
         for (GenericAnnotation ga : annotations) {
             seg.addLQI(new LanguageQualityIssue(ga));
@@ -272,6 +295,89 @@ public class SegmentView extends JScrollPane {
                 }
             }
         }
+    }
+
+    public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        // TODO: get the actual locale and filename for the files.
+        saveEvents(srcEvents, "source_test", LocaleId.fromString("en"));
+        saveEvents(tgtEvents, "target_test", LocaleId.fromString("de"));
+    }
+
+    public void saveEvents(List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        StringBuilder tmp = new StringBuilder();
+        HTML5Filter filter = new HTML5Filter();
+        ISkeletonWriter skelWriter = filter.createSkeletonWriter();
+        EncoderManager encoderManager = filter.getEncoderManager();
+        for (Event event : events) {
+            switch (event.getEventType()) {
+                case START_DOCUMENT:
+                    tmp.append(skelWriter.processStartDocument(locId, "UTF-8", null, encoderManager,
+                            (StartDocument) event.getResource()));
+                    break;
+                case END_DOCUMENT:
+                    tmp.append(skelWriter.processEndDocument((Ending) event.getResource()));
+                    break;
+                case START_SUBDOCUMENT:
+                    tmp.append(skelWriter.processStartSubDocument((StartSubDocument) event
+                            .getResource()));
+                    break;
+                case END_SUBDOCUMENT:
+                    tmp.append(skelWriter.processEndSubDocument((Ending) event.getResource()));
+                    break;
+                case TEXT_UNIT:
+                    ITextUnit tu = event.getTextUnit();
+                    tmp.append(skelWriter.processTextUnit(tu));
+                    break;
+                case DOCUMENT_PART:
+                    DocumentPart dp = (DocumentPart) event.getResource();
+                    tmp.append(skelWriter.processDocumentPart(dp));
+                    break;
+                case START_GROUP:
+                    StartGroup startGroup = (StartGroup) event.getResource();
+                    tmp.append(skelWriter.processStartGroup(startGroup));
+                    break;
+                case END_GROUP:
+                    tmp.append(skelWriter.processEndGroup((Ending) event.getResource()));
+                    break;
+                case START_SUBFILTER:
+                    StartSubfilter startSubfilter = (StartSubfilter) event.getResource();
+                    tmp.append(skelWriter.processStartSubfilter(startSubfilter));
+                    break;
+                case END_SUBFILTER:
+                    tmp.append(skelWriter.processEndSubfilter((EndSubfilter) event.getResource()));
+                    break;
+            }
+        }
+        skelWriter.close();
+        Writer outputFile = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
+        outputFile.write(tmp.toString());
+        outputFile.flush();
+        outputFile.close();
+    }
+
+    public void updateEvent(Segment seg) {
+        // TODO: Fix the locales, remove old generic annotations
+        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
+        ITextUnit srcTu = srcEvent.getTextUnit();
+        TextFragment srcTf = srcTu.createTarget(LocaleId.fromString("en"), true, IResource.COPY_ALL).getFirstContent();
+
+        Event tgtEvent = tgtEvents.get(seg.getTargetEventNumber());
+        ITextUnit tgtTu = tgtEvent.getTextUnit();
+        TextFragment tgtTf = tgtTu.createTarget(LocaleId.fromString("de"), true, IResource.COPY_ALL).getFirstContent();
+
+        GenericAnnotations anns = new GenericAnnotations();
+        for (LanguageQualityIssue lqi : seg.getLQI()) {
+            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
+                    GenericAnnotationType.LQI_TYPE, lqi.getType(),
+                    GenericAnnotationType.LQI_COMMENT, lqi.getComment(),
+                    GenericAnnotationType.LQI_SEVERITY, lqi.getSeverity(),
+                    GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
+            anns.add(ga);
+            anns.setData(lqi.getIssuesRef());
+        }
+        srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, anns);
+        tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, anns);
     }
 
     public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {
