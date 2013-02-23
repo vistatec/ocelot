@@ -11,6 +11,7 @@ import java.util.List;
 public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
     private String source, target;
+    private boolean addedProvenance = false;
     private LinkedList<LanguageQualityIssue> lqiList =
             new LinkedList<LanguageQualityIssue>();
 
@@ -40,6 +41,14 @@ public class Segment {
 
     public String getTarget() {
         return target;
+    }
+
+    public boolean addedProvenance() {
+        return addedProvenance;
+    }
+
+    public void setAddedProvenance(boolean flag) {
+        addedProvenance = flag;
     }
     
     public boolean containsLQI() {
