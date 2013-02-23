@@ -42,19 +42,23 @@ public class FilterRules extends RowFilter<SegmentTableModel, Integer> {
             String regex = p.getProperty(key);
 
             DataCategoryField dataCategoryField = DataCategoryField.byName(datacategory);
-            DataCategoryField.Matcher dcfMatcher =
-                    dataCategoryField.equals(DataCategoryField.LQI_SEVERITY) ?
-                        new Matchers.NumericMatcher() :
-                        new Matchers.RegexMatcher();
-            dcfMatcher.setPattern(regex);
-            RuleMatcher ruleMatcher = new RuleMatcher(dataCategoryField,dcfMatcher);
+            if (dataCategoryField != null) {
+                DataCategoryField.Matcher dcfMatcher =
+                        dataCategoryField.equals(DataCategoryField.LQI_SEVERITY)
+                        ? new Matchers.NumericMatcher()
+                        : new Matchers.RegexMatcher();
+                dcfMatcher.setPattern(regex);
+                RuleMatcher ruleMatcher = new RuleMatcher(dataCategoryField, dcfMatcher);
 
-            if (matchers.get(ruleNumber) == null) {
-                LinkedList<RuleMatcher> rmList = new LinkedList<RuleMatcher>();
-                rmList.add(ruleMatcher);
-                matchers.put(ruleNumber, rmList);
+                if (matchers.get(ruleNumber) == null) {
+                    LinkedList<RuleMatcher> rmList = new LinkedList<RuleMatcher>();
+                    rmList.add(ruleMatcher);
+                    matchers.put(ruleNumber, rmList);
+                } else {
+                    matchers.get(ruleNumber).add(ruleMatcher);
+                }
             } else {
-                matchers.get(ruleNumber).add(ruleMatcher);
+                System.err.println("Unrecognized property: "+key);
             }
         }
 
