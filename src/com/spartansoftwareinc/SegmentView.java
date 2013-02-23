@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -356,7 +357,7 @@ public class SegmentView extends JScrollPane {
         outputFile.close();
     }
 
-    public void updateEvent(Segment seg) {
+    public void updateEvent(Segment seg) throws FileNotFoundException, IOException {
         // TODO: Fix the locales, remove old generic annotations
         Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
         ITextUnit srcTu = srcEvent.getTextUnit();
@@ -375,6 +376,21 @@ public class SegmentView extends JScrollPane {
                     GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
             anns.add(ga);
             anns.setData(lqi.getIssuesRef());
+        }
+        if (!seg.addedProvenance()) {
+            Properties p = new Properties();
+            File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
+            File provFile = new File(rwDir, "provenance.properties");
+            if (provFile.exists()) {
+                p.load(new FileInputStream(provFile));
+            }
+            GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
+                    GenericAnnotationType.PROV_REVPERSON, p.getProperty("revPerson"),
+                    GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
+                    GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
+            // TODO: Adding a single provenance record is not supported yet.
+            anns.add(provGA);
+            seg.setAddedProvenance(true);
         }
         srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, anns);
         tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, anns);

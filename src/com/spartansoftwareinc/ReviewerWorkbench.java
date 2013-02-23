@@ -44,7 +44,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
     JMenuBar menuBar;
     JMenu menuFile, menuFilter, menuHelp;
-    JMenuItem menuOpen, menuSplit, menuExit, menuAbout, menuRules, menuSave;
+    JMenuItem menuOpen, menuSplit, menuExit, menuAbout, menuRules, menuProv, menuSave;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -92,6 +92,19 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             FilterView rules = new FilterView(segmentView);
             SwingUtilities.invokeLater(rules);
 
+        } else if (e.getSource() == this.menuProv) {
+            ProvenanceView prov = null;
+            try {
+                prov = new ProvenanceView();
+            } catch (IOException ex) {
+                System.err.println(ex.getMessage());
+            }
+            if (prov != null) {
+                SwingUtilities.invokeLater(prov);
+            } else {
+                System.err.println("Failed to instantiate provenance view");
+            }
+
         } else if (e.getSource() == this.menuExit) {
             mainframe.dispose();
         } else if (e.getSource() == this.menuSave) {
@@ -122,6 +135,12 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuSave = new JMenuItem("Save");
         menuSave.addActionListener(this);
         menuFile.add(menuSave);
+
+        menuProv = new JMenuItem("Profile");
+        menuProv.addActionListener(this);
+        menuProv.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.CTRL_MASK));
+        menuFile.add(menuProv);
 
         menuExit = new JMenuItem("Exit");
         menuExit.addActionListener(this);
