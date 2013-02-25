@@ -34,25 +34,25 @@ public class TestRules {
 		lqi3.setSeverity(60);
 		lqi3.setType("omission");
 		
-		Segment segment = new Segment(1, "source", "target");
+		Segment segment = new Segment(1, 1, 1, "source", "target");
 		segment.addLQI(lqi1);
 		segment.addLQI(lqi2);
 		segment.addLQI(lqi3);
 		assertTrue(filter.matches(segment));
 		
-		segment = new Segment(2, "source", "target");
+		segment = new Segment(2, 2, 2, "source", "target");
 		segment.addLQI(lqi1);
 		assertTrue(filter.matches(segment));
 		
-		segment = new Segment(3, "source", "target");
+		segment = new Segment(3, 3, 3, "source", "target");
 		segment.addLQI(lqi2);
 		assertFalse(filter.matches(segment));
 
-		segment = new Segment(4, "source", "target");
+		segment = new Segment(4, 4, 4, "source", "target");
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
 		
-		segment = new Segment(6, "source", "target");
+		segment = new Segment(5, 5, 5, "source", "target");
 		segment.addLQI(lqi1);
 		segment.addLQI(lqi2);
 		assertTrue(filter.matches(segment));
@@ -60,7 +60,7 @@ public class TestRules {
 		// Tricky!  Make sure we don't get a false positive
 		// because we have an omission AND a valid severity!
 		// (We do have each, but not on the same issue.)
-		segment = new Segment(7, "source", "target");
+		segment = new Segment(6, 6, 6, "source", "target");
 		segment.addLQI(lqi2);
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
