@@ -9,6 +9,7 @@ public class SegmentAttributeView extends JTabbedPane {
     protected SegmentView segmentView;
     protected SegmentAttributeTableView aggregateTableView;
     protected LanguageQualityIssueTableView lqiTableView;
+    protected ITSProvenanceTableView provTableView;
     protected SegmentAttributeTreeView treeView;
     protected NewLanguageQualityIssueView addLQIView;
     private ITSDetailView itsDetailView;
@@ -23,6 +24,9 @@ public class SegmentAttributeView extends JTabbedPane {
 
         lqiTableView = new LanguageQualityIssueTableView(this);
         addTab("LQI", lqiTableView);
+
+        provTableView = new ITSProvenanceTableView(this);
+        addTab("Prov", provTableView);
 
         treeView = new SegmentAttributeTreeView(this);
         addTab("Tree", treeView);
@@ -42,6 +46,7 @@ public class SegmentAttributeView extends JTabbedPane {
     public void setSelectedSegment(Segment seg) {
         this.selectedSegment = seg;
         lqiTableView.setSegment(seg);
+        provTableView.setSegment(seg);
         treeView.clearTree();
         if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
         treeView.expandTree();
