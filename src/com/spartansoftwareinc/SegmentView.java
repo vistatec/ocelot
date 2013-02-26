@@ -210,9 +210,11 @@ public class SegmentView extends JScrollPane {
                 // TODO: get annotations for other data categories
                 if (srcITSTags != null) {
                     anns.addAll(srcITSTags.getAnnotations(GenericAnnotationType.LQI));
+                    anns.addAll(srcITSTags.getAnnotations(GenericAnnotationType.PROV));
                 }
                 if (tgtITSTags != null) {
                     anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.LQI));
+                    anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.PROV));
                 }
 
                 addSegment(srcText, tgtText, anns, srcEventNum, tgtEventNum);
@@ -229,7 +231,11 @@ public class SegmentView extends JScrollPane {
         Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum, sourceText, targetText);
         // TODO: parse GenericAnnotations for other data categories.
         for (GenericAnnotation ga : annotations) {
-            seg.addLQI(new LanguageQualityIssue(ga));
+            if (ga.getType().equals(GenericAnnotationType.LQI)) {
+                seg.addLQI(new LanguageQualityIssue(ga));
+            } else if (ga.getType().equals(GenericAnnotationType.PROV)) {
+                seg.addProvenance(new ITSProvenance(ga));
+            }
         }
         segments.addSegment(seg);
         initializeRowHeight(seg);
@@ -367,17 +373,32 @@ public class SegmentView extends JScrollPane {
         ITextUnit tgtTu = tgtEvent.getTextUnit();
         TextFragment tgtTf = tgtTu.createTarget(LocaleId.fromString("de"), true, IResource.COPY_ALL).getFirstContent();
 
-        GenericAnnotations anns = new GenericAnnotations();
+        GenericAnnotations lqiAnns = new GenericAnnotations();
         for (LanguageQualityIssue lqi : seg.getLQI()) {
             GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
                     GenericAnnotationType.LQI_TYPE, lqi.getType(),
                     GenericAnnotationType.LQI_COMMENT, lqi.getComment(),
                     GenericAnnotationType.LQI_SEVERITY, lqi.getSeverity(),
                     GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
-            anns.add(ga);
-            anns.setData(lqi.getIssuesRef());
+            lqiAnns.add(ga);
+            lqiAnns.setData(lqi.getIssuesRef());
         }
-        if (!seg.addedProvenance()) {
+
+        GenericAnnotations provAnns = new GenericAnnotations();
+        for (ITSProvenance prov : seg.getProv()) {
+            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.PROV,
+                    GenericAnnotationType.PROV_PERSON, prov.getPerson(),
+                    GenericAnnotationType.PROV_ORG, prov.getOrg(),
+                    GenericAnnotationType.PROV_TOOL, prov.getTool(),
+                    GenericAnnotationType.PROV_REVPERSON, prov.getRevPerson(),
+                    GenericAnnotationType.PROV_REVORG, prov.getRevOrg(),
+                    GenericAnnotationType.PROV_REVTOOL, prov.getRevTool(),
+                    GenericAnnotationType.PROV_PROVREF, prov.getProvRef());
+            provAnns.add(ga);
+            provAnns.setData(prov.getRecsRef());
+        }
+
+        if (!seg.addedRWProvenance()) {
             Properties p = new Properties();
             File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
             File provFile = new File(rwDir, "provenance.properties");
@@ -389,11 +410,14 @@ public class SegmentView extends JScrollPane {
                     GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
                     GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
             // TODO: Adding a single provenance record is not supported yet.
-            anns.add(provGA);
-            seg.setAddedProvenance(true);
+            provAnns.add(provGA);
+            seg.setAddedRWProvenance(true);
         }
-        srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, anns);
-        tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, anns);
+
+        srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
+        srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, provAnns);
+        tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
+        tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, provAnns);
     }
 
     public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {

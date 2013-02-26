@@ -14,6 +14,8 @@ public class Segment {
     private boolean addedProvenance = false;
     private LinkedList<LanguageQualityIssue> lqiList =
             new LinkedList<LanguageQualityIssue>();
+    private LinkedList<ITSProvenance> provList =
+            new LinkedList<ITSProvenance>();
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum, String source, String target) {
         this.segmentNumber = segNum;
@@ -42,12 +44,20 @@ public class Segment {
     public String getTarget() {
         return target;
     }
+    
+    public LinkedList<ITSProvenance> getProv() {
+        return provList;
+    }
 
-    public boolean addedProvenance() {
+    public void addProvenance(ITSProvenance prov) {
+        provList.add(prov);
+    }
+
+    public boolean addedRWProvenance() {
         return addedProvenance;
     }
 
-    public void setAddedProvenance(boolean flag) {
+    public void setAddedRWProvenance(boolean flag) {
         addedProvenance = flag;
     }
     
@@ -70,6 +80,7 @@ public class Segment {
     public List<ITSMetadata> getAllITSMetadata() {
     	List<ITSMetadata> its = new ArrayList<ITSMetadata>();
     	its.addAll(lqiList);
+        its.addAll(provList);
     	return its;
     }
 }
