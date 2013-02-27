@@ -7,20 +7,20 @@ import javax.swing.border.Border;
  * Data Flag for segments that don't have ITS metadata in the specified column
  * in the segment table view.
  */
-public class NullDataCategoryFlag implements DataCategoryFlag {
-
+public class NullDataCategoryFlag extends DataCategoryFlag {
+    
     @Override
-    public Color getFlagBackgroundColor() {
+    public Color getFill() {
         return null;
     }
 
     @Override
-    public Border getFlagBorder() {
+    public Border getBorder() {
         return null;
     }
 
     @Override
-    public String getFlagText() {
+    public String getText() {
         return "";
     }
 

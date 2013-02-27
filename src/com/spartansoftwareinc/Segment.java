@@ -1,7 +1,6 @@
 package com.spartansoftwareinc;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class Segment {
     public String getTarget() {
         return target;
     }
-    
+
     public LinkedList<ITSProvenance> getProv() {
         return provList;
     }
@@ -73,10 +72,6 @@ public class Segment {
         lqiList.add(lqi);
     }
 
-    public LanguageQualityIssue getTopDataCategory(int pos) {
-        return pos >= lqiList.size() ? null : lqiList.get(pos);
-    }
-    
     public List<ITSMetadata> getAllITSMetadata() {
     	List<ITSMetadata> its = new ArrayList<ITSMetadata>();
     	its.addAll(lqiList);

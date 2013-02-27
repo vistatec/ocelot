@@ -69,16 +69,16 @@ public class SegmentView extends JScrollPane {
     private TableColumnModel tableColumnModel;
     protected LinkedList<Integer[]> rowHeights = new LinkedList<Integer[]>();
     protected TableRowSorter sort;
-    protected FilterRules filterRules;
+    protected RuleConfiguration ruleConfig;
     private int documentSegmentNum;
     protected int selectedRow = -1, selectedCol = -1;
 
-    public SegmentView(SegmentAttributeView attr) throws IOException {
+    public SegmentView(SegmentAttributeView attr) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
         attrView.setSegmentView(this);
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
-        filterRules = new FilterRules();
+        ruleConfig = new RuleConfiguration();
     }
 
     public SegmentTableModel getSegments() {
@@ -86,7 +86,7 @@ public class SegmentView extends JScrollPane {
     }
 
     public void initializeTable() {
-        segments = new SegmentTableModel();
+        segments = new SegmentTableModel(this);
         sourceTargetTable = new JTable(segments);
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
@@ -244,7 +244,7 @@ public class SegmentView extends JScrollPane {
     public void addFilters() {
         sort = new TableRowSorter(segments);
         sourceTargetTable.setRowSorter(sort);
-        sort.setRowFilter(filterRules);
+        sort.setRowFilter(ruleConfig);
     }
 
     public void initializeRowHeight(Segment seg) {
@@ -296,9 +296,9 @@ public class SegmentView extends JScrollPane {
 
             if (colIndex >= SegmentTableModel.NONFLAGCOLS) {
                 int adjustedFlagIndex = colIndex - SegmentTableModel.NONFLAGCOLS;
-                LanguageQualityIssue lqi = seg.getTopDataCategory(adjustedFlagIndex);
-                if (lqi != null) {
-                    attrView.setSelectedMetadata(lqi);
+                ITSMetadata its = ruleConfig.getTopDataCategory(seg, adjustedFlagIndex);
+                if (its != null) {
+                    attrView.setSelectedMetadata(its);
                 }
             }
         }
@@ -448,9 +448,11 @@ public class SegmentView extends JScrollPane {
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             DataCategoryFlag flag = (DataCategoryFlag) obj;
-            setBackground(flag.getFlagBackgroundColor());
-            setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : flag.getFlagBorder());
-            setText(flag.getFlagText());
+            setBackground(flag.getFill());
+            setBorder(hasFocus ?
+                    UIManager.getBorder("Table.focusCellHighlightBorder") :
+                    flag.getBorder());
+            setText(flag.getText());
             setHorizontalAlignment(CENTER);
             return this;
         }
