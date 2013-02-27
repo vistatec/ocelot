@@ -21,6 +21,10 @@ public class RuleFilter implements Filter {
             this.matchers.add(matcher);
         }
 
+        public void addRuleMatcher(RuleMatcher matcher) {
+            this.matchers.add(matcher);
+        }
+
         public boolean getEnabled() {
             return enabled;
         }
