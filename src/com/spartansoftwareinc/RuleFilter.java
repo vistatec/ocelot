@@ -1,5 +1,6 @@
 package com.spartansoftwareinc;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,9 +9,13 @@ public class RuleFilter implements Filter {
 	List<RuleMatcher> matchers;
         private boolean enabled = false;
 
-	public RuleFilter(List<RuleMatcher> matchers) {
-		this.matchers = matchers;
+	public RuleFilter() {
+            this.matchers = new LinkedList<RuleMatcher>();
 	}
+
+        public void addRuleMatcher(RuleMatcher matcher) {
+            this.matchers.add(matcher);
+        }
 
         public boolean getEnabled() {
             return enabled;
@@ -18,6 +23,16 @@ public class RuleFilter implements Filter {
 
         public void setEnabled(boolean flag) {
             enabled = flag;
+        }
+
+        public LinkedList<ITSMetadata> displayMatches(Segment segment) {
+            LinkedList<ITSMetadata> itsMatches = new LinkedList<ITSMetadata>();
+            for (ITSMetadata its : segment.getAllITSMetadata()) {
+                if (matches(its)) {
+                    itsMatches.add(its);
+                }
+            }
+            return itsMatches;
         }
 
 	/**

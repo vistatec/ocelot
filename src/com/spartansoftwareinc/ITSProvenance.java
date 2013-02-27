@@ -1,9 +1,7 @@
 package com.spartansoftwareinc;
 
-import java.awt.Color;
 import java.util.EnumMap;
 import java.util.Map;
-import javax.swing.border.Border;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 
@@ -11,7 +9,7 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
  *
  * @author kevinlew
  */
-public class ITSProvenance implements ITSMetadata, DataCategoryFlag {
+public class ITSProvenance extends DataCategoryFlag implements ITSMetadata {
     private String person, org, tool, revPerson, revOrg, revTool, provRef, recsRef;
 
     public ITSProvenance(GenericAnnotation ga) {
@@ -99,21 +97,6 @@ public class ITSProvenance implements ITSMetadata, DataCategoryFlag {
 
     @Override
     public String getValue() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Color getFlagBackgroundColor() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Border getFlagBorder() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getFlagText() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }
