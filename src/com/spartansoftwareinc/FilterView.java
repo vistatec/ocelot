@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.EmptyBorder;
 
 /**
  * Window for selecting which filter rules to apply to the segment table.
@@ -31,12 +32,13 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
     public FilterView(SegmentView view) {
         super(new GridBagLayout());
         segmentView = view;
+        setBorder(new EmptyBorder(10,10,10,10));
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 1;
         
-        FilterRules filterRules = segmentView.filterRules;
+        RuleConfiguration filterRules = segmentView.ruleConfig;
 
         JLabel title = new JLabel("Show segments matching rules:");
         gridBag.gridx = 0;
@@ -70,10 +72,10 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(custom);
 
         int gridy = 4;
-        for (String rule : filterRules.rules.keySet()) {
+        for (String rule : filterRules.getRuleLabels()) {
             JCheckBox ruleButton = new JCheckBox(rule);
             ruleButton.setEnabled(custom.isSelected());
-            ruleButton.setSelected(filterRules.rules.get(rule).getEnabled());
+            ruleButton.setSelected(filterRules.getRule(rule).getEnabled());
             ruleButton.addItemListener(this);
             gridBag.gridwidth = 1;
             gridBag.gridx = 0;
@@ -100,9 +102,9 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         if (source.getClass().equals(JCheckBox.class)) {
             JCheckBox check = (JCheckBox) source;
             if (e.getStateChange() == ItemEvent.DESELECTED) {
-                segmentView.filterRules.rules.get(check.getText()).setEnabled(false);
+                segmentView.ruleConfig.getRule(check.getText()).setEnabled(false);
             } else {
-                segmentView.filterRules.rules.get(check.getText()).setEnabled(true);
+                segmentView.ruleConfig.getRule(check.getText()).setEnabled(true);
             }
             segmentView.reloadTable();
         }
@@ -112,18 +114,18 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == all) {
             enableRules(false);
-            segmentView.filterRules.all = true;
-            segmentView.filterRules.allWithMetadata = false;
+            segmentView.ruleConfig.all = true;
+            segmentView.ruleConfig.allWithMetadata = false;
             segmentView.reloadTable();
         } else if (ae.getSource() == allWithMetadata) {
             enableRules(false);
-            segmentView.filterRules.all = false;
-            segmentView.filterRules.allWithMetadata = true;
+            segmentView.ruleConfig.all = false;
+            segmentView.ruleConfig.allWithMetadata = true;
             segmentView.reloadTable();
         } else if (ae.getSource() == custom) {
             enableRules(true);
-            segmentView.filterRules.all = false;
-            segmentView.filterRules.allWithMetadata = false;
+            segmentView.ruleConfig.all = false;
+            segmentView.ruleConfig.allWithMetadata = false;
             segmentView.reloadTable();
         }
     }

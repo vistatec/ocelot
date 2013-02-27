@@ -55,7 +55,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     JFileChooser fc;
     File openFile;
 
-    public ReviewerWorkbench() throws IOException {
+    public ReviewerWorkbench() throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         itsDetailView = new ITSDetailView();
         Dimension segAttrSize = new Dimension(385, 380);
@@ -185,7 +185,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         mainframe.setVisible(true);
     }
 
-    public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+    public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(ReviewerWorkbench.class.getResourceAsStream("log4j.properties"));
         } else {

@@ -10,6 +10,7 @@ import javax.swing.table.AbstractTableModel;
  */
 class SegmentTableModel extends AbstractTableModel {
 
+    protected SegmentView segmentView;
     private LinkedList<Segment> segments = new LinkedList<Segment>();
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
@@ -20,7 +21,8 @@ class SegmentTableModel extends AbstractTableModel {
     public static final String COLSEGSRC = "source";
     public static final String COLSEGTGT = "target";
 
-    public SegmentTableModel() {
+    public SegmentTableModel(SegmentView sv) {
+        segmentView = sv;
         colNameToIndex = new HashMap<String, Integer>();
         colNameToIndex.put(COLSEGNUM, 0);
         colNameToIndex.put(COLSEGSRC, 1);
@@ -74,7 +76,8 @@ class SegmentTableModel extends AbstractTableModel {
         if (col == getColumnIndex(COLSEGTGT)) {
             return getSegment(row).getTarget();
         }
-        Object ret = segments.get(row).getTopDataCategory(col - NONFLAGCOLS);
+        Object ret = segmentView.ruleConfig.getTopDataCategory(
+                segments.get(row), col-NONFLAGCOLS);
         return ret != null ? ret : new NullDataCategoryFlag();
     }
 
