@@ -79,16 +79,17 @@
               <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
               <attribute name="Rsrc-Main-Class" value="com.spartansoftwareinc.ReviewerWorkbench"/>
               <attribute name="Class-Path" value="."/>
-              <attribute name="Rsrc-Class-Path" value="./ htmlparser-1.4.jar log4j-1.2.17.jar okapi-core-0.20-SNAPSHOT.jar okapi-filter-its-0.20-SNAPSHOT.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
+              <attribute name="Rsrc-Class-Path" value="./ htmlparser-1.4.jar junit-4.7.jar log4j-1.2.17.jar okapi-core-0.21-SNAPSHOT.jar okapi-filter-its-0.21-SNAPSHOT.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
           </manifest>
           <zipfileset src="${basedir}/jar-in-jar-loader.zip"/>
           <fileset dir="${src.classes.dir}"/>
           <zipfileset dir="${src.dir}/${package}" includes="rules.properties" fullpath="${package}/rules.properties"/>
           <zipfileset dir="${src.dir}/${package}" includes="log4j.properties" fullpath="${package}/log4j.properties"/>
           <zipfileset dir="${lib.dir}" includes="htmlparser-1.4.jar"/>
+          <zipfileset dir="${lib.dir}" includes="junit-4.7.jar"/>
           <zipfileset dir="${lib.dir}" includes="log4j-1.2.17.jar"/>
-          <zipfileset dir="${lib.dir}" includes="okapi-core-0.20-SNAPSHOT.jar"/>
-          <zipfileset dir="${lib.dir}" includes="okapi-filter-its-0.20-SNAPSHOT.jar"/>
+          <zipfileset dir="${lib.dir}" includes="okapi-core-0.21-SNAPSHOT.jar"/>
+          <zipfileset dir="${lib.dir}" includes="okapi-filter-its-0.21-SNAPSHOT.jar"/>
           <zipfileset dir="${lib.dir}" includes="slf4j-api-1.7.2.jar"/>
           <zipfileset dir="${lib.dir}" includes="slf4j-log4j12-1.7.2.jar"/>
       </jar>
