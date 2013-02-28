@@ -6,14 +6,18 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 
 /**
  * Detail view showing ITS metadata on the selected LQI in SegmentAttributeView.
  */
-public class LanguageQualityIssueView extends JPanel {
+public class LanguageQualityIssueView extends JScrollPane {
     private JLabel segmentLabel, typeLabel, commentLabel, severityLabel,
             profileLabel, enabledLabel;
-    private JLabel segment, type, comment, severity, profile, enabled;
+    private JLabel segment, type, severity, profile, enabled;
+    private JTextArea comment;
 
     public LanguageQualityIssueView() {
         JPanel mainPanel = new JPanel();
@@ -49,7 +53,10 @@ public class LanguageQualityIssueView extends JPanel {
         gridBag.gridy = 2;
         mainPanel.add(commentLabel, gridBag);
         
-        comment = new JLabel();
+        comment = new JTextArea();
+        comment.setLineWrap(true);
+        comment.setWrapStyleWord(true);
+        comment.setVisible(false);
         gridBag.gridx = 1;
         gridBag.gridy = 2;
         mainPanel.add(comment, gridBag);
@@ -84,9 +91,11 @@ public class LanguageQualityIssueView extends JPanel {
         gridBag.gridy = 5;
         mainPanel.add(enabled, gridBag);
 
-        add(mainPanel);
         Dimension prefSize = new Dimension(500, 200);
         setPreferredSize(prefSize);
+        //Padding
+        setBorder(new EmptyBorder(10,10,10,10));
+        setViewportView(mainPanel);
     }
 
     public void setMetadata(Segment selectedSegment, ITSMetadata data) {
@@ -97,6 +106,7 @@ public class LanguageQualityIssueView extends JPanel {
         type.setText(lqi.getType());
         commentLabel.setText("Comment");
         comment.setText(lqi.getComment());
+        comment.setVisible(true);
         severityLabel.setText("Severity");
         severity.setText(lqi.getSeverity()+"");
         profileLabel.setText("Profile Reference");
@@ -113,6 +123,7 @@ public class LanguageQualityIssueView extends JPanel {
         type.setText("");
         commentLabel.setText("");
         comment.setText("");
+        comment.setVisible(false);
         severityLabel.setText("");
         severity.setText("");
         profileLabel.setText("");
