@@ -1,17 +1,19 @@
 package com.spartansoftwareinc;
 
-import javax.swing.JScrollPane;
+import java.awt.BorderLayout;
+import javax.swing.JPanel;
 
 /**
  * ITS detail pane displaying a selected ITS metadata related
  * to a selected segment in the SegmentView.
  */
-public class ITSDetailView extends JScrollPane {
+public class ITSDetailView extends JPanel {
     private LanguageQualityIssueView lqiDetailView;
     
     public ITSDetailView() {
+        setLayout(new BorderLayout());
         lqiDetailView = new LanguageQualityIssueView();
-        setViewportView(lqiDetailView);
+        add(lqiDetailView);
     }
 
     public void clearDisplay() {
