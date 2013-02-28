@@ -1,9 +1,13 @@
 Version.java
 src/com/spartansoftwareinc/Version.java
+bin
 build
 doc
 tags
 .DS_Store
+.classpath
+.project
+.settings
 /nbproject/
 nb-build.xml
 manifest.mf
