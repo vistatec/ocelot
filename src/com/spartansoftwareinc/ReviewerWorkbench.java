@@ -192,8 +192,8 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             PropertyConfigurator.configure(System.getProperty("log4j.configuration"));
         }
         try {
-//            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException e) {
             System.err.println(e.getMessage());
         } catch (ClassNotFoundException e) {
