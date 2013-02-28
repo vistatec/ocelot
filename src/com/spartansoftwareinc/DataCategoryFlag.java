@@ -7,6 +7,7 @@ import javax.swing.border.Border;
  * Display methods for flags in SegmentView Table.
  */
 public class DataCategoryFlag {
+    private boolean setFill = true, setBorder = true, setText = true;
     private Color fill = Color.gray;
     private Border border;
     private String text = "?";
@@ -16,7 +17,10 @@ public class DataCategoryFlag {
     }
 
     public void setFill(Color f) {
-        this.fill = f;
+        if (this.setFill) {
+            this.fill = f;
+            this.setFill = false;
+        }
     }
 
     public Border getBorder() {
@@ -24,7 +28,10 @@ public class DataCategoryFlag {
     }
 
     public void setBorder(Border b) {
-        this.border = b;
+        if (this.setBorder) {
+            this.border = b;
+            this.setBorder = false;
+        }
     }
 
     public String getText() {
@@ -32,6 +39,9 @@ public class DataCategoryFlag {
     }
 
     public void setText(String t) {
-        this.text = t;
+        if (this.setText) {
+            this.text = t;
+            this.setText = false;
+        }
     }
 }
