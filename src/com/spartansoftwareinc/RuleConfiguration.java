@@ -158,20 +158,36 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
     }
     
     public ITSMetadata getTopDataCategory(Segment seg, int flagCol) {
+        LinkedList<ITSMetadata> displayFlags = new LinkedList<ITSMetadata>();
         for (int pos = ruleOrdering.size()-1; pos >= 0; pos--) {
             RuleFilter r = rules.get(ruleOrdering.get(pos));
             LinkedList<ITSMetadata> itsMatches = r.displayMatches(seg);
-            if (itsMatches.size() > flagCol) {
-                ITSMetadata flag = itsMatches.get(flagCol);
+            for (ITSMetadata its : itsMatches) {
                 DataCategoryFlag dcf = flags.get(ruleOrdering.get(pos));
-                flag.setFill(dcf.getFill());
-                flag.setBorder(dcf.getBorder());
-                flag.setText(dcf.getText());
-                return flag;
-            } else {
-                flagCol -= itsMatches.size();
+                if (dcf != null) {
+                    its.setFill(dcf.getFill());
+                    its.setBorder(dcf.getBorder());
+                    its.setText(dcf.getText());
+                }
+                if (!displayFlags.contains(its)) {
+                    displayFlags.add(its);
+                }
+            }
+
+            if (displayFlags.size() > flagCol) {
+                return displayFlags.get(flagCol);
             }
         }
+
+        for (ITSMetadata its : seg.getAllITSMetadata()) {
+            if (!displayFlags.contains(its)) {
+                displayFlags.add(its);
+                if (displayFlags.size() > flagCol) {
+                    return displayFlags.get(flagCol);
+                }
+            }
+        }
+
         return null;
     }
 
