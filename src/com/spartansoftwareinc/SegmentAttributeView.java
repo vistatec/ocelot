@@ -53,7 +53,14 @@ public class SegmentAttributeView extends JTabbedPane {
         addLQIView.updateSegment();
         itsDetailView.clearDisplay();
     }
-    
+
+    public void clearSegment() {
+        treeView.clearTree();
+        addLQIView.clearSegment();
+        lqiTableView.clearSegment();
+        provTableView.clearSegment();
+    }
+
     public void setSelectedMetadata(ITSMetadata its) {
         itsDetailView.setMetadata(selectedSegment, its);
     }

@@ -229,6 +229,11 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
         save.setEnabled(true);
     }
 
+    public void clearSegment() {
+        sourceTargetSegment.setText("");
+        save.setEnabled(false);
+    }
+
     public void clearForm() {
         typeList.setSelectedIndex(0);
         commentContent.setText("");

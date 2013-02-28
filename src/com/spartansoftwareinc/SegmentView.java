@@ -159,7 +159,7 @@ public class SegmentView extends JScrollPane {
         sourceTargetTable.clearSelection();
         segments.deleteSegments();
         sourceTargetTable.setRowSorter(null);
-        attrView.treeView.clearTree();
+        attrView.clearSegment();
         setViewportView(null);
         documentSegmentNum = 1;
 
