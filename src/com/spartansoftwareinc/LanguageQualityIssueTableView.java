@@ -41,6 +41,15 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         setViewportView(lqiTable);
     }
 
+    public void clearSegment() {
+        if (lqiTable != null) {
+            lqiTable.clearSelection();
+            lqiTableModel.deleteRows();
+            lqiTable.setRowSorter(null);
+        }
+        setViewportView(null);
+    }
+
     public void selectedLQI() {
         int rowIndex = lqiTable.getSelectedRow();
         if (rowIndex >= 0) {
@@ -56,6 +65,10 @@ public class LanguageQualityIssueTableView extends JScrollPane {
 
         public void setRows(List<LanguageQualityIssue> attrs) {
             rows = attrs;
+        }
+
+        public void deleteRows() {
+            rows.clear();
         }
 
         @Override

@@ -40,6 +40,15 @@ public class ITSProvenanceTableView extends JScrollPane {
 
         setViewportView(provTable);
     }
+    
+    public void clearSegment() {
+        if (provTable != null) {
+            provTable.clearSelection();
+            provTableModel.deleteRows();
+            provTable.setRowSorter(null);
+        }
+        setViewportView(null);
+    }
 
     public void selectedProv() {
         
@@ -53,6 +62,10 @@ public class ITSProvenanceTableView extends JScrollPane {
 
         public void setRows(List<ITSProvenance> attrs) {
             rows = attrs;
+        }
+
+        public void deleteRows() {
+            rows.clear();
         }
 
         @Override

@@ -106,6 +106,7 @@ class SegmentTableModel extends AbstractTableModel {
 
     protected void deleteSegments() {
         segments.clear();
+        lqiStats = new HashMap<String,LQIStatistics>();
     }
 
     public class LQIStatistics implements ITSStats{
