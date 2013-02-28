@@ -69,6 +69,7 @@ public class SegmentView extends JScrollPane {
     private TableColumnModel tableColumnModel;
     protected LinkedList<Integer[]> rowHeights = new LinkedList<Integer[]>();
     protected TableRowSorter sort;
+    private File sourceFile, targetFile;
     protected RuleConfiguration ruleConfig;
     private int documentSegmentNum;
     protected int selectedRow = -1, selectedCol = -1;
@@ -164,6 +165,8 @@ public class SegmentView extends JScrollPane {
         documentSegmentNum = 1;
 
         parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
+        this.sourceFile = sourceFile;
+        this.targetFile = targetFile;
         attrView.aggregateTableView.setDocument();
         addFilters();
 
@@ -306,8 +309,8 @@ public class SegmentView extends JScrollPane {
 
     public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
         // TODO: get the actual locale and filename for the files.
-        saveEvents(srcEvents, "source_test", LocaleId.fromString("en"));
-        saveEvents(tgtEvents, "target_test", LocaleId.fromString("de"));
+        saveEvents(srcEvents, sourceFile.getName()+".output", LocaleId.fromString("en"));
+        saveEvents(tgtEvents, targetFile.getName()+".output", LocaleId.fromString("de"));
     }
 
     public void saveEvents(List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
