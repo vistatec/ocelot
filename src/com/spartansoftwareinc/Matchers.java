@@ -3,6 +3,7 @@ package com.spartansoftwareinc;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.apache.log4j.Logger;
 
 public class Matchers {
 
@@ -48,49 +49,49 @@ public class Matchers {
 	// Handles syntax like:
 	// 		[min]-[max]
 	// Bounds are inclusive.
-	// For now, only handles integer values.  This is a bug - it needs
-	// to handle decimals
 	public static class NumericMatcher implements DataCategoryField.Matcher {
-		private int lowerBound = -1, upperBound = -1;
+                private static Logger LOG = Logger.getLogger("com.spartansoftwareinc.Matchers.NumericMatcher");
+		private double lowerBound = -1, upperBound = -1;
 
 		@Override
 		public boolean validatePattern(String pattern) {
-			return (getValues(pattern) != null);
+                        Values numValues = null;
+                        try {
+                            numValues = getValues(pattern);
+                        } catch (NumberFormatException e) {
+                            LOG.error("Unaccepted Numeric Matcher Syntax: "+pattern, e);
+                        }
+			return (numValues != null);
 		}
 
 		@Override
 		public void setPattern(String pattern) {
 			Values v = getValues(pattern);
                         if (v == null) {
-                            throw new IllegalArgumentException(
-                                    "Unaccepted Numeric Matcher Syntax: "+pattern);
+                            LOG.error(new IllegalArgumentException(
+                                    "Unaccepted Numeric Matcher Syntax: "+pattern));
                         }
 			lowerBound = v.min;
 			upperBound = v.max;
 		}
 
 		private static final Pattern VALUE_PATTERN = 
-				Pattern.compile("^(\\d+)\\s*-\\s*(\\d+)$");
-		private Values getValues(String pattern) {
+				Pattern.compile("^([0-9]+(?:\\.[0-9]+)?)\\s*-\\s*([0-9]+(?:\\.[0-9]+)?)$");
+		private Values getValues(String pattern) throws NumberFormatException {
 			pattern = pattern.trim();
 			Matcher m = VALUE_PATTERN.matcher(pattern);
 			if (!m.find()) {
 				return null;
 			}
 			Values v = new Values();
-			try {
-				v.min = Integer.valueOf(m.group(1));
-				v.max = Integer.valueOf(m.group(2));
-			}
-			catch (NumberFormatException e) {
-				return null;
-			}
+                        v.min = Double.valueOf(m.group(1));
+                        v.max = Double.valueOf(m.group(2));
 			return v;
 		}
 		
 		class Values {
-			int min;
-			int max;
+			double min;
+			double max;
 		}
 		
 		@Override
@@ -98,9 +99,15 @@ public class Matchers {
 			if (lowerBound == -1 || upperBound == -1) {
 				throw new IllegalStateException("setPattern() was not called");
 			}
-			if (!(value instanceof Integer)) return false;
-			Integer v = (Integer)value;
-			return (v >= lowerBound && v <= upperBound);
+                        if (value instanceof Integer) {
+                            Integer v = (Integer) value;
+                            return (v >= lowerBound && v <= upperBound);
+                        }
+                        if (value instanceof Double) {
+                            Double v = (Double) value;
+                            return (v >= lowerBound && v <= upperBound);
+                        }
+                        return false;
 		}
 		
 		@Override
