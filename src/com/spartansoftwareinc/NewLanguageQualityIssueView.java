@@ -89,7 +89,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
             "locale-violation", "style", "characters", "misspelling",
             "typographical", "formatting", "inconsistent-entities", "numbers",
             "markup", "pattern-problem", "whitespace", "internationalization",
-            "length", "uncategorized", "other"};
+            "length", "non-conformance", "uncategorized", "other"};
         typeList = new JComboBox(types);
         gridBag.gridx = 1;
         gridBag.gridy = 1;
