@@ -269,6 +269,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
                 lqi.setIssuesRef(Calendar.getInstance().getTime().toString());
             }
             selectedSeg.addLQI(lqi);
+            segAttrView.addMetadata(lqi);
             try {
                 segAttrView.segmentView.updateEvent(selectedSeg);
             } catch (FileNotFoundException ex) {

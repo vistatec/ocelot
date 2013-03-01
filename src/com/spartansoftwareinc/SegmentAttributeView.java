@@ -61,6 +61,11 @@ public class SegmentAttributeView extends JTabbedPane {
         provTableView.clearSegment();
     }
 
+    public void addMetadata(ITSMetadata its) {
+        aggregateTableView.docStatsModel.updateITSStats(its);
+        segmentView.reloadTable();
+    }
+
     public void setSelectedMetadata(ITSMetadata its) {
         itsDetailView.setMetadata(selectedSegment, its);
     }

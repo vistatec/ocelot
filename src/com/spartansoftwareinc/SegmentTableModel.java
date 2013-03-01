@@ -92,6 +92,7 @@ class SegmentTableModel extends AbstractTableModel {
             LQIStatistics stats = lqiStats.get(lqi.getType());
             if (stats == null) {
                 stats = new LQIStatistics();
+                stats.setType(lqi.getType());
                 stats.setRange(lqi.getSeverity());
                 lqiStats.put(lqi.getType(), stats);
             } else {
@@ -107,59 +108,5 @@ class SegmentTableModel extends AbstractTableModel {
     protected void deleteSegments() {
         segments.clear();
         lqiStats = new HashMap<String,LQIStatistics>();
-    }
-
-    public class LQIStatistics implements ITSStats{
-        private String dataCategory, type, value;
-        private Double minRange, maxRange;
-        private Integer count = 0;
-
-        @Override
-        public String getDataCategory() {
-            return dataCategory;
-        }
-
-        public void setCategory(String category) {
-            this.dataCategory = category;
-        }
-
-        @Override
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        @Override
-        public String getValue() {
-            if (minRange != null && maxRange != null) {
-                return minRange+"-"+maxRange;
-            } else if (value != null) {
-                return value;
-            }
-            return null;
-        }
-
-        @Override
-        public Integer getCount() {
-            return count;
-        }
-
-        public void setRange(double range) {
-            if (minRange == null || minRange > range) {
-                minRange = range;
-            }
-            if (maxRange == null || maxRange < range) {
-                maxRange = range;
-            }
-            count++;
-        }
-
-        public void setValue(String val) {
-            this.value = val;
-            count++;
-        }
     }
 }

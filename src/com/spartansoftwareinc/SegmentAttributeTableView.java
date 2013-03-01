@@ -28,8 +28,6 @@ public class SegmentAttributeTableView extends JScrollPane {
         LinkedList<ITSStats> data = new LinkedList<ITSStats>();
         SegmentTableModel segModel = segAttrView.segmentView.getSegments();
         for (String type : segModel.lqiStats.keySet()) {
-            segModel.lqiStats.get(type).setCategory("LQI");
-            segModel.lqiStats.get(type).setType(type);
             data.add(segModel.lqiStats.get(type));
         }
         docStatsModel.addRows(data);
@@ -38,6 +36,10 @@ public class SegmentAttributeTableView extends JScrollPane {
         docStatsTable.setRowSorter(sort);
 
         setViewportView(docStatsTable);
+    }
+    
+    public void addITSMetadata(ITSMetadata its) {
+        docStatsModel.updateITSStats(its);
     }
 
     public class DocumentStatsTableModel extends AbstractTableModel {
@@ -97,6 +99,26 @@ public class SegmentAttributeTableView extends JScrollPane {
 
         public void addRows(List<ITSStats> stats) {
             rows = stats;
+        }
+
+        protected void updateITSStats(ITSMetadata its) {
+            boolean foundExistingStat = false;
+            for (ITSStats stat : rows) {
+                if (stat.getDataCategory().equals(its.getDataCategory()) &&
+                    stat.getType().equals(its.getType())) {
+                    stat.setCount(stat.getCount()+1);
+                    foundExistingStat = true;
+                }
+            }
+            if (!foundExistingStat) {
+                if (its instanceof LanguageQualityIssue) {
+                    LQIStatistics lqi = new LQIStatistics();
+                    lqi.setType(its.getType());
+                    lqi.setRange(Double.parseDouble(its.getValue()));
+                    rows.add(lqi);
+                }
+            }
+            fireTableDataChanged();
         }
     }
 }

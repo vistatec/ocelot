@@ -289,10 +289,7 @@ public class SegmentView extends JScrollPane {
     public void selectedSegment() {
         int colIndex = sourceTargetTable.getSelectedColumn();
         int rowIndex = sourceTargetTable.getSelectedRow();
-        if (colIndex == selectedCol && rowIndex == selectedRow) {
-            attrView.aggregateTableView.setDocument();
-            sourceTargetTable.clearSelection();
-        } else if (rowIndex >= 0) {
+        if (rowIndex >= 0) {
             int modelRowIndex = sort.convertRowIndexToModel(rowIndex);
             Segment seg = segments.getSegment(modelRowIndex);
             attrView.setSelectedSegment(seg);
