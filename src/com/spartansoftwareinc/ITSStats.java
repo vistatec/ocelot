@@ -8,4 +8,5 @@ public interface ITSStats {
     public String getType();
     public String getValue();
     public Integer getCount();
+    public void setCount(Integer count);
 }
