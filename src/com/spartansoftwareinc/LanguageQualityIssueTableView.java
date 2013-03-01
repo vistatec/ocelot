@@ -59,8 +59,8 @@ public class LanguageQualityIssueTableView extends JScrollPane {
 
     public class LQITableModel extends AbstractTableModel {
 
-        public static final int NUMCOLS = 4;
-        public String[] colNames = {"#", "Type", "Severity", "Comment"};
+        public static final int NUMCOLS = 3;
+        public String[] colNames = {"Type", "Severity", "Comment"};
         private List<LanguageQualityIssue> rows;
 
         public void setRows(List<LanguageQualityIssue> attrs) {
@@ -91,17 +91,13 @@ public class LanguageQualityIssueTableView extends JScrollPane {
             Object tableCell;
             switch (col) {
                 case 0:
-                    tableCell = row;
-                    break;
-
-                case 1:
                     tableCell = rows.get(row).getType();
                     break;
 
-                case 2:
+                case 1:
                     tableCell = rows.get(row).getSeverity();
                     break;
-                case 3:
+                case 2:
                     tableCell = rows.get(row).getComment();
                     break;
 
