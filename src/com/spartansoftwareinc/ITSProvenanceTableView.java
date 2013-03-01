@@ -55,8 +55,8 @@ public class ITSProvenanceTableView extends JScrollPane {
     }
 
     public class ProvTableModel extends AbstractTableModel {
-        public static final int NUMCOLS = 7;
-        public String [] colNames = {"#", "Person", "Org", "Tool",
+        public static final int NUMCOLS = 6;
+        public String [] colNames = {"Person", "Org", "Tool",
             "RevPerson", "RevOrg", "RevTool", "ProvRef"};
         private List<ITSProvenance> rows;
 
@@ -88,34 +88,30 @@ public class ITSProvenanceTableView extends JScrollPane {
             Object tableCell;
             switch (col) {
                 case 0:
-                    tableCell = row;
-                    break;
-
-                case 1:
                     tableCell = rows.get(row).getPerson();
                     break;
 
-                case 2:
+                case 1:
                     tableCell = rows.get(row).getOrg();
                     break;
 
-                case 3:
+                case 2:
                     tableCell = rows.get(row).getTool();
                     break;
 
-                case 4:
+                case 3:
                     tableCell = rows.get(row).getRevPerson();
                     break;
 
-                case 5:
+                case 4:
                     tableCell = rows.get(row).getRevOrg();
                     break;
 
-                case 6:
+                case 5:
                     tableCell = rows.get(row).getRevTool();
                     break;
 
-                case 7:
+                case 6:
                     tableCell = rows.get(row).getProvRef();
                     break;
 
