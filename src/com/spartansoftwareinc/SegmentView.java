@@ -54,13 +54,14 @@ import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextPart;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 import net.sf.okapi.filters.its.html5.HTML5Filter;
+import org.apache.log4j.Logger;
 
 /**
  * Table view containing the source and target segments extracted from the
  * opened file. Indicates attached LTS metadata as flags.
  */
 public class SegmentView extends JScrollPane {
-
+    private static Logger LOG = Logger.getLogger("com.spartansoftwareinc.SegmentView");
     protected JTable sourceTargetTable;
     private SegmentTableModel segments;
     private LinkedList<Event> srcEvents = new LinkedList<Event>(), tgtEvents = new LinkedList<Event>();
@@ -226,9 +227,17 @@ public class SegmentView extends JScrollPane {
             srcEventNum++;
             tgtEventNum++;
         }
-//        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
-//            System.err.println("Documents not aligned?");
-//        }
+        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
+            LOG.error("Documents not aligned?");
+            while (srcFilter.hasNext()) {
+                srcEvents.add(srcFilter.next());
+                srcEventNum++;
+            }
+            while (tgtFilter.hasNext()) {
+                tgtEvents.add(tgtFilter.next());
+                tgtEventNum++;
+            }
+        }
     }
     
     public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
