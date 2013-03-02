@@ -167,6 +167,7 @@ public class SegmentView extends JScrollPane {
         parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
         this.sourceFile = sourceFile;
         this.targetFile = targetFile;
+        updateRowHeights();
         attrView.aggregateTableView.setDocument();
         addFilters();
 
@@ -274,6 +275,7 @@ public class SegmentView extends JScrollPane {
     }
 
     protected void updateRowHeights() {
+        setViewportView(null);
         for (int row = 0; row < sourceTargetTable.getRowCount(); row++) {
             FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
             int rowHeight = font.getHeight();
@@ -284,6 +286,7 @@ public class SegmentView extends JScrollPane {
             }
             sourceTargetTable.setRowHeight(row, rowHeight);
         }
+        setViewportView(sourceTargetTable);
     }
 
     public void selectedSegment() {
