@@ -44,7 +44,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
     JMenuBar menuBar;
     JMenu menuFile, menuFilter, menuHelp;
-    JMenuItem menuOpen, menuSplit, menuExit, menuAbout, menuRules, menuProv, menuSave;
+    JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout, menuRules, menuProv, menuSave;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -84,8 +84,12 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         if (e.getSource() == this.menuAbout) {
             JOptionPane.showMessageDialog(this, "Reviewer's Workbench, version " + Version.get(), "About", JOptionPane.INFORMATION_MESSAGE);
 
-        } else if (e.getSource() == this.menuOpen) {
-            OpenView open = new OpenView(segmentView);
+        } else if (e.getSource() == this.menuOpenHTML) {
+            OpenHTMLView open = new OpenHTMLView(segmentView);
+            SwingUtilities.invokeLater(open);
+
+        } else if (e.getSource() == this.menuOpenXLIFF) {
+            OpenXLIFFView open = new OpenXLIFFView(segmentView);
             SwingUtilities.invokeLater(open);
 
         } else if (e.getSource() == this.menuRules) {
@@ -126,11 +130,17 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuFile.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menuFile);
 
-        menuOpen = new JMenuItem("Open");
-        menuOpen.addActionListener(this);
-        menuOpen.setAccelerator(
+        menuOpenHTML = new JMenuItem("Open HTML");
+        menuOpenHTML.addActionListener(this);
+        menuOpenHTML.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.CTRL_MASK));
+        menuFile.add(menuOpenHTML);
+
+        menuOpenXLIFF = new JMenuItem("Open XLIFF");
+        menuOpenXLIFF.addActionListener(this);
+        menuOpenXLIFF.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK));
-        menuFile.add(menuOpen);
+        menuFile.add(menuOpenXLIFF);
 
         menuSave = new JMenuItem("Save");
         menuSave.addActionListener(this);
