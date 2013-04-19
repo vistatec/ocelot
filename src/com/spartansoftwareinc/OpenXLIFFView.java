@@ -13,35 +13,30 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 /**
- * View for importing aligned files into the workbench.
+ * View for importing an XLIFF file into the workbench.
  */
-public class OpenView extends JPanel implements Runnable, ActionListener {
+public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
     private JFrame frame;
     private SegmentView segmentView;
-    private JButton selectSource, selectTarget, importFiles, close;
-    File sourceFile, targetFile;
+    private JButton selectSource, importFiles, close;
+    File sourceFile;
     JFileChooser fileChooser;
 
-    public OpenView(SegmentView segmentView) {
+    public OpenXLIFFView(SegmentView segmentView) {
         super(new GridLayout(0,2));
         this.segmentView = segmentView;
         fileChooser = new JFileChooser();
         setBorder(new EmptyBorder(10,10,10,10));
 
-        add(new JLabel("Source:"));
-        selectSource = new JButton("Source File");
+        add(new JLabel("File:"));
+        selectSource = new JButton("XLIFF File");
         selectSource.addActionListener(this);
         add(selectSource);
-
-        add(new JLabel("Target:"));
-        selectTarget = new JButton("Target File");
-        selectTarget.addActionListener(this);
-        add(selectTarget);
 
         importFiles = new JButton("Import");
         importFiles.addActionListener(this);
         add(importFiles);
-        
+
         close = new JButton("Close");
         close.addActionListener(this);
         add(close);
@@ -55,17 +50,10 @@ public class OpenView extends JPanel implements Runnable, ActionListener {
                 sourceFile = fileChooser.getSelectedFile();
                 String s = sourceFile.getName();
                 if (s.equals(sourceFile.getName())) {
-                selectSource.setText(sourceFile.getName());
+                    selectSource.setText(sourceFile.getName());
                 }
-
             }
-        } else if (ae.getSource() == selectTarget) {
-            int returnVal = fileChooser.showOpenDialog(this); 
-            if (returnVal == JFileChooser.APPROVE_OPTION) { 
-                targetFile = fileChooser.getSelectedFile();
-                selectTarget.setText(targetFile.getName());
-            }
-        } else if (ae.getSource() == importFiles && sourceFile != null && targetFile != null) {
+        } else if (ae.getSource() == importFiles && sourceFile != null) {
             Thread t = new Thread(new OpenThread());
             t.start();
             frame.dispose();
@@ -87,9 +75,10 @@ public class OpenView extends JPanel implements Runnable, ActionListener {
 
     class OpenThread implements Runnable {
 
+        @Override
         public void run() {
             try {
-                segmentView.parseSegmentsFromFile(sourceFile, targetFile);
+                segmentView.parseSegmentsFromXLIFFFile(sourceFile);
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             }

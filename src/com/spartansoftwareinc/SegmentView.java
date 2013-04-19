@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -39,21 +40,25 @@ import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.GenericAnnotations;
+import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.encoder.EncoderManager;
 import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.resource.DocumentPart;
 import net.sf.okapi.common.resource.EndSubfilter;
 import net.sf.okapi.common.resource.Ending;
 import net.sf.okapi.common.resource.ITextUnit;
+import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.RawDocument;
 import net.sf.okapi.common.resource.StartDocument;
 import net.sf.okapi.common.resource.StartGroup;
 import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.StartSubfilter;
+import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextPart;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 import net.sf.okapi.filters.its.html5.HTML5Filter;
+import net.sf.okapi.filters.xliff.XLIFFFilter;
 import org.apache.log4j.Logger;
 
 /**
@@ -64,7 +69,7 @@ public class SegmentView extends JScrollPane {
     private static Logger LOG = Logger.getLogger("com.spartansoftwareinc.SegmentView");
     protected JTable sourceTargetTable;
     private SegmentTableModel segments;
-    private LinkedList<Event> srcEvents = new LinkedList<Event>(), tgtEvents = new LinkedList<Event>();
+    private LinkedList<Event> srcEvents, tgtEvents;
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
@@ -157,11 +162,13 @@ public class SegmentView extends JScrollPane {
         setViewportView(sourceTargetTable);
     }
 
-    public void parseSegmentsFromFile(File sourceFile, File targetFile) throws IOException {
+    public void parseSegmentsFromHTMLFile(File sourceFile, File targetFile) throws IOException {
         sourceTargetTable.clearSelection();
         segments.deleteSegments();
         sourceTargetTable.setRowSorter(null);
         attrView.clearSegment();
+        srcEvents = new LinkedList<Event>();
+        tgtEvents = new LinkedList<Event>();
         setViewportView(null);
         documentSegmentNum = 1;
 
@@ -239,7 +246,94 @@ public class SegmentView extends JScrollPane {
             }
         }
     }
-    
+
+    public void parseSegmentsFromXLIFFFile(File sourceFile) throws IOException {
+        sourceTargetTable.clearSelection();
+        segments.deleteSegments();
+        sourceTargetTable.setRowSorter(null);
+        attrView.clearSegment();
+        targetFile = null;
+        tgtEvents = null;
+        srcEvents = new LinkedList<Event>();
+        setViewportView(null);
+        documentSegmentNum = 1;
+
+        parseXLIFFFile(new FileInputStream(sourceFile));
+        this.sourceFile = sourceFile;
+        updateRowHeights();
+        attrView.aggregateTableView.setDocument();
+        addFilters();
+
+        // Adjust the segment number column width
+        tableColumnModel.getColumn(
+                segments.getColumnIndex(SegmentTableModel.COLSEGNUM))
+                .setPreferredWidth(this.getFontMetrics(this.getFont())
+                .stringWidth(" " + documentSegmentNum));
+
+        setViewportView(sourceTargetTable);
+    }
+
+    public void parseXLIFFFile(FileInputStream file) {
+        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.fromString("en"), LocaleId.fromString("fr"));
+        XLIFFFilter fileFilter = new XLIFFFilter();
+        fileFilter.open(fileDoc);
+        int fileEventNum = 0;
+
+        while(fileFilter.hasNext()) {
+            Event event = fileFilter.next();
+            srcEvents.add(event);
+
+            ITextUnit tu;
+            if (event.isTextUnit()) {
+                tu = (ITextUnit) event.getResource();
+                TextContainer srcTu = tu.getSource();
+                TextContainer tgtTu = null;
+
+                String srcText = "", tgtText = "";
+		Iterator<TextPart> srcTextParts = tu.getSource().iterator();
+                while(srcTextParts.hasNext()) {
+                    srcText += srcTextParts.next().text;
+                }
+
+                Set<LocaleId> targetLocales = tu.getTargetLocales();
+                if (targetLocales.size() > 1) {
+                    LOG.warn("More than 1 target locale"+targetLocales);
+                } else if (targetLocales.size() == 1) {
+                    for (LocaleId tgt : targetLocales) {
+			tgtTu = tu.getTarget(tgt);
+                        Iterator<TextPart> tgtTextParts = tgtTu.iterator();
+                        while (tgtTextParts.hasNext()) {
+                            tgtText += tgtTextParts.next().text;
+                        }
+                    }
+                }
+
+                GenericAnnotations itsTags = tu.getAnnotation(GenericAnnotations.class);
+                List<GenericAnnotation> anns = new LinkedList<GenericAnnotation>();
+                // TODO: get annotations for other data categories
+                if (itsTags != null) {
+                    anns.addAll(itsTags.getAnnotations(GenericAnnotationType.LQI));
+                    anns.addAll(itsTags.getAnnotations(GenericAnnotationType.PROV));
+                }
+
+                GenericAnnotations srcAnns = srcTu.getAnnotation(GenericAnnotations.class);
+                if (srcAnns != null) {
+                    anns.addAll(srcAnns.getAnnotations(GenericAnnotationType.LQI));
+                }
+
+                if (tgtTu != null) {
+                    GenericAnnotations tgtAnns = tgtTu.getAnnotation(GenericAnnotations.class);
+                    if (tgtAnns != null) {
+                        anns.addAll(tgtAnns.getAnnotations(GenericAnnotationType.LQI));
+                    }
+                }
+
+                addSegment(srcText, tgtText, anns, fileEventNum, fileEventNum);
+            }
+            fileEventNum++;
+        }
+    }
+
     public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
         Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum, sourceText, targetText);
         // TODO: parse GenericAnnotations for other data categories.
@@ -318,13 +412,16 @@ public class SegmentView extends JScrollPane {
 
     public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
         // TODO: get the actual locale and filename for the files.
-        saveEvents(srcEvents, sourceFile.getName()+".output", LocaleId.fromString("en"));
-        saveEvents(tgtEvents, targetFile.getName()+".output", LocaleId.fromString("de"));
+        if (targetFile == null) {
+            saveEvents(new XLIFFFilter(), srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
+        } else {
+            saveEvents(new HTML5Filter(), srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
+            saveEvents(new HTML5Filter(), tgtEvents, targetFile.getName() + ".output", LocaleId.fromString("de"));
+        }
     }
 
-    public void saveEvents(List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+    public void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         StringBuilder tmp = new StringBuilder();
-        HTML5Filter filter = new HTML5Filter();
         ISkeletonWriter skelWriter = filter.createSkeletonWriter();
         EncoderManager encoderManager = filter.getEncoderManager();
         for (Event event : events) {
@@ -376,11 +473,18 @@ public class SegmentView extends JScrollPane {
     }
 
     public void updateEvent(Segment seg) throws FileNotFoundException, IOException {
+        if (targetFile == null) {
+            updateXLIFFEvent(seg);
+        } else {
+            updateHTMLEvent(seg);
+        }
+    }
+
+    public void updateHTMLEvent(Segment seg) throws FileNotFoundException, IOException {
         // TODO: Fix the locales, remove old generic annotations
         Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
         ITextUnit srcTu = srcEvent.getTextUnit();
         TextFragment srcTf = srcTu.createTarget(LocaleId.fromString("en"), true, IResource.COPY_ALL).getFirstContent();
-
         Event tgtEvent = tgtEvents.get(seg.getTargetEventNumber());
         ITextUnit tgtTu = tgtEvent.getTextUnit();
         TextFragment tgtTf = tgtTu.createTarget(LocaleId.fromString("de"), true, IResource.COPY_ALL).getFirstContent();
@@ -430,6 +534,41 @@ public class SegmentView extends JScrollPane {
         srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, provAnns);
         tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
         tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, provAnns);
+    }
+
+    public void updateXLIFFEvent(Segment seg) throws FileNotFoundException, IOException {
+        // TODO: Fix the locales, remove old generic annotations
+        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
+        ITextUnit srcTu = srcEvent.getTextUnit();
+        String rwRef = "RW"+seg.getSegmentNumber();
+
+        GenericAnnotations anns = new GenericAnnotations();
+        ITSLQIAnnotations lqiAnns = new ITSLQIAnnotations();
+        for (LanguageQualityIssue lqi : seg.getLQI()) {
+            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
+                    GenericAnnotationType.LQI_TYPE, lqi.getType(),
+                    GenericAnnotationType.LQI_COMMENT, lqi.getComment(),
+                    GenericAnnotationType.LQI_SEVERITY, lqi.getSeverity(),
+                    GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
+            anns.add(ga);
+            lqiAnns.add(ga);
+            lqiAnns.setData(rwRef);
+        }
+
+        if (lqiAnns.size() > 0) {
+            srcTu.setProperty(new Property(Property.ITS_LQI, " its:locQualityIssuesRef=\""+rwRef+"\""));
+            srcTu.setAnnotation(lqiAnns);
+        } else {
+            srcTu.setProperty(new Property(Property.ITS_LQI, ""));
+            srcTu.setAnnotation(null);
+        }
+        srcTu.getSource().setProperty(new Property(Property.ITS_LQI, ""));
+        srcTu.getSource().setAnnotation(null);
+        Set<LocaleId> targetLocales = srcTu.getTargetLocales();
+        for (LocaleId tgt : targetLocales) {
+            srcTu.getTarget(tgt).setProperty(new Property(Property.ITS_LQI, ""));
+            srcTu.getTarget(tgt).setAnnotation(null);
+        }
     }
 
     public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {
