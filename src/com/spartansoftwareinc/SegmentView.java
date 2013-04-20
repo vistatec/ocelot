@@ -556,7 +556,7 @@ public class SegmentView extends JScrollPane {
         }
 
         if (lqiAnns.size() > 0) {
-            srcTu.setProperty(new Property(Property.ITS_LQI, " its:locQualityIssuesRef=\""+rwRef+"\""));
+            srcTu.setProperty(new Property(Property.ITS_LQI, " its:locQualityIssuesRef=\"#"+rwRef+"\""));
             srcTu.setAnnotation(lqiAnns);
         } else {
             srcTu.setProperty(new Property(Property.ITS_LQI, ""));
