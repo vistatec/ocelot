@@ -280,6 +280,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
             segAttrView.setSelectedSegment(selectedSeg);
             // Switch to Main segment metadata tab.
             segAttrView.setSelectedIndex(0);
+            segAttrView.segmentView.updateRowHeights();
             clearForm();
 
         } else if (e.getSource() == enabledTrue) {
