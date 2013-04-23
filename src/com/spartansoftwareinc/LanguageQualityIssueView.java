@@ -14,7 +14,8 @@ import javax.swing.border.EmptyBorder;
  * Detail view showing ITS metadata on the selected LQI in SegmentAttributeView.
  */
 public class LanguageQualityIssueView extends JScrollPane {
-    private JLabel segmentLabel, typeLabel, commentLabel, severityLabel,
+    private JLabel dataCategoryLabel, segmentLabel;
+    private JLabel typeLabel, commentLabel, severityLabel,
             profileLabel, enabledLabel;
     private JLabel segment, type, severity, profile, enabled;
     private JTextArea comment;
@@ -28,29 +29,34 @@ public class LanguageQualityIssueView extends JScrollPane {
         gridBag.insets = new Insets(0,10,5,10); // Pad text
         gridBag.gridwidth = 1;
 
-        segmentLabel = new JLabel ();
+        dataCategoryLabel = new JLabel ();
         gridBag.gridx = 0;
         gridBag.gridy = 0;
+        mainPanel.add(dataCategoryLabel, gridBag);
+
+        segmentLabel = new JLabel ();
+        gridBag.gridx = 0;
+        gridBag.gridy = 1;
         mainPanel.add(segmentLabel, gridBag);
 
         segment = new JLabel();
         gridBag.gridx = 1;
-        gridBag.gridy = 0;
+        gridBag.gridy = 1;
         mainPanel.add(segment, gridBag);
 
         typeLabel = new JLabel();
         gridBag.gridx = 0;
-        gridBag.gridy = 1;
+        gridBag.gridy = 2;
         mainPanel.add(typeLabel, gridBag);
 
         type = new JLabel();
         gridBag.gridx = 1;
-        gridBag.gridy = 1;
+        gridBag.gridy = 2;
         mainPanel.add(type, gridBag);
         
         commentLabel = new JLabel();
         gridBag.gridx = 0;
-        gridBag.gridy = 2;
+        gridBag.gridy = 3;
         mainPanel.add(commentLabel, gridBag);
         
         comment = new JTextArea();
@@ -58,37 +64,37 @@ public class LanguageQualityIssueView extends JScrollPane {
         comment.setWrapStyleWord(true);
         comment.setVisible(false);
         gridBag.gridx = 1;
-        gridBag.gridy = 2;
+        gridBag.gridy = 3;
         mainPanel.add(comment, gridBag);
         
         severityLabel = new JLabel();
         gridBag.gridx = 0;
-        gridBag.gridy = 3;
+        gridBag.gridy = 4;
         mainPanel.add(severityLabel, gridBag);
         
         severity = new JLabel();
         gridBag.gridx = 1;
-        gridBag.gridy = 3;
+        gridBag.gridy = 4;
         mainPanel.add(severity, gridBag);
         
         profileLabel = new JLabel();
         gridBag.gridx = 0;
-        gridBag.gridy = 4;
+        gridBag.gridy = 5;
         mainPanel.add(profileLabel, gridBag);
         
         profile = new JLabel();
         gridBag.gridx = 1;
-        gridBag.gridy = 4;
+        gridBag.gridy = 5;
         mainPanel.add(profile, gridBag);
         
         enabledLabel = new JLabel();
         gridBag.gridx = 0;
-        gridBag.gridy = 5;
+        gridBag.gridy = 6;
         mainPanel.add(enabledLabel, gridBag);
         
         enabled = new JLabel();
         gridBag.gridx = 1;
-        gridBag.gridy = 5;
+        gridBag.gridy = 6;
         mainPanel.add(enabled, gridBag);
 
         Dimension prefSize = new Dimension(500, 200);
@@ -100,6 +106,7 @@ public class LanguageQualityIssueView extends JScrollPane {
 
     public void setMetadata(Segment selectedSegment, ITSMetadata data) {
         LanguageQualityIssue lqi = (LanguageQualityIssue) data;
+        dataCategoryLabel.setText("Language Quality Issue");
         segmentLabel.setText("Segment #");
         segment.setText(selectedSegment.getSegmentNumber()+"");
         typeLabel.setText("Type");
@@ -117,6 +124,7 @@ public class LanguageQualityIssueView extends JScrollPane {
     }
 
     public void clearDisplay() {
+        dataCategoryLabel.setText("");
         segmentLabel.setText("");
         segment.setText("");
         typeLabel.setText("");

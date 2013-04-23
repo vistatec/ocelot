@@ -30,6 +30,9 @@ public class SegmentAttributeTableView extends JScrollPane {
         for (String type : segModel.lqiStats.keySet()) {
             data.add(segModel.lqiStats.get(type));
         }
+        for (String type : segModel.provStats.keySet()) {
+            data.add(segModel.provStats.get(type));
+        }
         docStatsModel.addRows(data);
 
         sort = new TableRowSorter(docStatsModel);
