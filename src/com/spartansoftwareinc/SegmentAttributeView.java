@@ -1,6 +1,9 @@
 package com.spartansoftwareinc;
 
+import java.awt.Component;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Displays ITS metadata attached to the selected segment in the SegmentView.
@@ -33,6 +36,21 @@ public class SegmentAttributeView extends JTabbedPane {
 
         addLQIView = new NewLanguageQualityIssueView(this);
         addTab("+", addLQIView);
+
+        // Deselect metadata to allow reselection for detail view after switching tabs.
+        addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Component tab = getComponentAt(getSelectedIndex());
+                if (tab.equals(lqiTableView)) {
+                    lqiTableView.deselectLQI();
+                } else if (tab.equals(provTableView)) {
+                    provTableView.deselectProv();
+                } else if (tab.equals(treeView)) {
+                    treeView.tree.clearSelection();
+                }
+            }
+        });
     }
 
     public void setSegmentView(SegmentView segView) {

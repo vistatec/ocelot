@@ -9,6 +9,7 @@ import javax.swing.JPanel;
  */
 public class ITSDetailView extends JPanel {
     private LanguageQualityIssueView lqiDetailView;
+    private ProvenanceView provDetailView;
     
     public ITSDetailView() {
         setLayout(new BorderLayout());
@@ -17,10 +18,37 @@ public class ITSDetailView extends JPanel {
     }
 
     public void clearDisplay() {
-        lqiDetailView.clearDisplay();
+        if (lqiDetailView != null) {
+            lqiDetailView.clearDisplay();
+        }
+	if (provDetailView != null) {
+            provDetailView.clearDisplay();
+        }
     }
 
     public void setMetadata(Segment seg, ITSMetadata data) {
-        lqiDetailView.setMetadata(seg, data);
+        if (LanguageQualityIssue.class.equals(
+            data.getClass())) {
+            if (provDetailView != null) {
+                remove(provDetailView);
+                provDetailView = null;
+            }
+            if (lqiDetailView == null) {
+                lqiDetailView = new LanguageQualityIssueView();
+                add(lqiDetailView);
+            }
+            lqiDetailView.setMetadata(seg, data);
+        } else if (ITSProvenance.class.equals(data.getClass())) {
+            if (lqiDetailView != null) {
+                remove(lqiDetailView);
+                lqiDetailView = null;
+            }
+            if (provDetailView == null) {
+                provDetailView = new ProvenanceView();
+                add(provDetailView);
+            }
+            provDetailView.setMetadata(seg, data);
+        }
+        revalidate();
     }
 }

@@ -51,7 +51,16 @@ public class ITSProvenanceTableView extends JScrollPane {
     }
 
     public void selectedProv() {
-        
+        int rowIndex = provTable.getSelectedRow();
+        if (rowIndex >= 0) {
+            segAttrView.setSelectedMetadata(provTableModel.rows.get(rowIndex));
+        }
+    }
+
+    public void deselectProv() {
+        if (provTable != null) {
+            provTable.clearSelection();
+        }
     }
 
     public class ProvTableModel extends AbstractTableModel {

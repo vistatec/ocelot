@@ -15,6 +15,7 @@ class SegmentTableModel extends AbstractTableModel {
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
     protected HashMap<String, LQIStatistics> lqiStats;
+    protected HashMap<String, ProvStatistics> provStats;
     public static final int NUMFLAGS = 5;
     public static final int NONFLAGCOLS = 3;
     public static final String COLSEGNUM = "#";
@@ -32,6 +33,7 @@ class SegmentTableModel extends AbstractTableModel {
             colIndexToName.put(colNameToIndex.get(key), key);
         }
         lqiStats = new HashMap<String,LQIStatistics>();
+        provStats = new HashMap<String,ProvStatistics>();
     }
 
     @Override
@@ -99,6 +101,28 @@ class SegmentTableModel extends AbstractTableModel {
                 stats.setRange(lqi.getSeverity());
             }
         }
+        for (ITSProvenance prov : seg.getProv()) {
+            calcProvenanceStats("person", prov.getPerson());
+            calcProvenanceStats("org", prov.getOrg());
+            calcProvenanceStats("tool", prov.getTool());
+            calcProvenanceStats("revPerson", prov.getRevPerson());
+            calcProvenanceStats("revOrg", prov.getRevOrg());
+            calcProvenanceStats("revTool", prov.getRevTool());
+        }
+    }
+
+    private void calcProvenanceStats(String type, String value) {
+        if (value != null) {
+            ProvStatistics stats = provStats.get(type + ":" + value);
+            if (stats == null) {
+                stats = new ProvStatistics();
+                stats.setType(type);
+                stats.setValue(value);
+                provStats.put(type + ":" + value, stats);
+            } else {
+                stats.setCount(stats.getCount() + 1);
+            }
+        }
     }
 
     public Segment getSegment(int row) {
@@ -108,5 +132,6 @@ class SegmentTableModel extends AbstractTableModel {
     protected void deleteSegments() {
         segments.clear();
         lqiStats = new HashMap<String,LQIStatistics>();
+        provStats = new HashMap<String,ProvStatistics>();
     }
 }

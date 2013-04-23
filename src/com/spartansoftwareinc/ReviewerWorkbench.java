@@ -97,9 +97,9 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             SwingUtilities.invokeLater(rules);
 
         } else if (e.getSource() == this.menuProv) {
-            ProvenanceView prov = null;
+            ProvenanceProfileView prov = null;
             try {
-                prov = new ProvenanceView();
+                prov = new ProvenanceProfileView();
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
             }

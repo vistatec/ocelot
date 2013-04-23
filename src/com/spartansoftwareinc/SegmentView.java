@@ -41,6 +41,7 @@ import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.GenericAnnotations;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
+import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 import net.sf.okapi.common.encoder.EncoderManager;
 import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.resource.DocumentPart;
@@ -318,12 +319,14 @@ public class SegmentView extends JScrollPane {
                 GenericAnnotations srcAnns = srcTu.getAnnotation(GenericAnnotations.class);
                 if (srcAnns != null) {
                     anns.addAll(srcAnns.getAnnotations(GenericAnnotationType.LQI));
+                    anns.addAll(srcAnns.getAnnotations(GenericAnnotationType.PROV));
                 }
 
                 if (tgtTu != null) {
                     GenericAnnotations tgtAnns = tgtTu.getAnnotation(GenericAnnotations.class);
                     if (tgtAnns != null) {
                         anns.addAll(tgtAnns.getAnnotations(GenericAnnotationType.LQI));
+                        anns.addAll(tgtAnns.getAnnotations(GenericAnnotationType.PROV));
                     }
                 }
 
@@ -527,7 +530,6 @@ public class SegmentView extends JScrollPane {
         ITextUnit srcTu = srcEvent.getTextUnit();
         String rwRef = "RW"+seg.getSegmentNumber();
 
-        GenericAnnotations anns = new GenericAnnotations();
         ITSLQIAnnotations lqiAnns = new ITSLQIAnnotations();
         for (LanguageQualityIssue lqi : seg.getLQI()) {
             GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
@@ -535,9 +537,7 @@ public class SegmentView extends JScrollPane {
                     GenericAnnotationType.LQI_COMMENT, lqi.getComment(),
                     GenericAnnotationType.LQI_SEVERITY, lqi.getSeverity(),
                     GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
-            anns.add(ga);
             lqiAnns.add(ga);
-            lqiAnns.setData(rwRef);
         }
 
         if (lqiAnns.size() > 0) {
@@ -547,6 +547,7 @@ public class SegmentView extends JScrollPane {
             srcTu.setProperty(new Property(Property.ITS_LQI, ""));
             srcTu.setAnnotation(null);
         }
+        lqiAnns.setData(rwRef);
         srcTu.getSource().setProperty(new Property(Property.ITS_LQI, ""));
         srcTu.getSource().setAnnotation(null);
         Set<LocaleId> targetLocales = srcTu.getTargetLocales();
@@ -554,6 +555,49 @@ public class SegmentView extends JScrollPane {
             srcTu.getTarget(tgt).setProperty(new Property(Property.ITS_LQI, ""));
             srcTu.getTarget(tgt).setAnnotation(null);
         }
+
+        Properties p = new Properties();
+        File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
+        File provFile = new File(rwDir, "provenance.properties");
+        if (provFile.exists()) {
+            p.load(new FileInputStream(provFile));
+        }
+
+        ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
+        for (ITSProvenance prov : seg.getProv()) {
+            String revPerson = prov.getRevPerson();
+            String revOrg = prov.getRevOrg();
+            String provRef = prov.getProvRef();
+            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.PROV,
+                    GenericAnnotationType.PROV_PERSON, prov.getPerson(),
+                    GenericAnnotationType.PROV_ORG, prov.getOrg(),
+                    GenericAnnotationType.PROV_TOOL, prov.getTool(),
+                    GenericAnnotationType.PROV_REVPERSON, revPerson,
+                    GenericAnnotationType.PROV_REVORG, revOrg,
+                    GenericAnnotationType.PROV_REVTOOL, prov.getRevTool(),
+                    GenericAnnotationType.PROV_PROVREF, provRef);
+            provAnns.add(ga);
+
+            // Check for existing RW annotation.
+            if (p.getProperty("revPerson").equals(prov.getRevPerson())
+                    && p.getProperty("revOrganization").equals(prov.getRevOrg())
+                    && p.getProperty("externalReference").equals(prov.getProvRef())) {
+                seg.setAddedRWProvenance(true);
+            }
+        }
+
+        if (!seg.addedRWProvenance()) {
+            GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
+                    GenericAnnotationType.PROV_REVPERSON, p.getProperty("revPerson"),
+                    GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
+                    GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
+            provAnns.add(provGA);
+            seg.setAddedRWProvenance(true);
+        }
+
+        srcTu.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
+        provAnns.setData(rwRef);
+        srcTu.setAnnotation(provAnns);
     }
 
     public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {

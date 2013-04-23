@@ -57,6 +57,12 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         }
     }
 
+    public void deselectLQI() {
+        if (lqiTable != null) {
+            lqiTable.clearSelection();
+        }
+    }
+
     public class LQITableModel extends AbstractTableModel {
 
         public static final int NUMCOLS = 3;
