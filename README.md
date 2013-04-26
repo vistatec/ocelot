@@ -20,6 +20,9 @@ Filter rules are in the format:
 <dataCategoryType> = locQualityIssueComment
 <value> = String
 
+<dataCategoryType> = org | person | tool | revOrg | revPerson | revTool | provRef
+<value> = String
+
 # Display Rules #
 Display rules are in the format:
   <label>.flag.<type> = <value>
