@@ -79,6 +79,7 @@ public class SegmentView extends JScrollPane {
     protected RuleConfiguration ruleConfig;
     private int documentSegmentNum;
     protected int selectedRow = -1, selectedCol = -1;
+    private IFilter filter;
 
     public SegmentView(SegmentAttributeView attr) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
@@ -159,6 +160,7 @@ public class SegmentView extends JScrollPane {
         setViewportView(null);
         segments.fireTableDataChanged();
         addFilters();
+        updateRowHeights();
         setViewportView(sourceTargetTable);
     }
 
@@ -275,12 +277,12 @@ public class SegmentView extends JScrollPane {
 
     public void parseXLIFFFile(FileInputStream file) {
         RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.fromString("en"), LocaleId.fromString("fr"));
-        XLIFFFilter fileFilter = new XLIFFFilter();
-        fileFilter.open(fileDoc);
+        this.filter = new XLIFFFilter();
+        this.filter.open(fileDoc);
         int fileEventNum = 0;
 
-        while(fileFilter.hasNext()) {
-            Event event = fileFilter.next();
+        while(this.filter.hasNext()) {
+            Event event = this.filter.next();
             srcEvents.add(event);
 
             ITextUnit tu;
@@ -361,6 +363,7 @@ public class SegmentView extends JScrollPane {
         SegmentTextRenderer str = new SegmentTextRenderer();
         str.setLineWrap(true);
         str.setWrapStyleWord(true);
+        str.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
         for (int row = 0; row < sourceTargetTable.getRowCount(); row++) {
             FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
             int rowHeight = font.getHeight();
@@ -401,7 +404,7 @@ public class SegmentView extends JScrollPane {
     public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
         // TODO: get the actual locale and filename for the files.
         if (targetFile == null) {
-            saveEvents(new XLIFFFilter(), srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
+            saveEvents(this.filter, srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
         } else {
             saveEvents(new HTML5Filter(), srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
             saveEvents(new HTML5Filter(), tgtEvents, targetFile.getName() + ".output", LocaleId.fromString("de"));
