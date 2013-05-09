@@ -36,3 +36,28 @@ Display rules are in the format:
 <type> = text
 <value> = String - basically anything, though a single character is recommended.
 
+# Quick Add Rules #
+Quick add rules are in the format:
+  <label>.quickAdd.<type> = <value>
+
+<label> refers to the filter rule the quick add rules are associated with.
+Valid <type> and <value> values are essentially the same as the LQI filter rules, plus the addition of the "hotkey" type:
+
+<type> = locQualityIssueType
+<value> = terminology |  mistranslation |  omission |
+          untranslated |  addition |  duplication |  inconsistency |
+          grammar |  legal |  register |  locale-specific-content |
+          locale-violation |  style |  characters |  misspelling |
+          typographical |  formatting |  inconsistent-entities |  numbers |
+          markup |  pattern-problem |  whitespace |  internationalization |
+          length |  uncategorized |  other
+
+<type> = locQualityIssueSeverity
+<value> = 0.0-100.0
+
+<type> = locQualityIssueComment
+<value> = String
+
+<type> = hotkey
+<value> = 0-9
+*Hotkeys are limited to CTRL + 0-9

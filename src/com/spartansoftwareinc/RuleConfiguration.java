@@ -24,22 +24,32 @@ import org.apache.log4j.Logger;
 public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
     private static Logger LOG = Logger.getLogger("com.spartansoftwareinc.FilterRules");
     private File rwDir, rulesFile;
-    private Pattern ruleFormat, flagFormat;
+    private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat;
 
     private ArrayList<String> ruleOrdering = new ArrayList<String>();
-    private HashMap<String,RuleFilter> rules =
-            new HashMap<String,RuleFilter>();
-    private HashMap<String, DataCategoryFlag> flags =
-            new HashMap<String, DataCategoryFlag>();
+    private HashMap<String,RuleFilter> rules;
+    private HashMap<String, DataCategoryFlag> flags;
+    private HashMap<String, LanguageQualityIssue> quickAdd;
+    private HashMap<Integer, String> quickAddHotkeys;
     protected boolean all = true, allWithMetadata;
     
     public RuleConfiguration() {
         rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
         rulesFile = new File(rwDir, "rules.properties");
+
+        rules = new HashMap<String, RuleFilter>();
+        flags = new HashMap<String, DataCategoryFlag>();
+        quickAdd = new HashMap<String, LanguageQualityIssue>();
+        quickAddHotkeys = new HashMap<Integer, String>();
+
         // ruleLabel.dataCategory = regex
         ruleFormat = Pattern.compile("([^.]+)\\.(\\w+)\\s*=(.*)");
         // ruleLabel.flag.flagType = display
         flagFormat = Pattern.compile("([^.]+)\\.flag\\.(\\w+)\\s*=(.*)");
+        // ruleLabel.quickAdd.LQIType = value
+        quickAddFormat = Pattern.compile("([^.]+)\\.quickAdd\\.(\\w+)\\s*=(.*)");
+        quickAddHotkeyFormat = Pattern.compile("[0-9]");
+
         loadConfig();
     }
     
@@ -72,6 +82,7 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         while ((line = configFile.readLine()) != null) {
             Matcher rulePattern = ruleFormat.matcher(line);
             Matcher flagPattern = flagFormat.matcher(line);
+            Matcher quickAddPattern = quickAddFormat.matcher(line);
             Matcher whitespace = Pattern.compile("\\s*").matcher(line);
             if (rulePattern.matches()) {
                 String ruleLabel = rulePattern.group(1);
@@ -105,6 +116,29 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
                     addText(ruleLabel, value);
                 } else {
                     LOG.error("Unrecognized flag: "+line);
+                }
+            } else if (quickAddPattern.matches()) {
+                String ruleLabel = quickAddPattern.group(1);
+                String LQIType = quickAddPattern.group(2);
+                String value = quickAddPattern.group(3).trim();
+
+                if (LQIType.equals(DataCategoryField.LQI_TYPE.getName())) {
+                    setLQIType(ruleLabel, value);
+
+                } else if (LQIType.equals(DataCategoryField.LQI_SEVERITY.getName())) {
+                    setLQISeverity(ruleLabel, Double.parseDouble(value));
+
+                } else if (LQIType.equals(DataCategoryField.LQI_COMMENT.getName())) {
+                    setLQIComment(ruleLabel, value);
+
+                } else if (LQIType.equals("hotkey")) {
+                    if (quickAddHotkeyFormat.matcher(value).matches()) {
+                        quickAddHotkeys.put(Integer.parseInt(value), ruleLabel);
+                    } else {
+                        LOG.error("Illegal quickAdd hotkey: "+value);
+                    }
+                } else {
+                    LOG.error("Illegal quickAdd type: "+LQIType);
                 }
             } else if (!whitespace.matches()) {
                 LOG.error("Unrecognized rule: "+line);
@@ -156,7 +190,37 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         flag.setText(text);
         flags.put(ruleLabel, flag);
     }
-    
+
+    public LanguageQualityIssue getQuickAddLQI(int hotkey) {
+        return quickAdd.get(quickAddHotkeys.get(hotkey));
+    }
+
+    public LanguageQualityIssue getQuickAddLQI(String ruleLabel) {
+        LanguageQualityIssue lqi = quickAdd.get(ruleLabel);
+        if (lqi == null) {
+            lqi = new LanguageQualityIssue();
+        }
+        return lqi;
+    }
+
+    public void setLQIType(String ruleLabel, String type) {
+        LanguageQualityIssue lqi = getQuickAddLQI(ruleLabel);
+        lqi.setType(type);
+        quickAdd.put(ruleLabel, lqi);
+    }
+
+    public void setLQISeverity(String ruleLabel, double severity) {
+        LanguageQualityIssue lqi = getQuickAddLQI(ruleLabel);
+        lqi.setSeverity(severity);
+        quickAdd.put(ruleLabel, lqi);
+    }
+
+    public void setLQIComment(String ruleLabel, String comment) {
+        LanguageQualityIssue lqi = getQuickAddLQI(ruleLabel);
+        lqi.setComment(comment);
+        quickAdd.put(ruleLabel, lqi);
+    }
+
     public ITSMetadata getTopDataCategory(Segment seg, int flagCol) {
         LinkedList<ITSMetadata> displayFlags = new LinkedList<ITSMetadata>();
         for (int pos = ruleOrdering.size()-1; pos >= 0; pos--) {

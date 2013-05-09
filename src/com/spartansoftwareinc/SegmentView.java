@@ -82,12 +82,10 @@ public class SegmentView extends JScrollPane {
     private String srcSLang, srcTLang;
     protected RuleConfiguration ruleConfig;
     private int documentSegmentNum;
-    protected int selectedRow = -1, selectedCol = -1;
     private IFilter filter;
 
     public SegmentView(SegmentAttributeView attr) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
-        attrView.setSegmentView(this);
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         ruleConfig = new RuleConfiguration();
@@ -184,8 +182,6 @@ public class SegmentView extends JScrollPane {
         parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
         this.sourceFile = sourceFile;
         this.targetFile = targetFile;
-        updateRowHeights();
-        attrView.aggregateTableView.setDocument();
         addFilters();
 
         // Adjust the segment number column width
@@ -194,6 +190,7 @@ public class SegmentView extends JScrollPane {
                 .setPreferredWidth(this.getFontMetrics(this.getFont())
                 .stringWidth(" " + documentSegmentNum));
 
+        updateRowHeights();
         setViewportView(sourceTargetTable);
     }
 
@@ -263,7 +260,6 @@ public class SegmentView extends JScrollPane {
 
         parseXLIFFFile(new FileInputStream(sourceFile));
         this.sourceFile = sourceFile;
-        attrView.aggregateTableView.setDocument();
         addFilters();
 
         // Adjust the segment number column width
@@ -351,7 +347,8 @@ public class SegmentView extends JScrollPane {
 
     public void addSegment(TextContainer sourceText, TextContainer targetText,
             List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
-        Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum, sourceText, targetText);
+        Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
+                sourceText, targetText, this);
         // TODO: parse GenericAnnotations for other data categories.
         for (GenericAnnotation ga : annotations) {
             if (ga.getType().equals(GenericAnnotationType.LQI)) {
@@ -395,14 +392,20 @@ public class SegmentView extends JScrollPane {
         setViewportView(sourceTargetTable);
     }
 
-    public void selectedSegment() {
-        int colIndex = sourceTargetTable.getSelectedColumn();
-        int rowIndex = sourceTargetTable.getSelectedRow();
-        if (rowIndex >= 0) {
-            int modelRowIndex = sort.convertRowIndexToModel(rowIndex);
-            Segment seg = segments.getSegment(modelRowIndex);
-            attrView.setSelectedSegment(seg);
+    public Segment getSelectedSegment() {
+        Segment selectedSeg = null;
+        if (sourceTargetTable.getSelectedRow() >= 0) {
+            selectedSeg = segments.getSegment(sort.convertRowIndexToModel(
+                sourceTargetTable.getSelectedRow()));
+        }
+        return selectedSeg;
+    }
 
+    public void selectedSegment() {
+        Segment seg = getSelectedSegment();
+        if (seg != null) {
+            attrView.setSelectedSegment(seg);
+            int colIndex = sourceTargetTable.getSelectedColumn();
             if (colIndex >= SegmentTableModel.NONFLAGCOLS) {
                 int adjustedFlagIndex = colIndex - SegmentTableModel.NONFLAGCOLS;
                 ITSMetadata its = ruleConfig.getTopDataCategory(seg, adjustedFlagIndex);
@@ -411,6 +414,27 @@ public class SegmentView extends JScrollPane {
                 }
             }
         }
+    }
+
+    public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
+        attrView.addLQIMetadata(lqi);
+    }
+
+    public void notifyAddedNewLQI(LanguageQualityIssue lqi, Segment seg) {
+        attrView.setSelectedMetadata(lqi);
+        attrView.setSelectedSegment(seg);
+        updateEvent(seg);
+        int selectedRow = sourceTargetTable.getSelectedRow();
+        reloadTable();
+        sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
+    }
+
+    public void notifyAddedProv(ITSProvenance prov) {
+        attrView.addProvMetadata(prov);
+    }
+
+    public void notifyDeletedSegments() {
+        attrView.deletedSegments();
     }
 
     public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
@@ -503,40 +527,7 @@ public class SegmentView extends JScrollPane {
             lqiAnns.setData(lqi.getIssuesRef());
         }
 
-        GenericAnnotations provAnns = new GenericAnnotations();
-        for (ITSProvenance prov : seg.getProv()) {
-            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.PROV,
-                    GenericAnnotationType.PROV_PERSON, prov.getPerson(),
-                    GenericAnnotationType.PROV_ORG, prov.getOrg(),
-                    GenericAnnotationType.PROV_TOOL, prov.getTool(),
-                    GenericAnnotationType.PROV_REVPERSON, prov.getRevPerson(),
-                    GenericAnnotationType.PROV_REVORG, prov.getRevOrg(),
-                    GenericAnnotationType.PROV_REVTOOL, prov.getRevTool(),
-                    GenericAnnotationType.PROV_PROVREF, prov.getProvRef());
-            provAnns.add(ga);
-            provAnns.setData(prov.getRecsRef());
-        }
-
-        if (!seg.addedRWProvenance()) {
-            Properties p = new Properties();
-            File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
-            File provFile = new File(rwDir, "provenance.properties");
-            if (provFile.exists()) {
-                try {
-                    p.load(new FileInputStream(provFile));
-                } catch (IOException ex) {
-                    LOG.warn(ex);
-                }
-            }
-            GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
-                    GenericAnnotationType.PROV_REVPERSON, p.getProperty("revPerson"),
-                    GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
-                    GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
-            // TODO: Adding a single provenance record is not supported yet.
-            provAnns.add(provGA);
-            seg.setAddedRWProvenance(true);
-        }
-
+        ITSProvenanceAnnotations provAnns = addRWProvenance(seg);
         srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
         srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, provAnns);
         tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
@@ -586,6 +577,13 @@ public class SegmentView extends JScrollPane {
             LOG.warn("Only 1 target locale in text-unit is currently supported");
         }
 
+        ITSProvenanceAnnotations provAnns = addRWProvenance(seg);
+        textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
+        provAnns.setData(rwRef);
+        textUnit.setAnnotation(provAnns);
+    }
+
+    public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
         Properties p = new Properties();
         File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
         File provFile = new File(rwDir, "provenance.properties");
@@ -626,12 +624,11 @@ public class SegmentView extends JScrollPane {
                     GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
                     GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
             provAnns.add(provGA);
+            seg.addProvenance(new ITSProvenance(provGA));
             seg.setAddedRWProvenance(true);
         }
 
-        textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
-        provAnns.setData(rwRef);
-        textUnit.setAnnotation(provAnns);
+        return provAnns;
     }
 
     public class SegmentTextRenderer implements TableCellRenderer {

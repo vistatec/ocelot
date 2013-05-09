@@ -220,12 +220,25 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     @Override
     public boolean dispatchKeyEvent(KeyEvent ke) {
         if (ke.getID() == KeyEvent.KEY_PRESSED) {
-            if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_1) {
-                segmentAttrView.setSelectedIndex(0);
-                segmentAttrView.aggregateTableView.docStatsTable.requestFocus();
-                segmentAttrView.lqiTableView.lqiTable.requestFocus();
-            } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_2) {
+            if (ke.isControlDown() && (ke.getKeyCode() >= KeyEvent.VK_0
+                    && ke.getKeyCode() <= KeyEvent.VK_9)) {
+                Segment seg = segmentView.getSelectedSegment();
+                LanguageQualityIssue lqi = segmentView.ruleConfig.getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
+                if (seg != null && lqi != null) {
+                    seg.addNewLQI(lqi);
+                }
+
+            } else if (ke.isControlDown() && ke.isShiftDown()
+                    && ke.getKeyCode() == KeyEvent.VK_TAB) {
+                int selectedTab = segmentAttrView.getSelectedIndex();
+                selectedTab = selectedTab+1 == segmentAttrView.getTabCount() ? 0 : selectedTab+1;
+                segmentAttrView.setSelectedIndex(selectedTab);
+                segmentAttrView.getComponentAt(selectedTab).requestFocus();
+
+            } else if (ke.isControlDown() && !ke.isShiftDown()
+                    && ke.getKeyCode() == KeyEvent.VK_TAB) {
                 segmentView.sourceTargetTable.requestFocus();
+
             } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
                 segmentAttrView.setSelectedIndex(1);
                 segmentAttrView.addLQIView.typeList.requestFocus();

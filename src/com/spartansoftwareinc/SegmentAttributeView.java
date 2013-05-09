@@ -9,7 +9,6 @@ import javax.swing.event.ChangeListener;
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  */
 public class SegmentAttributeView extends JTabbedPane {
-    protected SegmentView segmentView;
     protected SegmentAttributeTableView aggregateTableView;
     protected LanguageQualityIssueTableView lqiTableView;
     protected ITSProvenanceTableView provTableView;
@@ -22,7 +21,7 @@ public class SegmentAttributeView extends JTabbedPane {
     public SegmentAttributeView(ITSDetailView detailView) {
         itsDetailView = detailView;
 
-        aggregateTableView = new SegmentAttributeTableView(this);
+        aggregateTableView = new SegmentAttributeTableView();
         addTab("Doc Stats", aggregateTableView);
 
         lqiTableView = new LanguageQualityIssueTableView(this);
@@ -53,10 +52,6 @@ public class SegmentAttributeView extends JTabbedPane {
         });
     }
 
-    public void setSegmentView(SegmentView segView) {
-        this.segmentView = segView;
-    }
-
     public Segment getSelectedSegment() {
         return this.selectedSegment;
     }
@@ -79,13 +74,31 @@ public class SegmentAttributeView extends JTabbedPane {
         provTableView.clearSegment();
     }
 
-    public void addMetadata(ITSMetadata its) {
-        aggregateTableView.docStatsModel.updateITSStats(its);
-        segmentView.reloadTable();
+    public void deletedSegments() {
+        aggregateTableView.clearStats();
+        clearSegment();
+    }
+
+    public void addLQIMetadata(LanguageQualityIssue lqi) {
+        aggregateTableView.addLQIMetadata(lqi);
+    }
+
+    public void addProvMetadata(ITSProvenance prov) {
+        aggregateTableView.addProvMetadata(prov);
     }
 
     public void setSelectedMetadata(ITSMetadata its) {
-        itsDetailView.setMetadata(selectedSegment, its);
+        if (getSelectedSegment() != null) {
+            itsDetailView.setMetadata(getSelectedSegment(), its);
+            for (int i = 0; i < getTabCount(); i++) {
+                if ((its instanceof LanguageQualityIssue
+                        && lqiTableView.equals(getComponentAt(i))) ||
+                    (its instanceof ITSProvenance
+                        && provTableView.equals(getComponentAt(i)))) {
+                    setSelectedIndex(i);
+                }
+            }
+        }
     }
     
     public void deselectMetadata() {
