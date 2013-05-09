@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,16 +15,17 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -31,6 +34,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
@@ -56,7 +60,6 @@ import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.StartSubfilter;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
-import net.sf.okapi.common.resource.TextPart;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 import net.sf.okapi.filters.its.html5.HTML5Filter;
 import net.sf.okapi.filters.xliff.XLIFFFilter;
@@ -76,6 +79,7 @@ public class SegmentView extends JScrollPane {
     private TableColumnModel tableColumnModel;
     protected TableRowSorter sort;
     private File sourceFile, targetFile;
+    private String srcSLang, srcTLang;
     protected RuleConfiguration ruleConfig;
     private int documentSegmentNum;
     protected int selectedRow = -1, selectedCol = -1;
@@ -123,6 +127,9 @@ public class SegmentView extends JScrollPane {
         tableColumnModel.getColumn(0).setMinWidth(15);
         tableColumnModel.getColumn(0).setPreferredWidth(20);
         tableColumnModel.getColumn(0).setMaxWidth(50);
+
+        tableColumnModel.getColumn(segments.getColumnIndex(
+                SegmentTableModel.COLSEGTGT)).setCellEditor(new SegmentEditor());
         int flagMinWidth = 15, flagPrefWidth = 15, flagMaxWidth = 20;
         for (int i = SegmentTableModel.NONFLAGCOLS;
              i < SegmentTableModel.NONFLAGCOLS+SegmentTableModel.NUMFLAGS; i++) {
@@ -209,17 +216,11 @@ public class SegmentView extends JScrollPane {
             if (srcEvent.isTextUnit() && tgtEvent.isTextUnit()) {
                 srcTu = (ITextUnit) srcEvent.getResource();
                 tgtTu = (ITextUnit) tgtEvent.getResource();
-                Iterator<TextPart> srcTextParts = srcTu.getSource().iterator();
-                Iterator<TextPart> tgtTextParts = tgtTu.getSource().iterator();
+                TextContainer srcTc = srcTu.getSource();
+                TextContainer tgtTc = tgtTu.getSource();
 
-                String srcText = "", tgtText = "";
-                while(srcTextParts.hasNext() && tgtTextParts.hasNext()) {
-                    srcText += srcTextParts.next().text.getText();
-                    tgtText += tgtTextParts.next().text.getText();
-                }
-
-                GenericAnnotations srcITSTags = srcTu.getSource().getAnnotation(GenericAnnotations.class);
-                GenericAnnotations tgtITSTags = tgtTu.getSource().getAnnotation(GenericAnnotations.class);
+                GenericAnnotations srcITSTags = srcTc.getAnnotation(GenericAnnotations.class);
+                GenericAnnotations tgtITSTags = tgtTc.getAnnotation(GenericAnnotations.class);
                 List<GenericAnnotation> anns = new LinkedList<GenericAnnotation>();
                 // TODO: get annotations for other data categories
                 if (srcITSTags != null) {
@@ -231,7 +232,7 @@ public class SegmentView extends JScrollPane {
                     anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.PROV));
                 }
 
-                addSegment(srcText, tgtText, anns, srcEventNum, tgtEventNum);
+                addSegment(srcTc, tgtTc, anns, srcEventNum, tgtEventNum);
             }
             srcEventNum++;
             tgtEventNum++;
@@ -262,7 +263,6 @@ public class SegmentView extends JScrollPane {
 
         parseXLIFFFile(new FileInputStream(sourceFile));
         this.sourceFile = sourceFile;
-        updateRowHeights();
         attrView.aggregateTableView.setDocument();
         addFilters();
 
@@ -272,11 +272,12 @@ public class SegmentView extends JScrollPane {
                 .setPreferredWidth(this.getFontMetrics(this.getFont())
                 .stringWidth(" " + documentSegmentNum));
 
+        updateRowHeights();
         setViewportView(sourceTargetTable);
     }
 
     public void parseXLIFFFile(FileInputStream file) {
-        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.fromString("en"), LocaleId.fromString("fr"));
+        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, LocaleId.EMPTY);
         this.filter = new XLIFFFilter();
         this.filter.open(fileDoc);
         int fileEventNum = 0;
@@ -285,17 +286,29 @@ public class SegmentView extends JScrollPane {
             Event event = this.filter.next();
             srcEvents.add(event);
 
-            ITextUnit tu;
-            if (event.isTextUnit()) {
-                tu = (ITextUnit) event.getResource();
-                TextContainer srcTu = tu.getSource();
-                TextContainer tgtTu = null;
-
-                String srcText = "", tgtText = "";
-		Iterator<TextPart> srcTextParts = tu.getSource().iterator();
-                while(srcTextParts.hasNext()) {
-                    srcText += srcTextParts.next().text;
+            if (event.isStartSubDocument()) {
+                StartSubDocument fileElement = (StartSubDocument)event.getResource();
+                if (fileElement.getProperty("sourceLanguage") != null) {
+                    String fileSourceLang = fileElement.getProperty("sourceLanguage").getValue();
+                    if (srcSLang != null && !srcSLang.equals(fileSourceLang)) {
+                        LOG.warn("Mismatch between source languages in file elements");
+                    }
+                    srcSLang = fileSourceLang;
+                    fileDoc.setSourceLocale(LocaleId.fromString(srcSLang));
                 }
+                if (fileElement.getProperty("targetLanguage") != null) {
+                    String fileTargetLang = fileElement.getProperty("targetLanguage").getValue();
+                    if (srcTLang != null && !srcTLang.equals(fileTargetLang)) {
+                        LOG.warn("Mismatch between target languages in file elements");
+                    }
+                    srcTLang = fileTargetLang;
+                    fileDoc.setTargetLocale(LocaleId.fromString(srcTLang));
+                }
+
+            } else if (event.isTextUnit()) {
+                ITextUnit tu = (ITextUnit) event.getResource();
+                TextContainer srcTu = tu.getSource();
+                TextContainer tgtTu = new TextContainer();
 
                 Set<LocaleId> targetLocales = tu.getTargetLocales();
                 if (targetLocales.size() > 1) {
@@ -303,11 +316,9 @@ public class SegmentView extends JScrollPane {
                 } else if (targetLocales.size() == 1) {
                     for (LocaleId tgt : targetLocales) {
 			tgtTu = tu.getTarget(tgt);
-                        Iterator<TextPart> tgtTextParts = tgtTu.iterator();
-                        while (tgtTextParts.hasNext()) {
-                            tgtText += tgtTextParts.next().text;
-                        }
                     }
+                } else {
+                    tu.setTarget(LocaleId.fromString(srcTLang), tgtTu);
                 }
 
                 GenericAnnotations itsTags = tu.getAnnotation(GenericAnnotations.class);
@@ -332,13 +343,14 @@ public class SegmentView extends JScrollPane {
                     }
                 }
 
-                addSegment(srcText, tgtText, anns, fileEventNum, fileEventNum);
+                addSegment(srcTu, tgtTu, anns, fileEventNum, fileEventNum);
             }
             fileEventNum++;
         }
     }
 
-    public void addSegment(String sourceText, String targetText, List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
+    public void addSegment(TextContainer sourceText, TextContainer targetText,
+            List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
         Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum, sourceText, targetText);
         // TODO: parse GenericAnnotations for other data categories.
         for (GenericAnnotation ga : annotations) {
@@ -360,23 +372,23 @@ public class SegmentView extends JScrollPane {
     protected void updateRowHeights() {
         setViewportView(null);
 
-        SegmentTextRenderer str = new SegmentTextRenderer();
-        str.setLineWrap(true);
-        str.setWrapStyleWord(true);
-        str.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+        SegmentTextCell segmentCell = new SegmentTextCell();
+        segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
         for (int row = 0; row < sourceTargetTable.getRowCount(); row++) {
             FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
             int rowHeight = font.getHeight();
             for (int col = 1; col < 3; col++) {
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
-                    str.setText(segments.getSegment(row).getSource());
+                    String text = segments.getSegment(row).getSource().getCodedText();
+                    segmentCell.setText(text);
                 } else {
-                    str.setText(segments.getSegment(row).getTarget());
+                    String text = segments.getSegment(row).getTarget().getCodedText();
+                    segmentCell.setText(text);
                 }
                 // Need to set width to force text area to calculate a pref height
-                str.setSize(new Dimension(width, sourceTargetTable.getRowHeight(row)));
-                rowHeight = Math.max(rowHeight, str.getPreferredSize().height);
+                segmentCell.setSize(new Dimension(width, sourceTargetTable.getRowHeight(row)));
+                rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
             }
             sourceTargetTable.setRowHeight(row, rowHeight);
         }
@@ -404,7 +416,7 @@ public class SegmentView extends JScrollPane {
     public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
         // TODO: get the actual locale and filename for the files.
         if (targetFile == null) {
-            saveEvents(this.filter, srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
+            saveEvents(this.filter, srcEvents, sourceFile.getName() + ".output", LocaleId.fromString(srcSLang));
         } else {
             saveEvents(new HTML5Filter(), srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
             saveEvents(new HTML5Filter(), tgtEvents, targetFile.getName() + ".output", LocaleId.fromString("de"));
@@ -463,7 +475,7 @@ public class SegmentView extends JScrollPane {
         outputFile.close();
     }
 
-    public void updateEvent(Segment seg) throws FileNotFoundException, IOException {
+    public void updateEvent(Segment seg) {
         if (targetFile == null) {
             updateXLIFFEvent(seg);
         } else {
@@ -471,7 +483,7 @@ public class SegmentView extends JScrollPane {
         }
     }
 
-    public void updateHTMLEvent(Segment seg) throws FileNotFoundException, IOException {
+    public void updateHTMLEvent(Segment seg) {
         // TODO: Fix the locales, remove old generic annotations
         Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
         ITextUnit srcTu = srcEvent.getTextUnit();
@@ -510,7 +522,11 @@ public class SegmentView extends JScrollPane {
             File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
             File provFile = new File(rwDir, "provenance.properties");
             if (provFile.exists()) {
-                p.load(new FileInputStream(provFile));
+                try {
+                    p.load(new FileInputStream(provFile));
+                } catch (IOException ex) {
+                    LOG.warn(ex);
+                }
             }
             GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
                     GenericAnnotationType.PROV_REVPERSON, p.getProperty("revPerson"),
@@ -527,10 +543,10 @@ public class SegmentView extends JScrollPane {
         tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, provAnns);
     }
 
-    public void updateXLIFFEvent(Segment seg) throws FileNotFoundException, IOException {
+    public void updateXLIFFEvent(Segment seg) {
         // TODO: Fix the locales, remove old generic annotations
         Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
-        ITextUnit srcTu = srcEvent.getTextUnit();
+        ITextUnit textUnit = srcEvent.getTextUnit();
         String rwRef = "RW"+seg.getSegmentNumber();
 
         ITSLQIAnnotations lqiAnns = new ITSLQIAnnotations();
@@ -544,26 +560,41 @@ public class SegmentView extends JScrollPane {
         }
 
         if (lqiAnns.size() > 0) {
-            srcTu.setProperty(new Property(Property.ITS_LQI, " its:locQualityIssuesRef=\"#"+rwRef+"\""));
-            srcTu.setAnnotation(lqiAnns);
+            textUnit.setProperty(new Property(Property.ITS_LQI, " its:locQualityIssuesRef=\"#"+rwRef+"\""));
+            textUnit.setAnnotation(lqiAnns);
         } else {
-            srcTu.setProperty(new Property(Property.ITS_LQI, ""));
-            srcTu.setAnnotation(null);
+            textUnit.setProperty(new Property(Property.ITS_LQI, ""));
+            textUnit.setAnnotation(null);
         }
         lqiAnns.setData(rwRef);
-        srcTu.getSource().setProperty(new Property(Property.ITS_LQI, ""));
-        srcTu.getSource().setAnnotation(null);
-        Set<LocaleId> targetLocales = srcTu.getTargetLocales();
-        for (LocaleId tgt : targetLocales) {
-            srcTu.getTarget(tgt).setProperty(new Property(Property.ITS_LQI, ""));
-            srcTu.getTarget(tgt).setAnnotation(null);
+        seg.getSource().setProperty(new Property(Property.ITS_LQI, ""));
+        seg.getSource().setAnnotation(null);
+        textUnit.setSource(seg.getSource());
+
+        Set<LocaleId> targetLocales = textUnit.getTargetLocales();
+        if (targetLocales.size() == 1) {
+            for (LocaleId tgt : targetLocales) {
+                TextContainer tgtTC = textUnit.getTarget(tgt);
+                tgtTC.setProperty(new Property(Property.ITS_LQI, ""));
+                tgtTC.setAnnotation(null);
+                textUnit.setTarget(tgt, tgtTC);
+            }
+        } else if (targetLocales.isEmpty()) {
+            textUnit.setTarget(LocaleId.fromString(srcTLang), seg.getTarget());
+
+        } else {
+            LOG.warn("Only 1 target locale in text-unit is currently supported");
         }
 
         Properties p = new Properties();
         File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
         File provFile = new File(rwDir, "provenance.properties");
         if (provFile.exists()) {
-            p.load(new FileInputStream(provFile));
+            try {
+                p.load(new FileInputStream(provFile));
+            } catch (IOException ex) {
+                LOG.warn(ex);
+            }
         }
 
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
@@ -598,24 +629,30 @@ public class SegmentView extends JScrollPane {
             seg.setAddedRWProvenance(true);
         }
 
-        srcTu.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
+        textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
         provAnns.setData(rwRef);
-        srcTu.setAnnotation(provAnns);
+        textUnit.setAnnotation(provAnns);
     }
 
-    public class SegmentTextRenderer extends JTextArea implements TableCellRenderer {
+    public class SegmentTextRenderer implements TableCellRenderer {
 
         @Override
-        public Component getTableCellRendererComponent(JTable jtable, Object o, boolean isSelected, boolean hasFocus, int row, int col) {
-            String text = (String) o;
-            setLineWrap(true);
-            setWrapStyleWord(true);
-            setText(text);
-            setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
-            setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
-            setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+        public Component getTableCellRendererComponent(JTable jtable, Object o,
+            boolean isSelected, boolean hasFocus, int row, int col) {
+            SegmentTextCell renderTextPane = new SegmentTextCell();
+            if (segments.getRowCount() > row) {
+                Segment seg = segments.getSegment(row);
+                TextContainer tc = segments.getColumnIndex(SegmentTableModel.COLSEGSRC) == col ?
+                        seg.getSource() : seg.getTarget();
+                if (tc != null) {
+                    renderTextPane.setTextContainer(tc);
+                }
+                renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
+                renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+                renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+            }
 
-            return this;
+            return renderTextPane;
         }
     }
 
@@ -635,6 +672,30 @@ public class SegmentView extends JScrollPane {
             setText(flag.getText());
             setHorizontalAlignment(CENTER);
             return this;
+        }
+    }
+
+    public class SegmentEditor extends AbstractCellEditor implements TableCellEditor {
+
+        protected SegmentTextCell editorComponent;
+
+        @Override
+        public Component getTableCellEditorComponent(JTable jtable, Object value,
+            boolean isSelected, int row, int col) {
+            editorComponent = new SegmentTextCell(segments.getSegment(row).getTarget());
+            editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
+            editorComponent.getActionMap().put("finish", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    fireEditingStopped();
+                }
+            });
+            return editorComponent;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return editorComponent.getTextContainer();
         }
     }
 }

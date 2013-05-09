@@ -3,20 +3,22 @@ package com.spartansoftwareinc;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import net.sf.okapi.common.resource.TextContainer;
 
 /**
  * Represents source, target segments with ITS metadata
  */
 public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
-    private String source, target;
+    private TextContainer source, target;
     private boolean addedProvenance = false;
     private LinkedList<LanguageQualityIssue> lqiList =
             new LinkedList<LanguageQualityIssue>();
     private LinkedList<ITSProvenance> provList =
             new LinkedList<ITSProvenance>();
 
-    public Segment(int segNum, int srcEventNum, int tgtEventNum, String source, String target) {
+    public Segment(int segNum, int srcEventNum, int tgtEventNum,
+            TextContainer source, TextContainer target) {
         this.segmentNumber = segNum;
         this.srcEventNum = srcEventNum;
         this.tgtEventNum = tgtEventNum;
@@ -36,12 +38,12 @@ public class Segment {
         return tgtEventNum;
     }
 
-    public String getSource() {
-        return source;
+    public TextContainer getSource() {
+        return this.source;
     }
 
-    public String getTarget() {
-        return target;
+    public TextContainer getTarget() {
+        return this.target;
     }
 
     public LinkedList<ITSProvenance> getProv() {

@@ -73,10 +73,10 @@ class SegmentTableModel extends AbstractTableModel {
             return getSegment(row).getSegmentNumber();
         }
         if (col == getColumnIndex(COLSEGSRC)) {
-            return getSegment(row).getSource();
+            return getSegment(row).getSource().getCodedText();
         }
         if (col == getColumnIndex(COLSEGTGT)) {
-            return getSegment(row).getTarget();
+            return getSegment(row).getTarget().getCodedText();
         }
         Object ret = segmentView.ruleConfig.getTopDataCategory(
                 segments.get(row), col-NONFLAGCOLS);
@@ -85,7 +85,7 @@ class SegmentTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return false;
+        return col == colNameToIndex.get(COLSEGTGT);
     }
 
     public void addSegment(Segment seg) {
