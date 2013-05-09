@@ -1,14 +1,11 @@
 package com.spartansoftwareinc;
 
-import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
@@ -270,13 +267,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
             }
             selectedSeg.addLQI(lqi);
             segAttrView.addMetadata(lqi);
-            try {
-                segAttrView.segmentView.updateEvent(selectedSeg);
-            } catch (FileNotFoundException ex) {
-                System.err.println(ex.getMessage());
-            } catch (IOException ex) {
-                System.err.println(ex.getMessage());
-            }
+            segAttrView.segmentView.updateEvent(selectedSeg);
             segAttrView.setSelectedSegment(selectedSeg);
             // Switch to Main segment metadata tab.
             segAttrView.setSelectedIndex(0);
