@@ -11,29 +11,13 @@ import javax.swing.table.TableRowSorter;
  * Table View for displaying segment ITS metadata.
  */
 public class SegmentAttributeTableView extends JScrollPane {
-    private SegmentAttributeView segAttrView;
     protected JTable docStatsTable;
-    protected DocumentStatsTableModel docStatsModel;
+    private DocumentStatsTableModel docStatsModel;
     private TableRowSorter sort;
-    
-    public SegmentAttributeTableView(SegmentAttributeView sav) {
-        segAttrView = sav;
-    }
 
-    public void setDocument() {
-        setViewportView(null);
+    public SegmentAttributeTableView() {
         docStatsModel = new DocumentStatsTableModel();
         docStatsTable = new JTable(docStatsModel);
-
-        LinkedList<ITSStats> data = new LinkedList<ITSStats>();
-        SegmentTableModel segModel = segAttrView.segmentView.getSegments();
-        for (String type : segModel.lqiStats.keySet()) {
-            data.add(segModel.lqiStats.get(type));
-        }
-        for (String type : segModel.provStats.keySet()) {
-            data.add(segModel.provStats.get(type));
-        }
-        docStatsModel.addRows(data);
 
         sort = new TableRowSorter(docStatsModel);
         docStatsTable.setRowSorter(sort);
@@ -41,14 +25,22 @@ public class SegmentAttributeTableView extends JScrollPane {
         setViewportView(docStatsTable);
     }
     
-    public void addITSMetadata(ITSMetadata its) {
-        docStatsModel.updateITSStats(its);
+    public void addLQIMetadata(LanguageQualityIssue lqi) {
+        docStatsModel.updateLQIStats(lqi);
     }
 
-    public class DocumentStatsTableModel extends AbstractTableModel {
+    public void addProvMetadata(ITSProvenance prov) {
+        docStatsModel.updateProvStats(prov);
+    }
+
+    public void clearStats() {
+        docStatsModel.clearStats();
+    }
+
+    private class DocumentStatsTableModel extends AbstractTableModel {
         public static final int NUMCOLS = 4;
         public String[] colNames = {"Data Category", "Type", "Value", "Count"};
-        private List<ITSStats> rows;
+        private List<ITSStats> rows = new LinkedList<ITSStats>();
 
         @Override
         public int getRowCount() {
@@ -100,28 +92,68 @@ public class SegmentAttributeTableView extends JScrollPane {
             return tableCell;
         }
 
-        public void addRows(List<ITSStats> stats) {
-            rows = stats;
+        private List<ITSStats> getStats() {
+            return this.rows;
         }
 
-        protected void updateITSStats(ITSMetadata its) {
+        private void addStat(ITSStats stat) {
+            this.rows.add(stat);
+        }
+
+        private void clearStats() {
+            this.rows.clear();
+        }
+
+        private void updateLQIStats(LanguageQualityIssue lqi) {
             boolean foundExistingStat = false;
-            for (ITSStats stat : rows) {
-                if (stat.getDataCategory().equals(its.getDataCategory()) &&
-                    stat.getType().equals(its.getType())) {
-                    stat.setCount(stat.getCount()+1);
-                    foundExistingStat = true;
+            for (ITSStats stat : getStats()) {
+                if (stat instanceof LQIStatistics) {
+                    LQIStatistics lqiStat = (LQIStatistics) stat;
+                    if (lqiStat.getType().equals(lqi.getType())) {
+                        lqiStat.setRange(lqi.getSeverity());
+                        foundExistingStat = true;
+                    }
                 }
             }
             if (!foundExistingStat) {
-                if (its instanceof LanguageQualityIssue) {
-                    LQIStatistics lqi = new LQIStatistics();
-                    lqi.setType(its.getType());
-                    lqi.setRange(Double.parseDouble(its.getValue()));
-                    rows.add(lqi);
-                }
+                LQIStatistics lqiStat = new LQIStatistics();
+                lqiStat.setType(lqi.getType());
+                lqiStat.setRange(lqi.getSeverity());
+                addStat(lqiStat);
             }
             fireTableDataChanged();
+        }
+
+        private void updateProvStats(ITSProvenance prov) {
+            calcProvenanceStats("person", prov.getPerson());
+            calcProvenanceStats("org", prov.getOrg());
+            calcProvenanceStats("tool", prov.getTool());
+            calcProvenanceStats("revPerson", prov.getRevPerson());
+            calcProvenanceStats("revOrg", prov.getRevOrg());
+            calcProvenanceStats("revTool", prov.getRevTool());
+            fireTableDataChanged();
+        }
+
+        private void calcProvenanceStats(String type, String value) {
+            if (value != null) {
+                boolean foundExistingStat = false;
+                for (ITSStats stat : getStats()) {
+                    if (stat instanceof ProvStatistics) {
+                        ProvStatistics provStat = (ProvStatistics)stat;
+                        if (provStat.getProvType().equals(type+":"+value)) {
+                            provStat.setCount(provStat.getCount() + 1);
+                            foundExistingStat = true;
+                        }
+                    }
+                }
+                if (!foundExistingStat) {
+                    ProvStatistics provStat = new ProvStatistics();
+                    provStat.setProvType(type+":"+value);
+                    provStat.setType(type);
+                    provStat.setValue(value);
+                    addStat(provStat);
+                }
+            }
         }
     }
 }

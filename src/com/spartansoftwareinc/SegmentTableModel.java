@@ -14,8 +14,6 @@ class SegmentTableModel extends AbstractTableModel {
     private LinkedList<Segment> segments = new LinkedList<Segment>();
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
-    protected HashMap<String, LQIStatistics> lqiStats;
-    protected HashMap<String, ProvStatistics> provStats;
     public static final int NUMFLAGS = 5;
     public static final int NONFLAGCOLS = 3;
     public static final String COLSEGNUM = "#";
@@ -32,8 +30,6 @@ class SegmentTableModel extends AbstractTableModel {
         for (String key : colNameToIndex.keySet()) {
             colIndexToName.put(colNameToIndex.get(key), key);
         }
-        lqiStats = new HashMap<String,LQIStatistics>();
-        provStats = new HashMap<String,ProvStatistics>();
     }
 
     @Override
@@ -90,39 +86,6 @@ class SegmentTableModel extends AbstractTableModel {
 
     public void addSegment(Segment seg) {
         segments.add(seg);
-        for (LanguageQualityIssue lqi : seg.getLQI()) {
-            LQIStatistics stats = lqiStats.get(lqi.getType());
-            if (stats == null) {
-                stats = new LQIStatistics();
-                stats.setType(lqi.getType());
-                stats.setRange(lqi.getSeverity());
-                lqiStats.put(lqi.getType(), stats);
-            } else {
-                stats.setRange(lqi.getSeverity());
-            }
-        }
-        for (ITSProvenance prov : seg.getProv()) {
-            calcProvenanceStats("person", prov.getPerson());
-            calcProvenanceStats("org", prov.getOrg());
-            calcProvenanceStats("tool", prov.getTool());
-            calcProvenanceStats("revPerson", prov.getRevPerson());
-            calcProvenanceStats("revOrg", prov.getRevOrg());
-            calcProvenanceStats("revTool", prov.getRevTool());
-        }
-    }
-
-    private void calcProvenanceStats(String type, String value) {
-        if (value != null) {
-            ProvStatistics stats = provStats.get(type + ":" + value);
-            if (stats == null) {
-                stats = new ProvStatistics();
-                stats.setType(type);
-                stats.setValue(value);
-                provStats.put(type + ":" + value, stats);
-            } else {
-                stats.setCount(stats.getCount() + 1);
-            }
-        }
     }
 
     public Segment getSegment(int row) {
@@ -131,7 +94,6 @@ class SegmentTableModel extends AbstractTableModel {
 
     protected void deleteSegments() {
         segments.clear();
-        lqiStats = new HashMap<String,LQIStatistics>();
-        provStats = new HashMap<String,ProvStatistics>();
+        segmentView.notifyDeletedSegments();
     }
 }

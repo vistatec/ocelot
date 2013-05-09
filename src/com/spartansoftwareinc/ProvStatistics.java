@@ -4,7 +4,7 @@ package com.spartansoftwareinc;
  * Aggregate data representation for Provenance displayed in SegmentAttributeTableView.
  */
 public class ProvStatistics implements ITSStats {
-    private String type, value;
+    private String displayType, provType, value;
     private Double minRange, maxRange;
     private Integer count = 0;
 
@@ -15,11 +15,24 @@ public class ProvStatistics implements ITSStats {
 
     @Override
     public String getType() {
-        return type;
+        return displayType;
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.displayType = type;
+    }
+
+    /**
+     * Combination of "displayType:value" used to identify unique ProvStatistics.
+     * Each ITSProvenance generates multiple ProvStatistics records for each
+     * data attribute=value key-value pair.
+     */
+    public String getProvType() {
+        return provType;
+    }
+
+    public void setProvType(String provType) {
+        this.provType = provType;
     }
 
     @Override

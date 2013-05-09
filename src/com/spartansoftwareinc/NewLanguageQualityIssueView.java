@@ -265,13 +265,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
                 // TODO: generate unique LQI issues ref
                 lqi.setIssuesRef(Calendar.getInstance().getTime().toString());
             }
-            selectedSeg.addLQI(lqi);
-            segAttrView.addMetadata(lqi);
-            segAttrView.segmentView.updateEvent(selectedSeg);
-            segAttrView.setSelectedSegment(selectedSeg);
-            // Switch to Main segment metadata tab.
-            segAttrView.setSelectedIndex(0);
-            segAttrView.segmentView.updateRowHeights();
+            selectedSeg.addNewLQI(lqi);
             clearForm();
 
         } else if (e.getSource() == enabledTrue) {

@@ -16,14 +16,16 @@ public class Segment {
             new LinkedList<LanguageQualityIssue>();
     private LinkedList<ITSProvenance> provList =
             new LinkedList<ITSProvenance>();
+    private SegmentView segmentListener;
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
-            TextContainer source, TextContainer target) {
+            TextContainer source, TextContainer target, SegmentView listener) {
         this.segmentNumber = segNum;
         this.srcEventNum = srcEventNum;
         this.tgtEventNum = tgtEventNum;
         this.source = source;
         this.target = target;
+        this.segmentListener = listener;
     }
     
     public int getSegmentNumber() {
@@ -52,6 +54,7 @@ public class Segment {
 
     public void addProvenance(ITSProvenance prov) {
         provList.add(prov);
+        segmentListener.notifyAddedProv(prov);
     }
 
     public boolean addedRWProvenance() {
@@ -72,6 +75,12 @@ public class Segment {
 
     public void addLQI(LanguageQualityIssue lqi) {
         lqiList.add(lqi);
+        segmentListener.notifyAddedLQI(lqi, this);
+    }
+
+    public void addNewLQI(LanguageQualityIssue lqi) {
+        addLQI(lqi);
+        segmentListener.notifyAddedNewLQI(lqi, this);
     }
 
     public List<ITSMetadata> getAllITSMetadata() {
