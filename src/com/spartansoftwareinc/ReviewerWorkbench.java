@@ -29,6 +29,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
+import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import org.xml.sax.SAXException;
@@ -40,20 +41,24 @@ import org.xml.sax.SAXException;
 public class ReviewerWorkbench extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
+    private static Logger LOG = Logger.getLogger(ReviewerWorkbench.class);
     JFrame mainframe;
 
     JMenuBar menuBar;
     JMenu menuFile, menuFilter, menuHelp;
-    JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout, menuRules, menuProv, menuSave;
+    JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
+            menuRules, menuProv, menuSave, menuSaveAs;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
     SegmentAttributeView segmentAttrView;
     ITSDetailView itsDetailView;
     SegmentView segmentView;
+    OpenXLIFFView openXLIFFView;
+    OpenHTMLView openHTMLView;
 
-    JFileChooser fc;
-    File openFile;
+    private JFileChooser fc;
+    protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
 
     public ReviewerWorkbench() throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
@@ -76,7 +81,14 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
         add(mainSplitPane);
 
+        openHTMLView = new OpenHTMLView(this, segmentView);
+        openXLIFFView = new OpenXLIFFView(this, segmentView);
+
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+    }
+
+    public void setMainTitle(String title) {
+        mainframe.setTitle(title);
     }
 
     @Override
@@ -85,12 +97,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             JOptionPane.showMessageDialog(this, "Reviewer's Workbench, version " + Version.get(), "About", JOptionPane.INFORMATION_MESSAGE);
 
         } else if (e.getSource() == this.menuOpenHTML) {
-            OpenHTMLView open = new OpenHTMLView(segmentView);
-            SwingUtilities.invokeLater(open);
+            SwingUtilities.invokeLater(openHTMLView);
 
         } else if (e.getSource() == this.menuOpenXLIFF) {
-            OpenXLIFFView open = new OpenXLIFFView(segmentView);
-            SwingUtilities.invokeLater(open);
+            SwingUtilities.invokeLater(openXLIFFView);
 
         } else if (e.getSource() == this.menuRules) {
             FilterView rules = new FilterView(segmentView);
@@ -111,17 +121,62 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
         } else if (e.getSource() == this.menuExit) {
             mainframe.dispose();
-        } else if (e.getSource() == this.menuSave) {
-            try {
-                segmentView.save();
-            } catch (UnsupportedEncodingException ex) {
-                System.err.println(ex.getMessage());
-            } catch (FileNotFoundException ex) {
-                System.err.println(ex.getMessage());
-            } catch (IOException ex) {
-                System.err.println(ex.getMessage());
+        } else if (e.getSource() == this.menuSaveAs
+                || e.getSource() == this.menuSave) {
+            if (segmentView.isHTML()) {
+                if (openSrcFile != null
+                        && openTgtFile != null) {
+                    saveSrcFile = e.getSource() == this.menuSaveAs ?
+                            promptSaveAs() : openSrcFile;
+                    if (saveSrcFile != null) {
+                        saveTgtFile = e.getSource() == this.menuSaveAs ?
+                                promptSaveAs() : openTgtFile;
+                        if (saveTgtFile != null) {
+                            if (save() && e.getSource() == this.menuSaveAs) {
+                                openSrcFile = saveSrcFile;
+                                openTgtFile = saveTgtFile;
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (openSrcFile != null) {
+                    saveSrcFile = e.getSource() == this.menuSaveAs ?
+                            promptSaveAs() : openSrcFile;
+                    if (saveSrcFile != null) {
+                        if (save() && e.getSource() == this.menuSaveAs) {
+                            openSrcFile = saveSrcFile;
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private File promptSaveAs() {
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return fc.getSelectedFile();
+        }
+        return null;
+    }
+    
+    private boolean save() {
+        try {
+            if (segmentView.isHTML()) {
+                segmentView.save(saveSrcFile, saveTgtFile);
+            } else {
+                segmentView.save(saveSrcFile);
+            }
+            return true;
+        } catch (UnsupportedEncodingException ex) {
+            LOG.error(ex);
+        } catch (FileNotFoundException ex) {
+            LOG.error(ex);
+        } catch (IOException ex) {
+            LOG.error(ex);
+        }
+        return false;
     }
 
     private void initializeMenuBar() {
@@ -143,8 +198,19 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuFile.add(menuOpenXLIFF);
 
         menuSave = new JMenuItem("Save");
+        menuSave.setEnabled(false);
         menuSave.addActionListener(this);
+        menuSave.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK));
         menuFile.add(menuSave);
+
+        menuSaveAs = new JMenuItem("Save As...");
+        menuSaveAs.setEnabled(false);
+        menuSaveAs.addActionListener(this);
+        menuSaveAs.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                Event.SHIFT_MASK | Event.CTRL_MASK));
+        menuFile.add(menuSaveAs);
 
         menuProv = new JMenuItem("Profile");
         menuProv.addActionListener(this);
