@@ -17,13 +17,15 @@ import javax.swing.border.EmptyBorder;
  */
 public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
     private JFrame frame;
+    private ReviewerWorkbench rw;
     private SegmentView segmentView;
     private JButton selectSource, importFiles, close;
     File sourceFile;
     JFileChooser fileChooser;
 
-    public OpenXLIFFView(SegmentView segmentView) {
+    public OpenXLIFFView(ReviewerWorkbench rw, SegmentView segmentView) {
         super(new GridLayout(0,2));
+        this.rw = rw;
         this.segmentView = segmentView;
         fileChooser = new JFileChooser();
         setBorder(new EmptyBorder(10,10,10,10));
@@ -79,6 +81,10 @@ public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
         public void run() {
             try {
                 segmentView.parseSegmentsFromXLIFFFile(sourceFile);
+                rw.openSrcFile = sourceFile;
+                rw.setMainTitle("Reviewer's Workbench - "+sourceFile.getName());
+                rw.menuSave.setEnabled(true);
+                rw.menuSaveAs.setEnabled(true);
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             }

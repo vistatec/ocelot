@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -78,7 +80,7 @@ public class SegmentView extends JScrollPane {
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
     protected TableRowSorter sort;
-    private File sourceFile, targetFile;
+    private boolean isHTML = false;
     private String srcSLang, srcTLang;
     protected RuleConfiguration ruleConfig;
     private int documentSegmentNum;
@@ -169,6 +171,14 @@ public class SegmentView extends JScrollPane {
         setViewportView(sourceTargetTable);
     }
 
+    public boolean isHTML() {
+        return this.isHTML;
+    }
+
+    public void setHTML(boolean flag) {
+        this.isHTML = flag;
+    }
+
     public void parseSegmentsFromHTMLFile(File sourceFile, File targetFile) throws IOException {
         sourceTargetTable.clearSelection();
         segments.deleteSegments();
@@ -178,10 +188,9 @@ public class SegmentView extends JScrollPane {
         tgtEvents = new LinkedList<Event>();
         setViewportView(null);
         documentSegmentNum = 1;
+        setHTML(true);
 
         parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
-        this.sourceFile = sourceFile;
-        this.targetFile = targetFile;
         addFilters();
 
         // Adjust the segment number column width
@@ -252,14 +261,13 @@ public class SegmentView extends JScrollPane {
         segments.deleteSegments();
         sourceTargetTable.setRowSorter(null);
         attrView.clearSegment();
-        targetFile = null;
         tgtEvents = null;
         srcEvents = new LinkedList<Event>();
         setViewportView(null);
         documentSegmentNum = 1;
+        setHTML(false);
 
         parseXLIFFFile(new FileInputStream(sourceFile));
-        this.sourceFile = sourceFile;
         addFilters();
 
         // Adjust the segment number column width
@@ -437,14 +445,14 @@ public class SegmentView extends JScrollPane {
         attrView.deletedSegments();
     }
 
-    public void save() throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        // TODO: get the actual locale and filename for the files.
-        if (targetFile == null) {
-            saveEvents(this.filter, srcEvents, sourceFile.getName() + ".output", LocaleId.fromString(srcSLang));
-        } else {
-            saveEvents(new HTML5Filter(), srcEvents, sourceFile.getName() + ".output", LocaleId.fromString("en"));
-            saveEvents(new HTML5Filter(), tgtEvents, targetFile.getName() + ".output", LocaleId.fromString("de"));
-        }
+    public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        saveEvents(this.filter, srcEvents, source.getAbsolutePath(), LocaleId.fromString(srcSLang));
+    }
+
+    public void save(File source, File target) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        // TODO: get the actual locale
+        saveEvents(new HTML5Filter(), srcEvents, source.getAbsolutePath(), LocaleId.fromString("en"));
+        saveEvents(new HTML5Filter(), tgtEvents, target.getAbsolutePath(), LocaleId.fromString("de"));
     }
 
     public void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
@@ -500,10 +508,10 @@ public class SegmentView extends JScrollPane {
     }
 
     public void updateEvent(Segment seg) {
-        if (targetFile == null) {
-            updateXLIFFEvent(seg);
-        } else {
+        if (isHTML) {
             updateHTMLEvent(seg);
+        } else {
+            updateXLIFFEvent(seg);
         }
     }
 
@@ -693,6 +701,14 @@ public class SegmentView extends JScrollPane {
         @Override
         public Object getCellEditorValue() {
             return editorComponent.getTextContainer();
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject anEvent) {
+            if (anEvent instanceof MouseEvent) {
+                return ((MouseEvent)anEvent).getClickCount() >= 2;
+            }
+            return true;
         }
     }
 }
