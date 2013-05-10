@@ -95,8 +95,7 @@ public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
                 segmentView.parseSegmentsFromHTMLFile(sourceFile, targetFile);
                 rw.openSrcFile = sourceFile;
                 rw.openTgtFile = targetFile;
-                rw.setMainTitle("Reviewer's Workbench - "
-                        + sourceFile.getName() + ", " + targetFile.getName());
+                rw.setMainTitle(sourceFile.getName(), targetFile.getName());
                 rw.menuSave.setEnabled(true);
                 rw.menuSaveAs.setEnabled(true);
             } catch (IOException e) {

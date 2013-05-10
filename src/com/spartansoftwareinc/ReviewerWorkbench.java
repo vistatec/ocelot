@@ -41,6 +41,7 @@ import org.xml.sax.SAXException;
 public class ReviewerWorkbench extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
+    private static String APPNAME = "Reviewer's Workbench";
     private static Logger LOG = Logger.getLogger(ReviewerWorkbench.class);
     JFrame mainframe;
 
@@ -57,7 +58,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     OpenXLIFFView openXLIFFView;
     OpenHTMLView openHTMLView;
 
-    private JFileChooser fc;
+    private JFileChooser saveFileChooser;
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
 
     public ReviewerWorkbench() throws IOException, InstantiationException, IllegalAccessException {
@@ -87,14 +88,18 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
     }
 
-    public void setMainTitle(String title) {
-        mainframe.setTitle(title);
+    public void setMainTitle(String sourceTitle) {
+        mainframe.setTitle(APPNAME+" - "+sourceTitle);
+    }
+
+    public void setMainTitle(String sourceTitle, String targetTitle) {
+        mainframe.setTitle(APPNAME+" - "+sourceTitle+", "+targetTitle);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.menuAbout) {
-            JOptionPane.showMessageDialog(this, "Reviewer's Workbench, version " + Version.get(), "About", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, APPNAME+", version " + Version.get(), "About", JOptionPane.INFORMATION_MESSAGE);
 
         } else if (e.getSource() == this.menuOpenHTML) {
             SwingUtilities.invokeLater(openHTMLView);
@@ -135,6 +140,8 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                             if (save() && e.getSource() == this.menuSaveAs) {
                                 openSrcFile = saveSrcFile;
                                 openTgtFile = saveTgtFile;
+                                setMainTitle(saveSrcFile.getName(),
+                                        saveTgtFile.getName());
                             }
                         }
                     }
@@ -146,6 +153,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                     if (saveSrcFile != null) {
                         if (save() && e.getSource() == this.menuSaveAs) {
                             openSrcFile = saveSrcFile;
+                            setMainTitle(saveSrcFile.getName());
                         }
                     }
                 }
@@ -154,9 +162,9 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     }
 
     private File promptSaveAs() {
-        int returnVal = fc.showSaveDialog(this);
+        int returnVal = saveFileChooser.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            return fc.getSelectedFile();
+            return saveFileChooser.getSelectedFile();
         }
         return null;
     }
@@ -244,7 +252,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     }
 
     public void run() {
-        mainframe = new JFrame("Reviewer's Workbench");
+        mainframe = new JFrame(APPNAME);
         mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainframe.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -252,7 +260,33 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             }
         });
 
-        fc = new JFileChooser();
+        saveFileChooser = new JFileChooser() {
+            @Override
+            public void approveSelection() {
+                File saveFile = getSelectedFile();
+                if (saveFile.exists() && getDialogType() == SAVE_DIALOG) {
+                    int confirm = JOptionPane.showConfirmDialog(this,
+                            "Overwrite existing file?", "File exists",
+                            JOptionPane.YES_NO_OPTION);
+                    switch (confirm) {
+                        case JOptionPane.YES_OPTION:
+                            super.approveSelection();
+                            break;
+
+                        case JOptionPane.NO_OPTION:
+                            break;
+
+                        case JOptionPane.CLOSED_OPTION:
+                            break;
+
+                        default:
+                            break;
+                    }
+                } else if (!saveFile.exists() && getDialogType() == SAVE_DIALOG) {
+                    super.approveSelection();
+                }
+            }
+        };
         initializeMenuBar();
         mainframe.getContentPane().add(this);
 

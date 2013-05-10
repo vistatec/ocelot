@@ -82,7 +82,7 @@ public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
             try {
                 segmentView.parseSegmentsFromXLIFFFile(sourceFile);
                 rw.openSrcFile = sourceFile;
-                rw.setMainTitle("Reviewer's Workbench - "+sourceFile.getName());
+                rw.setMainTitle(sourceFile.getName());
                 rw.menuSave.setEnabled(true);
                 rw.menuSaveAs.setEnabled(true);
             } catch (IOException e) {
