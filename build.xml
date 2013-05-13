@@ -69,6 +69,12 @@
       <compilerarg value="-Xswitchcheck" compiler="modern"/>
       <compilerarg value="-nowarn" compiler="modern"/>
     </javac>
+
+    <!-- Copy test/resources over to ${test.classes.dir} -->
+    <mkdir dir="${test.classes.dir}/resources"/>
+    <copy todir="${test.classes.dir}/resources">
+      <fileset dir="${test.src.dir}/resources" />
+    </copy>
   </target>
 
   <target name="build.jar" depends="build.src,buildversion">
@@ -166,6 +172,7 @@
 
       <test name="com.spartansoftwareinc.TestMatchers" />
       <test name="com.spartansoftwareinc.TestRules" />
+      <test name="com.spartansoftwareinc.plugins.TestPluginManager" />
         
       <formatter type="brief" usefile="false" />
     </junit>
