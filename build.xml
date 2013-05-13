@@ -10,6 +10,7 @@
 
   <property name="package" value="com/spartansoftwareinc/vistatec/rwb"/>
   <property name="ReviewerWorkbench.jar" value="${build.dir}/ReviewerWorkbench.jar" />
+  <property name="SamplePlugins.jar" value="${build.dir}/SamplePlugins.jar" />
 
   <path id="project.class.path">
       <pathelement location="${src.classes.dir}" />
@@ -82,7 +83,10 @@
               <attribute name="Rsrc-Class-Path" value="./ htmlparser-1.4.jar junit-4.7.jar log4j-1.2.17.jar okapi-core-0.22-SNAPSHOT.jar okapi-filter-its-0.22-SNAPSHOT.jar okapi-filter-xliff-0.22-SNAPSHOT.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
           </manifest>
           <zipfileset src="${basedir}/jar-in-jar-loader.zip"/>
-          <fileset dir="${src.classes.dir}"/>
+          <fileset dir="${src.classes.dir}">
+              <!-- Exclude plugin samples, which are packaged separately -->
+              <exclude name="${src.classes.dir}/com/spartansoftwareinc/plugins/samples/**" />
+          </fileset>
           <zipfileset dir="${src.dir}/${package}" includes="rules.properties" fullpath="${package}/rules.properties"/>
           <zipfileset dir="${src.dir}/${package}" includes="log4j.properties" fullpath="${package}/log4j.properties"/>
           <zipfileset dir="${lib.dir}" includes="htmlparser-1.4.jar"/>
@@ -93,6 +97,14 @@
           <zipfileset dir="${lib.dir}" includes="okapi-filter-xliff-0.22-SNAPSHOT.jar"/>
           <zipfileset dir="${lib.dir}" includes="slf4j-api-1.7.2.jar"/>
           <zipfileset dir="${lib.dir}" includes="slf4j-log4j12-1.7.2.jar"/>
+      </jar>
+      <!-- Build sample plugin jar -->
+      <echo message="Building ${SamplePlugins.jar}" />
+      <jar compress="false" jarfile="${SamplePlugins.jar}"
+          basedir="${src.classes.dir}"
+          includes="com/spartansoftwareinc/plugins/samples/**"
+          excludes="com/spartansoftwareinc/*.class,com/spartansoftwareinc/plugins/*.class"
+          >
       </jar>
   </target>
 
