@@ -1,11 +1,11 @@
 package com.spartansoftwareinc.plugins.samples;
 
-import com.spartansoftwareinc.plugins.ITSPlugin;
+import com.spartansoftwareinc.plugins.Plugin;
 
 /**
  * Sample plugin that does nothing.
  */
-public class SamplePlugin implements ITSPlugin {
+public class SamplePlugin implements Plugin {
 
 	@Override
 	public String getPluginName() {

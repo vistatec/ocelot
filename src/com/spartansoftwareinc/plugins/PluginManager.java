@@ -19,13 +19,13 @@ import java.net.URLClassLoader;
 public class PluginManager {
 
 	private List<String> pluginClassNames = new ArrayList<String>();
-	private List<ITSPlugin> plugins = new ArrayList<ITSPlugin>();
+	private List<Plugin> plugins = new ArrayList<Plugin>();
 	private ClassLoader classLoader;
 	
 	public PluginManager() {
 	}
 	
-	public List<ITSPlugin> getPlugins() {
+	public List<Plugin> getPlugins() {
 		return plugins;
 	}
 	
@@ -44,9 +44,9 @@ public class PluginManager {
 		
 		for (String s : pluginClassNames) {
 			@SuppressWarnings("unchecked")
-			Class<? extends ITSPlugin> c = (Class<ITSPlugin>)Class.forName(s, false, classLoader);
+			Class<? extends Plugin> c = (Class<Plugin>)Class.forName(s, false, classLoader);
 			try {
-				ITSPlugin plugin = c.newInstance();
+				Plugin plugin = c.newInstance();
 				plugins.add(plugin);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -89,7 +89,7 @@ public class PluginManager {
 				if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
 					continue;
 				}
-				if (ITSPlugin.class.isAssignableFrom(clazz)) {
+				if (Plugin.class.isAssignableFrom(clazz)) {
 					// It's a plugin!  Just store the name for now
 					// since we will need to reinstantiate it later with the 
 					// real classloader (I think)
