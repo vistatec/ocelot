@@ -1,6 +1,6 @@
 package com.spartansoftwareinc.plugins;
 
-public interface ITSPlugin {
+public interface Plugin {
 
 	/**
 	 * Get the name of this plugin, for display in the Workbench UI. 
