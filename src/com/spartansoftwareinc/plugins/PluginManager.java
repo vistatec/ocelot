@@ -16,6 +16,14 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+/**
+ * Detect, install, and instantiate any available plugin classes.
+ * 
+ * This is meant to be used by calling discover(), and then kept 
+ * around to provide access to instances of all the discovered plugins.
+ * The plugins themselves are instantiated immediately and are treated
+ * like stateful singletons.
+ */
 public class PluginManager {
 
 	private List<String> pluginClassNames = new ArrayList<String>();
@@ -25,11 +33,21 @@ public class PluginManager {
 	public PluginManager() {
 	}
 	
+	/**
+	 * Get a list of available plugin instances.
+	 * @return
+	 */
 	public List<Plugin> getPlugins() {
 		return plugins;
 	}
 	
-	public void discover(File pluginDirectory) throws IOException, ClassNotFoundException {
+	/**
+	 * Search the provided directory for any JAR files containing valid 
+	 * plugin classes.  Instantiate and configure any such classes.
+	 * @param pluginDirectory
+	 * @throws IOException if something goes wrong reading the directory
+	 */
+	public void discover(File pluginDirectory) throws IOException {
 		if (!pluginDirectory.isDirectory()) {
 			return;
 		}
@@ -43,12 +61,17 @@ public class PluginManager {
 		}
 		
 		for (String s : pluginClassNames) {
-			@SuppressWarnings("unchecked")
-			Class<? extends Plugin> c = (Class<Plugin>)Class.forName(s, false, classLoader);
 			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends Plugin> c = (Class<Plugin>)Class.forName(s, false, classLoader);
 				Plugin plugin = c.newInstance();
 				plugins.add(plugin);
-			} catch (Exception e) {
+			}
+			catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			}
+			catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -77,32 +100,44 @@ public class PluginManager {
 				});		
 	}
 	
-	void scanJar(final File file) throws IOException, ClassNotFoundException {
-		Enumeration<JarEntry> e = new JarFile(file).entries();
-		while (e.hasMoreElements()) {
-			JarEntry entry = e.nextElement();
-			String name = entry.getName();
-			if (name.endsWith(".class")) {
-				name = convertFileNameToClass(name);
-				Class<?> clazz = Class.forName(name, false, classLoader);
-				// Skip non-instantiable classes
-				if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
-					continue;
-				}
-				if (Plugin.class.isAssignableFrom(clazz)) {
-					// It's a plugin!  Just store the name for now
-					// since we will need to reinstantiate it later with the 
-					// real classloader (I think)
-					if (pluginClassNames.contains(name)) {
-						// TODO: log this as a warning
-						System.out.println("Warning: found multiple implementations of plugin class " +
-										   name);
+	void scanJar(final File file) {
+		try {
+			Enumeration<JarEntry> e = new JarFile(file).entries();
+			while (e.hasMoreElements()) {
+				JarEntry entry = e.nextElement();
+				String name = entry.getName();
+				if (name.endsWith(".class")) {
+					name = convertFileNameToClass(name);
+					try {
+						Class<?> clazz = Class.forName(name, false, classLoader);
+						// Skip non-instantiable classes
+						if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
+							continue;
+						}
+						if (Plugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin!  Just store the name for now
+							// since we will need to reinstantiate it later with the 
+							// real classloader (I think)
+							if (pluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out.println("Warning: found multiple implementations of plugin class " +
+												   name);
+							}
+							else {
+								pluginClassNames.add(name);
+							}
+						}
 					}
-					else {
-						pluginClassNames.add(name);
+					catch (ClassNotFoundException ex) {
+						// XXX shouldn't happen?
+						System.out.println("Warning: " + ex.getMessage());
 					}
 				}
 			}
+		}
+		catch (IOException e) {
+			// XXX Log this and continue
+			e.printStackTrace();
 		}
 	}
 
