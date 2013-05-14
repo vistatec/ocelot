@@ -1,9 +1,10 @@
-package com.spartansoftwareinc;
+package com.spartansoftwareinc.vistatec.rwb.rules;
 
 import org.junit.*;
-import static org.junit.Assert.*;
 
-import static com.spartansoftwareinc.DataCategoryField.Matcher;
+import com.spartansoftwareinc.vistatec.rwb.rules.DataCategoryField.Matcher;
+
+import static org.junit.Assert.*;
 
 public class TestMatchers {
 	

@@ -33,7 +33,6 @@
     <echo message="Compiling source from ${src.dir} to ${src.classes.dir}."/>
     <mkdir dir="${src.classes.dir}" />
     <javac srcdir="${src.dir}"
-           includes="${package}/**/*.java"
            includeantruntime="false"
            destdir="${src.classes.dir}"
            debug="on"
@@ -54,7 +53,6 @@
     <echo message="Compiling source from ${test.src.dir} to ${test.classes.dir}."/>
     <mkdir dir="${test.classes.dir}" />
     <javac srcdir="${test.src.dir}"
-           includes="${package}/**/*.java"
            includeantruntime="false"
            destdir="${test.classes.dir}"
            debug="on"
@@ -170,8 +168,8 @@
              showoutput="yes">
       <classpath refid="test.class.path" />
 
-      <test name="com.spartansoftwareinc.TestMatchers" />
-      <test name="com.spartansoftwareinc.TestRules" />
+      <test name="com.spartansoftwareinc.vistatec.rwb.rules.TestMatchers" />
+      <test name="com.spartansoftwareinc.vistatec.rwb.rules.TestRules" />
       <test name="com.spartansoftwareinc.plugins.TestPluginManager" />
         
       <formatter type="brief" usefile="false" />
