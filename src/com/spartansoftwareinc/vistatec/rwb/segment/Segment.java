@@ -78,12 +78,16 @@ public class Segment {
 
     public void addLQI(LanguageQualityIssue lqi) {
         lqiList.add(lqi);
-        segmentListener.notifyAddedLQI(lqi, this);
+        if (segmentListener != null) {
+        	segmentListener.notifyAddedLQI(lqi, this);
+        }
     }
 
     public void addNewLQI(LanguageQualityIssue lqi) {
         addLQI(lqi);
-        segmentListener.notifyAddedNewLQI(lqi, this);
+        if (segmentListener != null) {
+        	segmentListener.notifyAddedNewLQI(lqi, this);
+        }
     }
 
     public List<ITSMetadata> getAllITSMetadata() {

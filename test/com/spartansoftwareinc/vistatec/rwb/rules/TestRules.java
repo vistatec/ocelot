@@ -1,12 +1,15 @@
-package com.spartansoftwareinc;
+package com.spartansoftwareinc.vistatec.rwb.rules;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.*;
-import static org.junit.Assert.*;
 
-import static com.spartansoftwareinc.DataCategoryField.*;
+import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
+import com.spartansoftwareinc.vistatec.rwb.rules.DataCategoryField.Matcher;
+import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
+
+import static org.junit.Assert.*;
 
 public class TestRules {
 
@@ -14,8 +17,8 @@ public class TestRules {
 	public void testLQIMatching() throws Exception {
 		List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
 		// look for omissions with severity 85 and up
-		ruleMatchers.add(new RuleMatcher(LQI_TYPE, regexMatcher("omission")));
-		ruleMatchers.add(new RuleMatcher(LQI_SEVERITY, numericMatcher(85, 100)));
+		ruleMatchers.add(new RuleMatcher(DataCategoryField.LQI_TYPE, regexMatcher("omission")));
+		ruleMatchers.add(new RuleMatcher(DataCategoryField.LQI_SEVERITY, numericMatcher(85, 100)));
 		
 		RuleFilter filter = new RuleFilter(ruleMatchers);
 		
@@ -34,25 +37,25 @@ public class TestRules {
 		lqi3.setSeverity(60);
 		lqi3.setType("omission");
 		
-		Segment segment = new Segment(1, 1, 1, null, null);
+		Segment segment = new Segment(1, 1, 1, null, null, null);
 		segment.addLQI(lqi1);
 		segment.addLQI(lqi2);
 		segment.addLQI(lqi3);
 		assertTrue(filter.matches(segment));
 		
-		segment = new Segment(2, 2, 2, null, null);
+		segment = new Segment(2, 2, 2, null, null, null);
 		segment.addLQI(lqi1);
 		assertTrue(filter.matches(segment));
 		
-		segment = new Segment(3, 3, 3, null, null);
+		segment = new Segment(3, 3, 3, null, null, null);
 		segment.addLQI(lqi2);
 		assertFalse(filter.matches(segment));
 
-		segment = new Segment(4, 4, 4, null, null);
+		segment = new Segment(4, 4, 4, null, null, null);
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
 		
-		segment = new Segment(5, 5, 5, null, null);
+		segment = new Segment(5, 5, 5, null, null, null);
 		segment.addLQI(lqi1);
 		segment.addLQI(lqi2);
 		assertTrue(filter.matches(segment));
@@ -60,7 +63,7 @@ public class TestRules {
 		// Tricky!  Make sure we don't get a false positive
 		// because we have an omission AND a valid severity!
 		// (We do have each, but not on the same issue.)
-		segment = new Segment(6, 6, 6, null, null);
+		segment = new Segment(6, 6, 6, null, null, null);
 		segment.addLQI(lqi2);
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
