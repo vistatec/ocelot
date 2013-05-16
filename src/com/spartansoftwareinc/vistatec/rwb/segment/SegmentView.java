@@ -1,11 +1,10 @@
 package com.spartansoftwareinc.vistatec.rwb.segment;
 
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
-import com.spartansoftwareinc.vistatec.rwb.rules.RuleConfiguration;
-import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.rules.DataCategoryFlag;
+import com.spartansoftwareinc.vistatec.rwb.rules.RuleConfiguration;
 import com.spartansoftwareinc.vistatec.rwb.rules.RuleListener;
 import java.awt.Color;
 import java.awt.Component;
@@ -686,7 +685,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 TextContainer tc = segments.getColumnIndex(SegmentTableModel.COLSEGSRC) == col ?
                         seg.getSource() : seg.getTarget();
                 if (tc != null) {
-                    renderTextPane.setTextContainer(tc);
+                    renderTextPane.setTextContainer(tc, false);
                 }
                 renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
                 renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
@@ -723,7 +722,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object value,
             boolean isSelected, int row, int col) {
-            editorComponent = new SegmentTextCell(segments.getSegment(row).getTarget());
+            editorComponent = new SegmentTextCell(segments.getSegment(row).getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
             editorComponent.getActionMap().put("finish", new AbstractAction() {
                 @Override

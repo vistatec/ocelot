@@ -1,6 +1,5 @@
 package com.spartansoftwareinc.vistatec.rwb;
 
-import com.spartansoftwareinc.vistatec.rwb.its.ITSDetailView;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceProfileView;
 import com.spartansoftwareinc.vistatec.rwb.rules.FilterView;
@@ -58,7 +57,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
     SegmentAttributeView segmentAttrView;
-    ITSDetailView itsDetailView;
+    DetailView itsDetailView;
     SegmentView segmentView;
     OpenXLIFFView openXLIFFView;
     OpenHTMLView openHTMLView;
@@ -68,7 +67,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
     public ReviewerWorkbench() throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
-        itsDetailView = new ITSDetailView();
+        itsDetailView = new DetailView();
         Dimension segAttrSize = new Dimension(385, 380);
         segmentAttrView = new SegmentAttributeView(itsDetailView);
         segmentAttrView.setMinimumSize(segAttrSize);

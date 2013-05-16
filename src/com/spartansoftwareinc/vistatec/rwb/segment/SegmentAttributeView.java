@@ -1,6 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb.segment;
 
-import com.spartansoftwareinc.vistatec.rwb.its.ITSDetailView;
+import com.spartansoftwareinc.vistatec.rwb.DetailView;
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssueTableView;
@@ -22,12 +22,12 @@ public class SegmentAttributeView extends JTabbedPane {
     protected ProvenanceTableView provTableView;
     protected SegmentAttributeTreeView treeView;
     protected NewLanguageQualityIssueView addLQIView;
-    private ITSDetailView itsDetailView;
+    private DetailView detailView;
 
     private Segment selectedSegment;
 
-    public SegmentAttributeView(ITSDetailView detailView) {
-        itsDetailView = detailView;
+    public SegmentAttributeView(DetailView detailView) {
+        this.detailView = detailView;
 
         aggregateTableView = new ITSDocStatsTableView();
         addTab("Doc Stats", aggregateTableView);
@@ -72,7 +72,7 @@ public class SegmentAttributeView extends JTabbedPane {
         if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
         treeView.expandTree();
         addLQIView.updateSegment();
-        itsDetailView.clearDisplay();
+        detailView.setSegment(seg);
     }
 
     public void clearSegment() {
@@ -97,7 +97,7 @@ public class SegmentAttributeView extends JTabbedPane {
 
     public void setSelectedMetadata(ITSMetadata its) {
         if (getSelectedSegment() != null) {
-            itsDetailView.setMetadata(getSelectedSegment(), its);
+            detailView.setMetadata(getSelectedSegment(), its);
             for (int i = 0; i < getTabCount(); i++) {
                 if ((its instanceof LanguageQualityIssue
                         && lqiTableView.equals(getComponentAt(i))) ||
@@ -110,7 +110,7 @@ public class SegmentAttributeView extends JTabbedPane {
     }
     
     public void deselectMetadata() {
-        itsDetailView.clearDisplay();
+        detailView.clearDisplay();
     }
 
     public void focusNextTab() {
