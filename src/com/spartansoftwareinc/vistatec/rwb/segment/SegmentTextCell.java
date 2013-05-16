@@ -12,6 +12,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
+import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextPart;
@@ -24,6 +25,7 @@ import org.apache.log4j.Logger;
  */
 public class SegmentTextCell extends JTextPane {
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
+    public static String tagStyle = "tag", regularStyle = "regular";
     private TextContainer tc;
     private boolean edited;
 
@@ -32,9 +34,9 @@ public class SegmentTextCell extends JTextPane {
         setDisplayCategories();
     }
 
-    public SegmentTextCell(TextContainer tc) {
+    public SegmentTextCell(TextContainer tc, boolean raw) {
         this();
-        setTextContainer(tc);
+        setTextContainer(tc, raw);
     }
 
     public final void setEditController() {
@@ -48,9 +50,9 @@ public class SegmentTextCell extends JTextPane {
     public final void setDisplayCategories() {
         Style style = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         StyledDocument styleDoc = this.getStyledDocument();
-        Style regular = styleDoc.addStyle("regular", style);
+        Style regular = styleDoc.addStyle(regularStyle, style);
 
-        Style s = styleDoc.addStyle("tag", regular);
+        Style s = styleDoc.addStyle(tagStyle, regular);
         StyleConstants.setBackground(s, Color.LIGHT_GRAY);
     }
 
@@ -66,22 +68,36 @@ public class SegmentTextCell extends JTextPane {
         }
     }
 
-    public ArrayList<String> styleTag(TextContainer tc) {
+    public ArrayList<String> styleTag(TextContainer tc, boolean raw) {
         ArrayList<String> textToStyle = new ArrayList<String>();
         Iterator<TextPart> textParts = tc.iterator();
         while (textParts.hasNext()) {
             TextFragment tf = textParts.next().text;
             StringBuilder text = new StringBuilder();
             for (int i = 0; i < tf.length(); i++) {
-                if (TextFragment.isMarker(tf.charAt(i))) {
+                char tfChar = tf.charAt(i);
+                if (TextFragment.isMarker(tfChar)) {
                     textToStyle.add(text.toString());
                     textToStyle.add("regular");
                     text = new StringBuilder();
-                    String tag = ""+tf.charAt(i)+tf.charAt(++i);
+
+                    char codeMarker = tf.charAt(++i);
+                    int index = TextFragment.toIndex(codeMarker);
+                    Code code = tf.getCode(index);
+                    String tag;
+                    if (raw) {
+                        if (code.hasOuterData()) {
+                            tag = code.getOuterData();
+                        } else {
+                            tag = code.getData();
+                        }
+                    } else {
+                        tag = ""+tfChar+codeMarker;
+                    }
                     textToStyle.add(tag);
                     textToStyle.add("tag");
                 } else {
-                    text.append(tf.charAt(i));
+                    text.append(tfChar);
                 }
             }
             if (text.length() > 0) {
@@ -104,9 +120,9 @@ public class SegmentTextCell extends JTextPane {
         return this.tc;
     }
 
-    public final void setTextContainer(TextContainer tc) {
+    public final void setTextContainer(TextContainer tc, boolean raw) {
         this.tc = tc;
-        setTextPane(styleTag(tc));
+        setTextPane(styleTag(tc, raw));
     }
 
     /**
