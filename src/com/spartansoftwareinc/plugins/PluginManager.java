@@ -1,10 +1,16 @@
 package com.spartansoftwareinc.plugins;
 
+import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
+import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
+import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentTableModel;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -27,20 +33,53 @@ import java.net.URLClassLoader;
 public class PluginManager {
 
 	private List<String> pluginClassNames = new ArrayList<String>();
-	private List<Plugin> plugins = new ArrayList<Plugin>();
+        private HashMap<Plugin, Boolean> plugins;
 	private ClassLoader classLoader;
+        private File pluginDir;
+        private SegmentTableModel segments;
 	
-	public PluginManager() {
+	public PluginManager(SegmentTableModel segments) {
+            this.segments = segments;
+            this.plugins = new HashMap<Plugin, Boolean>();
+            pluginDir = new File(System.getProperty("user.home"), ".reviewersWorkbench/plugins");
 	}
+
+        public File getPluginDir() {
+            return this.pluginDir;
+        }
+
+        public void setPluginDir(File pluginDir) {
+            this.pluginDir = pluginDir;
+        }
 	
 	/**
 	 * Get a list of available plugin instances.
 	 * @return
 	 */
-	public List<Plugin> getPlugins() {
-		return plugins;
+	public Set<Plugin> getPlugins() {
+		return plugins.keySet();
 	}
-	
+
+        /**
+         * Return if the plugin should receive data on export.
+         */
+        public boolean isEnabled(Plugin plugin) {
+            return plugins.get(plugin);
+        }
+
+        public void setEnabled(Plugin plugin, boolean enabled) {
+            plugins.put(plugin, enabled);
+        }
+
+        public void exportData() {
+            for (int row = 0; row < segments.getRowCount(); row++) {
+                Segment seg = segments.getSegment(row);
+                List<LanguageQualityIssue> lqi = seg.getLQI();
+                List<Provenance> prov = seg.getProv();
+                // TODO: send plugins the segment data
+            }
+        }
+
 	/**
 	 * Search the provided directory for any JAR files containing valid 
 	 * plugin classes.  Instantiate and configure any such classes.
@@ -65,7 +104,7 @@ public class PluginManager {
 				@SuppressWarnings("unchecked")
 				Class<? extends Plugin> c = (Class<Plugin>)Class.forName(s, false, classLoader);
 				Plugin plugin = c.newInstance();
-				plugins.add(plugin);
+				plugins.put(plugin, false);
 			}
 			catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?

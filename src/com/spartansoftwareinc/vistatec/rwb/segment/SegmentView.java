@@ -1,5 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb.segment;
 
+import com.spartansoftwareinc.plugins.PluginManager;
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
@@ -89,6 +90,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     private boolean isHTML = false;
     private String srcSLang, srcTLang;
     protected RuleConfiguration ruleConfig;
+    protected PluginManager pluginManager;
     private int documentSegmentNum;
     private IFilter filter;
 
@@ -97,6 +99,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         ruleConfig = new RuleConfiguration(this);
+        pluginManager = new PluginManager(segments);
+        pluginManager.discover(pluginManager.getPluginDir());
     }
 
     public SegmentTableModel getSegments() {
@@ -669,6 +673,10 @@ public class SegmentView extends JScrollPane implements RuleListener {
     @Override
     public void allMetadataSegments(boolean enabled) {
         reloadTable();
+    }
+
+    public PluginManager getPluginManager() {
+        return this.pluginManager;
     }
 
     /**
