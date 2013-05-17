@@ -1,5 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb;
 
+import com.spartansoftwareinc.plugins.PluginManagerView;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceProfileView;
 import com.spartansoftwareinc.vistatec.rwb.rules.FilterView;
@@ -50,9 +51,9 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     JFrame mainframe;
 
     JMenuBar menuBar;
-    JMenu menuFile, menuFilter, menuHelp;
+    JMenu menuFile, menuFilter, menuExtensions, menuHelp;
     JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
-            menuRules, menuProv, menuSave, menuSaveAs;
+            menuRules, menuProv, menuSave, menuSaveAs, menuPlugins;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -114,6 +115,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         } else if (e.getSource() == this.menuRules) {
             FilterView rules = new FilterView(segmentView.getRuleConfig());
             SwingUtilities.invokeLater(rules);
+
+        } else if (e.getSource() == this.menuPlugins) {
+            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager());
+            SwingUtilities.invokeLater(plugins);
 
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView prov = null;
@@ -243,6 +248,13 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuRules.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_R, Event.CTRL_MASK));
         menuFilter.add(menuRules);
+
+        menuExtensions = new JMenu("Extensions");
+        menuBar.add(menuExtensions);
+
+        menuPlugins = new JMenuItem("Plugins");
+        menuPlugins.addActionListener(this);
+        menuExtensions.add(menuPlugins);
 
         menuHelp = new JMenu("Help");
         menuHelp.setMnemonic(KeyEvent.VK_H);
