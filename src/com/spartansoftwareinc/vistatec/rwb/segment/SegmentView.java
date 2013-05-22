@@ -1,6 +1,7 @@
 package com.spartansoftwareinc.vistatec.rwb.segment;
 
 import com.spartansoftwareinc.plugins.PluginManager;
+import com.spartansoftwareinc.vistatec.rwb.ContextMenu;
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
@@ -13,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -79,7 +81,7 @@ import org.apache.log4j.Logger;
  * opened file. Indicates attached LTS metadata as flags.
  */
 public class SegmentView extends JScrollPane implements RuleListener {
-    private static Logger LOG = Logger.getLogger("com.spartansoftwareinc.SegmentView");
+    private static Logger LOG = Logger.getLogger(SegmentView.class);
     protected JTable sourceTargetTable;
     private SegmentTableModel segments;
     private LinkedList<Event> srcEvents, tgtEvents;
@@ -167,6 +169,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
             @Override
             public void columnSelectionChanged(ListSelectionEvent lse) {}
         });
+
+        sourceTargetTable.addMouseListener(new SegmentPopupMenuListener());
         setViewportView(sourceTargetTable);
     }
 
@@ -442,7 +446,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         attrView.addLQIMetadata(lqi);
     }
 
-    public void notifyAddedNewLQI(LanguageQualityIssue lqi, Segment seg) {
+    public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         attrView.setSelectedMetadata(lqi);
         attrView.setSelectedSegment(seg);
         updateEvent(seg);
@@ -752,6 +756,25 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 return ((MouseEvent)anEvent).getClickCount() >= 2;
             }
             return true;
+        }
+    }
+
+    public class SegmentPopupMenuListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                Segment seg = null;
+                int r = sourceTargetTable.rowAtPoint(e.getPoint());
+                if (r >= 0 && r < sourceTargetTable.getRowCount()) {
+                    sourceTargetTable.setRowSelectionInterval(r, r);
+                    seg = segments.getSegment(r);
+                }
+
+                if (seg != null) {
+                    ContextMenu menu = new ContextMenu(seg);
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
         }
     }
 }

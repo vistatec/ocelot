@@ -86,7 +86,20 @@ public class Segment {
     public void addNewLQI(LanguageQualityIssue lqi) {
         addLQI(lqi);
         if (segmentListener != null) {
-        	segmentListener.notifyAddedNewLQI(lqi, this);
+            segmentListener.notifyModifiedLQI(lqi, this);
+        }
+    }
+
+    public void editedLQI(LanguageQualityIssue lqi) {
+        if (segmentListener != null) {
+            segmentListener.notifyModifiedLQI(lqi, this);
+        }
+    }
+
+    public void removeLQI(LanguageQualityIssue removeLQI) {
+        lqiList.remove(removeLQI);
+        if (segmentListener != null) {
+            segmentListener.notifyModifiedLQI(removeLQI, this);
         }
     }
 
