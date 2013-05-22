@@ -1,7 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb.its;
 
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentAttributeView;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -14,6 +13,7 @@ import java.util.Calendar;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -23,27 +23,51 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.border.EmptyBorder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ITS 2.0 Language Quality Issue Data Category creation form.
  * Follows: http://www.w3.org/International/multilingualweb/lt/drafts/its20/its20.html#lqissue
  */
-public class NewLanguageQualityIssueView extends JPanel implements ActionListener {
+public class NewLanguageQualityIssueView extends JPanel implements Runnable, ActionListener {
     private static final long serialVersionUID = 3L;
-    private SegmentAttributeView segAttrView;
-    private JLabel sourceTargetSegment;
+    private static Logger LOG = LoggerFactory.getLogger(NewLanguageQualityIssueView.class);
+
+    private JFrame frame;
+    private JLabel segmentLabel, segmentId, typeLabel, commentLabel,
+            severityLabel, profileLabel, enabledLabel;
     protected JComboBox typeList;
+    private JScrollPane commentScroll;
     private JTextArea commentContent;
+    private JSpinner severitySpinner;
     private SpinnerModel severityRating;
     private JTextField profileRefLink;
     private JRadioButton enabledTrue, enabledFalse;
     private boolean enabled = true;
     private JButton save;
-    private JButton clear;
+    private JButton cancel;
 
-    public NewLanguageQualityIssueView(SegmentAttributeView segView) {
+    private Segment selectedSeg;
+    private LanguageQualityIssue selectedLQI;
+
+    private String prevType, prevComment;
+    private double prevSeverity;
+    private URL prevProfile;
+    private boolean prevEnabled;
+
+    public static String[] LQI_TYPE = {"terminology", "mistranslation", "omission",
+        "untranslated", "addition", "duplication", "inconsistency",
+        "grammar", "legal", "register", "locale-specific-content",
+        "locale-violation", "style", "characters", "misspelling",
+        "typographical", "formatting", "inconsistent-entities", "numbers",
+        "markup", "pattern-problem", "whitespace", "internationalization",
+        "length", "non-conformance", "uncategorized", "other"};
+
+    public NewLanguageQualityIssueView() {
         setLayout(new GridBagLayout());
-        this.segAttrView = segView;
+        setBorder(new EmptyBorder(10,10,10,10));
 
         // Initialize default grid bag layout: left align, 1 grid each
         GridBagConstraints gridBag = new GridBagConstraints();
@@ -61,70 +85,64 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
     }
 
     private void addTranslationSegment(GridBagConstraints gridBag) {
-        JLabel segmentLabel = new JLabel("Segment #: ");
+        segmentLabel = new JLabel("Segment #: ");
         gridBag.gridx = 0;
         gridBag.gridy = 0;
         add(segmentLabel, gridBag);
 
-        sourceTargetSegment = new JLabel();
+        segmentId = new JLabel();
         gridBag.gridx = 1;
         gridBag.gridy = 0;
-        add(sourceTargetSegment, gridBag);
+        add(segmentId, gridBag);
     }
 
     private void addType(GridBagConstraints gridBag) {
-        JLabel type = new JLabel("Type: ");
+        typeLabel = new JLabel("Type: ");
         gridBag.gridx = 0;
         gridBag.gridy = 1;
-        add(type, gridBag);
+        add(typeLabel, gridBag);
 
-        String[] types = {"terminology", "mistranslation", "omission",
-            "untranslated", "addition", "duplication", "inconsistency",
-            "grammar", "legal", "register", "locale-specific-content",
-            "locale-violation", "style", "characters", "misspelling",
-            "typographical", "formatting", "inconsistent-entities", "numbers",
-            "markup", "pattern-problem", "whitespace", "internationalization",
-            "length", "non-conformance", "uncategorized", "other"};
-        typeList = new JComboBox(types);
+        typeList = new JComboBox(LQI_TYPE);
         gridBag.gridx = 1;
         gridBag.gridy = 1;
         add(typeList, gridBag);
     }
 
     private void addComments(GridBagConstraints gridBag) {
-        JLabel comment = new JLabel("Comment: ");
+        commentLabel = new JLabel("Comment: ");
         gridBag.gridx = 0;
         gridBag.gridy = 2;
-        add(comment, gridBag);
+        add(commentLabel, gridBag);
 
         commentContent = new JTextArea(5, 15);
         commentContent.setEditable(true);
         commentContent.setLineWrap(true);
-        JScrollPane commentScroll = new JScrollPane(commentContent);
+        commentScroll = new JScrollPane(commentContent);
         gridBag.gridx = 1;
         gridBag.gridy = 2;
         add(commentScroll, gridBag);
     }
 
     private void addSeverity(GridBagConstraints gridBag) {
-        JLabel severity = new JLabel("Severity: ");
+        severityLabel = new JLabel("Severity: ");
         gridBag.gridx = 0;
         gridBag.gridy = 3;
-        add(severity, gridBag);
+        add(severityLabel, gridBag);
 
-        severityRating = new SpinnerNumberModel(0, 0, 100, 1);
-        JSpinner spinner = new JSpinner(severityRating);
-        severity.setLabelFor(spinner);
+        severityRating = new SpinnerNumberModel(0, 0, 100, 0.000000001);
+        severitySpinner = new JSpinner(severityRating);
+        severitySpinner.setEditor(new JSpinner.NumberEditor(severitySpinner, "0.000000000"));
+        severityLabel.setLabelFor(severitySpinner);
         gridBag.gridx = 1;
         gridBag.gridy = 3;
-        add(spinner, gridBag);
+        add(severitySpinner, gridBag);
     }
 
     private void addProfileReference(GridBagConstraints gridBag) {
-        JLabel profile = new JLabel("Profile Reference: ");
+        profileLabel = new JLabel("Profile Reference: ");
         gridBag.gridx = 0;
         gridBag.gridy = 4;
-        add(profile, gridBag);
+        add(profileLabel, gridBag);
 
         // TODO: IRI validation?
         profileRefLink = new JTextField(15);
@@ -134,7 +152,7 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
     }
 
     private void addEnabled(GridBagConstraints gridBag) {
-        JLabel enabledLabel = new JLabel("Enabled: ");
+        enabledLabel = new JLabel("Enabled: ");
         gridBag.gridx = 0;
         gridBag.gridy = 5;
         add(enabledLabel, gridBag);
@@ -171,7 +189,11 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
             @Override
             public void keyReleased(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-                    clearForm();
+                    if (ke.getSource().equals(save)) {
+                        save.doClick();
+                    } else {
+                        cancel.doClick();
+                    }
                 }
             }
         };
@@ -179,29 +201,77 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
         save = new JButton("Save");
         save.addActionListener(this);
         save.addKeyListener(enter);
-        save.setEnabled(segAttrView.getSelectedSegment() != null);
+        save.setEnabled(selectedSeg != null);
 
-        clear = new JButton("Clear");
-        clear.addActionListener(this);
-        clear.addKeyListener(enter);
+        cancel = new JButton("Cancel");
+        cancel.addActionListener(this);
+        cancel.addKeyListener(enter);
 
         JPanel actionPanel = new JPanel();
         actionPanel.add(save);
-        actionPanel.add(clear);
+        actionPanel.add(cancel);
         gridBag.gridx = 1;
         gridBag.gridy = 6;
         add(actionPanel, gridBag);
     }
 
+    public void setSegment(Segment seg) {
+        this.selectedSeg = seg;
+        updateSegment();
+    }
+
     public void updateSegment() {
-        sourceTargetSegment.setText(
-                segAttrView.getSelectedSegment().getSegmentNumber() + "");
+        segmentId.setText(
+                selectedSeg.getSegmentNumber() + "");
         save.setEnabled(true);
     }
 
     public void clearSegment() {
-        sourceTargetSegment.setText("");
+        segmentId.setText("");
         save.setEnabled(false);
+    }
+
+    public void setMetadata(Segment selectedSegment, LanguageQualityIssue lqi) {
+        setSegment(selectedSegment);
+        this.selectedLQI = lqi;
+
+        prevType = lqi.getType();
+        prevComment = lqi.getComment();
+        prevSeverity = lqi.getSeverity();
+        prevProfile = lqi.getProfileReference();
+        prevEnabled = lqi.isEnabled();
+
+        segmentLabel.setText("Segment #");
+        segmentId.setText(selectedSegment.getSegmentNumber()+"");
+
+        typeLabel.setText("Type");
+        setType(prevType);
+
+        commentLabel.setText("Comment");
+        commentContent.setText(prevComment);
+        commentContent.setVisible(true);
+
+        severityLabel.setText("Severity");
+        severityRating.setValue(prevSeverity);
+
+        profileLabel.setText("Profile Reference");
+        profileRefLink.setText(prevProfile != null ?
+                prevProfile.toString() : "");
+
+        enabledLabel.setText("Enabled");
+        enabledTrue.setSelected(prevEnabled);
+        enabledFalse.setSelected(!prevEnabled);
+    }
+
+    public boolean setType(String metadataType) {
+        for (int i = 0; i < LQI_TYPE.length; i++) {
+            String value = LQI_TYPE[i];
+            if (metadataType.equals(value)) {
+                typeList.setSelectedIndex(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -209,42 +279,78 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
         typeList.requestFocus();
     }
 
-    public void clearForm() {
-        typeList.setSelectedIndex(0);
+    public void resetForm() {
+        if (!setType(prevType)) {
+            typeList.setSelectedIndex(0);
+        }
+        commentContent.setText(prevComment != null ? prevComment : "");
+        severityRating.setValue(prevSeverity);
+        profileRefLink.setText(prevProfile != null ? prevProfile.toString() : "");
+        if (prevEnabled) {
+            enabledTrue.doClick();
+        } else {
+            enabledFalse.doClick();
+        }
+    }
+
+    public void clearDisplay() {
+        segmentLabel.setText("");
+        segmentId.setText("");
+        typeLabel.setText("");
+        typeList.setVisible(false);
+        commentLabel.setText("");
         commentContent.setText("");
-        severityRating.setValue(0);
+        commentScroll.setVisible(false);
+        severityLabel.setText("");
+        severitySpinner.setVisible(false);
+        profileLabel.setText("");
         profileRefLink.setText("");
-        enabledTrue.doClick();
+        profileRefLink.setVisible(false);
+        enabledLabel.setText("");
+        enabledTrue.setVisible(false);
+        enabledFalse.setVisible(false);
+        save.setVisible(false);
+        cancel.setVisible(false);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == clear) {
-            clearForm();
+        if (e.getSource() == cancel) {
+            if (addingLQI()) {
+                frame.dispose();
+            } else {
+                resetForm();
+            }
 
         } else if (e.getSource() == save) {
-            LanguageQualityIssue lqi = new LanguageQualityIssue();
+            LanguageQualityIssue lqi = addingLQI() ?
+                    new LanguageQualityIssue() : this.selectedLQI;
             lqi.setType(typeList.getSelectedItem().toString());
             lqi.setComment(commentContent.getText());
-            lqi.setSeverity(new Integer(severityRating.getValue().toString()));
+            lqi.setSeverity(new Double(severityRating.getValue().toString()));
             if (!profileRefLink.getText().isEmpty()) {
                 try {
                     lqi.setProfileReference(new URL(profileRefLink.getText()));
                 } catch (MalformedURLException ex) {
-                    System.err.println(ex.getMessage());
+                    LOG.warn("Profile reference '"+profileRefLink.getText()
+                            +"' is not a valid URL", ex);
                 }
             }
             lqi.setEnabled(enabled);
 
-            Segment selectedSeg = segAttrView.getSelectedSegment();
             if (selectedSeg.containsLQI()) {
                 lqi.setIssuesRef(selectedSeg.getLQI().getFirst().getIssuesRef());
             } else {
                 // TODO: generate unique LQI issues ref
                 lqi.setIssuesRef(Calendar.getInstance().getTime().toString());
             }
-            selectedSeg.addNewLQI(lqi);
-            clearForm();
+
+            if (addingLQI()) {
+                selectedSeg.addNewLQI(lqi);
+                frame.dispose();
+            } else {
+                selectedSeg.editedLQI(lqi);
+            }
 
         } else if (e.getSource() == enabledTrue) {
             enabled = true;
@@ -253,4 +359,18 @@ public class NewLanguageQualityIssueView extends JPanel implements ActionListene
         }
     }
 
+    public boolean addingLQI() {
+        return frame != null && this.selectedLQI == null;
+    }
+
+    @Override
+    public void run() {
+        frame = new JFrame("Add Language Quality Issue");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        frame.getContentPane().add(this);
+
+        frame.pack();
+        frame.setVisible(true);
+    }
 }

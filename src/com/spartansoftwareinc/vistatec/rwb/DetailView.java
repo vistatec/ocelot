@@ -2,26 +2,26 @@ package com.spartansoftwareinc.vistatec.rwb;
 
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
-import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssueView;
+import com.spartansoftwareinc.vistatec.rwb.its.NewLanguageQualityIssueView;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceView;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentDetailView;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import javax.swing.JPanel;
 
 /**
  * Detail pane displaying data related to a selected segment in the SegmentView.
  */
 public class DetailView extends JPanel {
-    private LanguageQualityIssueView lqiDetailView;
+    private NewLanguageQualityIssueView lqiDetailView;
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
 
     public DetailView() {
         setLayout(new BorderLayout());
-        lqiDetailView = new LanguageQualityIssueView();
-        add(lqiDetailView);
+        setPreferredSize(new Dimension(500, 250));
     }
 
     public void clearDisplay() {
@@ -39,10 +39,11 @@ public class DetailView extends JPanel {
     public void setMetadata(Segment seg, ITSMetadata data) {
         if (LanguageQualityIssue.class.equals(
             data.getClass())) {
+            LanguageQualityIssue lqi = (LanguageQualityIssue) data;
             removeSegmentDetailView();
             removeProvenanceDetailView();
             addLQIDetailView();
-            lqiDetailView.setMetadata(seg, data);
+            lqiDetailView.setMetadata(seg, lqi);
         } else if (Provenance.class.equals(data.getClass())) {
             removeSegmentDetailView();
             removeLQIDetailView();
@@ -76,7 +77,7 @@ public class DetailView extends JPanel {
 
     public void addLQIDetailView() {
         if (lqiDetailView == null) {
-            lqiDetailView = new LanguageQualityIssueView();
+            lqiDetailView = new NewLanguageQualityIssueView();
             add(lqiDetailView);
         }
     }

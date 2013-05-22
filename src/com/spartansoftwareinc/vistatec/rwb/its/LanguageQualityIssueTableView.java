@@ -1,7 +1,10 @@
 package com.spartansoftwareinc.vistatec.rwb.its;
 
+import com.spartansoftwareinc.vistatec.rwb.ContextMenu;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentAttributeView;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -23,6 +26,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     
     public LanguageQualityIssueTableView(SegmentAttributeView sav) {
         segAttrView = sav;
+        addMouseListener(new LQIPopupMenuListener());
     }
 
     public void setSegment(Segment seg) {
@@ -39,6 +43,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
 
         sort = new TableRowSorter(lqiTableModel);
         lqiTable.setRowSorter(sort);
+        lqiTable.addMouseListener(new LQIPopupMenuListener());
 
         setViewportView(lqiTable);
     }
@@ -55,7 +60,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     public void selectedLQI() {
         int rowIndex = lqiTable.getSelectedRow();
         if (rowIndex >= 0) {
-            segAttrView.setSelectedMetadata(lqiTableModel.rows.get(rowIndex));
+            segAttrView.setSelectedMetadata(lqiTableModel.getRow(rowIndex));
         }
     }
 
@@ -70,6 +75,10 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         public static final int NUMCOLS = 3;
         public String[] colNames = {"Type", "Severity", "Comment"};
         private List<LanguageQualityIssue> rows;
+
+        public LanguageQualityIssue getRow(int row) {
+            return rows.get(row);
+        }
 
         public void setRows(List<LanguageQualityIssue> attrs) {
             rows = attrs;
@@ -120,6 +129,26 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             selectedLQI();
+        }
+    }
+
+    public class LQIPopupMenuListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            LanguageQualityIssue selectedLQI = null;
+            if (lqiTable != null) {
+                int r = lqiTable.rowAtPoint(e.getPoint());
+                if (r >= 0 && r < lqiTable.getRowCount()) {
+                    lqiTable.setRowSelectionInterval(r, r);
+                    selectedLQI = lqiTableModel.getRow(r);
+                }
+            }
+            if (e.isPopupTrigger() && segAttrView.getSelectedSegment() != null) {
+                ContextMenu menu = selectedLQI == null ?
+                        new ContextMenu(segAttrView.getSelectedSegment()) :
+                        new ContextMenu(segAttrView.getSelectedSegment(), selectedLQI);
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
         }
     }
 }

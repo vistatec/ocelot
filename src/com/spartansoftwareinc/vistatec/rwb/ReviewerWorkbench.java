@@ -2,6 +2,7 @@ package com.spartansoftwareinc.vistatec.rwb;
 
 import com.spartansoftwareinc.plugins.PluginManagerView;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
+import com.spartansoftwareinc.vistatec.rwb.its.NewLanguageQualityIssueView;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceProfileView;
 import com.spartansoftwareinc.vistatec.rwb.rules.FilterView;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
@@ -354,7 +355,11 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                 segmentView.requestFocusTable();
 
             } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
-                segmentAttrView.focusAddLQIView();
+                if (segmentView.getSelectedSegment() != null) {
+                    NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView();
+                    addLQIView.setSegment(segmentAttrView.getSelectedSegment());
+                    SwingUtilities.invokeLater(addLQIView);
+                }
             }
         }
         return false;

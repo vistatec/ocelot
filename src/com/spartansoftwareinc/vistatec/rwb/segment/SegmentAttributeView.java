@@ -4,7 +4,6 @@ import com.spartansoftwareinc.vistatec.rwb.DetailView;
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssueTableView;
-import com.spartansoftwareinc.vistatec.rwb.its.NewLanguageQualityIssueView;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceTableView;
 import com.spartansoftwareinc.vistatec.rwb.its.stats.ITSDocStatsTableView;
@@ -21,7 +20,6 @@ public class SegmentAttributeView extends JTabbedPane {
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
     protected SegmentAttributeTreeView treeView;
-    protected NewLanguageQualityIssueView addLQIView;
     private DetailView detailView;
 
     private Segment selectedSegment;
@@ -40,9 +38,6 @@ public class SegmentAttributeView extends JTabbedPane {
 
         treeView = new SegmentAttributeTreeView(this);
         addTab("Tree", treeView);
-
-        addLQIView = new NewLanguageQualityIssueView(this);
-        addTab("+", addLQIView);
 
         // Deselect metadata to allow reselection for detail view after switching tabs.
         addChangeListener(new ChangeListener() {
@@ -71,13 +66,12 @@ public class SegmentAttributeView extends JTabbedPane {
         treeView.clearTree();
         if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
         treeView.expandTree();
-        addLQIView.updateSegment();
         detailView.setSegment(seg);
     }
 
     public void clearSegment() {
+        this.selectedSegment = null;
         treeView.clearTree();
-        addLQIView.clearSegment();
         lqiTableView.clearSegment();
         provTableView.clearSegment();
     }
@@ -118,15 +112,5 @@ public class SegmentAttributeView extends JTabbedPane {
         selectedTab = selectedTab + 1 == getTabCount() ? 0 : selectedTab + 1;
         setSelectedIndex(selectedTab);
         getComponentAt(selectedTab).requestFocus();
-    }
-
-    public void focusAddLQIView() {
-        int numTabs = getTabCount();
-        for (int i = 0; i < numTabs; i++) {
-            if (getComponentAt(i).equals(addLQIView)) {
-                setSelectedIndex(i);
-            }
-        }
-        addLQIView.requestFocus();
     }
 }
