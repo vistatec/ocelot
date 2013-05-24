@@ -11,6 +11,8 @@
   <property name="package" value="com/spartansoftwareinc/vistatec/rwb"/>
   <property name="ReviewerWorkbench.jar" value="${build.dir}/ReviewerWorkbench.jar" />
   <property name="SamplePlugins.jar" value="${build.dir}/SamplePlugins.jar" />
+  <property name="Webservice.jar" value="${build.dir}/Webservice.jar" />
+  <property name="PluginTest.jar" value="${build.dir}/PluginTest.jar" />
 
   <path id="project.class.path">
       <pathelement location="${src.classes.dir}" />
@@ -84,7 +86,7 @@
               <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
               <attribute name="Rsrc-Main-Class" value="com.spartansoftwareinc.vistatec.rwb.ReviewerWorkbench"/>
               <attribute name="Class-Path" value="."/>
-              <attribute name="Rsrc-Class-Path" value="./ htmlparser-1.4.jar junit-4.7.jar log4j-1.2.17.jar okapi-core-0.22-SNAPSHOT.jar okapi-filter-its-0.22-SNAPSHOT.jar okapi-filter-xliff-0.22-SNAPSHOT.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
+              <attribute name="Rsrc-Class-Path" value="./ htmlparser-1.4.jar jackson-core-asl-1.9.9.jar jackson-mapper-asl-1.9.11.jar junit-4.7.jar log4j-1.2.17.jar okapi-core-0.22-SNAPSHOT.jar okapi-filter-its-0.22-SNAPSHOT.jar okapi-filter-xliff-0.22-SNAPSHOT.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
           </manifest>
           <zipfileset src="${basedir}/jar-in-jar-loader.zip"/>
           <fileset dir="${src.classes.dir}">
@@ -94,6 +96,8 @@
           <zipfileset dir="${src.dir}/${package}" includes="rules.properties" fullpath="${package}/rules.properties"/>
           <zipfileset dir="${src.dir}/${package}" includes="log4j.properties" fullpath="${package}/log4j.properties"/>
           <zipfileset dir="${lib.dir}" includes="htmlparser-1.4.jar"/>
+          <zipfileset dir="${lib.dir}" includes="jackson-core-asl-1.9.9.jar"/>
+          <zipfileset dir="${lib.dir}" includes="jackson-mapper-asl-1.9.11.jar"/>
           <zipfileset dir="${lib.dir}" includes="junit-4.7.jar"/>
           <zipfileset dir="${lib.dir}" includes="log4j-1.2.17.jar"/>
           <zipfileset dir="${lib.dir}" includes="okapi-core-0.22-SNAPSHOT.jar"/>
@@ -106,9 +110,37 @@
       <echo message="Building ${SamplePlugins.jar}" />
       <jar compress="false" jarfile="${SamplePlugins.jar}"
           basedir="${src.classes.dir}"
-          includes="com/spartansoftwareinc/plugins/samples/**"
+          includes="com/spartansoftwareinc/plugins/samples/SamplePlugin.class"
           excludes="com/spartansoftwareinc/*.class,com/spartansoftwareinc/plugins/*.class"
           >
+      </jar>
+      <echo message="Building ${PluginTest.jar}" />
+      <jar compress="false" jarfile="${PluginTest.jar}"
+          basedir="${src.classes.dir}"
+          includes="com/spartansoftwareinc/plugins/samples/PluginTest.class"
+          excludes="com/spartansoftwareinc/*.class,com/spartansoftwareinc/plugins/*.class"
+          >
+      </jar>
+      <echo message="Building ${Webservice.jar}" />
+      <jar compress="false" jarfile="${Webservice.jar}"
+          basedir="${src.classes.dir}"
+          includes="com/spartansoftwareinc/plugins/samples/Webservice.class,com/spartansoftwareinc/plugins/samples/JsonFormatter.class"
+          excludes="com/spartansoftwareinc/*.class,com/spartansoftwareinc/plugins/*.class"
+          >
+          <manifest>
+              <attribute name="Created-By" value="Spartan Software, Inc."/>
+              <attribute name="Built-By" value="${user.name}"/>
+              <attribute name="Git-Commit" value="${build.gitcommit}"/>
+              <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+              <attribute name="Class-Path" value="."/>
+              <attribute name="Rsrc-Class-Path" value="./ jackson-core-asl-1.9.9.jar jackson-mapper-asl-1.9.11.jar log4j-1.2.17.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
+          </manifest>
+          <zipfileset src="${basedir}/jar-in-jar-loader.zip"/>
+          <zipfileset dir="${lib.dir}" includes="jackson-core-asl-1.9.9.jar"/>
+          <zipfileset dir="${lib.dir}" includes="jackson-mapper-asl-1.9.11.jar"/>
+          <zipfileset dir="${lib.dir}" includes="log4j-1.2.17.jar"/>
+          <zipfileset dir="${lib.dir}" includes="slf4j-api-1.7.2.jar"/>
+          <zipfileset dir="${lib.dir}" includes="slf4j-log4j12-1.7.2.jar"/>
       </jar>
   </target>
 

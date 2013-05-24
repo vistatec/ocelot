@@ -118,7 +118,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             SwingUtilities.invokeLater(rules);
 
         } else if (e.getSource() == this.menuPlugins) {
-            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager());
+            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager(), segmentView);
             SwingUtilities.invokeLater(plugins);
 
         } else if (e.getSource() == this.menuProv) {

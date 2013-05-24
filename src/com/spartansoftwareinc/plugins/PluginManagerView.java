@@ -1,5 +1,6 @@
 package com.spartansoftwareinc.plugins;
 
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentView;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -28,21 +29,24 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
     private JButton selectPluginDir, export;
     private PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
+    private SegmentView segmentView;
 
-    public PluginManagerView(PluginManager pluginManager) {
+    public PluginManagerView(PluginManager pluginManager, SegmentView segView) {
         super(new GridBagLayout());
         this.pluginManager = pluginManager;
+        this.segmentView = segView;
         checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         setBorder(new EmptyBorder(10,10,10,10));
 
         GridBagConstraints gridBag = new GridBagConstraints();
+        gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
 
         export = new JButton("Export Data");
         export.addActionListener(this);
         gridBag.gridx = 0;
         gridBag.gridy = 0;
         add(export, gridBag);
-        
+
         selectPluginDir = new JButton("Set Plugin Directory");
         selectPluginDir.addActionListener(this);
         gridBag.gridx = 1;
@@ -60,6 +64,8 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
 
     public void initPlugins() {
         GridBagConstraints gridBag = new GridBagConstraints();
+        gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
+        gridBag.gridwidth = 2;
         gridBag.gridx = 0;
         int gridy = 2;
         if (!checkboxToPlugin.isEmpty()) {
@@ -103,7 +109,9 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
                 }
             }
         } else if (ae.getSource() == export) {
-            pluginManager.exportData();
+            pluginManager.exportData(segmentView.getSourceFileSourceLang(),
+                    segmentView.getSourceFileTargetLang(),
+                    segmentView.getSegments());
         }
     }
 

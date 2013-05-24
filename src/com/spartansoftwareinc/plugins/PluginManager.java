@@ -36,10 +36,8 @@ public class PluginManager {
         private HashMap<Plugin, Boolean> plugins;
 	private ClassLoader classLoader;
         private File pluginDir;
-        private SegmentTableModel segments;
 	
-	public PluginManager(SegmentTableModel segments) {
-            this.segments = segments;
+	public PluginManager() {
             this.plugins = new HashMap<Plugin, Boolean>();
             pluginDir = new File(System.getProperty("user.home"), ".reviewersWorkbench/plugins");
 	}
@@ -71,12 +69,20 @@ public class PluginManager {
             plugins.put(plugin, enabled);
         }
 
-        public void exportData() {
+        public void exportData(String sourceLang, String targetLang,
+                SegmentTableModel segments) {
             for (int row = 0; row < segments.getRowCount(); row++) {
                 Segment seg = segments.getSegment(row);
                 List<LanguageQualityIssue> lqi = seg.getLQI();
                 List<Provenance> prov = seg.getProv();
-                // TODO: send plugins the segment data
+                for (Plugin plugin : getPlugins()) {
+                    if (isEnabled(plugin)) {
+                        plugin.sendLQIData(sourceLang, targetLang,
+                                seg, lqi);
+                        plugin.sendProvData(sourceLang, targetLang,
+                                seg, prov);
+                    }
+                }
             }
         }
 

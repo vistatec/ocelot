@@ -7,23 +7,23 @@ import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import java.util.List;
 
 /**
- * Sample plugin that does nothing.
+ * Sample plugin for layout testing purposes.
  */
-public class SamplePlugin implements Plugin {
+public class PluginTest implements Plugin {
 
-	@Override
-	public String getPluginName() {
-		return "Sample Plugin";
-	}
-	
-	@Override
-	public String getPluginVersion() {
-		return "1.0";
-	}
+    @Override
+    public String getPluginName() {
+        return "Really Long Plugin Name That Stretches Screen";
+    }
+
+    @Override
+    public String getPluginVersion() {
+        return "1.0";
+    }
 
     @Override
     public void sendProvData(String sourceLang, String targetLang,
-        Segment seg, List<Provenance> prov) {
+            Segment seg, List<Provenance> prov) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

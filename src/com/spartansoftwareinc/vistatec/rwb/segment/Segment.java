@@ -20,6 +20,7 @@ public class Segment {
     private LinkedList<Provenance> provList =
             new LinkedList<Provenance>();
     private SegmentView segmentListener;
+    private String fileOriginal, transUnitId;
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
             TextContainer source, TextContainer target, SegmentView listener) {
@@ -30,7 +31,7 @@ public class Segment {
         this.target = target;
         this.segmentListener = listener;
     }
-    
+
     public int getSegmentNumber() {
         return segmentNumber;
     }
@@ -49,6 +50,25 @@ public class Segment {
 
     public TextContainer getTarget() {
         return this.target;
+    }
+
+    /**
+     * XLIFF specific fields.
+     */
+    public String getFileOriginal() {
+        return this.fileOriginal;
+    }
+
+    public void setFileOriginal(String fileOri) {
+        this.fileOriginal = fileOri;
+    }
+
+    public String getTransUnitId() {
+        return this.transUnitId;
+    }
+
+    public void setTransUnitId(String transUnitId) {
+        this.transUnitId = transUnitId;
     }
 
     public LinkedList<Provenance> getProv() {
