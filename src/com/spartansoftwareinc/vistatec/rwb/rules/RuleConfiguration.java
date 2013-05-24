@@ -78,8 +78,7 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
                 LOG.error("Matcher class not accessible", ex);
             }
         } else {
-            LOG.error("Failed to find rules.properties file",
-                    new FileNotFoundException(rulesFile.getAbsolutePath()));
+            LOG.warn("No rules.properties file found at location:"+rulesFile.getAbsolutePath());
         }
     }
 
