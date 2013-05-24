@@ -39,6 +39,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -744,11 +745,19 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public class SegmentEditor extends AbstractCellEditor implements TableCellEditor {
 
         protected SegmentTextCell editorComponent;
+        protected SegmentCellEditorListener editListener;
+
+        public SegmentEditor() {
+            editListener = new SegmentCellEditorListener();
+            addCellEditorListener(editListener);
+        }
 
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object value,
             boolean isSelected, int row, int col) {
-            editorComponent = new SegmentTextCell(segments.getSegment(row).getTarget(), false);
+            Segment seg = segments.getSegment(row);
+            editListener.setBeginEdit(seg, seg.getTarget().getCodedText());
+            editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
             editorComponent.getActionMap().put("finish", new AbstractAction() {
                 @Override
@@ -770,6 +779,29 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 return ((MouseEvent)anEvent).getClickCount() >= 2;
             }
             return true;
+        }
+    }
+
+    public class SegmentCellEditorListener implements CellEditorListener {
+        private Segment seg;
+        private String codedText;
+
+        public void setBeginEdit(Segment seg, String codedText) {
+            this.seg = seg;
+            this.codedText = codedText;
+        }
+
+        @Override
+        public void editingStopped(ChangeEvent ce) {
+            if (!this.seg.getTarget().getCodedText().equals(codedText)) {
+                updateEvent(seg);
+                reloadTable();
+            }
+        }
+
+        @Override
+        public void editingCanceled(ChangeEvent ce) {
+            // TODO: Cancel not supported.
         }
     }
 
