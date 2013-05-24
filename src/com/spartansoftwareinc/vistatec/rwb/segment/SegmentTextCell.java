@@ -27,7 +27,6 @@ public class SegmentTextCell extends JTextPane {
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
     public static String tagStyle = "tag", regularStyle = "regular";
     private TextContainer tc;
-    private boolean edited;
 
     public SegmentTextCell() {
         setEditController();
@@ -108,14 +107,6 @@ public class SegmentTextCell extends JTextPane {
         return textToStyle;
     }
 
-    public boolean changedText() {
-        return this.edited;
-    }
-
-    public void setChangedText(boolean flag) {
-        this.edited = flag;
-    }
-
     public TextContainer getTextContainer() {
         return this.tc;
     }
@@ -162,6 +153,9 @@ public class SegmentTextCell extends JTextPane {
         @Override
         public void replace(FilterBypass fb, int offset, int length, String str,
                 AttributeSet a) throws BadLocationException {
+            if (containsTag(str)) {
+                return;
+            }
             if (length > 0) {
                 String text = fb.getDocument().getText(offset, length);
                 if (offset > 0) {
@@ -238,7 +232,6 @@ public class SegmentTextCell extends JTextPane {
                 partIndex++;
                 textPos += tf.length();
             }
-            setChangedText(true);
         }
     }
 }
