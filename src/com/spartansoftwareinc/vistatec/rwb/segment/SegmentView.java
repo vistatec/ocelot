@@ -101,7 +101,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         ruleConfig = new RuleConfiguration(this);
-        pluginManager = new PluginManager(segments);
+        pluginManager = new PluginManager();
         pluginManager.discover(pluginManager.getPluginDir());
     }
 
@@ -197,6 +197,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
         this.isHTML = flag;
     }
 
+    public String getSourceFileSourceLang() {
+        return this.srcSLang;
+    }
+
+    public String getSourceFileTargetLang() {
+        return this.srcTLang;
+    }
+
     public void parseSegmentsFromHTMLFile(File sourceFile, File targetFile) throws IOException {
         sourceTargetTable.clearSelection();
         segments.deleteSegments();
@@ -256,7 +264,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.PROV));
                 }
 
-                addSegment(srcTc, tgtTc, anns, srcEventNum, tgtEventNum);
+                addSegment(srcTc, tgtTc, anns, srcEventNum, tgtEventNum, "N/A", "N/A");
             }
             srcEventNum++;
             tgtEventNum++;
@@ -304,6 +312,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         this.filter.open(fileDoc);
         int fileEventNum = 0;
 
+        String fileOriginal = "";
         while(this.filter.hasNext()) {
             Event event = this.filter.next();
             srcEvents.add(event);
@@ -326,6 +335,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     srcTLang = fileTargetLang;
                     fileDoc.setTargetLocale(LocaleId.fromString(srcTLang));
                 }
+                fileOriginal = fileElement.getName();
 
             } else if (event.isTextUnit()) {
                 ITextUnit tu = (ITextUnit) event.getResource();
@@ -365,16 +375,20 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     }
                 }
 
-                addSegment(srcTu, tgtTu, anns, fileEventNum, fileEventNum);
+                addSegment(srcTu, tgtTu, anns, fileEventNum, fileEventNum,
+                        fileOriginal, tu.getId());
             }
             fileEventNum++;
         }
     }
 
     public void addSegment(TextContainer sourceText, TextContainer targetText,
-            List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum) {
+            List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum,
+            String fileOri, String transUnitId) {
         Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
                 sourceText, targetText, this);
+        seg.setFileOriginal(fileOri);
+        seg.setTransUnitId(transUnitId);
         // TODO: parse GenericAnnotations for other data categories.
         for (GenericAnnotation ga : annotations) {
             if (ga.getType().equals(GenericAnnotationType.LQI)) {
