@@ -131,6 +131,8 @@
               <attribute name="Git-Commit" value="${build.gitcommit}"/>
               <attribute name="Class-Path" value="."/>
           </manifest>
+          <zipgroupfileset dir="${lib.dir}" includes="jackson-core-asl-1.9.9.jar"/>
+          <zipgroupfileset dir="${lib.dir}" includes="jackson-mapper-asl-1.9.11.jar"/>
       </jar>
   </target>
 
