@@ -354,29 +354,30 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     tu.setTarget(LocaleId.fromString(srcTLang), tgtTu);
                 }
 
-                GenericAnnotations itsTags = tu.getAnnotation(GenericAnnotations.class);
-                List<GenericAnnotation> anns = new LinkedList<GenericAnnotation>();
-                // TODO: get annotations for other data categories
-                if (itsTags != null) {
-                    anns.addAll(itsTags.getAnnotations(GenericAnnotationType.LQI));
-                    anns.addAll(itsTags.getAnnotations(GenericAnnotationType.PROV));
-                }
+                ITSLQIAnnotations lqiAnns = tu.getAnnotation(ITSLQIAnnotations.class);
+                ITSProvenanceAnnotations provAnns = tu.getAnnotation(ITSProvenanceAnnotations.class);
 
-                GenericAnnotations srcAnns = srcTu.getAnnotation(GenericAnnotations.class);
-                if (srcAnns != null) {
-                    anns.addAll(srcAnns.getAnnotations(GenericAnnotationType.LQI));
-                    anns.addAll(srcAnns.getAnnotations(GenericAnnotationType.PROV));
+                ITSLQIAnnotations srcLQIAnns = srcTu.getAnnotation(ITSLQIAnnotations.class);
+                if (lqiAnns != null && srcLQIAnns != null) {
+                    lqiAnns.addAll(srcLQIAnns);
+                }
+                ITSProvenanceAnnotations srcProvAnns = srcTu.getAnnotation(ITSProvenanceAnnotations.class);
+                if (provAnns != null && srcProvAnns != null) {
+                    provAnns.addAll(srcProvAnns);
                 }
 
                 if (tgtTu != null) {
-                    GenericAnnotations tgtAnns = tgtTu.getAnnotation(GenericAnnotations.class);
-                    if (tgtAnns != null) {
-                        anns.addAll(tgtAnns.getAnnotations(GenericAnnotationType.LQI));
-                        anns.addAll(tgtAnns.getAnnotations(GenericAnnotationType.PROV));
+                    ITSLQIAnnotations tgtLQIAnns = tgtTu.getAnnotation(ITSLQIAnnotations.class);
+                    if (lqiAnns != null && tgtLQIAnns != null) {
+                        lqiAnns.addAll(tgtLQIAnns);
+                    }
+                    ITSProvenanceAnnotations tgtProvAnns = tgtTu.getAnnotation(ITSProvenanceAnnotations.class);
+                    if (provAnns != null && tgtProvAnns != null) {
+                        provAnns.addAll(tgtProvAnns);
                     }
                 }
 
-                addSegment(srcTu, tgtTu, anns, fileEventNum, fileEventNum,
+                addSegment(srcTu, tgtTu, lqiAnns, provAnns, fileEventNum, fileEventNum,
                         fileOriginal, tu.getId());
             }
             fileEventNum++;
@@ -396,6 +397,32 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 seg.addLQI(new LanguageQualityIssue(ga));
             } else if (ga.getType().equals(GenericAnnotationType.PROV)) {
                 seg.addProvenance(new Provenance(ga));
+            }
+        }
+        segments.addSegment(seg);
+    }
+
+    public void addSegment(TextContainer sourceText, TextContainer targetText,
+            ITSLQIAnnotations lqiAnns, ITSProvenanceAnnotations provAnns,
+            int srcEventNum, int tgtEventNum, String fileOri, String transUnitId) {
+        Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
+                sourceText, targetText, this);
+        seg.setFileOriginal(fileOri);
+        seg.setTransUnitId(transUnitId);
+        if (lqiAnns != null) {
+            List<GenericAnnotation> lqiList = lqiAnns.getAnnotations(GenericAnnotationType.LQI);
+            for (GenericAnnotation ga : lqiList) {
+                seg.addLQI(new LanguageQualityIssue(ga));
+                seg.setLQIID(lqiAnns.getData());
+            }
+        }
+        if (provAnns != null) {
+            List<GenericAnnotation> provList = provAnns.getAnnotations(GenericAnnotationType.PROV);
+            if (provList != null) {
+                for (GenericAnnotation ga : provList) {
+                    seg.addProvenance(new Provenance(ga));
+                    seg.setProvID(provAnns.getData());
+                }
             }
         }
         segments.addSegment(seg);
@@ -670,6 +697,20 @@ public class SegmentView extends JScrollPane implements RuleListener {
         }
 
         return provAnns;
+    }
+
+    public String getLQIStandoffID(Segment seg) {
+        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
+        ITextUnit textUnit = srcEvent.getTextUnit();
+        ITSLQIAnnotations lqiAnns = textUnit.getAnnotation(ITSLQIAnnotations.class);
+        return lqiAnns.getData();
+    }
+
+    public String getProvStandoffID(Segment seg) {
+        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
+        ITextUnit textUnit = srcEvent.getTextUnit();
+        ITSProvenanceAnnotations provAnns = textUnit.getAnnotation(ITSProvenanceAnnotations.class);
+        return provAnns.getData();
     }
 
     /**

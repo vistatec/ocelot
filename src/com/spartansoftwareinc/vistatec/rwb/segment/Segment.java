@@ -15,6 +15,7 @@ public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
     private TextContainer source, target;
     private boolean addedProvenance = false;
+    private String lqiID, provID;
     private LinkedList<LanguageQualityIssue> lqiList =
             new LinkedList<LanguageQualityIssue>();
     private LinkedList<Provenance> provList =
@@ -71,6 +72,14 @@ public class Segment {
         this.transUnitId = transUnitId;
     }
 
+    public String getProvID() {
+        return this.provID;
+    }
+
+    public void setProvID(String provId) {
+        this.provID = provId;
+    }
+
     public LinkedList<Provenance> getProv() {
         return provList;
     }
@@ -87,7 +96,15 @@ public class Segment {
     public void setAddedRWProvenance(boolean flag) {
         addedProvenance = flag;
     }
-    
+
+    public String getLQIID() {
+        return this.lqiID;
+    }
+
+    public void setLQIID(String id) {
+        this.lqiID = id;
+    }
+
     public boolean containsLQI() {
         return lqiList.size() > 0;
     }
