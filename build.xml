@@ -11,7 +11,7 @@
   <property name="package" value="com/spartansoftwareinc/vistatec/rwb"/>
   <property name="ReviewerWorkbench.jar" value="${build.dir}/ReviewerWorkbench.jar" />
   <property name="SamplePlugins.jar" value="${build.dir}/SamplePlugins.jar" />
-  <property name="Webservice.jar" value="${build.dir}/Webservice.jar" />
+  <property name="VistaTECWebservice.jar" value="${build.dir}/VistaTECWebservice.jar" />
   <property name="PluginTest.jar" value="${build.dir}/PluginTest.jar" />
 
   <path id="project.class.path">
@@ -119,10 +119,10 @@
           excludes="com/spartansoftwareinc/*.class,com/spartansoftwareinc/plugins/*.class"
           >
       </jar>
-      <echo message="Building ${Webservice.jar}" />
-      <jar compress="false" jarfile="${Webservice.jar}"
+      <echo message="Building ${VistaTECWebservice.jar}" />
+      <jar compress="false" jarfile="${VistaTECWebservice.jar}"
           basedir="${src.classes.dir}"
-          includes="com/spartansoftwareinc/plugins/samples/Webservice.class,com/spartansoftwareinc/plugins/samples/JsonFormatter.class,com/spartansoftwareinc/plugins/samples/VistaTECLQI.class,com/spartansoftwareinc/plugins/samples/VistaTECProvenance.class"
+          includes="com/spartansoftwareinc/plugins/samples/VistaTECWebservice.class,com/spartansoftwareinc/plugins/samples/JsonFormatter.class,com/spartansoftwareinc/plugins/samples/VistaTECLQI.class,com/spartansoftwareinc/plugins/samples/VistaTECProvenance.class"
           excludes="com/spartansoftwareinc/*.class,com/spartansoftwareinc/plugins/*.class"
           >
           <manifest>

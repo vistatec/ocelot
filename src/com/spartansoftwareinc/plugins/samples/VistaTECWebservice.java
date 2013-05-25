@@ -44,7 +44,7 @@ public class VistaTECWebservice implements Plugin {
         for (LanguageQualityIssue lqi : lqiList) {
             try {
                 vLQI = new VistaTECLQI(seg.getFileOriginal(),
-                        seg.getTransUnitId(), "", sourceLang, targetLang,
+                        seg.getTransUnitId(), seg.getLQIID(), sourceLang, targetLang,
                         seg.getSource().toString(), seg.getTarget().toString(),
                         lqi.getType(), lqi.getSeverity(), lqi.getComment());
                 postLQIData(vLQI);
@@ -79,7 +79,7 @@ public class VistaTECWebservice implements Plugin {
         for (Provenance prov : provList) {
             try {
                 vProv = new VistaTECProvenance(seg.getFileOriginal(),
-                        seg.getTransUnitId(), "", sourceLang, targetLang,
+                        seg.getTransUnitId(), seg.getProvID(), sourceLang, targetLang,
                         seg.getSource().toString(), seg.getTarget().toString(),
                         prov.getPerson(), prov.getOrg(), prov.getTool(),
                         prov.getRevPerson(), prov.getRevOrg(), prov.getRevTool());

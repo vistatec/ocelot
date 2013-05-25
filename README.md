@@ -62,3 +62,5 @@
     <value> = 0-9
     *Hotkeys are limited to CTRL + 0-9
 
+    # Plugins #
+    The default plugin directory is located under <home directory>/.reviewersWorkbench/plugins. The VistaTECWebservice.jar plugin should be placed under that directory. Pushing the export data button will export the LQI and Provenance data of the currently open file to the checked plugins.
