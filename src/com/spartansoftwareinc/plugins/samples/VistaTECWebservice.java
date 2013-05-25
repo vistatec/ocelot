@@ -18,7 +18,12 @@ import com.spartansoftwareinc.plugins.Plugin;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
+import java.util.Iterator;
 import java.util.List;
+import net.sf.okapi.common.resource.Code;
+import net.sf.okapi.common.resource.TextContainer;
+import net.sf.okapi.common.resource.TextFragment;
+import net.sf.okapi.common.resource.TextPart;
 
 /**
  * Plugin for sending ITS metadata to the VistaTEC Web Service.
@@ -45,7 +50,7 @@ public class VistaTECWebservice implements Plugin {
             try {
                 vLQI = new VistaTECLQI(seg.getFileOriginal(),
                         seg.getTransUnitId(), seg.getLQIID(), sourceLang, targetLang,
-                        seg.getSource().toString(), seg.getTarget().toString(),
+                        textContainerToRaw(seg.getSource()), textContainerToRaw(seg.getTarget()),
                         lqi.getType(), lqi.getSeverity(), lqi.getComment());
                 postLQIData(vLQI);
             } catch (IOException ex) {
@@ -80,7 +85,7 @@ public class VistaTECWebservice implements Plugin {
             try {
                 vProv = new VistaTECProvenance(seg.getFileOriginal(),
                         seg.getTransUnitId(), seg.getProvID(), sourceLang, targetLang,
-                        seg.getSource().toString(), seg.getTarget().toString(),
+                        textContainerToRaw(seg.getSource()), textContainerToRaw(seg.getTarget()),
                         prov.getPerson(), prov.getOrg(), prov.getTool(),
                         prov.getRevPerson(), prov.getRevOrg(), prov.getRevTool());
                 postProvData(vProv);
@@ -136,5 +141,25 @@ public class VistaTECWebservice implements Plugin {
             }
         }
         return null;
+    }
+
+    public String textContainerToRaw(TextContainer tc) {
+        Iterator<TextPart> textParts = tc.iterator();
+        StringBuilder text = new StringBuilder();
+        while (textParts.hasNext()) {
+            TextFragment tf = textParts.next().text;
+            for (int i = 0; i < tf.length(); i++) {
+                char tfChar = tf.charAt(i);
+                if (TextFragment.isMarker(tfChar)) {
+                    char codeMarker = tf.charAt(++i);
+                    int index = TextFragment.toIndex(codeMarker);
+                    Code code = tf.getCode(index);
+                    text.append(code.hasOuterData() ? code.getOuterData() : code.getData());
+                } else {
+                    text.append(tfChar);
+                }
+            }
+        }
+        return text.toString();
     }
 }
