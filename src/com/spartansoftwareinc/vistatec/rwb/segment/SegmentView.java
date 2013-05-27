@@ -355,24 +355,26 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 }
 
                 ITSLQIAnnotations lqiAnns = tu.getAnnotation(ITSLQIAnnotations.class);
+                lqiAnns = lqiAnns == null ? new ITSLQIAnnotations() : lqiAnns;
                 ITSProvenanceAnnotations provAnns = tu.getAnnotation(ITSProvenanceAnnotations.class);
+                provAnns = provAnns == null ? new ITSProvenanceAnnotations() : provAnns;
 
                 ITSLQIAnnotations srcLQIAnns = srcTu.getAnnotation(ITSLQIAnnotations.class);
-                if (lqiAnns != null && srcLQIAnns != null) {
+                if (srcLQIAnns != null) {
                     lqiAnns.addAll(srcLQIAnns);
                 }
                 ITSProvenanceAnnotations srcProvAnns = srcTu.getAnnotation(ITSProvenanceAnnotations.class);
-                if (provAnns != null && srcProvAnns != null) {
+                if (srcProvAnns != null) {
                     provAnns.addAll(srcProvAnns);
                 }
 
                 if (tgtTu != null) {
                     ITSLQIAnnotations tgtLQIAnns = tgtTu.getAnnotation(ITSLQIAnnotations.class);
-                    if (lqiAnns != null && tgtLQIAnns != null) {
+                    if (tgtLQIAnns != null) {
                         lqiAnns.addAll(tgtLQIAnns);
                     }
                     ITSProvenanceAnnotations tgtProvAnns = tgtTu.getAnnotation(ITSProvenanceAnnotations.class);
-                    if (provAnns != null && tgtProvAnns != null) {
+                    if (tgtProvAnns != null) {
                         provAnns.addAll(tgtProvAnns);
                     }
                 }
