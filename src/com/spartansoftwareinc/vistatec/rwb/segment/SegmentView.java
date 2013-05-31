@@ -751,7 +751,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
             boolean isSelected, boolean hasFocus, int row, int col) {
             SegmentTextCell renderTextPane = new SegmentTextCell();
             if (segments.getRowCount() > row) {
-                Segment seg = segments.getSegment(row);
+                Segment seg = segments.getSegment(sort.convertRowIndexToModel(row));
                 TextContainer tc = segments.getColumnIndex(SegmentTableModel.COLSEGSRC) == col ?
                         seg.getSource() : seg.getTarget();
                 if (tc != null) {
@@ -798,7 +798,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object value,
             boolean isSelected, int row, int col) {
-            Segment seg = segments.getSegment(row);
+            Segment seg = segments.getSegment(sort.convertRowIndexToModel(row));
             editListener.setBeginEdit(seg, seg.getTarget().getCodedText());
             editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
