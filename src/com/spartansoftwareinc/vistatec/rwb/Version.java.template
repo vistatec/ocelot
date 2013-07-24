@@ -1,9 +1,0 @@
-package com.spartansoftwareinc.vistatec.rwb;
-
-public class Version {
-	public static String GIT_VERSION="${build.gitcommit}";
-
-	public static String get() {
-		return GIT_VERSION;
-	}
-}

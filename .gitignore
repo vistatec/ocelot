@@ -13,3 +13,4 @@ nb-build.xml
 manifest.mf
 /nbbuild/
 /dist/
+target
