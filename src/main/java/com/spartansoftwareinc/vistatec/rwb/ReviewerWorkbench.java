@@ -105,7 +105,9 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.menuAbout) {
-            JOptionPane.showMessageDialog(this, APPNAME+", version " + Version.get(), "About", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, APPNAME+", version " + 
+                    Version.PROJECT_VERSION + "-" + Version.SOURCE_VERSION, 
+                    "About", JOptionPane.INFORMATION_MESSAGE);
 
         } else if (e.getSource() == this.menuOpenHTML) {
             SwingUtilities.invokeLater(openHTMLView);
@@ -315,7 +317,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
-            PropertyConfigurator.configure(ReviewerWorkbench.class.getResourceAsStream("log4j.properties"));
+            PropertyConfigurator.configure(ReviewerWorkbench.class.getResourceAsStream("/log4j.properties"));
         } else {
             PropertyConfigurator.configure(System.getProperty("log4j.configuration"));
         }

@@ -1,2 +1,0 @@
-# Allow submission of test directory to git to prevent ant from complaining.
-# Remove when actual tests are created.

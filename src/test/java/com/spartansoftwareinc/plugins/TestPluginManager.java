@@ -11,7 +11,7 @@ public class TestPluginManager {
 
 	@Test
 	public void testPluginManager() throws Exception {
-		URL url = getClass().getResource("/resources/");
+		URL url = getClass().getResource("/");
 		// If this assertion fails, it's probably something related
 		// to the build environment
 		assertNotNull(url);
