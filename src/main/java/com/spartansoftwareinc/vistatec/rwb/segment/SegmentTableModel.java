@@ -17,10 +17,11 @@ public class SegmentTableModel extends AbstractTableModel {
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
     public static final int NUMFLAGS = 5;
-    public static final int NONFLAGCOLS = 3;
+    public static final int NONFLAGCOLS = 4;
     public static final String COLSEGNUM = "#";
     public static final String COLSEGSRC = "source";
     public static final String COLSEGTGT = "target";
+    public static final String COLSEGTGTORI = "target ori";
 
     public SegmentTableModel(SegmentView sv) {
         segmentView = sv;
@@ -28,6 +29,7 @@ public class SegmentTableModel extends AbstractTableModel {
         colNameToIndex.put(COLSEGNUM, 0);
         colNameToIndex.put(COLSEGSRC, 1);
         colNameToIndex.put(COLSEGTGT, 2);
+        colNameToIndex.put(COLSEGTGTORI, 3);
         colIndexToName = new HashMap<Integer, String>();
         for (String key : colNameToIndex.keySet()) {
             colIndexToName.put(colNameToIndex.get(key), key);
@@ -49,7 +51,8 @@ public class SegmentTableModel extends AbstractTableModel {
             return Integer.class;
         }
         if (columnIndex == getColumnIndex(COLSEGSRC)
-                || columnIndex == getColumnIndex(COLSEGTGT)) {
+                || columnIndex == getColumnIndex(COLSEGTGT)
+                || columnIndex == getColumnIndex(COLSEGTGTORI)) {
             return String.class;
         }
         return DataCategoryFlag.class;
@@ -75,6 +78,9 @@ public class SegmentTableModel extends AbstractTableModel {
         }
         if (col == getColumnIndex(COLSEGTGT)) {
             return getSegment(row).getTarget().getCodedText();
+        }
+        if (col == getColumnIndex(COLSEGTGTORI)) {
+            return getSegment(row).getOriginalTarget().getCodedText();
         }
         Object ret = segmentView.ruleConfig.getTopDataCategory(
                 segments.get(row), col-NONFLAGCOLS);

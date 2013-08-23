@@ -4,8 +4,13 @@ import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.annotation.AltTranslation;
+import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
+import net.sf.okapi.common.query.MatchType;
 import net.sf.okapi.common.resource.TextContainer;
 
 /**
@@ -22,6 +27,7 @@ public class Segment {
             new LinkedList<Provenance>();
     private SegmentView segmentListener;
     private String fileOriginal, transUnitId;
+    private TextContainer originalTarget;
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
             TextContainer source, TextContainer target, SegmentView listener) {
@@ -30,6 +36,27 @@ public class Segment {
         this.tgtEventNum = tgtEventNum;
         this.source = source;
         this.target = target;
+        AltTranslationsAnnotation altTrans = target.getAnnotation(AltTranslationsAnnotation.class);
+        if (altTrans != null) {
+            Iterator<AltTranslation> iterAltTrans = altTrans.iterator();
+            while (iterAltTrans.hasNext()) {
+                AltTranslation altTran = iterAltTrans.next();
+                // Check if alt-trans is RWB generated.
+                if (altTran.getOrigin() != null && altTran.getOrigin().equals("Reviewer's Workbench")) {
+                    originalTarget = altTran.getTarget();
+                }
+            }
+        }
+        if (originalTarget == null) {
+            // TODO: Actual source/target locales
+            AltTranslation rwbAltTrans = new AltTranslation(LocaleId.ENGLISH, LocaleId.FRENCH,
+                        null, source.getUnSegmentedContentCopy(), target.getUnSegmentedContentCopy(),
+                        MatchType.UKNOWN, 100, "Reviewer's Workbench");
+            altTrans = altTrans == null ? new AltTranslationsAnnotation() : altTrans;
+            altTrans.add(rwbAltTrans);
+            target.setAnnotation(altTrans);
+            originalTarget = rwbAltTrans.getTarget();
+        }
         this.segmentListener = listener;
     }
 
@@ -51,6 +78,10 @@ public class Segment {
 
     public TextContainer getTarget() {
         return this.target;
+    }
+
+    public TextContainer getOriginalTarget() {
+        return this.originalTarget;
     }
 
     /**
