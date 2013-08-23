@@ -53,6 +53,7 @@ import javax.swing.table.TableRowSorter;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.IResource;
 import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.GenericAnnotations;
@@ -74,6 +75,7 @@ import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 import net.sf.okapi.filters.its.html5.HTML5Filter;
+import net.sf.okapi.filters.xliff.Parameters;
 import net.sf.okapi.filters.xliff.XLIFFFilter;
 import org.apache.log4j.Logger;
 
@@ -310,6 +312,9 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void parseXLIFFFile(FileInputStream file) {
         RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, LocaleId.EMPTY);
         this.filter = new XLIFFFilter();
+        Parameters filterParams = new Parameters();
+        filterParams.setAddAltTrans(true);
+        this.filter.setParameters(filterParams);
         this.filter.open(fileDoc);
         int fileEventNum = 0;
 
@@ -444,13 +449,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
         for (int row = 0; row < sourceTargetTable.getRowCount(); row++) {
             FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
             int rowHeight = font.getHeight();
-            for (int col = 1; col < 3; col++) {
+            for (int col = 1; col < 4; col++) {
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
                     String text = segments.getSegment(row).getSource().getCodedText();
                     segmentCell.setText(text);
-                } else {
+                } else if (col == 2) {
                     String text = segments.getSegment(row).getTarget().getCodedText();
+                    segmentCell.setText(text);
+                } else if (col == 3) {
+                    String text = segments.getSegment(row).getOriginalTarget().getCodedText();
                     segmentCell.setText(text);
                 }
                 // Need to set width to force text area to calculate a pref height
@@ -508,7 +516,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        saveEvents(this.filter, srcEvents, source.getAbsolutePath(), LocaleId.fromString(srcSLang));
+        saveEvents(this.filter, srcEvents, source.getAbsolutePath(), LocaleId.fromString(srcTLang));
     }
 
     public void save(File source, File target) throws UnsupportedEncodingException, FileNotFoundException, IOException {
@@ -752,8 +760,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
             SegmentTextCell renderTextPane = new SegmentTextCell();
             if (segments.getRowCount() > row) {
                 Segment seg = segments.getSegment(sort.convertRowIndexToModel(row));
-                TextContainer tc = segments.getColumnIndex(SegmentTableModel.COLSEGSRC) == col ?
-                        seg.getSource() : seg.getTarget();
+                TextContainer tc = null;
+                if (segments.getColumnIndex(SegmentTableModel.COLSEGSRC) == col) {
+                    tc = seg.getSource();
+                } else if (segments.getColumnIndex(SegmentTableModel.COLSEGTGT) == col) {
+                    tc = seg.getTarget();
+                } else if (segments.getColumnIndex(SegmentTableModel.COLSEGTGTORI) == col) {
+                    tc = seg.getOriginalTarget();
+                }
                 if (tc != null) {
                     renderTextPane.setTextContainer(tc, false);
                 }
