@@ -14,11 +14,14 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import net.sf.okapi.common.resource.TextContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Detail view showing the raw source and target segment text.
  */
 public class SegmentDetailView extends JScrollPane {
+    private Logger LOG = LoggerFactory.getLogger(SegmentDetailView.class);
     private JTable table;
     private DetailTableModel tableModel;
 
@@ -28,6 +31,9 @@ public class SegmentDetailView extends JScrollPane {
         table.getTableHeader().setReorderingAllowed(false);
         table.setDefaultRenderer(String.class, new TextRenderer());
         TableColumnModel tableColumnModel = table.getColumnModel();
+        tableColumnModel.getColumn(0).setMinWidth(15);
+        tableColumnModel.getColumn(0).setPreferredWidth(55);
+        tableColumnModel.getColumn(0).setMaxWidth(100);
         tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
 
             @Override
@@ -64,21 +70,24 @@ public class SegmentDetailView extends JScrollPane {
 
         SegmentTextCell segmentCell = new SegmentTextCell();
         segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
-        FontMetrics font = table.getFontMetrics(table.getFont());
-        int rowHeight = font.getHeight();
-        for (int col = 0; col < 2; col++) {
-            int width = table.getColumnModel().getColumn(col).getWidth();
-            segmentCell.setTextContainer((TextContainer)tableModel.getValueAt(0, col), true);
-            // Need to set width to force text area to calculate a pref height
-            segmentCell.setSize(new Dimension(width, table.getRowHeight(0)));
-            rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
+        for (int row = 0; row < table.getRowCount(); row++) {
+            FontMetrics font = table.getFontMetrics(table.getFont());
+            int rowHeight = font.getHeight();
+            for (int col = 1; col < 2; col++) {
+                int width = table.getColumnModel().getColumn(col).getWidth();
+                segmentCell.setTextContainer((TextContainer) tableModel.getValueAt(row, col), true);
+                // Need to set width to force text area to calculate a pref height
+                segmentCell.setSize(new Dimension(width, table.getRowHeight(row)));
+                rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
+            }
+            table.setRowHeight(row, rowHeight);
         }
-        table.setRowHeight(0, rowHeight);
         setViewportView(table);
     }
 
     public class DetailTableModel extends AbstractTableModel {
-        private String[] column = {"Source Raw", "Target Raw"};
+        private String[] column = {"Label", "Segments"};
+        private String[] rowName = {"Source:", "Target:", "Original Target:"};
         private Segment segment;
 
         public void setSegment(Segment seg) {
@@ -87,7 +96,7 @@ public class SegmentDetailView extends JScrollPane {
         
         @Override
         public int getRowCount() {
-            return segment != null ? 1 : 0;
+            return segment != null ? 3 : 0;
         }
 
         @Override
@@ -108,7 +117,20 @@ public class SegmentDetailView extends JScrollPane {
         @Override
         public Object getValueAt(int row, int col) {
             if (segment != null) {
-                return col == 0 ? segment.getSource() : segment.getTarget();
+                switch(row) {
+                        case 0:
+                            return col == 0 ? rowName[row] : segment.getSource();
+
+                        case 1:
+                            return col == 0 ? rowName[row] : segment.getTarget();
+
+                        case 2:
+                            return col == 0 ? rowName[row] : segment.getOriginalTarget();
+
+                        default:
+                            LOG.warn("Invalid row for SegmentDetailView '"+row+"'");
+                            break;
+                }
             }
             return null;
         }
@@ -126,10 +148,15 @@ public class SegmentDetailView extends JScrollPane {
             boolean isSelected, boolean hasFocus, int row, int col) {
             SegmentTextCell renderTextPane = new SegmentTextCell();
             if (tableModel.getRowCount() > row) {
-                renderTextPane.setTextContainer((TextContainer)o, true);
-                renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
-                renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
-                renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+                if (col > 0) {
+                    renderTextPane.setTextContainer((TextContainer) o, true);
+                    renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
+                    renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+                    renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+                } else {
+                    String s = (String)tableModel.getValueAt(row, col);
+                    renderTextPane.setText(s);
+                }
             }
 
             return renderTextPane;
