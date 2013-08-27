@@ -1,6 +1,6 @@
 package com.spartansoftwareinc.plugins;
 
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentView;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -29,12 +29,12 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
     private JButton selectPluginDir, export;
     private PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
-    private SegmentView segmentView;
+    private SegmentController segmentController;
 
-    public PluginManagerView(PluginManager pluginManager, SegmentView segView) {
+    public PluginManagerView(PluginManager pluginManager, SegmentController segController) {
         super(new GridBagLayout());
         this.pluginManager = pluginManager;
-        this.segmentView = segView;
+        this.segmentController = segController;
         checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -43,6 +43,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
 
         export = new JButton("Export Data");
         export.addActionListener(this);
+        export.setEnabled(segController.openFile());
         gridBag.gridx = 0;
         gridBag.gridy = 0;
         add(export, gridBag);
@@ -109,9 +110,9 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
                 }
             }
         } else if (ae.getSource() == export) {
-            pluginManager.exportData(segmentView.getSourceFileSourceLang(),
-                    segmentView.getSourceFileTargetLang(),
-                    segmentView.getSegments());
+            pluginManager.exportData(segmentController.getFileSourceLang(),
+                    segmentController.getFileTargetLang(),
+                    segmentController.getSegmentTableModel());
         }
     }
 

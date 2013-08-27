@@ -16,20 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.EventObject;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -50,33 +38,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
-import net.sf.okapi.common.Event;
-import net.sf.okapi.common.IResource;
-import net.sf.okapi.common.LocaleId;
-import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
-import net.sf.okapi.common.annotation.GenericAnnotation;
-import net.sf.okapi.common.annotation.GenericAnnotationType;
-import net.sf.okapi.common.annotation.GenericAnnotations;
-import net.sf.okapi.common.annotation.ITSLQIAnnotations;
-import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
-import net.sf.okapi.common.encoder.EncoderManager;
-import net.sf.okapi.common.filters.IFilter;
-import net.sf.okapi.common.resource.DocumentPart;
-import net.sf.okapi.common.resource.EndSubfilter;
-import net.sf.okapi.common.resource.Ending;
-import net.sf.okapi.common.resource.ITextUnit;
-import net.sf.okapi.common.resource.Property;
-import net.sf.okapi.common.resource.RawDocument;
-import net.sf.okapi.common.resource.StartDocument;
-import net.sf.okapi.common.resource.StartGroup;
-import net.sf.okapi.common.resource.StartSubDocument;
-import net.sf.okapi.common.resource.StartSubfilter;
 import net.sf.okapi.common.resource.TextContainer;
-import net.sf.okapi.common.resource.TextFragment;
-import net.sf.okapi.common.skeleton.ISkeletonWriter;
-import net.sf.okapi.filters.its.html5.HTML5Filter;
-import net.sf.okapi.filters.xliff.Parameters;
-import net.sf.okapi.filters.xliff.XLIFFFilter;
 import org.apache.log4j.Logger;
 
 /**
@@ -85,22 +47,20 @@ import org.apache.log4j.Logger;
  */
 public class SegmentView extends JScrollPane implements RuleListener {
     private static Logger LOG = Logger.getLogger(SegmentView.class);
+
+    protected SegmentController segmentController;
     protected JTable sourceTargetTable;
-    private SegmentTableModel segments;
-    private LinkedList<Event> srcEvents, tgtEvents;
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
     protected TableRowSorter sort;
-    private boolean isHTML = false;
-    private String srcSLang, srcTLang;
+
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
-    private int documentSegmentNum;
-    private IFilter filter;
 
-    public SegmentView(SegmentAttributeView attr) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
+    public SegmentView(SegmentAttributeView attr, SegmentController segController) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
+        segmentController = segController;
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         ruleConfig = new RuleConfiguration(this);
@@ -108,13 +68,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
         pluginManager.discover(pluginManager.getPluginDir());
     }
 
-    public SegmentTableModel getSegments() {
-        return segments;
-    }
-
     public void initializeTable() {
-        segments = new SegmentTableModel(this);
-        sourceTargetTable = new JTable(segments);
+        sourceTargetTable = new JTable(segmentController.getSegmentTableModel());
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
         ListSelectionListener selectSegmentHandler = new ListSelectionListener() {
@@ -143,8 +98,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
         tableColumnModel.getColumn(0).setPreferredWidth(20);
         tableColumnModel.getColumn(0).setMaxWidth(50);
 
-        tableColumnModel.getColumn(segments.getColumnIndex(
-                SegmentTableModel.COLSEGTGT)).setCellEditor(new SegmentEditor());
+        tableColumnModel.getColumn(segmentController.getSegmentTargetColumnIndex())
+                .setCellEditor(new SegmentEditor());
         int flagMinWidth = 15, flagPrefWidth = 15, flagMaxWidth = 20;
         for (int i = SegmentTableModel.NONFLAGCOLS;
              i < SegmentTableModel.NONFLAGCOLS+SegmentTableModel.NUMFLAGS; i++) {
@@ -177,13 +132,22 @@ public class SegmentView extends JScrollPane implements RuleListener {
         setViewportView(sourceTargetTable);
     }
 
-    public void reloadTable() {
+    public void clearTable() {
         sourceTargetTable.clearSelection();
         sourceTargetTable.setRowSorter(null);
-        attrView.treeView.clearTree();
         setViewportView(null);
-        segments.fireTableDataChanged();
+    }
+
+    public void reloadTable() {
+        clearTable();
+        attrView.treeView.clearTree();
+        segmentController.fireTableDataChanged();
         addFilters();
+        // Adjust the segment number column width
+        tableColumnModel.getColumn(
+                segmentController.getSegmentNumColumnIndex())
+                .setPreferredWidth(this.getFontMetrics(this.getFont())
+                .stringWidth(" " + segmentController.getNumSegments()));
         updateRowHeights();
         setViewportView(sourceTargetTable);
     }
@@ -192,251 +156,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
         sourceTargetTable.requestFocus();
     }
 
-    public boolean isHTML() {
-        return this.isHTML;
-    }
-
-    public void setHTML(boolean flag) {
-        this.isHTML = flag;
-    }
-
-    public String getSourceFileSourceLang() {
-        return this.srcSLang;
-    }
-
-    public String getSourceFileTargetLang() {
-        return this.srcTLang;
-    }
-
-    public void parseSegmentsFromHTMLFile(File sourceFile, File targetFile) throws IOException {
-        sourceTargetTable.clearSelection();
-        segments.deleteSegments();
-        sourceTargetTable.setRowSorter(null);
-        attrView.clearSegment();
-        srcEvents = new LinkedList<Event>();
-        tgtEvents = new LinkedList<Event>();
-        setViewportView(null);
-        documentSegmentNum = 1;
-        setHTML(true);
-
-        parseHTML5Files(new FileInputStream(sourceFile), new FileInputStream(targetFile));
-        addFilters();
-
-        // Adjust the segment number column width
-        tableColumnModel.getColumn(
-                segments.getColumnIndex(SegmentTableModel.COLSEGNUM))
-                .setPreferredWidth(this.getFontMetrics(this.getFont())
-                .stringWidth(" " + documentSegmentNum));
-
-        updateRowHeights();
-        setViewportView(sourceTargetTable);
-    }
-
-    public void parseHTML5Files(FileInputStream src, FileInputStream tgt) {
-        RawDocument srcDoc = new RawDocument(src, "UTF-8", LocaleId.fromString("en"));
-        RawDocument tgtDoc = new RawDocument(tgt, "UTF-8", LocaleId.fromString("de"));
-        IFilter srcFilter = new HTML5Filter();
-        IFilter tgtFilter = new HTML5Filter();
-        srcFilter.open(srcDoc);
-        tgtFilter.open(tgtDoc);
-        int srcEventNum = 0, tgtEventNum = 0;
-
-        while(srcFilter.hasNext() && tgtFilter.hasNext()) {
-            Event srcEvent = srcFilter.next();
-            Event tgtEvent = tgtFilter.next();
-            srcEvents.add(srcEvent);
-            tgtEvents.add(tgtEvent);
-
-            ITextUnit srcTu, tgtTu;
-            if (srcEvent.isTextUnit() && tgtEvent.isTextUnit()) {
-                srcTu = (ITextUnit) srcEvent.getResource();
-                tgtTu = (ITextUnit) tgtEvent.getResource();
-                TextContainer srcTc = srcTu.getSource();
-                TextContainer tgtTc = tgtTu.getSource();
-
-                GenericAnnotations srcITSTags = srcTc.getAnnotation(GenericAnnotations.class);
-                GenericAnnotations tgtITSTags = tgtTc.getAnnotation(GenericAnnotations.class);
-                List<GenericAnnotation> anns = new LinkedList<GenericAnnotation>();
-                // TODO: get annotations for other data categories
-                if (srcITSTags != null) {
-                    anns.addAll(srcITSTags.getAnnotations(GenericAnnotationType.LQI));
-                    anns.addAll(srcITSTags.getAnnotations(GenericAnnotationType.PROV));
-                }
-                if (tgtITSTags != null) {
-                    anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.LQI));
-                    anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.PROV));
-                }
-
-                addSegment(srcTc, tgtTc, anns, srcEventNum, tgtEventNum, "N/A", "N/A");
-            }
-            srcEventNum++;
-            tgtEventNum++;
-        }
-        if (srcFilter.hasNext() || tgtFilter.hasNext()) {
-            LOG.error("Documents not aligned?");
-            while (srcFilter.hasNext()) {
-                srcEvents.add(srcFilter.next());
-                srcEventNum++;
-            }
-            while (tgtFilter.hasNext()) {
-                tgtEvents.add(tgtFilter.next());
-                tgtEventNum++;
-            }
-        }
-    }
-
-    public void parseSegmentsFromXLIFFFile(File sourceFile) throws IOException {
-        sourceTargetTable.clearSelection();
-        segments.deleteSegments();
-        sourceTargetTable.setRowSorter(null);
-        attrView.clearSegment();
-        tgtEvents = null;
-        srcEvents = new LinkedList<Event>();
-        setViewportView(null);
-        documentSegmentNum = 1;
-        setHTML(false);
-
-        parseXLIFFFile(new FileInputStream(sourceFile));
-        addFilters();
-
-        // Adjust the segment number column width
-        tableColumnModel.getColumn(
-                segments.getColumnIndex(SegmentTableModel.COLSEGNUM))
-                .setPreferredWidth(this.getFontMetrics(this.getFont())
-                .stringWidth(" " + documentSegmentNum));
-
-        updateRowHeights();
-        setViewportView(sourceTargetTable);
-    }
-
-    public void parseXLIFFFile(FileInputStream file) {
-        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, LocaleId.EMPTY);
-        this.filter = new XLIFFFilter();
-        Parameters filterParams = new Parameters();
-        filterParams.setAddAltTrans(true);
-        this.filter.setParameters(filterParams);
-        this.filter.open(fileDoc);
-        int fileEventNum = 0;
-
-        String fileOriginal = "";
-        while(this.filter.hasNext()) {
-            Event event = this.filter.next();
-            srcEvents.add(event);
-
-            if (event.isStartSubDocument()) {
-                StartSubDocument fileElement = (StartSubDocument)event.getResource();
-                if (fileElement.getProperty("sourceLanguage") != null) {
-                    String fileSourceLang = fileElement.getProperty("sourceLanguage").getValue();
-                    if (srcSLang != null && !srcSLang.equals(fileSourceLang)) {
-                        LOG.warn("Mismatch between source languages in file elements");
-                    }
-                    srcSLang = fileSourceLang;
-                    fileDoc.setSourceLocale(LocaleId.fromString(srcSLang));
-                }
-                if (fileElement.getProperty("targetLanguage") != null) {
-                    String fileTargetLang = fileElement.getProperty("targetLanguage").getValue();
-                    if (srcTLang != null && !srcTLang.equals(fileTargetLang)) {
-                        LOG.warn("Mismatch between target languages in file elements");
-                    }
-                    srcTLang = fileTargetLang;
-                    fileDoc.setTargetLocale(LocaleId.fromString(srcTLang));
-                }
-                fileOriginal = fileElement.getName();
-
-            } else if (event.isTextUnit()) {
-                ITextUnit tu = (ITextUnit) event.getResource();
-                TextContainer srcTu = tu.getSource();
-                TextContainer tgtTu = new TextContainer();
-
-                Set<LocaleId> targetLocales = tu.getTargetLocales();
-                if (targetLocales.size() > 1) {
-                    LOG.warn("More than 1 target locale"+targetLocales);
-                } else if (targetLocales.size() == 1) {
-                    for (LocaleId tgt : targetLocales) {
-			tgtTu = tu.getTarget(tgt);
-                    }
-                } else {
-                    tu.setTarget(LocaleId.fromString(srcTLang), tgtTu);
-                }
-
-                ITSLQIAnnotations lqiAnns = tu.getAnnotation(ITSLQIAnnotations.class);
-                lqiAnns = lqiAnns == null ? new ITSLQIAnnotations() : lqiAnns;
-                ITSProvenanceAnnotations provAnns = tu.getAnnotation(ITSProvenanceAnnotations.class);
-                provAnns = provAnns == null ? new ITSProvenanceAnnotations() : provAnns;
-
-                ITSLQIAnnotations srcLQIAnns = srcTu.getAnnotation(ITSLQIAnnotations.class);
-                if (srcLQIAnns != null) {
-                    lqiAnns.addAll(srcLQIAnns);
-                }
-                ITSProvenanceAnnotations srcProvAnns = srcTu.getAnnotation(ITSProvenanceAnnotations.class);
-                if (srcProvAnns != null) {
-                    provAnns.addAll(srcProvAnns);
-                }
-
-                if (tgtTu != null) {
-                    ITSLQIAnnotations tgtLQIAnns = tgtTu.getAnnotation(ITSLQIAnnotations.class);
-                    if (tgtLQIAnns != null) {
-                        lqiAnns.addAll(tgtLQIAnns);
-                    }
-                    ITSProvenanceAnnotations tgtProvAnns = tgtTu.getAnnotation(ITSProvenanceAnnotations.class);
-                    if (tgtProvAnns != null) {
-                        provAnns.addAll(tgtProvAnns);
-                    }
-                }
-
-                addSegment(srcTu, tgtTu, lqiAnns, provAnns, fileEventNum, fileEventNum,
-                        fileOriginal, tu.getId());
-            }
-            fileEventNum++;
-        }
-    }
-
-    public void addSegment(TextContainer sourceText, TextContainer targetText,
-            List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum,
-            String fileOri, String transUnitId) {
-        Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
-                sourceText, targetText, this);
-        seg.setFileOriginal(fileOri);
-        seg.setTransUnitId(transUnitId);
-        // TODO: parse GenericAnnotations for other data categories.
-        for (GenericAnnotation ga : annotations) {
-            if (ga.getType().equals(GenericAnnotationType.LQI)) {
-                seg.addLQI(new LanguageQualityIssue(ga));
-            } else if (ga.getType().equals(GenericAnnotationType.PROV)) {
-                seg.addProvenance(new Provenance(ga));
-            }
-        }
-        segments.addSegment(seg);
-    }
-
-    public void addSegment(TextContainer sourceText, TextContainer targetText,
-            ITSLQIAnnotations lqiAnns, ITSProvenanceAnnotations provAnns,
-            int srcEventNum, int tgtEventNum, String fileOri, String transUnitId) {
-        Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
-                sourceText, targetText, this);
-        seg.setFileOriginal(fileOri);
-        seg.setTransUnitId(transUnitId);
-        if (lqiAnns != null) {
-            List<GenericAnnotation> lqiList = lqiAnns.getAnnotations(GenericAnnotationType.LQI);
-            for (GenericAnnotation ga : lqiList) {
-                seg.addLQI(new LanguageQualityIssue(ga));
-                seg.setLQIID(lqiAnns.getData());
-            }
-        }
-        if (provAnns != null) {
-            List<GenericAnnotation> provList = provAnns.getAnnotations(GenericAnnotationType.PROV);
-            if (provList != null) {
-                for (GenericAnnotation ga : provList) {
-                    seg.addProvenance(new Provenance(ga));
-                    seg.setProvID(provAnns.getData());
-                }
-            }
-        }
-        segments.addSegment(seg);
-    }
-
     public void addFilters() {
-        sort = new TableRowSorter(segments);
+        sort = new TableRowSorter(segmentController.getSegmentTableModel());
         sourceTargetTable.setRowSorter(sort);
         sort.setRowFilter(ruleConfig);
     }
@@ -452,13 +173,13 @@ public class SegmentView extends JScrollPane implements RuleListener {
             for (int col = 1; col < 4; col++) {
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
-                    String text = segments.getSegment(row).getSource().getCodedText();
+                    String text = segmentController.getSegment(row).getSource().getCodedText();
                     segmentCell.setText(text);
                 } else if (col == 2) {
-                    String text = segments.getSegment(row).getTarget().getCodedText();
+                    String text = segmentController.getSegment(row).getTarget().getCodedText();
                     segmentCell.setText(text);
                 } else if (col == 3) {
-                    String text = segments.getSegment(row).getOriginalTarget().getCodedText();
+                    String text = segmentController.getSegment(row).getOriginalTarget().getCodedText();
                     segmentCell.setText(text);
                 }
                 // Need to set width to force text area to calculate a pref height
@@ -473,7 +194,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public Segment getSelectedSegment() {
         Segment selectedSeg = null;
         if (sourceTargetTable.getSelectedRow() >= 0) {
-            selectedSeg = segments.getSegment(sort.convertRowIndexToModel(
+            selectedSeg = segmentController.getSegment(sort.convertRowIndexToModel(
                 sourceTargetTable.getSelectedRow()));
         }
         return selectedSeg;
@@ -501,7 +222,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         attrView.setSelectedMetadata(lqi);
         attrView.setSelectedSegment(seg);
-        updateEvent(seg);
+        segmentController.updateSegment(seg);
         int selectedRow = sourceTargetTable.getSelectedRow();
         reloadTable();
         sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
@@ -513,214 +234,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     public void notifyDeletedSegments() {
         attrView.deletedSegments();
-    }
-
-    public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        saveEvents(this.filter, srcEvents, source.getAbsolutePath(), LocaleId.fromString(srcTLang));
-    }
-
-    public void save(File source, File target) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        // TODO: get the actual locale
-        saveEvents(new HTML5Filter(), srcEvents, source.getAbsolutePath(), LocaleId.fromString("en"));
-        saveEvents(new HTML5Filter(), tgtEvents, target.getAbsolutePath(), LocaleId.fromString("de"));
-    }
-
-    public void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        StringBuilder tmp = new StringBuilder();
-        ISkeletonWriter skelWriter = filter.createSkeletonWriter();
-        EncoderManager encoderManager = filter.getEncoderManager();
-        for (Event event : events) {
-            switch (event.getEventType()) {
-                case START_DOCUMENT:
-                    tmp.append(skelWriter.processStartDocument(locId, "UTF-8", null, encoderManager,
-                            (StartDocument) event.getResource()));
-                    break;
-                case END_DOCUMENT:
-                    tmp.append(skelWriter.processEndDocument((Ending) event.getResource()));
-                    break;
-                case START_SUBDOCUMENT:
-                    tmp.append(skelWriter.processStartSubDocument((StartSubDocument) event
-                            .getResource()));
-                    break;
-                case END_SUBDOCUMENT:
-                    tmp.append(skelWriter.processEndSubDocument((Ending) event.getResource()));
-                    break;
-                case TEXT_UNIT:
-                    ITextUnit tu = event.getTextUnit();
-                    tmp.append(skelWriter.processTextUnit(tu));
-                    break;
-                case DOCUMENT_PART:
-                    DocumentPart dp = (DocumentPart) event.getResource();
-                    tmp.append(skelWriter.processDocumentPart(dp));
-                    break;
-                case START_GROUP:
-                    StartGroup startGroup = (StartGroup) event.getResource();
-                    tmp.append(skelWriter.processStartGroup(startGroup));
-                    break;
-                case END_GROUP:
-                    tmp.append(skelWriter.processEndGroup((Ending) event.getResource()));
-                    break;
-                case START_SUBFILTER:
-                    StartSubfilter startSubfilter = (StartSubfilter) event.getResource();
-                    tmp.append(skelWriter.processStartSubfilter(startSubfilter));
-                    break;
-                case END_SUBFILTER:
-                    tmp.append(skelWriter.processEndSubfilter((EndSubfilter) event.getResource()));
-                    break;
-            }
-        }
-        skelWriter.close();
-        Writer outputFile = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
-        outputFile.write(tmp.toString());
-        outputFile.flush();
-        outputFile.close();
-    }
-
-    public void updateEvent(Segment seg) {
-        if (isHTML) {
-            updateHTMLEvent(seg);
-        } else {
-            updateXLIFFEvent(seg);
-        }
-    }
-
-    public void updateHTMLEvent(Segment seg) {
-        // TODO: Fix the locales, remove old generic annotations
-        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
-        ITextUnit srcTu = srcEvent.getTextUnit();
-        TextFragment srcTf = srcTu.createTarget(LocaleId.fromString("en"), true, IResource.COPY_ALL).getFirstContent();
-        Event tgtEvent = tgtEvents.get(seg.getTargetEventNumber());
-        ITextUnit tgtTu = tgtEvent.getTextUnit();
-        TextFragment tgtTf = tgtTu.createTarget(LocaleId.fromString("de"), true, IResource.COPY_ALL).getFirstContent();
-
-        GenericAnnotations lqiAnns = new GenericAnnotations();
-        for (LanguageQualityIssue lqi : seg.getLQI()) {
-            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
-                    GenericAnnotationType.LQI_TYPE, lqi.getType(),
-                    GenericAnnotationType.LQI_COMMENT, lqi.getComment(),
-                    GenericAnnotationType.LQI_SEVERITY, lqi.getSeverity(),
-                    GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
-            lqiAnns.add(ga);
-            lqiAnns.setData(lqi.getIssuesRef());
-        }
-
-        ITSProvenanceAnnotations provAnns = addRWProvenance(seg);
-        srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
-        srcTf.annotate(0, srcTf.length(), GenericAnnotationType.GENERIC, provAnns);
-        tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, lqiAnns);
-        tgtTf.annotate(0, tgtTf.length(), GenericAnnotationType.GENERIC, provAnns);
-    }
-
-    public void updateXLIFFEvent(Segment seg) {
-        // TODO: Fix the locales, remove old generic annotations
-        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
-        ITextUnit textUnit = srcEvent.getTextUnit();
-        String rwRef = "RW"+seg.getSegmentNumber();
-
-        ITSLQIAnnotations lqiAnns = new ITSLQIAnnotations();
-        for (LanguageQualityIssue lqi : seg.getLQI()) {
-            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
-                    GenericAnnotationType.LQI_TYPE, lqi.getType(),
-                    GenericAnnotationType.LQI_COMMENT, lqi.getComment(),
-                    GenericAnnotationType.LQI_SEVERITY, lqi.getSeverity(),
-                    GenericAnnotationType.LQI_ENABLED, lqi.isEnabled());
-            lqiAnns.add(ga);
-        }
-
-        if (lqiAnns.size() > 0) {
-            textUnit.setProperty(new Property(Property.ITS_LQI, " its:locQualityIssuesRef=\"#"+rwRef+"\""));
-            textUnit.setAnnotation(lqiAnns);
-        } else {
-            textUnit.setProperty(new Property(Property.ITS_LQI, ""));
-            textUnit.setAnnotation(null);
-        }
-        lqiAnns.setData(rwRef);
-        seg.getSource().setProperty(new Property(Property.ITS_LQI, ""));
-        seg.getSource().setAnnotation(null);
-        textUnit.setSource(seg.getSource());
-
-        Set<LocaleId> targetLocales = textUnit.getTargetLocales();
-        if (targetLocales.size() == 1) {
-            for (LocaleId tgt : targetLocales) {
-                TextContainer tgtTC = textUnit.getTarget(tgt);
-                tgtTC.setProperty(new Property(Property.ITS_LQI, ""));
-                tgtTC.setAnnotation(null);
-                textUnit.setTarget(tgt, tgtTC);
-            }
-        } else if (targetLocales.isEmpty()) {
-            textUnit.setTarget(LocaleId.fromString(srcTLang), seg.getTarget());
-
-        } else {
-            LOG.warn("Only 1 target locale in text-unit is currently supported");
-        }
-
-        ITSProvenanceAnnotations provAnns = addRWProvenance(seg);
-        textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
-        provAnns.setData(rwRef);
-        textUnit.setAnnotation(provAnns);
-    }
-
-    public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
-        Properties p = new Properties();
-        File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
-        File provFile = new File(rwDir, "provenance.properties");
-        if (provFile.exists()) {
-            try {
-                p.load(new FileInputStream(provFile));
-            } catch (IOException ex) {
-                LOG.warn(ex);
-            }
-        }
-
-        ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
-        for (Provenance prov : seg.getProv()) {
-            String revPerson = prov.getRevPerson();
-            String revOrg = prov.getRevOrg();
-            String provRef = prov.getProvRef();
-            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.PROV,
-                    GenericAnnotationType.PROV_PERSON, prov.getPerson(),
-                    GenericAnnotationType.PROV_ORG, prov.getOrg(),
-                    GenericAnnotationType.PROV_TOOL, prov.getTool(),
-                    GenericAnnotationType.PROV_REVPERSON, revPerson,
-                    GenericAnnotationType.PROV_REVORG, revOrg,
-                    GenericAnnotationType.PROV_REVTOOL, prov.getRevTool(),
-                    GenericAnnotationType.PROV_PROVREF, provRef);
-            provAnns.add(ga);
-
-            // Check for existing RW annotation.
-            if (p.getProperty("revPerson").equals(prov.getRevPerson())
-                    && p.getProperty("revOrganization").equals(prov.getRevOrg())
-                    && p.getProperty("externalReference").equals(prov.getProvRef())) {
-                seg.setAddedRWProvenance(true);
-            }
-        }
-
-        if (!seg.addedRWProvenance()) {
-            GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
-                    GenericAnnotationType.PROV_REVPERSON, p.getProperty("revPerson"),
-                    GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
-                    GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
-            provAnns.add(provGA);
-            seg.addProvenance(new Provenance(provGA));
-            seg.setAddedRWProvenance(true);
-        }
-
-        return provAnns;
-    }
-
-    public String getLQIStandoffID(Segment seg) {
-        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
-        ITextUnit textUnit = srcEvent.getTextUnit();
-        ITSLQIAnnotations lqiAnns = textUnit.getAnnotation(ITSLQIAnnotations.class);
-        return lqiAnns.getData();
-    }
-
-    public String getProvStandoffID(Segment seg) {
-        Event srcEvent = srcEvents.get(seg.getSourceEventNumber());
-        ITextUnit textUnit = srcEvent.getTextUnit();
-        ITSProvenanceAnnotations provAnns = textUnit.getAnnotation(ITSProvenanceAnnotations.class);
-        return provAnns.getData();
     }
 
     /**
@@ -758,14 +271,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
         public Component getTableCellRendererComponent(JTable jtable, Object o,
             boolean isSelected, boolean hasFocus, int row, int col) {
             SegmentTextCell renderTextPane = new SegmentTextCell();
-            if (segments.getRowCount() > row) {
-                Segment seg = segments.getSegment(sort.convertRowIndexToModel(row));
+            if (segmentController.getNumSegments() > row) {
+                Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
                 TextContainer tc = null;
-                if (segments.getColumnIndex(SegmentTableModel.COLSEGSRC) == col) {
+                if (segmentController.getSegmentSourceColumnIndex() == col) {
                     tc = seg.getSource();
-                } else if (segments.getColumnIndex(SegmentTableModel.COLSEGTGT) == col) {
+                } else if (segmentController.getSegmentTargetColumnIndex() == col) {
                     tc = seg.getTarget();
-                } else if (segments.getColumnIndex(SegmentTableModel.COLSEGTGTORI) == col) {
+                } else if (segmentController.getSegmentTargetOriginalColumnIndex() == col) {
                     tc = seg.getOriginalTarget();
                 }
                 if (tc != null) {
@@ -812,7 +325,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object value,
             boolean isSelected, int row, int col) {
-            Segment seg = segments.getSegment(sort.convertRowIndexToModel(row));
+            Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
             editListener.setBeginEdit(seg, seg.getTarget().getCodedText());
             editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
@@ -851,7 +364,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public void editingStopped(ChangeEvent ce) {
             if (!this.seg.getTarget().getCodedText().equals(codedText)) {
-                updateEvent(seg);
+                segmentController.updateSegment(seg);
                 reloadTable();
             }
         }
@@ -870,7 +383,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 int r = sourceTargetTable.rowAtPoint(e.getPoint());
                 if (r >= 0 && r < sourceTargetTable.getRowCount()) {
                     sourceTargetTable.setRowSelectionInterval(r, r);
-                    seg = segments.getSegment(r);
+                    seg = segmentController.getSegment(r);
                 }
 
                 if (seg != null) {
