@@ -1,6 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb;
 
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentView;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,15 +19,15 @@ import javax.swing.border.EmptyBorder;
 public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
     private JFrame frame;
     private ReviewerWorkbench rw;
-    private SegmentView segmentView;
+    private SegmentController segmentController;
     private JButton selectSource, selectTarget, importFiles, close;
     File sourceFile, targetFile;
     JFileChooser fileChooser;
 
-    public OpenHTMLView(ReviewerWorkbench rw, SegmentView segmentView) {
+    public OpenHTMLView(ReviewerWorkbench rw, SegmentController segmentController) {
         super(new GridLayout(0,2));
         this.rw = rw;
-        this.segmentView = segmentView;
+        this.segmentController = segmentController;
         fileChooser = new JFileChooser();
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -93,7 +93,7 @@ public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
         @Override
         public void run() {
             try {
-                segmentView.parseSegmentsFromHTMLFile(sourceFile, targetFile);
+                segmentController.parseHTML5Files(sourceFile, targetFile);
                 rw.openSrcFile = sourceFile;
                 rw.openTgtFile = targetFile;
                 rw.setMainTitle(sourceFile.getName(), targetFile.getName());

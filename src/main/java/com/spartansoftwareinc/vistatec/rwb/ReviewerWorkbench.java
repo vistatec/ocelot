@@ -7,6 +7,7 @@ import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceProfileView;
 import com.spartansoftwareinc.vistatec.rwb.rules.FilterView;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentAttributeView;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentView;
 import java.awt.BorderLayout;
 import java.awt.DefaultKeyboardFocusManager;
@@ -61,6 +62,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     SegmentAttributeView segmentAttrView;
     DetailView itsDetailView;
     SegmentView segmentView;
+    SegmentController segmentController;
     OpenXLIFFView openXLIFFView;
     OpenHTMLView openHTMLView;
 
@@ -79,8 +81,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         segAttrSplitPane.setOneTouchExpandable(true);
 
         Dimension segSize = new Dimension(500, 500);
-        segmentView = new SegmentView(segmentAttrView);
+        segmentController = new SegmentController();
+        segmentView = new SegmentView(segmentAttrView, segmentController);
         segmentView.setMinimumSize(segSize);
+        segmentController.setSegmentView(segmentView);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 segAttrSplitPane, segmentView);
@@ -88,8 +92,8 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
         add(mainSplitPane);
 
-        openHTMLView = new OpenHTMLView(this, segmentView);
-        openXLIFFView = new OpenXLIFFView(this, segmentView);
+        openHTMLView = new OpenHTMLView(this, segmentController);
+        openXLIFFView = new OpenXLIFFView(this, segmentController);
 
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
     }
@@ -120,7 +124,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             SwingUtilities.invokeLater(rules);
 
         } else if (e.getSource() == this.menuPlugins) {
-            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager(), segmentView);
+            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager(), segmentController);
             SwingUtilities.invokeLater(plugins);
 
         } else if (e.getSource() == this.menuProv) {
@@ -140,7 +144,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             mainframe.dispose();
         } else if (e.getSource() == this.menuSaveAs
                 || e.getSource() == this.menuSave) {
-            if (segmentView.isHTML()) {
+            if (segmentController.isHTML()) {
                 if (openSrcFile != null
                         && openTgtFile != null) {
                     saveSrcFile = e.getSource() == this.menuSaveAs ?
@@ -183,10 +187,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     
     private boolean save() {
         try {
-            if (segmentView.isHTML()) {
-                segmentView.save(saveSrcFile, saveTgtFile);
+            if (segmentController.isHTML()) {
+                segmentController.save(saveSrcFile, saveTgtFile);
             } else {
-                segmentView.save(saveSrcFile);
+                segmentController.save(saveSrcFile);
             }
             return true;
         } catch (UnsupportedEncodingException ex) {

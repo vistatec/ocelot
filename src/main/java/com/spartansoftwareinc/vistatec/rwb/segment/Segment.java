@@ -25,37 +25,39 @@ public class Segment {
             new LinkedList<LanguageQualityIssue>();
     private LinkedList<Provenance> provList =
             new LinkedList<Provenance>();
-    private SegmentView segmentListener;
+    private SegmentController segmentListener;
     private String fileOriginal, transUnitId;
     private TextContainer originalTarget;
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
-            TextContainer source, TextContainer target, SegmentView listener) {
+            TextContainer source, TextContainer target, SegmentController listener) {
         this.segmentNumber = segNum;
         this.srcEventNum = srcEventNum;
         this.tgtEventNum = tgtEventNum;
         this.source = source;
         this.target = target;
-        AltTranslationsAnnotation altTrans = target.getAnnotation(AltTranslationsAnnotation.class);
-        if (altTrans != null) {
-            Iterator<AltTranslation> iterAltTrans = altTrans.iterator();
-            while (iterAltTrans.hasNext()) {
-                AltTranslation altTran = iterAltTrans.next();
-                // Check if alt-trans is RWB generated.
-                if (altTran.getOrigin() != null && altTran.getOrigin().equals("Reviewer's Workbench")) {
-                    originalTarget = altTran.getTarget();
+        if (target != null) {
+            AltTranslationsAnnotation altTrans = target.getAnnotation(AltTranslationsAnnotation.class);
+            if (altTrans != null) {
+                Iterator<AltTranslation> iterAltTrans = altTrans.iterator();
+                while (iterAltTrans.hasNext()) {
+                    AltTranslation altTran = iterAltTrans.next();
+                    // Check if alt-trans is RWB generated.
+                    if (altTran.getOrigin() != null && altTran.getOrigin().equals("Reviewer's Workbench")) {
+                        originalTarget = altTran.getTarget();
+                    }
                 }
             }
-        }
-        if (originalTarget == null) {
-            // TODO: Actual source/target locales
-            AltTranslation rwbAltTrans = new AltTranslation(LocaleId.ENGLISH, LocaleId.FRENCH,
-                        null, source.getUnSegmentedContentCopy(), target.getUnSegmentedContentCopy(),
+            if (originalTarget == null) {
+                AltTranslation rwbAltTrans = new AltTranslation(LocaleId.fromString(listener.getFileSourceLang()),
+                        LocaleId.fromString(listener.getFileTargetLang()), null,
+                        source.getUnSegmentedContentCopy(), target.getUnSegmentedContentCopy(),
                         MatchType.UKNOWN, 100, "Reviewer's Workbench");
-            altTrans = altTrans == null ? new AltTranslationsAnnotation() : altTrans;
-            altTrans.add(rwbAltTrans);
-            target.setAnnotation(altTrans);
-            originalTarget = rwbAltTrans.getTarget();
+                altTrans = altTrans == null ? new AltTranslationsAnnotation() : altTrans;
+                altTrans.add(rwbAltTrans);
+                target.setAnnotation(altTrans);
+                originalTarget = rwbAltTrans.getTarget();
+            }
         }
         this.segmentListener = listener;
     }

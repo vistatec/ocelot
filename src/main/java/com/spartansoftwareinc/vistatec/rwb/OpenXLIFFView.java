@@ -1,6 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb;
 
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentView;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,15 +19,15 @@ import javax.swing.border.EmptyBorder;
 public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
     private JFrame frame;
     private ReviewerWorkbench rw;
-    private SegmentView segmentView;
+    private SegmentController segmentController;
     private JButton selectSource, importFiles, close;
     File sourceFile;
     JFileChooser fileChooser;
 
-    public OpenXLIFFView(ReviewerWorkbench rw, SegmentView segmentView) {
+    public OpenXLIFFView(ReviewerWorkbench rw, SegmentController segController) {
         super(new GridLayout(0,2));
         this.rw = rw;
-        this.segmentView = segmentView;
+        this.segmentController = segController;
         fileChooser = new JFileChooser();
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -81,7 +81,7 @@ public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
         @Override
         public void run() {
             try {
-                segmentView.parseSegmentsFromXLIFFFile(sourceFile);
+                segmentController.parseXLIFFFile(sourceFile);
                 rw.openSrcFile = sourceFile;
                 rw.setMainTitle(sourceFile.getName());
                 rw.menuSave.setEnabled(true);
