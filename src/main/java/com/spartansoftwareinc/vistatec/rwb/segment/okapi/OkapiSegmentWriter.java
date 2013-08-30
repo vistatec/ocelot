@@ -2,6 +2,7 @@ package com.spartansoftwareinc.vistatec.rwb.segment.okapi;
 
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public abstract class OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(OkapiSegmentWriter.class);
 
-    public abstract void updateEvent(Segment seg);
+    public abstract void updateEvent(Segment seg, SegmentController segController);
 
     public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
         Properties p = new Properties();

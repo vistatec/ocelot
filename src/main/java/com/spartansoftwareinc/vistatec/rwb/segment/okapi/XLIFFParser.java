@@ -6,11 +6,14 @@ import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentTableModel;
 import java.io.FileInputStream;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.annotation.AltTranslation;
+import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
@@ -140,8 +143,10 @@ public class XLIFFParser {
             tu.setTarget(LocaleId.fromString(getTargetLang()), tgtTu);
         }
 
+        TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
+
         Segment seg = new Segment(documentSegmentNum++, fileEventNum, fileEventNum,
-                srcTu, tgtTu, segmentController);
+                srcTu, tgtTu, oriTgtTu, segmentController);
         seg.setFileOriginal(fileOriginal);
         seg.setTransUnitId(tu.getId());
         XLIFFPhaseAnnotation phaseAnn = tu.getAnnotation(XLIFFPhaseAnnotation.class);
@@ -204,6 +209,22 @@ public class XLIFFParser {
             }
         }
         return provAnns;
+    }
+
+    public TextContainer retrieveOriginalTarget(TextContainer target) {
+        AltTranslationsAnnotation altTrans = target.getAnnotation(AltTranslationsAnnotation.class);
+        if (altTrans != null) {
+            Iterator<AltTranslation> iterAltTrans = altTrans.iterator();
+            while (iterAltTrans.hasNext()) {
+                AltTranslation altTran = iterAltTrans.next();
+                // Check if alt-trans is RWB generated.
+                XLIFFTool altTool = altTran.getTool();
+                if (altTool != null && altTool.getName().equals("Ocelot")) {
+                    return altTran.getTarget();
+                }
+            }
+        }
+        return null;
     }
 
     protected XLIFFFilter getFilter() {

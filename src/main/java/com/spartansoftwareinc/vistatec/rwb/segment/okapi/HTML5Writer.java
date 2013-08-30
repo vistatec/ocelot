@@ -2,6 +2,7 @@ package com.spartansoftwareinc.vistatec.rwb.segment.okapi;
 
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class HTML5Writer extends OkapiSegmentWriter {
     }
 
     @Override
-    public void updateEvent(Segment seg) {
+    public void updateEvent(Segment seg, SegmentController segController) {
         Event srcEvent = parser.getSegmentSourceEvent(seg.getSourceEventNumber());
         Event tgtEvent = parser.getSegmentTargetEvent(seg.getTargetEventNumber());
         if (srcEvent == null) {

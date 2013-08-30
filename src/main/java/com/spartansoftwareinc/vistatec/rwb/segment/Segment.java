@@ -4,14 +4,8 @@ import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import net.sf.okapi.common.LocaleId;
-import net.sf.okapi.common.annotation.AltTranslation;
-import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
-import net.sf.okapi.common.annotation.XLIFFTool;
-import net.sf.okapi.common.query.MatchType;
 import net.sf.okapi.common.resource.TextContainer;
 
 /**
@@ -32,38 +26,17 @@ public class Segment {
     private TextContainer originalTarget;
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
-            TextContainer source, TextContainer target, SegmentController listener) {
+            TextContainer source, TextContainer target, TextContainer originalTarget,
+            SegmentController listener) {
         this.segmentNumber = segNum;
         this.srcEventNum = srcEventNum;
         this.tgtEventNum = tgtEventNum;
         this.source = source;
         this.target = target;
-        if (target != null) {
-            AltTranslationsAnnotation altTrans = target.getAnnotation(AltTranslationsAnnotation.class);
-            if (altTrans != null) {
-                Iterator<AltTranslation> iterAltTrans = altTrans.iterator();
-                while (iterAltTrans.hasNext()) {
-                    AltTranslation altTran = iterAltTrans.next();
-                    // Check if alt-trans is RWB generated.
-                    XLIFFTool altTool = altTran.getTool();
-                    if (altTool != null && altTool.getName().equals("Ocelot")) {
-                        originalTarget = altTran.getTarget();
-                    }
-                }
-            }
-            if (originalTarget == null) {
-                AltTranslation rwbAltTrans = new AltTranslation(LocaleId.fromString(listener.getFileSourceLang()),
-                        LocaleId.fromString(listener.getFileTargetLang()), null,
-                        source.getUnSegmentedContentCopy(), target.getUnSegmentedContentCopy(),
-                        MatchType.UKNOWN, 100, "Ocelot");
-                XLIFFTool rwbAltTool = new XLIFFTool("Ocelot", "Ocelot");
-                rwbAltTrans.setTool(rwbAltTool);
-                altTrans = altTrans == null ? new AltTranslationsAnnotation() : altTrans;
-                altTrans.add(rwbAltTrans);
-                target.setAnnotation(altTrans);
-                originalTarget = rwbAltTrans.getTarget();
-            }
-        }
+        this.originalTarget =
+            originalTarget != null ? originalTarget :
+                (target != null ? new TextContainer(target.getUnSegmentedContentCopy()) :
+                                  new TextContainer());
         this.segmentListener = listener;
     }
 
