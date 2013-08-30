@@ -15,6 +15,8 @@ import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
+import net.sf.okapi.common.annotation.XLIFFTool;
+import net.sf.okapi.common.annotation.XLIFFToolAnnotation;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.RawDocument;
 import net.sf.okapi.common.resource.StartSubDocument;
@@ -84,6 +86,14 @@ public class XLIFFParser {
 
             if (event.isStartSubDocument()) {
                 StartSubDocument fileElement = (StartSubDocument)event.getResource();
+                XLIFFToolAnnotation toolAnn = fileElement.getAnnotation(XLIFFToolAnnotation.class);
+                if (toolAnn == null) {
+                    toolAnn = new XLIFFToolAnnotation();
+                    fileElement.setAnnotation(toolAnn);
+                }
+                if (toolAnn.get("Ocelot") == null) {
+                    toolAnn.add(new XLIFFTool("Ocelot", "Ocelot"), fileElement);
+                }
                 if (fileElement.getProperty("sourceLanguage") != null) {
                     String fileSourceLang = fileElement.getProperty("sourceLanguage").getValue();
                     if (getSourceLang() != null && !getSourceLang().equals(fileSourceLang)) {
