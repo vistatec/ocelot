@@ -18,7 +18,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
      * Default serial ID
      */
     private static final long serialVersionUID = 2L;
-    private JMenuItem addLQI, removeLQI;
+    private JMenuItem addLQI, removeLQI, resetTarget;
     private Segment selectedSeg;
     private LanguageQualityIssue selectedLQI;
 
@@ -29,6 +29,11 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         addLQI.addActionListener(this);
         addLQI.setEnabled(selectedSeg.isEditablePhase());
         add(addLQI);
+
+        resetTarget = new JMenuItem("Reset Target");
+        resetTarget.addActionListener(this);
+        resetTarget.setEnabled(selectedSeg.isEditablePhase());
+        add(resetTarget);
     }
 
     public ContextMenu(Segment selectedSeg, LanguageQualityIssue selectedLQI) {
@@ -48,6 +53,8 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
             SwingUtilities.invokeLater(addLQIView);
         } else if (e.getSource() == removeLQI) {
             selectedSeg.removeLQI(selectedLQI);
+        } else if (e.getSource() == resetTarget) {
+            selectedSeg.resetTarget();
         }
     }
 }
