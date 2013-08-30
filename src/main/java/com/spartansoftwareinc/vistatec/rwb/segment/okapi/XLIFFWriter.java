@@ -2,6 +2,7 @@ package com.spartansoftwareinc.vistatec.rwb.segment.okapi;
 
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
+import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,10 +10,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.Set;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.annotation.AltTranslation;
+import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
+import net.sf.okapi.common.annotation.XLIFFTool;
+import net.sf.okapi.common.query.MatchType;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.TextContainer;
@@ -37,7 +42,7 @@ public class XLIFFWriter extends OkapiSegmentWriter {
     }
 
     @Override
-    public void updateEvent(Segment seg) {
+    public void updateEvent(Segment seg, SegmentController segController) {
         Event event = getParser().getSegmentEvent(seg.getSourceEventNumber());
         if (event == null) {
             LOG.error("Failed to find Okapi Event associated with segment #"+seg.getSegmentNumber());
@@ -53,6 +58,7 @@ public class XLIFFWriter extends OkapiSegmentWriter {
             provAnns.setData(rwRef);
             textUnit.setAnnotation(provAnns);
 
+            updateOriginalTarget(seg, segController);
         } else {
             LOG.error("Event associated with Segment was not an Okapi TextUnit!");
             LOG.error("Failed to update event for segment #"+seg.getSegmentNumber());
@@ -103,6 +109,28 @@ public class XLIFFWriter extends OkapiSegmentWriter {
 
         } else {
             LOG.warn("Only 1 target locale in text-unit is currently supported");
+        }
+    }
+
+    /**
+     * Add an alt-trans containing the original target if one from this tool
+     * doesn't exist already.
+     * @param seg - Segment edited
+     * @param segController
+     */
+    public void updateOriginalTarget(Segment seg, SegmentController segController) {
+        TextContainer oriTarget = getParser().retrieveOriginalTarget(seg.getTarget());
+        if (oriTarget == null) {
+            AltTranslation rwbAltTrans = new AltTranslation(LocaleId.fromString(segController.getFileSourceLang()),
+                    LocaleId.fromString(segController.getFileTargetLang()), null,
+                    seg.getSource().getUnSegmentedContentCopy(), seg.getOriginalTarget().getUnSegmentedContentCopy(),
+                    MatchType.EXACT, 100, "Ocelot");
+            XLIFFTool rwbAltTool = new XLIFFTool("Ocelot", "Ocelot");
+            rwbAltTrans.setTool(rwbAltTool);
+            AltTranslationsAnnotation altTrans = seg.getTarget().getAnnotation(AltTranslationsAnnotation.class);
+            altTrans = altTrans == null ? new AltTranslationsAnnotation() : altTrans;
+            altTrans.add(rwbAltTrans);
+            seg.getTarget().setAnnotation(altTrans);
         }
     }
 

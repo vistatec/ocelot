@@ -139,7 +139,7 @@ public class SegmentController {
     }
 
     public void updateSegment(Segment seg) {
-        segmentWriter.updateEvent(seg);
+        segmentWriter.updateEvent(seg, this);
     }
 
     public String getFileSourceLang() {
