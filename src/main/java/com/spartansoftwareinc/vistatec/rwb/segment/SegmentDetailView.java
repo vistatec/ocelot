@@ -68,11 +68,11 @@ public class SegmentDetailView extends JScrollPane {
     protected void updateRowHeights() {
         setViewportView(null);
 
-        SegmentTextCell segmentCell = new SegmentTextCell();
-        segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+        FontMetrics font = table.getFontMetrics(table.getFont());
+        int rowHeight = font.getHeight();
         for (int row = 0; row < table.getRowCount(); row++) {
-            FontMetrics font = table.getFontMetrics(table.getFont());
-            int rowHeight = font.getHeight();
+            SegmentTextCell segmentCell = new SegmentTextCell();
+            segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
             for (int col = 1; col < 2; col++) {
                 int width = table.getColumnModel().getColumn(col).getWidth();
                 segmentCell.setTextContainer((TextContainer) tableModel.getValueAt(row, col), true);
