@@ -15,6 +15,8 @@ import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
+import net.sf.okapi.common.annotation.XLIFFPhase;
+import net.sf.okapi.common.annotation.XLIFFPhaseAnnotation;
 import net.sf.okapi.common.annotation.XLIFFTool;
 import net.sf.okapi.common.annotation.XLIFFToolAnnotation;
 import net.sf.okapi.common.resource.ITextUnit;
@@ -142,6 +144,11 @@ public class XLIFFParser {
                 srcTu, tgtTu, segmentController);
         seg.setFileOriginal(fileOriginal);
         seg.setTransUnitId(tu.getId());
+        XLIFFPhaseAnnotation phaseAnn = tu.getAnnotation(XLIFFPhaseAnnotation.class);
+        if (phaseAnn != null) {
+            XLIFFPhase refPhase = phaseAnn.getReferencedPhase();
+            seg.setPhaseName(refPhase.getPhaseName());
+        }
         attachITSDataToSegment(seg, tu, srcTu, tgtTu);
         segmentController.addSegment(seg);
     }
