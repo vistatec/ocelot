@@ -20,6 +20,7 @@ import net.sf.okapi.common.resource.TextContainer;
 public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
     private TextContainer source, target;
+    private String phase_name;
     private boolean addedProvenance = false;
     private String lqiID, provID;
     private LinkedList<LanguageQualityIssue> lqiList =
@@ -107,6 +108,19 @@ public class Segment {
 
     public void setTransUnitId(String transUnitId) {
         this.transUnitId = transUnitId;
+    }
+
+    public boolean isEditablePhase() {
+        return !"Rebuttal".equalsIgnoreCase(getPhaseName()) &&
+                !"Translator approval".equalsIgnoreCase(getPhaseName());
+    }
+
+    public String getPhaseName() {
+        return this.phase_name;
+    }
+
+    public void setPhaseName(String phaseName) {
+        this.phase_name = phaseName;
     }
 
     public String getProvID() {

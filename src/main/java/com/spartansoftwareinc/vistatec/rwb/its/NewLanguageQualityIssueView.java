@@ -223,6 +223,7 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
     public void updateSegment() {
         segmentId.setText(
                 selectedSeg.getSegmentNumber() + "");
+        setEditableByPhase(selectedSeg);
         save.setEnabled(true);
     }
 
@@ -261,6 +262,12 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
         enabledLabel.setText("Enabled");
         enabledTrue.setSelected(prevEnabled);
         enabledFalse.setSelected(!prevEnabled);
+    }
+
+    public void setEditableByPhase(Segment selectedSegment) {
+        typeList.setEnabled(selectedSegment.isEditablePhase());
+        severitySpinner.setEnabled(selectedSegment.isEditablePhase());
+        profileRefLink.setEnabled(selectedSegment.isEditablePhase());
     }
 
     public boolean setType(String metadataType) {

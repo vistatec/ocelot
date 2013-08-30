@@ -348,7 +348,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                     && ke.getKeyCode() <= KeyEvent.VK_9)) {
                 Segment seg = segmentView.getSelectedSegment();
                 LanguageQualityIssue lqi = segmentView.getRuleConfig().getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
-                if (seg != null && lqi != null) {
+                if (seg != null && lqi != null && seg.isEditablePhase()) {
                     seg.addNewLQI(lqi);
                 }
 
