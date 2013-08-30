@@ -379,17 +379,28 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                Segment seg = null;
-                int r = sourceTargetTable.rowAtPoint(e.getPoint());
-                if (r >= 0 && r < sourceTargetTable.getRowCount()) {
-                    sourceTargetTable.setRowSelectionInterval(r, r);
-                    seg = segmentController.getSegment(r);
-                }
+                displayContextMenu(e);
+            }
+        }
 
-                if (seg != null) {
-                    ContextMenu menu = new ContextMenu(seg);
-                    menu.show(e.getComponent(), e.getX(), e.getY());
-                }
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                displayContextMenu(e);
+            }
+        }
+
+        public void displayContextMenu(MouseEvent e) {
+            Segment seg = null;
+            int r = sourceTargetTable.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < sourceTargetTable.getRowCount()) {
+                sourceTargetTable.setRowSelectionInterval(r, r);
+                seg = segmentController.getSegment(r);
+            }
+
+            if (seg != null) {
+                ContextMenu menu = new ContextMenu(seg);
+                menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
     }
