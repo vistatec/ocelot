@@ -64,6 +64,11 @@ public class Segment {
         return this.originalTarget;
     }
 
+    public void resetTarget() {
+        getTarget().setContent(getOriginalTarget().getUnSegmentedContentCopy());
+        segmentListener.fireTableDataChanged();
+    }
+
     /**
      * XLIFF specific fields.
      */
