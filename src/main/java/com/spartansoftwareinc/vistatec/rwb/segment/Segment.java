@@ -14,7 +14,7 @@ import net.sf.okapi.common.resource.TextContainer;
 public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
     private TextContainer source, target;
-    private String phase_name;
+    private String phase_name, state_qualifier;
     private boolean addedProvenance = false;
     private String lqiID, provID;
     private LinkedList<LanguageQualityIssue> lqiList =
@@ -99,6 +99,14 @@ public class Segment {
 
     public void setPhaseName(String phaseName) {
         this.phase_name = phaseName;
+    }
+
+    public String getStateQualifier() {
+        return this.state_qualifier;
+    }
+
+    public void setStateQualifier(String state) {
+        this.state_qualifier = state;
     }
 
     public String getProvID() {

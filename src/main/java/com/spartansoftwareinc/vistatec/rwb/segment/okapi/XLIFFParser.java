@@ -23,6 +23,7 @@ import net.sf.okapi.common.annotation.XLIFFPhaseAnnotation;
 import net.sf.okapi.common.annotation.XLIFFTool;
 import net.sf.okapi.common.annotation.XLIFFToolAnnotation;
 import net.sf.okapi.common.resource.ITextUnit;
+import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.RawDocument;
 import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.TextContainer;
@@ -149,6 +150,10 @@ public class XLIFFParser {
                 srcTu, tgtTu, oriTgtTu, segmentController);
         seg.setFileOriginal(fileOriginal);
         seg.setTransUnitId(tu.getId());
+        Property stateQualifier = tgtTu.getProperty("state-qualifier");
+        if (stateQualifier != null) {
+            seg.setStateQualifier(stateQualifier.getValue());
+        }
         XLIFFPhaseAnnotation phaseAnn = tu.getAnnotation(XLIFFPhaseAnnotation.class);
         if (phaseAnn != null) {
             XLIFFPhase refPhase = phaseAnn.getReferencedPhase();

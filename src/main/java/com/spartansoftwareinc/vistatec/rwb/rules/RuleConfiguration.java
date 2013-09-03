@@ -28,15 +28,44 @@ import org.apache.log4j.Logger;
 public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
     private File rwDir, rulesFile;
-    private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat;
+    private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat,
+            stateQualifierFormat;
 
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
     private ArrayList<String> ruleOrdering = new ArrayList<String>();
     private HashMap<String,RuleFilter> rules;
     private HashMap<String, DataCategoryFlag> flags;
     private HashMap<String, LanguageQualityIssue> quickAdd;
+    private HashMap<StateQualifier, Boolean> stateQualifierRules;
+    private HashMap<StateQualifier, Color> stateQualifierDisplay;
     private HashMap<Integer, String> quickAddHotkeys;
     protected boolean all = true, allWithMetadata;
+
+    public enum StateQualifier {
+        ID("id-match"),
+        EXACT("exact-match"),
+        FUZZY("fuzzy-match"),
+        MT("mt-suggestion");
+
+        private String name;
+
+        private StateQualifier(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public static StateQualifier get(String name) {
+            for (StateQualifier sq : values()) {
+                if (sq.getName().equals(name)) {
+                    return sq;
+                }
+            }
+            return null;
+        }
+    }
     
     public RuleConfiguration(RuleListener listener) {
         this.ruleListeners.add(listener);
@@ -47,6 +76,11 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         flags = new HashMap<String, DataCategoryFlag>();
         quickAdd = new HashMap<String, LanguageQualityIssue>();
         quickAddHotkeys = new HashMap<Integer, String>();
+        stateQualifierDisplay = new HashMap<StateQualifier, Color>();
+        stateQualifierRules = new HashMap<StateQualifier, Boolean>();
+        for (StateQualifier sq : StateQualifier.values()) {
+            stateQualifierRules.put(sq, false);
+        }
 
         // ruleLabel.dataCategory = regex
         ruleFormat = Pattern.compile("([^.]+)\\.(\\w+)\\s*=(.*)");
@@ -55,6 +89,8 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         // ruleLabel.quickAdd.LQIType = value
         quickAddFormat = Pattern.compile("([^.]+)\\.quickAdd\\.(\\w+)\\s*=(.*)");
         quickAddHotkeyFormat = Pattern.compile("[0-9]");
+        // [id-match|exact-match|fuzzy-match|mt-suggestion] = hex
+        stateQualifierFormat = Pattern.compile("(id-match|exact-match|fuzzy-match|mt-suggestion)\\s*=\\s*(.*)");
 
         loadConfig();
     }
@@ -88,8 +124,19 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
             Matcher rulePattern = ruleFormat.matcher(line);
             Matcher flagPattern = flagFormat.matcher(line);
             Matcher quickAddPattern = quickAddFormat.matcher(line);
+            Matcher stateQualifierPattern = stateQualifierFormat.matcher(line);
             Matcher whitespace = Pattern.compile("\\s*").matcher(line);
-            if (rulePattern.matches()) {
+            if (stateQualifierPattern.matches()) {
+                String state = stateQualifierPattern.group(1);
+                StateQualifier stateQualifier = StateQualifier.get(state);
+                String hexColor = stateQualifierPattern.group(2).trim();
+                if (stateQualifier != null) {
+                    stateQualifierDisplay.put(stateQualifier, new Color(Integer.decode(hexColor)));
+                } else {
+                    LOG.debug("Ignoring state-qualifier: "+state);
+                }
+
+            } else if (rulePattern.matches()) {
                 String ruleLabel = rulePattern.group(1);
                 String dataCategory = rulePattern.group(2);
                 String regex = rulePattern.group(3).trim();
@@ -289,6 +336,43 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         return null;
     }
 
+    public Color getStateQualifierColor(Segment seg) {
+        String sq = seg.getStateQualifier();
+        if (sq != null) {
+            StateQualifier stateQualifier = StateQualifier.get(sq);
+            Color sqColor = stateQualifierDisplay.get(stateQualifier);
+            if (sqColor != null) {
+                return sqColor;
+            } else {
+                LOG.debug("No UI color for state-qualifier '" + stateQualifier + "'");
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public boolean getStateQualifierEnabled(String sq) {
+        StateQualifier stateQualifier = StateQualifier.get(sq);
+        if (stateQualifier != null) {
+            return stateQualifierRules.get(stateQualifier);
+        } else {
+            LOG.warn("Unrecognized state-qualifier when checking if enabled: "+sq);
+            return false;
+        }
+    }
+
+    public void setStateQualifierEnabled(StateQualifier stateQualifier, boolean flag) {
+        if (stateQualifierRules.containsKey(stateQualifier)) {
+            stateQualifierRules.put(stateQualifier, flag);
+            for (RuleListener listener : ruleListeners) {
+                listener.enabledRule(stateQualifier.getName(), flag);
+            }
+        } else {
+            LOG.warn("Unrecognized state-qualifier rule '"+stateQualifier+"'");
+        }
+    }
+
     @Override
     public boolean include(Entry<? extends SegmentTableModel, ? extends Integer> entry) {
         if (all) { return true; }
@@ -298,6 +382,12 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         if (allWithMetadata) {
             return s.getAllITSMetadata().size() > 0;
         } else {
+            for (StateQualifier sq : stateQualifierRules.keySet()) {
+                if (stateQualifierRules.get(sq) && sq.getName().equals(
+                    s.getStateQualifier())) {
+                    return true;
+                }
+            }
             for (RuleFilter r : rules.values()) {
                 if (r.getEnabled() && r.matches(s)) {
                     return true;
