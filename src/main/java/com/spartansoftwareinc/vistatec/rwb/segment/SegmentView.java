@@ -33,7 +33,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -82,10 +81,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(selectSegmentHandler);
 
-        DefaultTableCellRenderer segNumAlign = new DefaultTableCellRenderer();
-        segNumAlign.setHorizontalAlignment(JLabel.LEFT);
-        segNumAlign.setVerticalAlignment(JLabel.TOP);
-        sourceTargetTable.setDefaultRenderer(Integer.class, segNumAlign);
+        sourceTargetTable.setDefaultRenderer(Integer.class, new IntegerRenderer());
         sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
                 new DataCategoryFlagRenderer());
         sourceTargetTable.setDefaultRenderer(String.class,
@@ -284,8 +280,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 if (tc != null) {
                     renderTextPane.setTextContainer(tc, false);
                 }
-                renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
-                renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+                Color background = isSelected ?
+                        seg.isEditablePhase() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY :
+                        jtable.getBackground();
+
+                Color foreground = seg.isEditablePhase() ?
+                        isSelected ? jtable.getSelectionForeground() : jtable.getForeground() :
+                        Color.GRAY;
+
+                renderTextPane.setBackground(background);
+                renderTextPane.setForeground(foreground);
                 renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
             }
 
@@ -308,6 +312,36 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     flag.getBorder());
             setText(flag.getText());
             setHorizontalAlignment(CENTER);
+            return this;
+        }
+    }
+
+    public class IntegerRenderer extends JLabel implements TableCellRenderer {
+
+        public IntegerRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
+            Integer segNum = (Integer) obj;
+            Segment seg = segmentController.getSegment(row);
+            Color background = ruleConfig.getStateQualifierColor(seg);
+            background = background != null ? background :
+                    isSelected ?
+                        seg.isEditablePhase() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY
+                        : jtable.getBackground();
+
+            Color foreground = seg.isEditablePhase()
+                    ? isSelected ? jtable.getSelectionForeground() : jtable.getForeground()
+                    : Color.GRAY;
+
+            setHorizontalAlignment(JLabel.LEFT);
+            setVerticalAlignment(JLabel.TOP);
+            setBackground(background);
+            setForeground(foreground);
+            setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+            setText(segNum.toString());
             return this;
         }
     }

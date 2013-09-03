@@ -62,5 +62,14 @@
     <value> = 0-9
     *Hotkeys are limited to CTRL + 0-9
 
+    # XLIFF State Qualifier Display Rules #
+    The possible state qualifier rules are:
+      id-match = #[0-9]{6} - hex representation of RGB
+      exact-match = #[0-9]{6} - hex representation of RGB
+      fuzzy-match = #[0-9]{6} - hex representation of RGB
+      mt-suggestion = #[0-9]{6} - hex representation of RGB
+
+    All other XLIFF state qualifier types will be ignored.
+
     # Plugins #
     The default plugin directory is located under <home directory>/.reviewersWorkbench/plugins. The VistaTECWebservice.jar plugin should be placed under that directory. Pushing the export data button will export the LQI and Provenance data of the currently open file to the checked plugins.

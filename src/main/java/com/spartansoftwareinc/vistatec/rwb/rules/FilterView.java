@@ -1,5 +1,6 @@
 package com.spartansoftwareinc.vistatec.rwb.rules;
 
+import com.spartansoftwareinc.vistatec.rwb.rules.RuleConfiguration.StateQualifier;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -37,31 +38,32 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 1;
+        int gridy = 0;
 
         JLabel title = new JLabel("Show segments matching rules:");
         gridBag.gridx = 0;
-        gridBag.gridy = 0;
+        gridBag.gridy = gridy++;
         add(title, gridBag);
 
         all = new JRadioButton(allString);
         all.setSelected(filterRules.all);
         all.addActionListener(this);
         gridBag.gridx = 0;
-        gridBag.gridy = 1;
+        gridBag.gridy = gridy++;
         add(all, gridBag);
 
         allWithMetadata = new JRadioButton(metadataString);
         allWithMetadata.setSelected(filterRules.allWithMetadata);
         allWithMetadata.addActionListener(this);
         gridBag.gridx = 0;
-        gridBag.gridy = 2;
+        gridBag.gridy = gridy++;
         add(allWithMetadata, gridBag);
 
         custom = new JRadioButton(customString);
         custom.setSelected(!filterRules.all && !filterRules.allWithMetadata);
         custom.addActionListener(this);
         gridBag.gridx = 0;
-        gridBag.gridy = 3;
+        gridBag.gridy = gridy++;
         add(custom, gridBag);
 
         ButtonGroup filterGroup = new ButtonGroup();
@@ -69,19 +71,27 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
 
-        int gridy = 4;
-        for (String rule : filterRules.getRuleLabels()) {
-            JCheckBox ruleButton = new JCheckBox(rule);
-            ruleButton.setEnabled(custom.isSelected());
-            ruleButton.setSelected(filterRules.getRuleEnabled(rule));
-            ruleButton.addItemListener(this);
-            gridBag.gridwidth = 1;
-            gridBag.gridx = 0;
-            gridBag.gridy = gridy++;
-            gridBag.insets = new Insets(0, 20, 0, 0);
-            add(ruleButton, gridBag);
-            rules.put(rule, ruleButton);
+        for (StateQualifier stateQualifier : RuleConfiguration.StateQualifier.values()) {
+            addFilterCheckBox(stateQualifier.getName(),
+                    filterRules.getStateQualifierEnabled(stateQualifier.getName()), gridBag, gridy++);
         }
+
+        for (String rule : filterRules.getRuleLabels()) {
+            addFilterCheckBox(rule, filterRules.getRuleEnabled(rule), gridBag, gridy++);
+        }
+    }
+
+    public final void addFilterCheckBox(String checkboxName, boolean selected, GridBagConstraints gridBag, int gridy) {
+        JCheckBox filterButton = new JCheckBox(checkboxName);
+        filterButton.setEnabled(custom.isSelected());
+        filterButton.setSelected(selected);
+        filterButton.addItemListener(this);
+        gridBag.gridwidth = 1;
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy;
+        gridBag.insets = new Insets(0, 20, 0, 0);
+        add(filterButton, gridBag);
+        rules.put(checkboxName, filterButton);
     }
 
     @Override
@@ -99,10 +109,11 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         Object source = e.getItemSelectable();
         if (source.getClass().equals(JCheckBox.class)) {
             JCheckBox check = (JCheckBox) source;
-            if (e.getStateChange() == ItemEvent.DESELECTED) {
-                filterRules.enableRule(check.getText(), false);
+            StateQualifier stateQualifier = RuleConfiguration.StateQualifier.get(check.getText());
+            if (stateQualifier != null) {
+                filterRules.setStateQualifierEnabled(stateQualifier, e.getStateChange() == ItemEvent.SELECTED);
             } else {
-                filterRules.enableRule(check.getText(), true);
+                filterRules.enableRule(check.getText(), e.getStateChange() == ItemEvent.SELECTED);
             }
         }
     }
