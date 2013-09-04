@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * View for importing an XLIFF file into the workbench.
@@ -29,6 +30,8 @@ public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
         this.rw = rw;
         this.segmentController = segController;
         fileChooser = new JFileChooser();
+        FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("XLIFF 1.2 file", "xlf");
+        fileChooser.setFileFilter(fileFilter);
         setBorder(new EmptyBorder(10,10,10,10));
 
         add(new JLabel("File:"));
