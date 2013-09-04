@@ -19,9 +19,9 @@ public class SegmentTableModel extends AbstractTableModel {
     public static final int NUMFLAGS = 5;
     public static final int NONFLAGCOLS = 4;
     public static final String COLSEGNUM = "#";
-    public static final String COLSEGSRC = "source";
-    public static final String COLSEGTGT = "target";
-    public static final String COLSEGTGTORI = "target ori";
+    public static final String COLSEGSRC = "Source";
+    public static final String COLSEGTGT = "Target";
+    public static final String COLSEGTGTORI = "Target Original";
 
     public SegmentTableModel(SegmentController segController) {
         segmentController = segController;

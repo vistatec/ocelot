@@ -71,10 +71,11 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
 
     public ReviewerWorkbench() throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
+        Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
-        Dimension segAttrSize = new Dimension(385, 380);
+        itsDetailView.setPreferredSize(segAttrSize);
         segmentAttrView = new SegmentAttributeView(itsDetailView);
-        segmentAttrView.setMinimumSize(segAttrSize);
+        segmentAttrView.setMinimumSize(new Dimension(305, 280));
         segmentAttrView.setPreferredSize(segAttrSize);
         segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 segmentAttrView, itsDetailView);
