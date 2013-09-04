@@ -389,15 +389,22 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public class SegmentCellEditorListener implements CellEditorListener {
         private Segment seg;
         private String codedText;
+        private TextContainer targetClone;
 
         public void setBeginEdit(Segment seg, String codedText) {
             this.seg = seg;
             this.codedText = codedText;
+            if (!this.seg.hasOriginalTarget()) {
+                this.targetClone = seg.getTarget().clone();
+            }
         }
 
         @Override
         public void editingStopped(ChangeEvent ce) {
             if (!this.seg.getTarget().getCodedText().equals(codedText)) {
+                if (!this.seg.hasOriginalTarget()) {
+                    this.seg.setOriginalTarget(this.targetClone);
+                }
                 segmentController.updateSegment(seg);
                 reloadTable();
             }

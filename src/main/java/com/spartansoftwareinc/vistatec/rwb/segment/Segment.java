@@ -15,7 +15,7 @@ public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
     private TextContainer source, target;
     private String phase_name, state_qualifier;
-    private boolean addedProvenance = false;
+    private boolean addedProvenance = false, setOriginalTarget = false;
     private String lqiID, provID;
     private LinkedList<LanguageQualityIssue> lqiList =
             new LinkedList<LanguageQualityIssue>();
@@ -33,10 +33,12 @@ public class Segment {
         this.tgtEventNum = tgtEventNum;
         this.source = source;
         this.target = target;
-        this.originalTarget =
-            originalTarget != null ? originalTarget :
-                (target != null ? new TextContainer(target.getUnSegmentedContentCopy()) :
-                                  new TextContainer());
+        if (originalTarget != null) {
+            this.originalTarget = originalTarget;
+            setOriginalTarget = true;
+        } else {
+            this.originalTarget = new TextContainer();
+        }
         this.segmentListener = listener;
     }
 
@@ -62,6 +64,17 @@ public class Segment {
 
     public TextContainer getOriginalTarget() {
         return this.originalTarget;
+    }
+
+    public void setOriginalTarget(TextContainer oriTgt) {
+        if (!this.setOriginalTarget) {
+            this.originalTarget = oriTgt;
+        }
+        this.setOriginalTarget = true;
+    }
+
+    public boolean hasOriginalTarget() {
+        return this.setOriginalTarget;
     }
 
     public void resetTarget() {
