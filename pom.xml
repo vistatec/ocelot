@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   	<okapi.version>0.22</okapi.version>
+    <okapi.version>0.23-SNAPSHOT</okapi.version>
   </properties>
   
   <repositories>

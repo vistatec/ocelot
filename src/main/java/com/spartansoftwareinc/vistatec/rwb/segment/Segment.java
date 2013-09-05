@@ -2,6 +2,7 @@ package com.spartansoftwareinc.vistatec.rwb.segment;
 
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
+import com.spartansoftwareinc.vistatec.rwb.its.OtherITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -17,10 +18,9 @@ public class Segment {
     private String phase_name, state_qualifier;
     private boolean addedProvenance = false, setOriginalTarget = false;
     private String lqiID, provID;
-    private LinkedList<LanguageQualityIssue> lqiList =
-            new LinkedList<LanguageQualityIssue>();
-    private LinkedList<Provenance> provList =
-            new LinkedList<Provenance>();
+    private LinkedList<LanguageQualityIssue> lqiList = new LinkedList<LanguageQualityIssue>();
+    private LinkedList<Provenance> provList = new LinkedList<Provenance>();
+    private LinkedList<OtherITSMetadata> otherITSList = new LinkedList<OtherITSMetadata>();
     private SegmentController segmentListener;
     private String fileOriginal, transUnitId;
     private TextContainer originalTarget;
@@ -190,10 +190,19 @@ public class Segment {
         }
     }
 
+    public void addOtherITSMetadata(OtherITSMetadata mtConfidence) {
+        this.otherITSList.add(mtConfidence);
+    }
+
+    public List<OtherITSMetadata> getOtherITSMetadata() {
+        return this.otherITSList;
+    }
+
     public List<ITSMetadata> getAllITSMetadata() {
-    	List<ITSMetadata> its = new ArrayList<ITSMetadata>();
-    	its.addAll(lqiList);
+        List<ITSMetadata> its = new ArrayList<ITSMetadata>();
+        its.addAll(lqiList);
         its.addAll(provList);
-    	return its;
+        its.addAll(otherITSList);
+        return its;
     }
 }

@@ -1,11 +1,13 @@
 package com.spartansoftwareinc.vistatec.rwb.segment.okapi;
 
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
+import com.spartansoftwareinc.vistatec.rwb.its.OtherITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
+import com.spartansoftwareinc.vistatec.rwb.rules.DataCategoryField;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import com.spartansoftwareinc.vistatec.rwb.segment.SegmentTableModel;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +18,7 @@ import net.sf.okapi.common.annotation.AltTranslation;
 import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
+import net.sf.okapi.common.annotation.GenericAnnotations;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 import net.sf.okapi.common.annotation.XLIFFPhase;
@@ -73,7 +76,7 @@ public class XLIFFParser {
         return this.events;
     }
 
-    public void parseXLIFFFile(FileInputStream file, SegmentTableModel segmentModel) {
+    public void parseXLIFFFile(InputStream file, SegmentTableModel segmentModel) {
         events = new LinkedList<Event>();
         documentSegmentNum = 1;
 
@@ -179,6 +182,14 @@ public class XLIFFParser {
                 seg.setProvID(provAnns.getData());
             }
         }
+
+        if (tgtTu != null) {
+            List<GenericAnnotation> mtAnns = retrieveMTConfidenceAnnotations(tgtTu);
+            for (GenericAnnotation mtAnn : mtAnns) {
+                seg.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE,
+                        mtAnn.getDouble(GenericAnnotationType.MTCONFIDENCE_VALUE)));
+            }
+        }
     }
 
     public ITSLQIAnnotations retrieveITSLQIAnnotations(ITextUnit tu, TextContainer srcTu, TextContainer tgtTu) {
@@ -197,7 +208,7 @@ public class XLIFFParser {
         }
         return lqiAnns;
     }
-    
+
     public ITSProvenanceAnnotations retrieveITSProvAnnotations(ITextUnit tu, TextContainer srcTu, TextContainer tgtTu) {
         ITSProvenanceAnnotations provAnns = tu.getAnnotation(ITSProvenanceAnnotations.class);
         provAnns = provAnns == null ? new ITSProvenanceAnnotations() : provAnns;
@@ -214,6 +225,15 @@ public class XLIFFParser {
             }
         }
         return provAnns;
+    }
+
+    public List<GenericAnnotation> retrieveMTConfidenceAnnotations(TextContainer tgtTu) {
+        GenericAnnotations tgtAnns = tgtTu.getAnnotation(GenericAnnotations.class);
+        List<GenericAnnotation> mtAnns = new LinkedList<GenericAnnotation>();
+        if (tgtAnns != null) {
+            mtAnns = tgtAnns.getAnnotations(GenericAnnotationType.MTCONFIDENCE);
+        }
+        return mtAnns;
     }
 
     public TextContainer retrieveOriginalTarget(TextContainer target) {

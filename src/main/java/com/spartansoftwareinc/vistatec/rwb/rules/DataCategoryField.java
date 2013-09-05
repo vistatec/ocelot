@@ -10,7 +10,8 @@ public enum DataCategoryField {
         PROV_REVORG("revOrg", Matchers.RegexMatcher.class),
         PROV_REVPERSON("revPerson", Matchers.RegexMatcher.class),
         PROV_REVTOOL("revTool", Matchers.RegexMatcher.class),
-        PROV_PROVREF("provRef", Matchers.RegexMatcher.class);
+        PROV_PROVREF("provRef", Matchers.RegexMatcher.class),
+        MT_CONFIDENCE("mtConfidence", Matchers.NumericMatcher.class);
 	
 	private String name;
 	private Class<? extends Matcher> clazz;
