@@ -369,7 +369,13 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     fireEditingStopped();
                 }
             });
-            return editorComponent;
+            adjustEditorInitialSize(jtable, row);
+            return new JScrollPane(editorComponent);
+        }
+
+        public void adjustEditorInitialSize(JTable jtable, int row) {
+            FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
+            jtable.setRowHeight(row, font.getHeight()*10);
         }
 
         @Override
@@ -406,8 +412,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     this.seg.setOriginalTarget(this.targetClone);
                 }
                 segmentController.updateSegment(seg);
-                reloadTable();
             }
+            reloadTable();
         }
 
         @Override
