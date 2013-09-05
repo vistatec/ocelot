@@ -222,6 +222,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         int selectedRow = sourceTargetTable.getSelectedRow();
         reloadTable();
         sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
+        requestFocusTable();
     }
 
     public void notifyAddedProv(Provenance prov) {
