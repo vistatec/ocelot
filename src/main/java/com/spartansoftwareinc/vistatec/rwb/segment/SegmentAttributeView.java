@@ -4,6 +4,8 @@ import com.spartansoftwareinc.vistatec.rwb.DetailView;
 import com.spartansoftwareinc.vistatec.rwb.its.ITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssueTableView;
+import com.spartansoftwareinc.vistatec.rwb.its.OtherITSMetadata;
+import com.spartansoftwareinc.vistatec.rwb.its.OtherITSTableView;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceTableView;
 import com.spartansoftwareinc.vistatec.rwb.its.stats.ITSDocStatsTableView;
@@ -19,6 +21,7 @@ public class SegmentAttributeView extends JTabbedPane {
     protected ITSDocStatsTableView aggregateTableView;
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
+    protected OtherITSTableView itsTableView;
     protected SegmentAttributeTreeView treeView;
     private DetailView detailView;
 
@@ -36,6 +39,9 @@ public class SegmentAttributeView extends JTabbedPane {
         provTableView = new ProvenanceTableView(this);
         addTab("Prov", provTableView);
 
+        itsTableView = new OtherITSTableView();
+        addTab("Other ITS", itsTableView);
+
         treeView = new SegmentAttributeTreeView(this);
         addTab("Tree", treeView);
 
@@ -48,6 +54,8 @@ public class SegmentAttributeView extends JTabbedPane {
                     lqiTableView.deselectLQI();
                 } else if (tab.equals(provTableView)) {
                     provTableView.deselectProv();
+                } else if (tab.equals(itsTableView)) {
+                    itsTableView.clearTableSelection();
                 } else if (tab.equals(treeView)) {
                     treeView.tree.clearSelection();
                 }
@@ -63,6 +71,7 @@ public class SegmentAttributeView extends JTabbedPane {
         this.selectedSegment = seg;
         lqiTableView.setSegment(seg);
         provTableView.setSegment(seg);
+        itsTableView.setSegment(seg);
         treeView.clearTree();
         if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
         treeView.expandTree();
@@ -74,6 +83,7 @@ public class SegmentAttributeView extends JTabbedPane {
         treeView.clearTree();
         lqiTableView.clearSegment();
         provTableView.clearSegment();
+        itsTableView.clearSegment();
     }
 
     public void deletedSegments() {
@@ -93,10 +103,12 @@ public class SegmentAttributeView extends JTabbedPane {
         if (getSelectedSegment() != null) {
             detailView.setMetadata(getSelectedSegment(), its);
             for (int i = 0; i < getTabCount(); i++) {
-                if ((its instanceof LanguageQualityIssue
-                        && lqiTableView.equals(getComponentAt(i))) ||
-                    (its instanceof Provenance
-                        && provTableView.equals(getComponentAt(i)))) {
+                if (its instanceof LanguageQualityIssue
+                        && lqiTableView.equals(getComponentAt(i)) ||
+                    its instanceof Provenance
+                        && provTableView.equals(getComponentAt(i)) ||
+                    its instanceof OtherITSMetadata
+                        && itsTableView.equals(getComponentAt(i)) ) {
                     setSelectedIndex(i);
                 }
             }

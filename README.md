@@ -22,6 +22,9 @@
     
     <dataCategoryType> = org | person | tool | revOrg | revPerson | revTool | provRef
     <value> = String
+
+    <dataCategoryType> = mtConfidence
+    <value> = 0.0-1.0
     
     # Display Rules #
     Display rules are in the format:
