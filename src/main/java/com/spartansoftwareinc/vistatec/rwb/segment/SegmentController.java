@@ -86,6 +86,7 @@ public class SegmentController {
 
     protected void fireTableDataChanged() {
         getSegmentTableModel().fireTableDataChanged();
+        segmentView.updateRowHeights();
     }
 
     public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
