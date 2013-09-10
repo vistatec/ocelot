@@ -1,6 +1,7 @@
 package com.spartansoftwareinc.vistatec.rwb;
 
-import com.spartansoftwareinc.plugins.PluginManagerView;
+import com.spartansoftwareinc.plugins.ITSPluginManagerView;
+import com.spartansoftwareinc.plugins.SegmentPluginView;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.NewLanguageQualityIssueView;
 import com.spartansoftwareinc.vistatec.rwb.its.ProvenanceProfileView;
@@ -55,7 +56,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     JMenuBar menuBar;
     JMenu menuFile, menuFilter, menuExtensions, menuHelp;
     JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
-            menuRules, menuProv, menuSave, menuSaveAs, menuPlugins;
+            menuRules, menuProv, menuSave, menuSaveAs, menuITSPlugins, menuSegPlugins;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -124,9 +125,13 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             FilterView rules = new FilterView(segmentView.getRuleConfig());
             SwingUtilities.invokeLater(rules);
 
-        } else if (e.getSource() == this.menuPlugins) {
-            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager(), segmentController);
-            SwingUtilities.invokeLater(plugins);
+        } else if (e.getSource() == this.menuITSPlugins) {
+            ITSPluginManagerView itsPlugins = new ITSPluginManagerView(segmentView.getPluginManager(), segmentController);
+            SwingUtilities.invokeLater(itsPlugins);
+
+        } else if (e.getSource() == this.menuSegPlugins) {
+            SegmentPluginView segPlugins = new SegmentPluginView(segmentView.getPluginManager(), segmentController);
+            SwingUtilities.invokeLater(segPlugins);
 
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView prov = null;
@@ -188,11 +193,16 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     
     private boolean save() {
         try {
+            String filename;
             if (segmentController.isHTML()) {
+                filename = "Source file: '"+saveSrcFile.getName()
+                        +", Target file: '"+saveTgtFile+"'";
                 segmentController.save(saveSrcFile, saveTgtFile);
             } else {
+                filename = saveSrcFile.getName();
                 segmentController.save(saveSrcFile);
             }
+            segmentView.getPluginManager().notifySaveFile(filename);
             return true;
         } catch (UnsupportedEncodingException ex) {
             LOG.error(ex);
@@ -260,9 +270,13 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuExtensions = new JMenu("Extensions");
         menuBar.add(menuExtensions);
 
-        menuPlugins = new JMenuItem("Plugins");
-        menuPlugins.addActionListener(this);
-        menuExtensions.add(menuPlugins);
+        menuITSPlugins = new JMenuItem("ITS Plugins");
+        menuITSPlugins.addActionListener(this);
+        menuExtensions.add(menuITSPlugins);
+
+        menuSegPlugins = new JMenuItem("Segment Plugins");
+        menuSegPlugins.addActionListener(this);
+        menuExtensions.add(menuSegPlugins);
 
         menuHelp = new JMenu("Help");
         menuHelp.setMnemonic(KeyEvent.VK_H);

@@ -9,6 +9,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -26,12 +27,12 @@ import org.slf4j.LoggerFactory;
 public class PluginManagerView extends JPanel implements Runnable, ActionListener, ItemListener {
     private static Logger LOG = LoggerFactory.getLogger(PluginManagerView.class);
     private JFrame frame;
-    private JButton selectPluginDir, export;
-    private PluginManager pluginManager;
+    private JButton selectPluginDir;
+    protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
-    private SegmentController segmentController;
+    protected SegmentController segmentController;
 
-    public PluginManagerView(PluginManager pluginManager, SegmentController segController) {
+    public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController) {
         super(new GridBagLayout());
         this.pluginManager = pluginManager;
         this.segmentController = segController;
@@ -41,16 +42,9 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
 
-        export = new JButton("Export Data");
-        export.addActionListener(this);
-        export.setEnabled(segController.openFile());
-        gridBag.gridx = 0;
-        gridBag.gridy = 0;
-        add(export, gridBag);
-
         selectPluginDir = new JButton("Set Plugin Directory");
         selectPluginDir.addActionListener(this);
-        gridBag.gridx = 1;
+        gridBag.gridx = 0;
         gridBag.gridy = 0;
         add(selectPluginDir, gridBag);
 
@@ -60,10 +54,10 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         gridBag.gridy = 1;
         add(title, gridBag);
 
-        initPlugins();
+        initPlugins(plugins);
     }
 
-    public void initPlugins() {
+    public void initPlugins(Set<? extends Plugin> plugins) {
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 2;
@@ -75,7 +69,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
             }
             checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         }
-        for (Plugin plugin : pluginManager.getPlugins()) {
+        for (Plugin plugin : plugins) {
             JCheckBox pluginBox = new JCheckBox(plugin.getPluginName());
             pluginBox.setSelected(pluginManager.isEnabled(plugin));
             pluginBox.addItemListener(this);
@@ -109,10 +103,6 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
                     JOptionPane.showMessageDialog(frame, "Error reading specified plugin directory.");
                 }
             }
-        } else if (ae.getSource() == export) {
-            pluginManager.exportData(segmentController.getFileSourceLang(),
-                    segmentController.getFileTargetLang(),
-                    segmentController.getSegmentTableModel());
         }
     }
 

@@ -19,7 +19,7 @@ public class TestPluginManager {
 		File pluginDir = new File(url.toURI());
 		PluginManager pluginManager = new PluginManager();
 		pluginManager.discover(pluginDir);
-		Set<Plugin> plugins = pluginManager.getPlugins();
+		Set<ITSPlugin> plugins = pluginManager.getITSPlugins();
 		assertEquals(1, plugins.size());
 		Plugin plugin = plugins.iterator().next();
 		assertEquals("Sample Plugin", plugin.getPluginName());

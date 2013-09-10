@@ -404,10 +404,12 @@ public class SegmentView extends JScrollPane implements RuleListener {
             if (!this.seg.hasOriginalTarget()) {
                 this.targetClone = seg.getTarget().clone();
             }
+            pluginManager.notifySegmentTargetEnter(seg);
         }
 
         @Override
         public void editingStopped(ChangeEvent ce) {
+            pluginManager.notifySegmentTargetExit(seg);
             if (!this.seg.getTarget().getCodedText().equals(codedText)) {
                 if (!this.seg.hasOriginalTarget()) {
                     this.seg.setOriginalTarget(this.targetClone);

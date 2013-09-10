@@ -32,13 +32,16 @@ import java.net.URLClassLoader;
  */
 public class PluginManager {
 
-	private List<String> pluginClassNames = new ArrayList<String>();
-        private HashMap<Plugin, Boolean> plugins;
+        private List<String> itsPluginClassNames = new ArrayList<String>();
+        private List<String> segPluginClassNames = new ArrayList<String>();
+        private HashMap<ITSPlugin, Boolean> itsPlugins;
+        private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private ClassLoader classLoader;
         private File pluginDir;
 	
 	public PluginManager() {
-            this.plugins = new HashMap<Plugin, Boolean>();
+            this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
+            this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
             pluginDir = new File(System.getProperty("user.home"), ".reviewersWorkbench/plugins");
 	}
 
@@ -51,37 +54,100 @@ public class PluginManager {
         }
 	
 	/**
-	 * Get a list of available plugin instances.
-	 * @return
+	 * Get a list of available ITS plugin instances.
 	 */
-	public Set<Plugin> getPlugins() {
-		return plugins.keySet();
+	public Set<ITSPlugin> getITSPlugins() {
+            return this.itsPlugins.keySet();
 	}
 
+        public Set<SegmentPlugin> getSegmentPlugins() {
+            return this.segPlugins.keySet();
+        }
+
         /**
-         * Return if the plugin should receive data on export.
+         * Return if the plugin should receive data from the workbench.
          */
         public boolean isEnabled(Plugin plugin) {
-            return plugins.get(plugin);
+            boolean enabled = false;
+            if (plugin instanceof ITSPlugin) {
+                ITSPlugin itsPlugin = (ITSPlugin) plugin;
+                enabled = itsPlugins.get(itsPlugin);
+            } else if (plugin instanceof SegmentPlugin) {
+                SegmentPlugin segPlugin = (SegmentPlugin) plugin;
+                enabled = segPlugins.get(segPlugin);
+            }
+            return enabled;
         }
 
         public void setEnabled(Plugin plugin, boolean enabled) {
-            plugins.put(plugin, enabled);
+            if (plugin instanceof ITSPlugin) {
+                ITSPlugin itsPlugin = (ITSPlugin) plugin;
+                itsPlugins.put(itsPlugin, enabled);
+            } else if (plugin instanceof SegmentPlugin) {
+                SegmentPlugin segPlugin = (SegmentPlugin) plugin;
+                segPlugins.put(segPlugin, enabled);
+            }
         }
 
+        /**
+         * ITSPlugin handler for exporting LQI/Provenance metadata of segments.
+         * @param sourceLang
+         * @param targetLang
+         * @param segments
+         */
         public void exportData(String sourceLang, String targetLang,
                 SegmentTableModel segments) {
             for (int row = 0; row < segments.getRowCount(); row++) {
                 Segment seg = segments.getSegment(row);
                 List<LanguageQualityIssue> lqi = seg.getLQI();
                 List<Provenance> prov = seg.getProv();
-                for (Plugin plugin : getPlugins()) {
+                for (ITSPlugin plugin : getITSPlugins()) {
                     if (isEnabled(plugin)) {
                         plugin.sendLQIData(sourceLang, targetLang,
                                 seg, lqi);
                         plugin.sendProvData(sourceLang, targetLang,
                                 seg, prov);
                     }
+                }
+            }
+        }
+
+        /**
+         * SegmentPlugin handler for beginning a target segment edit.
+         * @param seg
+         */
+        public void notifySegmentTargetEnter(Segment seg) {
+            for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+                if (isEnabled(segPlugin)) {
+                    segPlugin.onSegmentTargetEnter(seg);
+                }
+            }
+        }
+
+        /**
+         * SegmentPlugin handler for finishing a target segment edit.
+         * @param seg
+         */
+        public void notifySegmentTargetExit(Segment seg) {
+            for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+                if (isEnabled(segPlugin)) {
+                    segPlugin.onSegmentTargetExit(seg);
+                }
+            }
+        }
+
+        public void notifyOpenFile(String filename) {
+            for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+                if (isEnabled(segPlugin)) {
+                    segPlugin.onFileOpen(filename);
+                }
+            }
+        }
+
+        public void notifySaveFile(String filename) {
+            for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+                if (isEnabled(segPlugin)) {
+                    segPlugin.onFileSave(filename);
                 }
             }
         }
@@ -105,12 +171,28 @@ public class PluginManager {
 			scanJar(f);
 		}
 		
-		for (String s : pluginClassNames) {
+		for (String s : itsPluginClassNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends Plugin> c = (Class<Plugin>)Class.forName(s, false, classLoader);
-				Plugin plugin = c.newInstance();
-				plugins.put(plugin, false);
+				Class<? extends ITSPlugin> c = (Class<ITSPlugin>)Class.forName(s, false, classLoader);
+				ITSPlugin plugin = c.newInstance();
+				itsPlugins.put(plugin, false);
+			}
+			catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			}
+			catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+                for (String s : segPluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>)Class.forName(s, false, classLoader);
+				SegmentPlugin plugin = c.newInstance();
+				segPlugins.put(plugin, false);
 			}
 			catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
@@ -159,17 +241,29 @@ public class PluginManager {
 						if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
 							continue;
 						}
-						if (Plugin.class.isAssignableFrom(clazz)) {
+						if (ITSPlugin.class.isAssignableFrom(clazz)) {
 							// It's a plugin!  Just store the name for now
 							// since we will need to reinstantiate it later with the 
 							// real classloader (I think)
-							if (pluginClassNames.contains(name)) {
+							if (itsPluginClassNames.contains(name)) {
 								// TODO: log this
 								System.out.println("Warning: found multiple implementations of plugin class " +
 												   name);
 							}
 							else {
-								pluginClassNames.add(name);
+								itsPluginClassNames.add(name);
+							}
+						} else if (SegmentPlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin!  Just store the name for now
+							// since we will need to reinstantiate it later with the 
+							// real classloader (I think)
+							if (segPluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out.println("Warning: found multiple implementations of plugin class " +
+												   name);
+							}
+							else {
+								segPluginClassNames.add(name);
 							}
 						}
 					}

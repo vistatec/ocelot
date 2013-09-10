@@ -1,6 +1,6 @@
 package com.spartansoftwareinc.plugins.samples;
 
-import com.spartansoftwareinc.plugins.Plugin;
+import com.spartansoftwareinc.plugins.ITSPlugin;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Sample plugin for layout testing purposes.
  */
-public class PluginTest implements Plugin {
+public class PluginTest implements ITSPlugin {
 
     @Override
     public String getPluginName() {

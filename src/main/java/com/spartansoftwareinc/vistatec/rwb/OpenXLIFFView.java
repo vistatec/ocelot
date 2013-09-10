@@ -87,6 +87,7 @@ public class OpenXLIFFView extends JPanel implements Runnable, ActionListener {
                 segmentController.parseXLIFFFile(sourceFile);
                 rw.openSrcFile = sourceFile;
                 rw.setMainTitle(sourceFile.getName());
+                rw.segmentView.getPluginManager().notifyOpenFile(sourceFile.getName());
                 rw.menuSave.setEnabled(true);
                 rw.menuSaveAs.setEnabled(true);
             } catch (IOException e) {
