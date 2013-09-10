@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Detect, install, and instantiate any available plugin classes.
@@ -31,7 +33,7 @@ import java.net.URLClassLoader;
  * like stateful singletons.
  */
 public class PluginManager {
-
+        private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
         private List<String> itsPluginClassNames = new ArrayList<String>();
         private List<String> segPluginClassNames = new ArrayList<String>();
         private HashMap<ITSPlugin, Boolean> itsPlugins;
@@ -103,10 +105,15 @@ public class PluginManager {
                 List<Provenance> prov = seg.getProv();
                 for (ITSPlugin plugin : getITSPlugins()) {
                     if (isEnabled(plugin)) {
-                        plugin.sendLQIData(sourceLang, targetLang,
-                                seg, lqi);
-                        plugin.sendProvData(sourceLang, targetLang,
-                                seg, prov);
+                        try {
+                            plugin.sendLQIData(sourceLang, targetLang,
+                                    seg, lqi);
+                            plugin.sendProvData(sourceLang, targetLang,
+                                    seg, prov);
+                        } catch (Exception e) {
+                            LOG.error("ITS Plugin '"+plugin.getPluginName()
+                                    +"' threw an exception on ITS metadata export", e);
+                        }
                     }
                 }
             }
@@ -119,7 +126,12 @@ public class PluginManager {
         public void notifySegmentTargetEnter(Segment seg) {
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
-                    segPlugin.onSegmentTargetEnter(seg);
+                    try {
+                        segPlugin.onSegmentTargetEnter(seg);
+                    } catch (Exception e) {
+                        LOG.error("Segment plugin '"+segPlugin.getPluginName()
+                                +"' threw an exception on segment target enter", e);
+                    }
                 }
             }
         }
@@ -131,7 +143,12 @@ public class PluginManager {
         public void notifySegmentTargetExit(Segment seg) {
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
-                    segPlugin.onSegmentTargetExit(seg);
+                    try {
+                        segPlugin.onSegmentTargetExit(seg);
+                    } catch (Exception e) {
+                        LOG.error("Segment plugin '"+segPlugin.getPluginName()
+                                +"' threw an exception on segment target exit", e);
+                    }
                 }
             }
         }
@@ -139,7 +156,12 @@ public class PluginManager {
         public void notifyOpenFile(String filename) {
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
-                    segPlugin.onFileOpen(filename);
+                    try {
+                        segPlugin.onFileOpen(filename);
+                    } catch (Exception e) {
+                        LOG.error("Segment plugin '"+segPlugin.getPluginName()
+                                +"' threw an exception on file open", e);
+                    }
                 }
             }
         }
@@ -147,7 +169,12 @@ public class PluginManager {
         public void notifySaveFile(String filename) {
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
-                    segPlugin.onFileSave(filename);
+                    try {
+                        segPlugin.onFileSave(filename);
+                    } catch (Exception e) {
+                        LOG.error("Segment plugin '"+segPlugin.getPluginName()
+                                +"' threw an exception on file save", e);
+                    }
                 }
             }
         }
