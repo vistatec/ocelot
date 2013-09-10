@@ -101,11 +101,13 @@ public class Matchers {
 			}
                         if (value instanceof Integer) {
                             Integer v = (Integer) value;
-                            return (v >= lowerBound && v <= upperBound);
+                            return lowerBound == upperBound ? v == lowerBound :
+                                    (v >= lowerBound && v < upperBound);
                         }
                         if (value instanceof Double) {
                             Double v = (Double) value;
-                            return (v >= lowerBound && v <= upperBound);
+                            return lowerBound == upperBound ? v == lowerBound :
+                                    (v >= lowerBound && v < upperBound);
                         }
                         return false;
 		}

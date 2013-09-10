@@ -28,7 +28,7 @@ public class TestMatchers {
 		assertTrue(m.validatePattern(" 50   - 75 "));
 		assertFalse(m.validatePattern("abc"));
 		m.setPattern("60-79");
-		for (int i = 60; i < 80; i++) {
+		for (int i = 60; i < 79; i++) {
 			assertTrue("Failed to match: " + i, m.matches(i));
 		}
 		assertFalse(m.matches(59));

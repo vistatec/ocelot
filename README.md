@@ -15,7 +15,8 @@
               length |  uncategorized |  other
     
     <dataCategoryType> = locQualityIssueSeverity
-    <value> = 0.0-100.0
+    <value> = <min> - <max>
+    where <min> is inclusive (<=) and max is exclusive (>). The possible range of values for locQualityIssueSeverity is 0.0 - 100.0
     
     <dataCategoryType> = locQualityIssueComment
     <value> = String
@@ -24,7 +25,8 @@
     <value> = String
 
     <dataCategoryType> = mtConfidence
-    <value> = 0.0-1.0
+    <value> = <min>-<max>
+    where <min> is inclusive (<=) and max is exclusive (>). The possible range of values for mtConfidence is 0.0 - 1.0
     
     # Display Rules #
     Display rules are in the format:
