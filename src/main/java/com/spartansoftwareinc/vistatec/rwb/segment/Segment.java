@@ -26,8 +26,7 @@ public class Segment {
     private TextContainer originalTarget;
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
-            TextContainer source, TextContainer target, TextContainer originalTarget,
-            SegmentController listener) {
+            TextContainer source, TextContainer target, TextContainer originalTarget) {
         this.segmentNumber = segNum;
         this.srcEventNum = srcEventNum;
         this.tgtEventNum = tgtEventNum;
@@ -39,7 +38,10 @@ public class Segment {
         } else {
             this.originalTarget = new TextContainer();
         }
-        this.segmentListener = listener;
+    }
+
+    public void setSegmentListener(SegmentController segController) {
+        this.segmentListener = segController;
     }
 
     public int getSegmentNumber() {
@@ -79,7 +81,9 @@ public class Segment {
 
     public void resetTarget() {
         getTarget().setContent(getOriginalTarget().getUnSegmentedContentCopy());
-        segmentListener.fireTableDataChanged();
+        if (segmentListener != null) {
+            segmentListener.fireTableDataChanged();
+        }
     }
 
     /**
@@ -136,7 +140,9 @@ public class Segment {
 
     public void addProvenance(Provenance prov) {
         provList.add(prov);
-        segmentListener.notifyAddedProv(prov);
+        if (segmentListener != null) {
+            segmentListener.notifyAddedProv(prov);
+        }
     }
 
     public boolean addedRWProvenance() {
@@ -166,7 +172,7 @@ public class Segment {
     public void addLQI(LanguageQualityIssue lqi) {
         lqiList.add(lqi);
         if (segmentListener != null) {
-        	segmentListener.notifyAddedLQI(lqi, this);
+            segmentListener.notifyAddedLQI(lqi, this);
         }
     }
 

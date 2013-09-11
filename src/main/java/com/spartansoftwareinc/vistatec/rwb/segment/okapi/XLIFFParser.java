@@ -5,8 +5,6 @@ import com.spartansoftwareinc.vistatec.rwb.its.OtherITSMetadata;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.rules.DataCategoryField;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentTableModel;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -46,11 +44,8 @@ public class XLIFFParser {
     private XLIFFFilter filter;
     private int documentSegmentNum;
     private String sourceLang, targetLang, fileOriginal;
-    private SegmentController segmentController;
 
-    public XLIFFParser(SegmentController segController) {
-        this.segmentController = segController;
-    }
+    public XLIFFParser() {}
 
     public String getSourceLang() {
         return this.sourceLang;
@@ -76,8 +71,9 @@ public class XLIFFParser {
         return this.events;
     }
 
-    public void parseXLIFFFile(InputStream file, SegmentTableModel segmentModel) {
+    public List<Segment> parseXLIFFFile(InputStream file) {
         events = new LinkedList<Event>();
+        List<Segment> segments = new LinkedList<Segment>();
         documentSegmentNum = 1;
 
         RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, LocaleId.EMPTY);
@@ -123,13 +119,14 @@ public class XLIFFParser {
 
             } else if (event.isTextUnit()) {
                 ITextUnit tu = (ITextUnit) event.getResource();
-                convertTextUnitToSegment(tu, fileEventNum);
+                segments.add(convertTextUnitToSegment(tu, fileEventNum));
             }
             fileEventNum++;
         }
+        return segments;
     }
 
-    public void convertTextUnitToSegment(ITextUnit tu, int fileEventNum) {
+    public Segment convertTextUnitToSegment(ITextUnit tu, int fileEventNum) {
         TextContainer srcTu = tu.getSource();
         TextContainer tgtTu = new TextContainer();
 
@@ -150,7 +147,7 @@ public class XLIFFParser {
         TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
 
         Segment seg = new Segment(documentSegmentNum++, fileEventNum, fileEventNum,
-                srcTu, tgtTu, oriTgtTu, segmentController);
+                srcTu, tgtTu, oriTgtTu);
         seg.setFileOriginal(fileOriginal);
         seg.setTransUnitId(tu.getId());
         Property stateQualifier = tgtTu.getProperty("state-qualifier");
@@ -163,7 +160,7 @@ public class XLIFFParser {
             seg.setPhaseName(refPhase.getPhaseName());
         }
         attachITSDataToSegment(seg, tu, srcTu, tgtTu);
-        segmentController.addSegment(seg);
+        return seg;
     }
     
     public void attachITSDataToSegment(Segment seg, ITextUnit tu, TextContainer srcTu, TextContainer tgtTu) {
@@ -184,7 +181,7 @@ public class XLIFFParser {
         }
 
         if (tgtTu != null) {
-            List<GenericAnnotation> mtAnns = retrieveMTConfidenceAnnotations(tgtTu);
+            List<GenericAnnotation> mtAnns = retrieveITSMTConfidenceAnnotations(tgtTu);
             for (GenericAnnotation mtAnn : mtAnns) {
                 seg.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE,
                         mtAnn.getDouble(GenericAnnotationType.MTCONFIDENCE_VALUE)));
@@ -227,7 +224,7 @@ public class XLIFFParser {
         return provAnns;
     }
 
-    public List<GenericAnnotation> retrieveMTConfidenceAnnotations(TextContainer tgtTu) {
+    public List<GenericAnnotation> retrieveITSMTConfidenceAnnotations(TextContainer tgtTu) {
         GenericAnnotations tgtAnns = tgtTu.getAnnotation(GenericAnnotations.class);
         List<GenericAnnotation> mtAnns = new LinkedList<GenericAnnotation>();
         if (tgtAnns != null) {

@@ -199,6 +199,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                 this.menuSaveAs.setEnabled(true);
             } catch (FileNotFoundException ex) {
                 LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
+            } catch (Exception e) {
+                String errorMsg = "Failed opening XLIFF File '"+sourceFile.getName()+"'";
+                LOG.error(errorMsg, e);
+                alertUser("XLIFF Parsing Error", errorMsg+" - "+e.getMessage());
             }
         }
     }
@@ -232,6 +236,10 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             LOG.error(ex);
         }
         return false;
+    }
+
+    private void alertUser(String windowTitle, String message) {
+        JOptionPane.showMessageDialog(mainframe, message, windowTitle, JOptionPane.ERROR_MESSAGE);
     }
 
     private void initializeMenuBar() {

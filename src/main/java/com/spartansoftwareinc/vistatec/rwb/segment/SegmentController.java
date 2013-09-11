@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * Class for handling events related to segments, such as parsing/updating the
@@ -111,11 +112,17 @@ public class SegmentController {
     }
 
     public void parseXLIFFFile(File xliffFile) throws FileNotFoundException {
+        XLIFFParser newParser = new XLIFFParser();
+        List<Segment> segments = newParser.parseXLIFFFile(new FileInputStream(xliffFile));
+
         segmentView.clearTable();
         getSegmentTableModel().deleteSegments();
+        xliffParser = newParser;
+        for (Segment seg : segments) {
+            seg.setSegmentListener(this);
+            addSegment(seg);
+        }
 
-        xliffParser = new XLIFFParser(this);
-        xliffParser.parseXLIFFFile(new FileInputStream(xliffFile), segmentModel);
         setOpenFile(true);
         setHTML(false);
         segmentWriter = new XLIFFWriter(xliffParser);
@@ -123,12 +130,18 @@ public class SegmentController {
     }
 
     public void parseHTML5Files(File srcHTMLFile, File tgtHTMLFile) throws FileNotFoundException {
+        HTML5Parser newParser = new HTML5Parser();
+        List<Segment> segments = newParser.parseHTML5Files(new FileInputStream(srcHTMLFile),
+                new FileInputStream(tgtHTMLFile));
+
         segmentView.clearTable();
         getSegmentTableModel().deleteSegments();
+        html5Parser = newParser;
+        for (Segment seg : segments) {
+            seg.setSegmentListener(this);
+            addSegment(seg);
+        }
 
-        html5Parser = new HTML5Parser(this);
-        html5Parser.parseHTML5Files(new FileInputStream(srcHTMLFile),
-                new FileInputStream(tgtHTMLFile));
         setOpenFile(true);
         setHTML(true);
         segmentWriter = new HTML5Writer(html5Parser);
@@ -137,6 +150,12 @@ public class SegmentController {
 
     public void addSegment(Segment seg) {
         getSegmentTableModel().addSegment(seg);
+        for (LanguageQualityIssue lqi : seg.getLQI()) {
+            notifyAddedLQI(lqi, seg);
+        }
+        for (Provenance prov : seg.getProv()) {
+            notifyAddedProv(prov);
+        }
     }
 
     public void updateSegment(Segment seg) {

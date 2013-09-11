@@ -3,7 +3,6 @@ package com.spartansoftwareinc.vistatec.rwb.segment.okapi;
 import com.spartansoftwareinc.vistatec.rwb.its.LanguageQualityIssue;
 import com.spartansoftwareinc.vistatec.rwb.its.Provenance;
 import com.spartansoftwareinc.vistatec.rwb.segment.Segment;
-import com.spartansoftwareinc.vistatec.rwb.segment.SegmentController;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,12 +30,9 @@ public class HTML5Parser {
     private Logger LOG = LoggerFactory.getLogger(HTML5Parser.class);
     private LinkedList<Event> srcEvents, tgtEvents;
     private int documentSegmentNum;
-    private SegmentController segmentController;
     private String sourceLang, targetLang;
 
-    public HTML5Parser(SegmentController segController) {
-        this.segmentController = segController;
-    }
+    public HTML5Parser() {}
 
     public String getSourceLang() {
         return this.sourceLang;
@@ -70,9 +66,10 @@ public class HTML5Parser {
         return this.tgtEvents;
     }
 
-    public void parseHTML5Files(InputStream src, InputStream tgt) {
+    public List<Segment> parseHTML5Files(InputStream src, InputStream tgt) {
         srcEvents = new LinkedList<Event>();
         tgtEvents = new LinkedList<Event>();
+        List<Segment> segments = new LinkedList<Segment>();
         documentSegmentNum = 1;
 
         // TODO: Actually get the locale
@@ -95,7 +92,7 @@ public class HTML5Parser {
                 srcTu = (ITextUnit) srcEvent.getResource();
                 tgtTu = (ITextUnit) tgtEvent.getResource();
 
-                convertTextUnitToSegment(srcTu, tgtTu, srcEventNum, tgtEventNum);
+                segments.add(convertTextUnitToSegment(srcTu, tgtTu, srcEventNum, tgtEventNum));
             }
             srcEvents.add(srcEvent);
             tgtEvents.add(tgtEvent);
@@ -113,9 +110,10 @@ public class HTML5Parser {
                 tgtEventNum++;
             }
         }
+        return segments;
     }
 
-    public void convertTextUnitToSegment(ITextUnit srcTu, ITextUnit tgtTu, int srcEventNum, int tgtEventNum) {
+    public Segment convertTextUnitToSegment(ITextUnit srcTu, ITextUnit tgtTu, int srcEventNum, int tgtEventNum) {
         TextContainer srcTc = srcTu.getSource();
         TextContainer tgtTc = tgtTu.getSource();
 
@@ -131,18 +129,18 @@ public class HTML5Parser {
             anns.addAll(tgtITSTags.getAnnotations(GenericAnnotationType.PROV));
         }
 
-        addSegment(srcTc, tgtTc, anns, srcEventNum, tgtEventNum, "N/A", "N/A");
+        return addSegment(srcTc, tgtTc, anns, srcEventNum, tgtEventNum, "N/A", "N/A");
     }
 
-    public void addSegment(TextContainer sourceText, TextContainer targetText,
+    public Segment addSegment(TextContainer sourceText, TextContainer targetText,
             List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum,
             String fileOri, String transUnitId) {
         Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
-                sourceText, targetText, null, segmentController);
+                sourceText, targetText, null);
         seg.setFileOriginal(fileOri);
         seg.setTransUnitId(transUnitId);
         attachITSDataToSegment(seg, annotations);
-        segmentController.addSegment(seg);
+        return seg;
     }
 
     public void attachITSDataToSegment(Segment seg, List<GenericAnnotation> annotations) {
