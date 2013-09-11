@@ -36,6 +36,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import org.apache.log4j.Logger;
@@ -64,7 +65,6 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
     DetailView itsDetailView;
     SegmentView segmentView;
     SegmentController segmentController;
-    OpenXLIFFView openXLIFFView;
     OpenHTMLView openHTMLView;
 
     private JFileChooser saveFileChooser;
@@ -95,7 +95,6 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         add(mainSplitPane);
 
         openHTMLView = new OpenHTMLView(this, segmentController);
-        openXLIFFView = new OpenXLIFFView(this, segmentController);
 
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
     }
@@ -119,7 +118,7 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
             SwingUtilities.invokeLater(openHTMLView);
 
         } else if (e.getSource() == this.menuOpenXLIFF) {
-            SwingUtilities.invokeLater(openXLIFFView);
+            promptOpenXLIFFFile();
 
         } else if (e.getSource() == this.menuRules) {
             FilterView rules = new FilterView(segmentView.getRuleConfig());
@@ -179,6 +178,27 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void promptOpenXLIFFFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("XLIFF 1.2 file", "xlf");
+        fileChooser.setFileFilter(fileFilter);
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            File sourceFile = fileChooser.getSelectedFile();
+            try {
+                segmentController.parseXLIFFFile(sourceFile);
+                this.openSrcFile = sourceFile;
+                this.setMainTitle(sourceFile.getName());
+
+                this.segmentView.getPluginManager().notifyOpenFile(sourceFile.getName());
+
+                this.menuSave.setEnabled(true);
+                this.menuSaveAs.setEnabled(true);
+            } catch (FileNotFoundException ex) {
+                LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
             }
         }
     }
