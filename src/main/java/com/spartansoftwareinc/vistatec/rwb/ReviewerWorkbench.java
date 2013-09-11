@@ -220,11 +220,11 @@ public class ReviewerWorkbench extends JPanel implements Runnable, ActionListene
         menuFile.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menuFile);
 
-        menuOpenHTML = new JMenuItem("Open HTML");
-        menuOpenHTML.addActionListener(this);
-        menuOpenHTML.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.CTRL_MASK));
-        menuFile.add(menuOpenHTML);
+//        menuOpenHTML = new JMenuItem("Open HTML");
+//        menuOpenHTML.addActionListener(this);
+//        menuOpenHTML.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.CTRL_MASK));
+//        menuFile.add(menuOpenHTML);
 
         menuOpenXLIFF = new JMenuItem("Open XLIFF");
         menuOpenXLIFF.addActionListener(this);

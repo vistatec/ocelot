@@ -22,7 +22,6 @@ public class SegmentAttributeView extends JTabbedPane {
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
-    protected SegmentAttributeTreeView treeView;
     private DetailView detailView;
 
     private Segment selectedSegment;
@@ -42,9 +41,6 @@ public class SegmentAttributeView extends JTabbedPane {
         itsTableView = new OtherITSTableView();
         addTab("Other ITS", itsTableView);
 
-        treeView = new SegmentAttributeTreeView(this);
-        addTab("Tree", treeView);
-
         // Deselect metadata to allow reselection for detail view after switching tabs.
         addChangeListener(new ChangeListener() {
             @Override
@@ -56,8 +52,6 @@ public class SegmentAttributeView extends JTabbedPane {
                     provTableView.deselectProv();
                 } else if (tab.equals(itsTableView)) {
                     itsTableView.clearTableSelection();
-                } else if (tab.equals(treeView)) {
-                    treeView.tree.clearSelection();
                 }
             }
         });
@@ -72,15 +66,11 @@ public class SegmentAttributeView extends JTabbedPane {
         lqiTableView.setSegment(seg);
         provTableView.setSegment(seg);
         itsTableView.setSegment(seg);
-        treeView.clearTree();
-        if (seg.containsLQI()) { treeView.loadLQI(seg.getLQI()); }
-        treeView.expandTree();
         detailView.setSegment(seg);
     }
 
     public void clearSegment() {
         this.selectedSegment = null;
-        treeView.clearTree();
         lqiTableView.clearSegment();
         provTableView.clearSegment();
         itsTableView.clearSegment();
