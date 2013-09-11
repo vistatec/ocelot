@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,16 @@ public class PluginManager {
         public void setPluginDir(File pluginDir) {
             this.pluginDir = pluginDir;
         }
-	
+
+        public Set<Plugin> getPlugins() {
+            Set<Plugin> plugins = new HashSet<Plugin>();
+            Set<? extends Plugin> itsPlugins = getITSPlugins();
+            Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
+            plugins.addAll(itsPlugins);
+            plugins.addAll(segmentPlugins);
+            return plugins;
+        }
+
 	/**
 	 * Get a list of available ITS plugin instances.
 	 */

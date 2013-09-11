@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PluginManagerView extends JPanel implements Runnable, ActionListener, ItemListener {
     private static Logger LOG = LoggerFactory.getLogger(PluginManagerView.class);
-    private JFrame frame;
-    private JButton selectPluginDir;
+    protected JFrame frame;
+    protected JButton selectPluginDir;
     protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
     protected SegmentController segmentController;
@@ -58,6 +58,10 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
     }
 
     public void initPlugins(Set<? extends Plugin> plugins) {
+        for (JCheckBox pluginBox : checkboxToPlugin.keySet()) {
+            remove(pluginBox);
+        }
+
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 2;
@@ -98,6 +102,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 try {
                     pluginManager.discover(fc.getSelectedFile());
+                    initPlugins(pluginManager.getPlugins());
                 } catch (IOException ex) {
                     LOG.warn("Plugin directory IOException", ex);
                     JOptionPane.showMessageDialog(frame, "Error reading specified plugin directory.");
