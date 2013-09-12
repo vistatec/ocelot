@@ -2,6 +2,10 @@ package com.spartansoftwareinc;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -57,31 +61,56 @@ public class SegmentView extends JScrollPane {
         setViewportView(sourceTargetTable);
     }
 
-    public void parseSegmentsFromFile() {
+    public void parseSegmentsFromFile() throws IOException {
         sourceTargetTable.clearSelection();
         clearSegments();
         attrView.clearTree();
         // TODO: Actually parse the file and retrieve segments/metadata.
-        int documentSegNum = 1;
-        Segment num1 = new Segment(documentSegNum++, "heat sink", "dissipateur de chaleur");
-        LanguageQualityIssue lqi = new LanguageQualityIssue();
-        lqi.setType("terminology");
-        lqi.setComment("testing");
-        num1.addLQI(lqi);
-        segments.addSegment(num1);
+        InputStream sampleEnglishDocStream =
+                SegmentView.class.getResourceAsStream("[EN]segmentPerLine.txt");
+        BufferedReader sampleEnglishDoc =
+                new BufferedReader(new InputStreamReader(sampleEnglishDocStream));
 
-        Segment num2 = new Segment(documentSegNum++, "heat sink", "dissipation thermique");
-        LanguageQualityIssue lqi2 = new LanguageQualityIssue();
-        lqi2.setType("mistranslation");
-        lqi2.setComment("testing");
-        num2.addLQI(lqi2);
-        segments.addSegment(num2);
+        InputStream sampleFrenchDocStream =
+                SegmentView.class.getResourceAsStream("[FR]segmentPerLine.txt");
+        BufferedReader sampleFrenchDoc =
+                new BufferedReader(new InputStreamReader(sampleFrenchDocStream));
+
+        int documentSegNum = 1;
+        String nextEnglishLine, nextFrenchLine;
+        while ((nextEnglishLine = sampleEnglishDoc.readLine()) != null
+                && (nextFrenchLine = sampleFrenchDoc.readLine()) != null) {
+            Segment seg = new Segment(documentSegNum++, nextEnglishLine, nextFrenchLine);
+            for (int i = 0; i < 5; i++) {
+                double addChance = Math.random();
+                if (addChance < 0.6) {
+                    seg.addLQI(generateRandomIssue());
+                }
+            }
+            segments.addSegment(seg);
+        }
+
 
         setViewportView(sourceTargetTable);
     }
 
     private void clearSegments() {
         segments.deleteSegments();
+    }
+
+    private LanguageQualityIssue generateRandomIssue() {
+        String[] types = {"terminology", "mistranslation", "omission",
+            "untranslated", "addition", "duplication", "inconsistency",
+            "grammar", "legal", "register", "locale-specific-content",
+            "locale-violation", "style", "characters", "misspelling",
+            "typographical", "formatting", "inconsistent-entities", "numbers",
+            "markup", "pattern-problem", "whitespace", "internationalization",
+            "length", "uncategorized", "other"};
+        LanguageQualityIssue lqi = new LanguageQualityIssue();
+        lqi.setType(types[(int) Math.floor(Math.random() * 26)]);
+        lqi.setComment("testing");
+        lqi.setSeverity((int) Math.round(Math.random() * 100));
+        return lqi;
     }
 
     class SegmentSelectionHandler implements ListSelectionListener {
