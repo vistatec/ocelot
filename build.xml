@@ -8,7 +8,7 @@
   <property name="test.classes.dir"   value="${build.dir}/test"/>
   <property name="javadoc.dir"        value="${basedir}/doc"/>
 
-  <property name="package" value="com/spartansoftwareinc"/>
+  <property name="package" value="com/spartansoftwareinc/vistatec/rwb"/>
   <property name="ReviewerWorkbench.jar" value="${build.dir}/ReviewerWorkbench.jar" />
 
   <path id="project.class.path">
@@ -77,7 +77,7 @@
               <attribute name="Built-By" value="${user.name}"/>
               <attribute name="Git-Commit" value="${build.gitcommit}"/>
               <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-              <attribute name="Rsrc-Main-Class" value="com.spartansoftwareinc.ReviewerWorkbench"/>
+              <attribute name="Rsrc-Main-Class" value="com.spartansoftwareinc.vistatec.rwb.ReviewerWorkbench"/>
               <attribute name="Class-Path" value="."/>
               <attribute name="Rsrc-Class-Path" value="./ htmlparser-1.4.jar junit-4.7.jar log4j-1.2.17.jar okapi-core-0.22-SNAPSHOT.jar okapi-filter-its-0.22-SNAPSHOT.jar okapi-filter-xliff-0.22-SNAPSHOT.jar slf4j-api-1.7.2.jar slf4j-log4j12-1.7.2.jar"/>
           </manifest>
@@ -108,7 +108,7 @@
           notree="false"
           source="1.6"
           sourcepath="${src.dir}"
-          packagenames="com.spartansoftwareinc"
+          packagenames="com.spartansoftwareinc.vistatec.rwb"
           splitindex="true"
           use="true"
           version="true">
