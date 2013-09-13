@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.plugins.samples;
+package com.vistatec.ocelot.plugins.samples.segmentplugin;
 
 import com.vistatec.ocelot.plugins.SegmentPlugin;
 import com.vistatec.ocelot.segment.Segment;

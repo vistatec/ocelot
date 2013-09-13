@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.plugins.samples;
+package com.vistatec.ocelot.plugins.samples.itsplugin;
 
 import com.vistatec.ocelot.plugins.ITSPlugin;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
