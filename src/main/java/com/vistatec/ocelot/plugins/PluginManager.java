@@ -45,7 +45,7 @@ public class PluginManager {
 	public PluginManager() {
             this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
             this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
-            pluginDir = new File(System.getProperty("user.home"), ".reviewersWorkbench/plugins");
+            pluginDir = new File(System.getProperty("user.home"), ".ocelot/plugins");
 	}
 
         public File getPluginDir() {

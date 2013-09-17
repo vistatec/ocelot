@@ -69,7 +69,7 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
     
     public RuleConfiguration(RuleListener listener) {
         this.ruleListeners.add(listener);
-        rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
+        rwDir = new File(System.getProperty("user.home"), ".ocelot");
         rulesFile = new File(rwDir, "rules.properties");
 
         rules = new HashMap<String, RuleFilter>();

@@ -81,7 +81,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
 
     public final void readConfigFile() throws IOException {
         p = new Properties();
-        File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
+        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
         rwDir.mkdirs();
         provFile = new File(rwDir, "provenance.properties");
         if (provFile.exists()) {
@@ -100,7 +100,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         p.setProperty("revPerson", revPerson);
         p.setProperty("revOrganization", revOrg);
         p.setProperty("externalReference", extRef);
-        File rwDir = new File(System.getProperty("user.home"),".reviewersWorkbench");
+        File rwDir = new File(System.getProperty("user.home"),".ocelot");
         provFile = new File(rwDir, "provenance.properties");
         p.store(new FileOutputStream(provFile), null);
     }

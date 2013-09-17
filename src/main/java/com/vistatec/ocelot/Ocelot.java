@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
 public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
-    private static String APPNAME = "Reviewer's Workbench";
+    private static String APPNAME = "Ocelot";
     private static Logger LOG = Logger.getLogger(Ocelot.class);
     JFrame mainframe;
 

@@ -50,7 +50,7 @@ public class Matchers {
 	// 		[min]-[max]
 	// Bounds are inclusive.
 	public static class NumericMatcher implements DataCategoryField.Matcher {
-                private static Logger LOG = Logger.getLogger("com.spartansoftwareinc.Matchers.NumericMatcher");
+                private static Logger LOG = Logger.getLogger(NumericMatcher.class);
 		private double lowerBound = -1, upperBound = -1;
 
 		@Override

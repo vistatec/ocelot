@@ -239,7 +239,7 @@ public class XLIFFParser {
             Iterator<AltTranslation> iterAltTrans = altTrans.iterator();
             while (iterAltTrans.hasNext()) {
                 AltTranslation altTran = iterAltTrans.next();
-                // Check if alt-trans is RWB generated.
+                // Check if alt-trans is Ocelot generated.
                 XLIFFTool altTool = altTran.getTool();
                 if (altTool != null && altTool.getName().equals("Ocelot")) {
                     return altTran.getTarget();

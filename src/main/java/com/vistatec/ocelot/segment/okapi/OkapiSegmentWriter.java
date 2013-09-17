@@ -44,7 +44,7 @@ public abstract class OkapiSegmentWriter {
 
     public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
         Properties p = new Properties();
-        File rwDir = new File(System.getProperty("user.home"), ".reviewersWorkbench");
+        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
         File provFile = new File(rwDir, "provenance.properties");
         if (provFile.exists()) {
             try {
