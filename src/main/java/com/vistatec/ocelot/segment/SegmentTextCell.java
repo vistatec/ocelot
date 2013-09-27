@@ -25,7 +25,8 @@ import org.apache.log4j.Logger;
  */
 public class SegmentTextCell extends JTextPane {
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
-    public static String tagStyle = "tag", regularStyle = "regular";
+    public static String tagStyle = "tag", regularStyle = "regular",
+            insertStyle = "insert", deleteStyle = "delete";
     private TextContainer tc;
 
     public SegmentTextCell() {
@@ -53,6 +54,15 @@ public class SegmentTextCell extends JTextPane {
 
         Style s = styleDoc.addStyle(tagStyle, regular);
         StyleConstants.setBackground(s, Color.LIGHT_GRAY);
+
+        Style insert = styleDoc.addStyle(insertStyle, s);
+        StyleConstants.setForeground(insert, Color.BLUE);
+        StyleConstants.setUnderline(insert, true);
+
+        Style delete = styleDoc.addStyle(deleteStyle, insert);
+        StyleConstants.setForeground(delete, Color.RED);
+        StyleConstants.setStrikeThrough(delete, true);
+        StyleConstants.setUnderline(delete, false);
     }
 
     public void setTextPane(ArrayList<String> styledText) {
@@ -77,7 +87,7 @@ public class SegmentTextCell extends JTextPane {
                 char tfChar = tf.charAt(i);
                 if (TextFragment.isMarker(tfChar)) {
                     textToStyle.add(text.toString());
-                    textToStyle.add("regular");
+                    textToStyle.add(regularStyle);
                     text = new StringBuilder();
 
                     char codeMarker = tf.charAt(++i);
@@ -94,14 +104,14 @@ public class SegmentTextCell extends JTextPane {
                         tag = ""+tfChar+codeMarker;
                     }
                     textToStyle.add(tag);
-                    textToStyle.add("tag");
+                    textToStyle.add(tagStyle);
                 } else {
                     text.append(tfChar);
                 }
             }
             if (text.length() > 0) {
                 textToStyle.add(text.toString());
-                textToStyle.add("regular");
+                textToStyle.add(regularStyle);
             }
         }
         return textToStyle;
@@ -114,6 +124,10 @@ public class SegmentTextCell extends JTextPane {
     public final void setTextContainer(TextContainer tc, boolean raw) {
         this.tc = tc;
         setTextPane(styleTag(tc, raw));
+    }
+
+    public void setTargetDiff(ArrayList<String> targetDiff) {
+        setTextPane(targetDiff);
     }
 
     /**

@@ -1,10 +1,12 @@
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.editdistance.EditDistance;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -32,7 +34,7 @@ public class SegmentDetailView extends JScrollPane {
         table.setDefaultRenderer(String.class, new TextRenderer());
         TableColumnModel tableColumnModel = table.getColumnModel();
         tableColumnModel.getColumn(0).setMinWidth(15);
-        tableColumnModel.getColumn(0).setPreferredWidth(55);
+        tableColumnModel.getColumn(0).setPreferredWidth(60);
         tableColumnModel.getColumn(0).setMaxWidth(100);
         tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
 
@@ -70,9 +72,12 @@ public class SegmentDetailView extends JScrollPane {
 
         FontMetrics font = table.getFontMetrics(table.getFont());
         int rowHeight = font.getHeight();
-        for (int row = 0; row < table.getRowCount(); row++) {
+        for (int row = 0; row < DetailTableModel.SEGMENTROWS; row++) {
             SegmentTextCell segmentCell = new SegmentTextCell();
             segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+
+            rowHeight = getLabelRowHeight(tableModel.getValueAt(row, 0).toString(),
+                    table.getColumnModel().getColumn(0).getWidth(), row);
             for (int col = 1; col < 2; col++) {
                 int width = table.getColumnModel().getColumn(col).getWidth();
                 segmentCell.setTextContainer((TextContainer) tableModel.getValueAt(row, col), true);
@@ -82,12 +87,26 @@ public class SegmentDetailView extends JScrollPane {
             }
             table.setRowHeight(row, rowHeight);
         }
+        for (int row = DetailTableModel.SEGMENTROWS; row < table.getRowCount(); row++) {
+            String detailLabel = tableModel.getValueAt(row, 0).toString();
+            int width = table.getColumnModel().getColumn(0).getWidth();
+            table.setRowHeight(row, getLabelRowHeight(detailLabel, width, row));
+        }
         setViewportView(table);
     }
 
+    public int getLabelRowHeight(String label, int colWidth, int row) {
+        JTextPane jtp = new JTextPane();
+        jtp.setText(label);
+        // Need to set width to force text area to calculate a pref height
+        jtp.setSize(new Dimension(colWidth, table.getRowHeight(row)));
+        return jtp.getPreferredSize().height;
+    }
+
     public class DetailTableModel extends AbstractTableModel {
+        public static final int SEGMENTROWS = 3;
         private String[] column = {"Label", "Segments"};
-        private String[] rowName = {"Source:", "Target:", "Original Target:"};
+        private String[] rowName = {"Source:", "Target:", "Original Target:", "Edit Distance: "};
         private Segment segment;
 
         public void setSegment(Segment seg) {
@@ -96,7 +115,7 @@ public class SegmentDetailView extends JScrollPane {
         
         @Override
         public int getRowCount() {
-            return segment != null ? 3 : 0;
+            return segment != null ? 4 : 0;
         }
 
         @Override
@@ -127,6 +146,9 @@ public class SegmentDetailView extends JScrollPane {
                         case 2:
                             return col == 0 ? rowName[row] : segment.getOriginalTarget();
 
+                        case 3:
+                            return col == 0 ? rowName[row] : EditDistance.calcEditDistance(segment.getTarget(), segment.getOriginalTarget());
+
                         default:
                             LOG.warn("Invalid row for SegmentDetailView '"+row+"'");
                             break;
@@ -149,10 +171,15 @@ public class SegmentDetailView extends JScrollPane {
             SegmentTextCell renderTextPane = new SegmentTextCell();
             if (tableModel.getRowCount() > row) {
                 if (col > 0) {
-                    renderTextPane.setTextContainer((TextContainer) o, true);
-                    renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
-                    renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
-                    renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+                    if (row > 2) {
+                        Integer editDistance = (Integer) tableModel.getValueAt(row, col);
+                        renderTextPane.setText(editDistance.toString());
+                    } else {
+                        renderTextPane.setTextContainer((TextContainer) o, true);
+                        renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
+                        renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+                        renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+                    }
                 } else {
                     String s = (String)tableModel.getValueAt(row, col);
                     renderTextPane.setText(s);

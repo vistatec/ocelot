@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -55,9 +56,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     JFrame mainframe;
 
     JMenuBar menuBar;
-    JMenu menuFile, menuFilter, menuExtensions, menuHelp;
+    JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
     JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
             menuRules, menuProv, menuSave, menuSaveAs, menuITSPlugins, menuSegPlugins;
+    JCheckBoxMenuItem menuTgtDiff;
 
     JSplitPane mainSplitPane;
     JSplitPane segAttrSplitPane;
@@ -179,6 +181,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     }
                 }
             }
+        } else if (e.getSource() == this.menuTgtDiff) {
+            this.segmentController.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
         }
     }
 
@@ -284,6 +288,15 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuExit = new JMenuItem("Exit");
         menuExit.addActionListener(this);
         menuFile.add(menuExit);
+
+        menuView = new JMenu("View");
+        menuView.setMnemonic(KeyEvent.VK_V);
+        menuBar.add(menuView);
+
+        menuTgtDiff = new JCheckBoxMenuItem("Show Target Differences");
+        menuTgtDiff.addActionListener(this);
+        menuTgtDiff.setSelected(this.segmentController.enabledTargetDiff());
+        menuView.add(menuTgtDiff);
 
         menuFilter = new JMenu("Filter");
         menuFilter.setMnemonic(KeyEvent.VK_T);

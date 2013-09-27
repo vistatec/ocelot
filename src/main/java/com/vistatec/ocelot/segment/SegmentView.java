@@ -8,6 +8,7 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
+import com.vistatec.ocelot.segment.editdistance.EditDistance;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -17,6 +18,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EventObject;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
@@ -174,8 +176,18 @@ public class SegmentView extends JScrollPane implements RuleListener {
                     String text = segmentController.getSegment(row).getTarget().getCodedText();
                     segmentCell.setText(text);
                 } else if (col == 3) {
-                    String text = segmentController.getSegment(row).getOriginalTarget().getCodedText();
-                    segmentCell.setText(text);
+                    String text;
+                    if (segmentController.enabledTargetDiff()) {
+                        ArrayList<String> textDiff = segmentController.getSegment(row).getTargetDiff();
+                        StringBuilder displayText = new StringBuilder();
+                        for (int i = 0; i < textDiff.size(); i += 2) {
+                            displayText.append(textDiff.get(i));
+                        }
+                        text = displayText.toString();
+                    } else {
+                        text = segmentController.getSegment(row).getOriginalTarget().getCodedText();
+                    }
+                    segmentCell.setText(text.toString());
                 }
                 // Need to set width to force text area to calculate a pref height
                 segmentCell.setSize(new Dimension(width, sourceTargetTable.getRowHeight(row)));
@@ -275,10 +287,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 } else if (segmentController.getSegmentTargetColumnIndex() == col) {
                     tc = seg.getTarget();
                 } else if (segmentController.getSegmentTargetOriginalColumnIndex() == col) {
-                    tc = seg.getOriginalTarget();
+                    if (!segmentController.enabledTargetDiff()) {
+                        tc = seg.getOriginalTarget();
+                    }
                 }
                 if (tc != null) {
                     renderTextPane.setTextContainer(tc, false);
+                } else {
+                    renderTextPane.setTargetDiff(seg.getTargetDiff());
                 }
                 Color background = isSelected ?
                         seg.isEditablePhase() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY :
@@ -413,8 +429,11 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 if (!this.seg.hasOriginalTarget()) {
                     this.seg.setOriginalTarget(this.targetClone);
                 }
+                this.seg.setTargetDiff(EditDistance.styleTextDifferences(this.seg.getTarget(),
+                        this.seg.getOriginalTarget()));
                 segmentController.updateSegment(seg);
             }
+            attrView.setSelectedSegment(seg);
             reloadTable();
         }
 

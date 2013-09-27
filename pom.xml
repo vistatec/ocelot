@@ -17,6 +17,11 @@
   
   <repositories>
     <repository>
+      <id>diff_match_patch</id>
+      <name>GoogleDiffMatchPatch</name>
+      <url>http://google-diff-match-patch.googlecode.com/svn/trunk/maven</url>
+    </repository>
+    <repository>
       <id>okapi-release</id>
       <name>Okapi Release</name>
       <url>http://repository-okapi.forge.cloudbees.com/release/</url>
@@ -70,6 +75,12 @@
   		<artifactId>okapi-filter-xliff</artifactId>
   		<version>${okapi.version}</version>
    	</dependency>
+    <dependency>
+        <groupId>diff_match_patch</groupId>
+        <artifactId>diff_match_patch</artifactId>
+        <version>current</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 
   <build>

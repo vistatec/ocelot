@@ -25,7 +25,7 @@ public class SegmentController {
     private OkapiSegmentWriter segmentWriter;
     private XLIFFParser xliffParser;
     private HTML5Parser html5Parser;
-    private boolean openFile = false, isHTML;
+    private boolean openFile = false, isHTML, targetDiff = true;
 
     public SegmentController() {
         this.segmentModel = new SegmentTableModel(this);
@@ -41,6 +41,15 @@ public class SegmentController {
 
     public void setHTML(boolean isHTML) {
         this.isHTML = isHTML;
+    }
+
+    public boolean enabledTargetDiff() {
+        return this.targetDiff;
+    }
+
+    public void setEnabledTargetDiff(boolean enableTargetDiff) {
+        this.targetDiff = enableTargetDiff;
+        this.segmentView.reloadTable();
     }
 
     /**

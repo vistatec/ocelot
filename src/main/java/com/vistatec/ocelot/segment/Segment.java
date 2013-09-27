@@ -4,6 +4,7 @@ import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.segment.editdistance.EditDistance;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class Segment {
     private SegmentController segmentListener;
     private String fileOriginal, transUnitId;
     private TextContainer originalTarget;
+    private ArrayList<String> targetDiff = new ArrayList<String>();
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
             TextContainer source, TextContainer target, TextContainer originalTarget) {
@@ -35,6 +37,8 @@ public class Segment {
         if (originalTarget != null) {
             this.originalTarget = originalTarget;
             setOriginalTarget = true;
+
+            this.targetDiff = EditDistance.styleTextDifferences(target, originalTarget);
         } else {
             this.originalTarget = new TextContainer();
         }
@@ -84,6 +88,14 @@ public class Segment {
         if (segmentListener != null) {
             segmentListener.fireTableDataChanged();
         }
+    }
+
+    public ArrayList<String> getTargetDiff() {
+        return this.targetDiff;
+    }
+
+    public void setTargetDiff(ArrayList<String> targetDiff) {
+        this.targetDiff = targetDiff;
     }
 
     /**
