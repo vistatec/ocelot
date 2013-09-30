@@ -58,7 +58,9 @@ public class XLIFFWriter extends OkapiSegmentWriter {
             provAnns.setData(rwRef);
             textUnit.setAnnotation(provAnns);
 
-            updateOriginalTarget(seg, segController);
+            if (seg.hasOriginalTarget()) {
+                updateOriginalTarget(seg, segController);
+            }
         } else {
             LOG.error("Event associated with Segment was not an Okapi TextUnit!");
             LOG.error("Failed to update event for segment #"+seg.getSegmentNumber());
