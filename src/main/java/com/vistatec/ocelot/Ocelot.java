@@ -127,21 +127,21 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             promptOpenXLIFFFile();
 
         } else if (e.getSource() == this.menuRules) {
-            FilterView rules = new FilterView(segmentView.getRuleConfig());
+            FilterView rules = new FilterView(segmentView.getRuleConfig(), icon);
             SwingUtilities.invokeLater(rules);
 
         } else if (e.getSource() == this.menuITSPlugins) {
-            ITSPluginManagerView itsPlugins = new ITSPluginManagerView(segmentView.getPluginManager(), segmentController);
+            ITSPluginManagerView itsPlugins = new ITSPluginManagerView(segmentView.getPluginManager(), segmentController, icon);
             SwingUtilities.invokeLater(itsPlugins);
 
         } else if (e.getSource() == this.menuSegPlugins) {
-            SegmentPluginView segPlugins = new SegmentPluginView(segmentView.getPluginManager(), segmentController);
+            SegmentPluginView segPlugins = new SegmentPluginView(segmentView.getPluginManager(), segmentController, icon);
             SwingUtilities.invokeLater(segPlugins);
 
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView prov = null;
             try {
-                prov = new ProvenanceProfileView();
+                prov = new ProvenanceProfileView(icon);
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
             }
@@ -194,7 +194,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         JFileChooser fileChooser = new JFileChooser();
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("XLIFF 1.2 file", "xlf");
         fileChooser.setFileFilter(fileFilter);
-        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File sourceFile = fileChooser.getSelectedFile();
             try {
                 segmentController.parseXLIFFFile(sourceFile);

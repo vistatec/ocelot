@@ -2,6 +2,7 @@ package com.vistatec.ocelot.plugins;
 
 import com.vistatec.ocelot.segment.SegmentController;
 import java.awt.GridBagConstraints;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.JButton;
@@ -15,10 +16,11 @@ import org.slf4j.LoggerFactory;
  */
 public class ITSPluginManagerView extends PluginManagerView {
     private static Logger LOG = LoggerFactory.getLogger(ITSPluginManagerView.class);
+    private static Image icon;
     private JButton export;
 
-    public ITSPluginManagerView(PluginManager pluginManager, SegmentController segController) {
-        super(pluginManager, pluginManager.getITSPlugins(), segController);
+    public ITSPluginManagerView(PluginManager pluginManager, SegmentController segController, Image icon) {
+        super(pluginManager, pluginManager.getITSPlugins(), segController, icon);
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;

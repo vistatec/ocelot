@@ -3,6 +3,7 @@ package com.vistatec.ocelot.plugins;
 import com.vistatec.ocelot.segment.SegmentController;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -27,15 +28,17 @@ import org.slf4j.LoggerFactory;
 public class PluginManagerView extends JPanel implements Runnable, ActionListener, ItemListener {
     private static Logger LOG = LoggerFactory.getLogger(PluginManagerView.class);
     protected JFrame frame;
+    private static Image icon;
     protected JButton selectPluginDir;
     protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
     protected SegmentController segmentController;
 
-    public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController) {
+    public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController, Image icon) {
         super(new GridBagLayout());
         this.pluginManager = pluginManager;
         this.segmentController = segController;
+        this.icon = icon;
         checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -115,6 +118,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
     public void run() {
         frame = new JFrame("Plugin Manager");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setIconImage(icon);
 
         frame.getContentPane().add(this);
 

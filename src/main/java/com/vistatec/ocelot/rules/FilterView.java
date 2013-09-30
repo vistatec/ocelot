@@ -3,6 +3,7 @@ package com.vistatec.ocelot.rules;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 public class FilterView extends JPanel implements Runnable, ActionListener, ItemListener {
 
     private JFrame frame;
+    private static Image icon;
     RuleConfiguration filterRules;
     private String allString = "All Segments",
             metadataString = "All w/metadata",
@@ -30,9 +32,10 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
     private JRadioButton all, allWithMetadata, custom;
     private HashMap<String, JCheckBox> rules = new HashMap<String, JCheckBox>();
 
-    public FilterView(RuleConfiguration filterRules) {
+    public FilterView(RuleConfiguration filterRules, Image icon) {
         super(new GridBagLayout());
         this.filterRules = filterRules;
+        this.icon = icon;
         setBorder(new EmptyBorder(10,10,10,10));
 
         GridBagConstraints gridBag = new GridBagConstraints();
@@ -98,6 +101,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
     public void run() {
         frame = new JFrame("Filters");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setIconImage(icon);
 
         frame.getContentPane().add(this);
         frame.pack();

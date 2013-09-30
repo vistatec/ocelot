@@ -2,6 +2,7 @@ package com.vistatec.ocelot.its;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -22,14 +23,16 @@ import javax.swing.border.EmptyBorder;
  */
 public class ProvenanceProfileView extends JPanel implements Runnable, ActionListener {
     private JFrame frame;
+    private static Image icon;
     private JTextField inputRevPerson, inputRevOrg, inputExtRef;
     private JButton save;
     private String revPerson, revOrg, extRef;
     private Properties p;
     private File provFile;
 
-    public ProvenanceProfileView() throws IOException {
+    public ProvenanceProfileView(Image icon) throws IOException {
         super(new GridBagLayout());
+        this.icon = icon;
         setBorder(new EmptyBorder(10,10,10,10));
         parseConfig();
 
@@ -109,6 +112,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
     public void run() {
         frame = new JFrame("Credentials");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setIconImage(icon);
 
         frame.getContentPane().add(this);
         frame.pack();

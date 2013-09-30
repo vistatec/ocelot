@@ -1,6 +1,7 @@
 package com.vistatec.ocelot.plugins;
 
 import com.vistatec.ocelot.segment.SegmentController;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.JFileChooser;
@@ -13,9 +14,10 @@ import org.slf4j.LoggerFactory;
  */
 public class SegmentPluginView extends PluginManagerView {
     private Logger LOG = LoggerFactory.getLogger(SegmentPluginView.class);
+    private static Image icon;
 
-    public SegmentPluginView(PluginManager pluginManager, SegmentController segController) {
-        super(pluginManager, pluginManager.getSegmentPlugins(), segController);
+    public SegmentPluginView(PluginManager pluginManager, SegmentController segController, Image icon) {
+        super(pluginManager, pluginManager.getSegmentPlugins(), segController, icon);
     }
 
     @Override
