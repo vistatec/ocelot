@@ -14,7 +14,9 @@ import java.awt.BorderLayout;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.Image;
 import java.awt.KeyEventDispatcher;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -24,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -52,6 +55,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
     private static String APPNAME = "Ocelot";
+    private static Image icon;
     private static Logger LOG = Logger.getLogger(Ocelot.class);
     JFrame mainframe;
 
@@ -114,7 +118,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         if (e.getSource() == this.menuAbout) {
             JOptionPane.showMessageDialog(this, APPNAME+", version " + 
                     Version.PROJECT_VERSION + "-" + Version.SOURCE_VERSION, 
-                    "About", JOptionPane.INFORMATION_MESSAGE);
+                    "About", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(icon));
 
         } else if (e.getSource() == this.menuOpenHTML) {
             SwingUtilities.invokeLater(openHTMLView);
@@ -339,6 +343,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 // TODO: cleanup
             }
         });
+
+        Toolkit kit = Toolkit.getDefaultToolkit();
+        icon = kit.createImage(Ocelot.class.getResource("logo64.png"));
+        mainframe.setIconImage(icon);
 
         saveFileChooser = new JFileChooser() {
             @Override
