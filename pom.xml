@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.vistatec</groupId>
-  <artifactId>ocelot</artifactId>
+  <artifactId>Ocelot</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <okapi.version>0.23-SNAPSHOT</okapi.version>
+    <okapi.version>0.23</okapi.version>
   </properties>
   
   <repositories>
@@ -27,6 +27,7 @@
       <url>http://repository-okapi.forge.cloudbees.com/release/</url>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
       <id>mgorski</id>
