@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns:its="http://www.w3.org/2005/11/its" version="1.2">
+    <file source-language="en-US" target-language="fr-FR" original="none" datatype="plaintext">
+        <header>
+            <phase-group>
+                <phase phase-name="review" process-name="review"></phase>
+                <phase phase-name="final review" process-name="review"></phase>
+                <phase phase-name="rebuttal" process-name="review"></phase>
+                <phase phase-name="translator approval" process-name="review"></phase>
+                <phase phase-name="unknown" process-name="unknown"></phase>
+            </phase-group>
+            <tool tool-id="Ocelot" tool-name="Ocelot"></tool>
+        </header>
+        <body>
+
+            <!-- ITS Provenance on Trans-Unit -->
+            <trans-unit id="1" its:provenanceRecordsRef="#prov1">
+                <source>example source</source>
+                <target xml:lang="fr-fr">example target</target>
+            </trans-unit>
+
+            <!-- ITS Provenance on Trans-Unit, multiple provenance records -->
+            <trans-unit id="2" its:provenanceRecordsRef="#prov2">
+                <source>example source 2</source>
+                <target>example source 2</target>
+            </trans-unit>
+
+            <!-- ITS Language Quality Issue on Trans-Unit -->
+            <trans-unit id="3" its:locQualityIssuesRef="#lqi1">
+                <source>example source 3</source>
+                <target>example target 3</target>
+            </trans-unit>
+
+            <!-- ITS Language Quality Issue on Trans-Unit, multiple lqi records -->
+            <trans-unit id="4" its:locQualityIssuesRef="#lqi2">
+                <source>example source 4</source>
+                <target>example target 4</target>
+            </trans-unit>
+
+            <!-- Existing original target Alt-Trans -->
+            <trans-unit id="5">
+                <source>example source 5</source>
+                <target>example target 5</target>
+                <alt-trans tool-id="Ocelot">
+                    <target xml:lang="fr-fr">Original example target 5</target>
+                </alt-trans>
+            </trans-unit>
+
+            <!-- Unrelated Alt-Trans -->
+            <trans-unit id="6">
+                <source>example source 6</source>
+                <target>example target 6</target>
+                <alt-trans>
+                    <target xml:lang="fr-fr">Unrelated Alt-Trans</target>
+                </alt-trans>
+            </trans-unit>
+
+            <!-- Existing original target with other Alt-Trans -->
+            <trans-unit id="7">
+                <source>example source 7</source>
+                <target>example target 7</target>
+                <alt-trans>
+                    <target xml:lang="fr-fr">Unrelated Alt-Trans</target>
+                </alt-trans>
+                <alt-trans tool-id="Ocelot">
+                    <target xml:lang="fr-fr">Original example target 7</target>
+                </alt-trans>
+            </trans-unit>
+
+            <!-- Phase-name review, editable -->
+            <trans-unit id="8" phase-name="review">
+                <source>example source 8</source>
+                <target>example target 8</target>
+            </trans-unit>
+
+            <!-- Phase-name rebuttal, uneditable -->
+            <trans-unit id="9" phase-name="rebuttal">
+                <source>example source 9</source>
+                <target>example target 9</target>
+            </trans-unit>
+
+            <!-- Phase-name final review, editable -->
+            <trans-unit id="10" phase-name="final review">
+                <source>example source 10</source>
+                <target>example target 10</target>
+            </trans-unit>
+
+            <!-- Phase-name translator approval, uneditable -->
+            <trans-unit id="11" phase-name="translator approval">
+                <source>example source 11</source>
+                <target>example target 11</target>
+            </trans-unit>
+
+            <!-- Unhandled phase-name, editable -->
+            <trans-unit id="12" phase-name="unknown">
+                <source>example source 12</source>
+                <target>example target 12</target>
+            </trans-unit>
+
+            <!-- Missing phase element reference, editable -->
+            <trans-unit id="13" phase-name="ref missing">
+                <source>example source 13</source>
+                <target>example target 13</target>
+            </trans-unit>
+
+            <!-- MT Confidence -->
+            <trans-unit id="14">
+                <source>example source 14</source>
+                <target its:mtConfidence="0.85">example target 14</target>
+            </trans-unit>
+        </body>
+    </file>
+
+    <its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="lqi1">
+        <its:locQualityIssue locQualityIssueSeverity="70" locQualityIssueType="mistranslation" locQualityIssueComment="comment1"/>
+    </its:locQualityIssues>
+    <its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="lqi2">
+        <its:locQualityIssue locQualityIssueSeverity="70" locQualityIssueType="mistranslation" locQualityIssueComment="comment2"/>
+        <its:locQualityIssue locQualityIssueSeverity="100" locQualityIssueType="untranslated" locQualityIssueComment="comment2"/>
+    </its:locQualityIssues>
+    <its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="mrk">
+        <its:locQualityIssue locQualityIssueSeverity="100" locQualityIssueType="untranslated"/>
+    </its:locQualityIssues>
+    <its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="unused_lqi">
+        <its:locQualityIssue locQualityIssueSeverity="100" locQualityIssueType="non-conformance"/>
+    </its:locQualityIssues>
+
+
+    <its:provenanceRecords xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="prov1">
+        <its:provenanceRecord person="translator-1" org="VistaTEC" tool="Ocelot"
+                              revPerson="reviewer-1" revOrg="VistaTEC" revTool="Ocelot"/>
+    </its:provenanceRecords>
+    <its:provenanceRecords xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="prov2">
+        <its:provenanceRecord person="translator-2" org="VistaTEC" tool="Ocelot"/>
+        <its:provenanceRecord revPerson="reviewer-2" revOrg="VistaTEC" revTool="Ocelot"/>
+    </its:provenanceRecords>
+</xliff>
