@@ -147,7 +147,10 @@ public class SegmentDetailView extends JScrollPane {
                             return col == 0 ? rowName[row] : segment.getOriginalTarget();
 
                         case 3:
-                            return col == 0 ? rowName[row] : EditDistance.calcEditDistance(segment.getTarget(), segment.getOriginalTarget());
+                            if (col == 0) {
+                                return rowName[row];
+                            }
+                            return segment.hasOriginalTarget() ? EditDistance.calcEditDistance(segment.getTarget(), segment.getOriginalTarget()) : 0;
 
                         default:
                             LOG.warn("Invalid row for SegmentDetailView '"+row+"'");
@@ -176,14 +179,14 @@ public class SegmentDetailView extends JScrollPane {
                         renderTextPane.setText(editDistance.toString());
                     } else {
                         renderTextPane.setTextContainer((TextContainer) o, true);
-                        renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
-                        renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
-                        renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
                     }
                 } else {
                     String s = (String)tableModel.getValueAt(row, col);
                     renderTextPane.setText(s);
                 }
+                renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
+                renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());
+                renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
             }
 
             return renderTextPane;
