@@ -2,9 +2,15 @@ Ocelot
 ======
 Ocelot is an open source workbench for working with XLIFF files in a post-editing and language review environment. It implements the localization quality issue and provenance data categories from the proposed ITS 2.0 standard and utilizes the Okapi Framework for parsing XLIFF files.
 
+##Downloading and Running##
+A pre-compiled version of Ocelot is available from the [Okapi downloads
+page](https://code.google.com/p/okapi/downloads/list).  Ocelot is distributed
+as a JAR file that will run on any platform that has Java 1.6 or later
+installed.
+
 ##Requirements##
 * Java 1.6
-* Maven (for compiling)
+* Maven (for compiling only)
 
 ##Build##
 Ocelot uses Maven, so all dependencies should be resolved upon build (mvn package). The output jar file will located in the created target folder.
@@ -12,7 +18,7 @@ Ocelot uses Maven, so all dependencies should be resolved upon build (mvn packag
 Features
 ========
 ## Filter Rules ##
-Filter rules are used to selectively display segments that match enabled rules. The configuration is loaded from the rules.properties file, which is located under &lt;home directory&gt;/.ocelot (or can be created from scratch if it does not exist).
+Filter rules are used to selectively display segments that match enabled rules. The configuration is loaded from the <code>rules.properties</code> file, which is located under <code>&lt;home directory&gt;/.ocelot</code> (or can be created from scratch if it does not exist).
 
     Filter rules are in the format:
     <label>.<dataCategoryType> = <value>
