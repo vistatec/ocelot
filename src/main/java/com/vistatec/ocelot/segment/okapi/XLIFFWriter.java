@@ -82,7 +82,7 @@ public class XLIFFWriter extends OkapiSegmentWriter {
             updateITSLQIAnnotations(textUnit, seg, rwRef);
 
             ITSProvenanceAnnotations provAnns = addRWProvenance(seg);
-            textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
+            textUnit.setProperty(new Property(Property.ITS_PROV, " xmlns:its=\"http://www.w3.org/2005/11/its\" its:provenanceRecordsRef=\"#" + rwRef + "\""));
             provAnns.setData(rwRef);
             textUnit.setAnnotation(provAnns);
 
