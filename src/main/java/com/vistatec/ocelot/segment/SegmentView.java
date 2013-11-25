@@ -90,14 +90,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public SegmentView(SegmentAttributeView attr, SegmentController segController) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
         segmentController = segController;
+        ruleConfig = new RuleConfiguration(this);
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
-        ruleConfig = new RuleConfiguration(this);
         pluginManager = new PluginManager();
         pluginManager.discover(pluginManager.getPluginDir());
     }
 
-    public void initializeTable() {
+    public final void initializeTable() {
         sourceTargetTable = new JTable(segmentController.getSegmentTableModel());
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
@@ -154,6 +154,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
             public void columnSelectionChanged(ListSelectionEvent lse) {}
         });
 
+        addFilters();
+
         sourceTargetTable.addMouseListener(new SegmentPopupMenuListener());
         setViewportView(sourceTargetTable);
     }
@@ -192,36 +194,37 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         SegmentTextCell segmentCell = new SegmentTextCell();
         segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
-        for (int row = 0; row < sourceTargetTable.getRowCount(); row++) {
+        for (int viewRow = 0; viewRow < sort.getViewRowCount(); viewRow++) {
+            int modelRow = sort.convertRowIndexToModel(viewRow);
             FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
             int rowHeight = font.getHeight();
             for (int col = 1; col < 4; col++) {
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
-                    String text = segmentController.getSegment(row).getSource().getCodedText();
+                    String text = segmentController.getSegment(modelRow).getSource().getCodedText();
                     segmentCell.setText(text);
                 } else if (col == 2) {
-                    String text = segmentController.getSegment(row).getTarget().getCodedText();
+                    String text = segmentController.getSegment(modelRow).getTarget().getCodedText();
                     segmentCell.setText(text);
                 } else if (col == 3) {
                     String text;
                     if (segmentController.enabledTargetDiff()) {
-                        ArrayList<String> textDiff = segmentController.getSegment(row).getTargetDiff();
+                        ArrayList<String> textDiff = segmentController.getSegment(modelRow).getTargetDiff();
                         StringBuilder displayText = new StringBuilder();
                         for (int i = 0; i < textDiff.size(); i += 2) {
                             displayText.append(textDiff.get(i));
                         }
                         text = displayText.toString();
                     } else {
-                        text = segmentController.getSegment(row).getOriginalTarget().getCodedText();
+                        text = segmentController.getSegment(modelRow).getOriginalTarget().getCodedText();
                     }
                     segmentCell.setText(text.toString());
                 }
                 // Need to set width to force text area to calculate a pref height
-                segmentCell.setSize(new Dimension(width, sourceTargetTable.getRowHeight(row)));
+                segmentCell.setSize(new Dimension(width, sourceTargetTable.getRowHeight(viewRow)));
                 rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
             }
-            sourceTargetTable.setRowHeight(row, rowHeight);
+            sourceTargetTable.setRowHeight(viewRow, rowHeight);
         }
         setViewportView(sourceTargetTable);
     }
@@ -369,7 +372,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             Integer segNum = (Integer) obj;
-            Segment seg = segmentController.getSegment(row);
+            Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
             Color background = ruleConfig.getStateQualifierColor(seg);
             background = background != null ? background :
                     isSelected ?
