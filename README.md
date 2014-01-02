@@ -8,6 +8,10 @@ page](https://code.google.com/p/okapi/downloads/list).  Ocelot is distributed
 as a JAR file that will run on any platform that has Java 1.6 or later
 installed.
 
+##Reporting Issues##
+To report a bug or request an enhancement, please create an account 
+in the [Ocelot JIRA](https://ocelot.atlassian.net/browse/OC) and track all issues there.
+
 ##Requirements##
 * Java 1.6
 * Maven (for compiling only)
