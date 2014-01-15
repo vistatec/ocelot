@@ -52,7 +52,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -71,6 +73,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
@@ -103,9 +106,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     private JFileChooser saveFileChooser;
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
+    protected AppConfig config;
 
-    public Ocelot() throws IOException, InstantiationException, IllegalAccessException {
+    public Ocelot(AppConfig config) throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
+        this.config = config;
+
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
         itsDetailView.setPreferredSize(segAttrSize);
@@ -118,7 +124,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         Dimension segSize = new Dimension(500, 500);
         segmentController = new SegmentController();
-        segmentView = new SegmentView(segmentAttrView, segmentController);
+        segmentView = new SegmentView(segmentAttrView, segmentController, config);
         segmentView.setMinimumSize(segSize);
         segmentController.setSegmentView(segmentView);
 
@@ -417,6 +423,27 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else {
             PropertyConfigurator.configure(System.getProperty("log4j.configuration"));
         }
+
+        File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
+        ocelotDir.mkdirs();
+        File cfgFile = new File(ocelotDir, "ocelot_cfg.xml");
+        AppConfig appConfig = null;
+        try {
+            if (cfgFile.createNewFile()) {
+                OutputStreamWriter fileWriter = new OutputStreamWriter(
+                        new FileOutputStream(cfgFile));
+                fileWriter.write("<ocelot/>");
+                fileWriter.close();
+            }
+            appConfig = new AppConfig(cfgFile);
+
+        } catch (ConfigurationException ex) {
+            LOG.error("Failed to read "+cfgFile.getName(), ex);
+        } finally {
+            appConfig = appConfig == null ? new AppConfig() : appConfig;
+        }
+        Ocelot ocelot = new Ocelot(appConfig);
+
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 //            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -429,8 +456,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } catch (IllegalAccessException e) {
             System.err.println(e.getMessage());
         }
-        Ocelot r = new Ocelot();
-        SwingUtilities.invokeLater(r);
+        SwingUtilities.invokeLater(ocelot);
     }
 
     @Override

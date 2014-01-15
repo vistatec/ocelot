@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.AppConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.its.ITSMetadata;
@@ -87,13 +88,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
 
-    public SegmentView(SegmentAttributeView attr, SegmentController segController) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
+    public SegmentView(SegmentAttributeView attr, SegmentController segController,
+            AppConfig appConfig) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
         segmentController = segController;
         ruleConfig = new RuleConfiguration(this);
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
-        pluginManager = new PluginManager();
+        pluginManager = new PluginManager(appConfig);
         pluginManager.discover(pluginManager.getPluginDir());
     }
 

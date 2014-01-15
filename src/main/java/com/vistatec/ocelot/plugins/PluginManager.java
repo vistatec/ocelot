@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import com.vistatec.ocelot.AppConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
@@ -69,11 +70,13 @@ public class PluginManager {
         private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private ClassLoader classLoader;
         private File pluginDir;
+        protected AppConfig appConfig;
 	
-	public PluginManager() {
+	public PluginManager(AppConfig appConfig) {
             this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
             this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
             pluginDir = new File(System.getProperty("user.home"), ".ocelot/plugins");
+            this.appConfig = appConfig;
 	}
 
         public File getPluginDir() {
@@ -127,6 +130,7 @@ public class PluginManager {
                 SegmentPlugin segPlugin = (SegmentPlugin) plugin;
                 segPlugins.put(segPlugin, enabled);
             }
+            appConfig.savePluginEnabled(plugin, enabled);
         }
 
         /**
@@ -241,7 +245,7 @@ public class PluginManager {
 				@SuppressWarnings("unchecked")
 				Class<? extends ITSPlugin> c = (Class<ITSPlugin>)Class.forName(s, false, classLoader);
 				ITSPlugin plugin = c.newInstance();
-				itsPlugins.put(plugin, false);
+				itsPlugins.put(plugin, appConfig.wasPluginEnabled(plugin));
 			}
 			catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
@@ -257,7 +261,7 @@ public class PluginManager {
 				@SuppressWarnings("unchecked")
 				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>)Class.forName(s, false, classLoader);
 				SegmentPlugin plugin = c.newInstance();
-				segPlugins.put(plugin, false);
+				segPlugins.put(plugin, appConfig.wasPluginEnabled(plugin));
 			}
 			catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?

@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import com.vistatec.ocelot.AppConfig;
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class TestPluginManager {
         assertNotNull(url);
 
         File pluginDir = new File(url.toURI());
-        PluginManager pluginManager = new PluginManager();
+        PluginManager pluginManager = new PluginManager(new AppConfig());
         pluginManager.discover(pluginDir);
 
         Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
