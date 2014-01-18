@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.AppConfig;
+import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;

@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot;
 
+import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.plugins.ITSPluginManagerView;
 import com.vistatec.ocelot.plugins.SegmentPluginView;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -56,6 +57,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -73,7 +75,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
@@ -427,21 +428,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
         ocelotDir.mkdirs();
         File cfgFile = new File(ocelotDir, "ocelot_cfg.xml");
-        AppConfig appConfig = null;
-        try {
-            if (cfgFile.createNewFile()) {
-                OutputStreamWriter fileWriter = new OutputStreamWriter(
-                        new FileOutputStream(cfgFile));
-                fileWriter.write("<ocelot/>");
-                fileWriter.close();
-            }
-            appConfig = new AppConfig(cfgFile);
+        AppConfig appConfig = new AppConfig(cfgFile);
 
-        } catch (ConfigurationException ex) {
-            LOG.error("Failed to read "+cfgFile.getName(), ex);
-        } finally {
-            appConfig = appConfig == null ? new AppConfig() : appConfig;
-        }
         Ocelot ocelot = new Ocelot(appConfig);
 
         try {

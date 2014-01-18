@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.AppConfig;
+import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.its.ITSMetadata;
