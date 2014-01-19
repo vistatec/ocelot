@@ -99,13 +99,11 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
 
         export = new JButton("Export Data");
         export.addActionListener(this);
-        export.setEnabled(segController.openFile());
         gridBag.gridx = 2;
         gridBag.gridy = 0;
         gridBag.gridwidth = 2;
         add(export, gridBag);
-        // TODO: conditionally disable depending on the plugin set
-
+        
         JLabel title = new JLabel("Plugin Name");
         Font font = title.getFont().deriveFont(Font.BOLD, 14);
         title.setFont(font);
@@ -130,7 +128,20 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         initPlugins(plugins);
     }
 
+    /**
+     * Set the enabled state for the "Export Data" button.  This button is
+     * only enabled if there is an open file and at least one {@link ITSPlugin}
+     * is defined.
+     * @param segController
+     */
+    private void setExportEnabledState() {
+        export.setEnabled(segmentController.openFile() && 
+                          !pluginManager.getEnabledITSPlugins().isEmpty());
+    }
+
     public void initPlugins(Set<? extends Plugin> plugins) {
+        setExportEnabledState();
+
         for (JCheckBox pluginBox : checkboxToPlugin.keySet()) {
             remove(pluginBox);
         }
@@ -186,6 +197,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
             JCheckBox checkbox = (JCheckBox) source;
             pluginManager.setEnabled(checkboxToPlugin.get(checkbox),
                     e.getStateChange() == ItemEvent.SELECTED);
+            setExportEnabledState();
         }
     }
 

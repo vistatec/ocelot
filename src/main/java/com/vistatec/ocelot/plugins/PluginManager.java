@@ -134,6 +134,21 @@ public class PluginManager {
         }
 
         /**
+         * Return the set of all {@link ITSPlugin} that are
+         * currently enabled.
+         * @return set of enabled plugins
+         */
+        public Set<ITSPlugin> getEnabledITSPlugins() {
+            Set<ITSPlugin> enabled = new HashSet<ITSPlugin>();
+            for (ITSPlugin plugin : getITSPlugins()) {
+                if (isEnabled(plugin)) {
+                    enabled.add(plugin);
+                }
+            }
+            return enabled;
+        }
+        
+        /**
          * ITSPlugin handler for exporting LQI/Provenance metadata of segments.
          * @param sourceLang
          * @param targetLang
@@ -145,17 +160,15 @@ public class PluginManager {
                 Segment seg = segments.getSegment(row);
                 List<LanguageQualityIssue> lqi = seg.getLQI();
                 List<Provenance> prov = seg.getProv();
-                for (ITSPlugin plugin : getITSPlugins()) {
-                    if (isEnabled(plugin)) {
-                        try {
-                            plugin.sendLQIData(sourceLang, targetLang,
-                                    seg, lqi);
-                            plugin.sendProvData(sourceLang, targetLang,
-                                    seg, prov);
-                        } catch (Exception e) {
-                            LOG.error("ITS Plugin '"+plugin.getPluginName()
-                                    +"' threw an exception on ITS metadata export", e);
-                        }
+                for (ITSPlugin plugin : getEnabledITSPlugins()) {
+                    try {
+                        plugin.sendLQIData(sourceLang, targetLang,
+                                seg, lqi);
+                        plugin.sendProvData(sourceLang, targetLang,
+                                seg, prov);
+                    } catch (Exception e) {
+                        LOG.error("ITS Plugin '"+plugin.getPluginName()
+                                +"' threw an exception on ITS metadata export", e);
                     }
                 }
             }
