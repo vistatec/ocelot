@@ -54,13 +54,20 @@ import org.slf4j.LoggerFactory;
  * View for managing active plugins.
  */
 public class PluginManagerView extends JPanel implements Runnable, ActionListener, ItemListener {
+    private static final long serialVersionUID = 1L;
+
     private static Logger LOG = LoggerFactory.getLogger(PluginManagerView.class);
     protected JFrame frame;
-    private static Image icon;
+    private Image icon;
     protected JButton selectPluginDir;
     protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
     protected SegmentController segmentController;
+    private JButton export;
+    
+    public PluginManagerView(PluginManager pluginManager, SegmentController segController, Image icon) {
+        this(pluginManager, pluginManager.getPlugins(), segController, icon);
+    }
 
     public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController, Image icon) {
         super(new GridBagLayout());
@@ -78,6 +85,14 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         gridBag.gridx = 0;
         gridBag.gridy = 0;
         add(selectPluginDir, gridBag);
+
+        export = new JButton("Export Data");
+        export.addActionListener(this);
+        export.setEnabled(segController.openFile());
+        gridBag.gridx = 1;
+        gridBag.gridy = 0;
+        add(export, gridBag);
+        // TODO: conditionally disable depending on the plugin set
 
         JLabel title = new JLabel("Available Plugins:");
         title.setBorder(new EmptyBorder(10,0,0,0));
@@ -126,7 +141,12 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        if (ae.getSource() == selectPluginDir) {
+        if (ae.getSource() == export) {
+            pluginManager.exportData(segmentController.getFileSourceLang(),
+                    segmentController.getFileTargetLang(),
+                    segmentController.getSegmentTableModel());
+        }
+        else if (ae.getSource() == selectPluginDir) {
             JFileChooser fc = new JFileChooser();
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int returnVal = fc.showOpenDialog(this);
@@ -134,6 +154,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
                 try {
                     pluginManager.discover(fc.getSelectedFile());
                     initPlugins(pluginManager.getPlugins());
+                    revalidate();
                 } catch (IOException ex) {
                     LOG.warn("Plugin directory IOException", ex);
                     JOptionPane.showMessageDialog(frame, "Error reading specified plugin directory.");
