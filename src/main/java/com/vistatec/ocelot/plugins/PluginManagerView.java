@@ -30,7 +30,7 @@ package com.vistatec.ocelot.plugins;
 
 import com.vistatec.ocelot.segment.SegmentController;
 
-import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -98,7 +97,6 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         gridBag.gridwidth = 2;
         add(selectPluginDir, gridBag);
 
-        // XXX Where did this go?
         export = new JButton("Export Data");
         export.addActionListener(this);
         export.setEnabled(segController.openFile());
@@ -109,18 +107,22 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         // TODO: conditionally disable depending on the plugin set
 
         JLabel title = new JLabel("Plugin Name");
+        Font font = title.getFont().deriveFont(Font.BOLD, 14);
+        title.setFont(font);
         title.setBorder(new EmptyBorder(0,0,0,0)); // first dimension was originally 10
         gridBag.gridx = 0;
         gridBag.gridy = 1;
         gridBag.gridwidth = 2;
         add(title, gridBag);
         JLabel title2 = new JLabel("Type");
-        title.setBorder(new EmptyBorder(0,0,0,0));
+        title2.setFont(font);
+        title2.setBorder(new EmptyBorder(0,0,0,0));
         gridBag.gridx = 2;
         gridBag.gridwidth = 1;
         add(title2, gridBag);
         JLabel title3 = new JLabel("Version");
-        title.setBorder(new EmptyBorder(0,0,0,0));
+        title3.setFont(font);
+        title3.setBorder(new EmptyBorder(0,0,0,0));
         gridBag.gridx = 3;
         gridBag.gridwidth = 1;
         add(title3, gridBag);
@@ -147,6 +149,8 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
     
     void addPluginRow(int gridy, Plugin plugin) {
         JCheckBox pluginBox = new JCheckBox(plugin.getPluginName());
+        Font font = pluginBox.getFont().deriveFont(Font.PLAIN);
+        pluginBox.setFont(font);
         pluginBox.setSelected(pluginManager.isEnabled(plugin));
         pluginBox.addItemListener(this);
         pluginBox.setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -159,11 +163,13 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         gridBag.gridx = 2;
         gridBag.gridwidth = 1;
         typeLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        typeLabel.setFont(font);
         add(typeLabel, gridBag);
         JLabel pluginLabel = new JLabel(plugin.getPluginVersion());
         gridBag.gridx = 3;
         gridBag.gridwidth = 1;
         pluginLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        pluginLabel.setFont(font);
         add(pluginLabel, gridBag);
     }
     
