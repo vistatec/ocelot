@@ -107,10 +107,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JFileChooser saveFileChooser;
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
     protected AppConfig config;
+    private String platformOS;
 
     public Ocelot(AppConfig config) throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.config = config;
+        
+        platformOS = System.getProperty("os.name");
+        String arch = System.getProperty("os.arch");
 
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
@@ -295,14 +299,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuOpenXLIFF = new JMenuItem("Open XLIFF");
         menuOpenXLIFF.addActionListener(this);
         menuOpenXLIFF.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, getPlatformKeyMask()));
         menuFile.add(menuOpenXLIFF);
 
         menuSave = new JMenuItem("Save");
         menuSave.setEnabled(false);
         menuSave.addActionListener(this);
         menuSave.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, getPlatformKeyMask()));
         menuFile.add(menuSave);
 
         menuSaveAs = new JMenuItem("Save As...");
@@ -310,13 +314,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuSaveAs.addActionListener(this);
         menuSaveAs.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                Event.SHIFT_MASK | Event.CTRL_MASK));
+                Event.SHIFT_MASK | getPlatformKeyMask()));
         menuFile.add(menuSaveAs);
 
         menuProv = new JMenuItem("Profile");
         menuProv.addActionListener(this);
         menuProv.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, getPlatformKeyMask()));
         menuFile.add(menuProv);
 
         menuExit = new JMenuItem("Exit");
@@ -339,7 +343,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuRules = new JMenuItem("Rules");
         menuRules.addActionListener(this);
         menuRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, getPlatformKeyMask()));
         menuFilter.add(menuRules);
 
         menuExtensions = new JMenu("Extensions");
@@ -360,6 +364,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setJMenuBar(menuBar);
     }
 
+    private int getPlatformKeyMask() {
+        return isMac() ? KeyEvent.META_DOWN_MASK : Event.CTRL_MASK;
+    }
+    
+    boolean isMac() {
+        return (platformOS.startsWith("Mac"));
+    }
+    
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);
