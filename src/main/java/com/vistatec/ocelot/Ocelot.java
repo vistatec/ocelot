@@ -29,8 +29,7 @@
 package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.config.AppConfig;
-import com.vistatec.ocelot.plugins.ITSPluginManagerView;
-import com.vistatec.ocelot.plugins.SegmentPluginView;
+import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
@@ -39,6 +38,7 @@ import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentView;
+
 import java.awt.BorderLayout;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
@@ -53,11 +53,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -75,6 +72,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
@@ -94,7 +92,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     JMenuBar menuBar;
     JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
     JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
-            menuRules, menuProv, menuSave, menuSaveAs, menuITSPlugins, menuSegPlugins;
+            menuRules, menuProv, menuSave, menuSaveAs;
+    JMenuItem menuPlugins;
     JCheckBoxMenuItem menuTgtDiff;
 
     JSplitPane mainSplitPane;
@@ -108,10 +107,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JFileChooser saveFileChooser;
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
     protected AppConfig config;
+    private String platformOS;
 
     public Ocelot(AppConfig config) throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.config = config;
+        
+        platformOS = System.getProperty("os.name");
+        String arch = System.getProperty("os.arch");
 
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
@@ -165,13 +168,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             FilterView rules = new FilterView(segmentView.getRuleConfig(), icon);
             SwingUtilities.invokeLater(rules);
 
-        } else if (e.getSource() == this.menuITSPlugins) {
-            ITSPluginManagerView itsPlugins = new ITSPluginManagerView(segmentView.getPluginManager(), segmentController, icon);
-            SwingUtilities.invokeLater(itsPlugins);
-
-        } else if (e.getSource() == this.menuSegPlugins) {
-            SegmentPluginView segPlugins = new SegmentPluginView(segmentView.getPluginManager(), segmentController, icon);
-            SwingUtilities.invokeLater(segPlugins);
+        } else if (e.getSource() == this.menuPlugins) {
+            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager(), segmentController, icon);
+            SwingUtilities.invokeLater(plugins);
 
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView prov = null;
@@ -300,14 +299,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuOpenXLIFF = new JMenuItem("Open XLIFF");
         menuOpenXLIFF.addActionListener(this);
         menuOpenXLIFF.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, getPlatformKeyMask()));
         menuFile.add(menuOpenXLIFF);
 
         menuSave = new JMenuItem("Save");
         menuSave.setEnabled(false);
         menuSave.addActionListener(this);
         menuSave.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, getPlatformKeyMask()));
         menuFile.add(menuSave);
 
         menuSaveAs = new JMenuItem("Save As...");
@@ -315,13 +314,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuSaveAs.addActionListener(this);
         menuSaveAs.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                Event.SHIFT_MASK | Event.CTRL_MASK));
+                Event.SHIFT_MASK | getPlatformKeyMask()));
         menuFile.add(menuSaveAs);
 
         menuProv = new JMenuItem("Profile");
         menuProv.addActionListener(this);
         menuProv.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_P, getPlatformKeyMask()));
         menuFile.add(menuProv);
 
         menuExit = new JMenuItem("Exit");
@@ -344,19 +343,15 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuRules = new JMenuItem("Rules");
         menuRules.addActionListener(this);
         menuRules.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_R, Event.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, getPlatformKeyMask()));
         menuFilter.add(menuRules);
 
         menuExtensions = new JMenu("Extensions");
         menuBar.add(menuExtensions);
 
-        menuITSPlugins = new JMenuItem("ITS Plugins");
-        menuITSPlugins.addActionListener(this);
-        menuExtensions.add(menuITSPlugins);
-
-        menuSegPlugins = new JMenuItem("Segment Plugins");
-        menuSegPlugins.addActionListener(this);
-        menuExtensions.add(menuSegPlugins);
+        menuPlugins = new JMenuItem("Plugins");
+        menuPlugins.addActionListener(this);
+        menuExtensions.add(menuPlugins);
 
         menuHelp = new JMenu("Help");
         menuHelp.setMnemonic(KeyEvent.VK_H);
@@ -369,6 +364,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setJMenuBar(menuBar);
     }
 
+    private int getPlatformKeyMask() {
+        return isMac() ? KeyEvent.META_DOWN_MASK : Event.CTRL_MASK;
+    }
+    
+    boolean isMac() {
+        return (platformOS.startsWith("Mac"));
+    }
+    
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);

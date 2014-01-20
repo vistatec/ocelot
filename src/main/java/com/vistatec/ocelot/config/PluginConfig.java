@@ -30,27 +30,33 @@ package com.vistatec.ocelot.config;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import com.vistatec.ocelot.plugins.Plugin;
+
 /**
  * Plugin configuration XML element.
  */
 public class PluginConfig {
-    protected String name;
+    protected String className;
     protected boolean enabled;
 
     public PluginConfig() {}
 
-    public PluginConfig(String pluginName, boolean enabled) {
-        this.name = pluginName;
+    public PluginConfig(Plugin plugin, boolean enabled) {
+        this.className = plugin.getClass().getName();
         this.enabled = enabled;
+    }
+    
+    public boolean matches(Plugin plugin) {
+        return className.equals(plugin.getClass().getName());
     }
 
     @XmlElement
-    public String getName() {
-        return this.name;
+    public String getClassName() {
+        return this.className;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     @XmlElement
