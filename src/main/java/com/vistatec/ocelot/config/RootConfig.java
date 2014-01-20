@@ -54,12 +54,12 @@ public class RootConfig {
     public PluginConfig findPluginConfig(Plugin plugin) {
         PluginConfig foundPluginConfig = null;
         for (PluginConfig pcfg : plugins) {
-            if (pcfg.name.equals(plugin.getPluginName())) {
+            if (pcfg.matches(plugin)) {
                 foundPluginConfig = pcfg;
             }
         }
         if (foundPluginConfig == null) {
-            foundPluginConfig = new PluginConfig(plugin.getPluginName(), false);
+            foundPluginConfig = new PluginConfig(plugin, false);
             addPluginConfig(foundPluginConfig);
         }
         return foundPluginConfig;
