@@ -1,0 +1,21 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+      <groupId>com.vistatec</groupId>
+      <artifactId>build-ocelot</artifactId>
+      <version>1.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>com.vistatec.ocelot.plugins.samples</groupId>
+  <artifactId>build-sample-plugins</artifactId>
+  <packaging>pom</packaging>
+  <name>Ocelot Sample Plugins Build</name>
+
+  <modules>
+    <module>ITSPlugin</module>
+    <module>SegmentPlugin</module>
+  </modules>
+
+</project>
