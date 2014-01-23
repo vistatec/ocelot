@@ -367,7 +367,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private int getPlatformKeyMask() {
         return isMac() ? KeyEvent.META_DOWN_MASK : Event.CTRL_MASK;
     }
-    
+
+    private boolean isPlatformKeyDown(KeyEvent ke) {
+        return isMac() ? ke.isMetaDown() : ke.isControlDown();
+    }
+
     boolean isMac() {
         return (platformOS.startsWith("Mac"));
     }
@@ -453,7 +457,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     @Override
     public boolean dispatchKeyEvent(KeyEvent ke) {
         if (ke.getID() == KeyEvent.KEY_PRESSED) {
-            if (ke.isControlDown() && (ke.getKeyCode() >= KeyEvent.VK_0
+            if (isPlatformKeyDown(ke) && (ke.getKeyCode() >= KeyEvent.VK_0
                     && ke.getKeyCode() <= KeyEvent.VK_9)) {
                 Segment seg = segmentView.getSelectedSegment();
                 LanguageQualityIssue lqi = segmentView.getRuleConfig().getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
@@ -461,15 +465,15 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     seg.addNewLQI(lqi);
                 }
 
-            } else if (ke.isControlDown() && ke.isShiftDown()
+            } else if (isPlatformKeyDown(ke) && ke.isShiftDown()
                     && ke.getKeyCode() == KeyEvent.VK_TAB) {
                 segmentAttrView.focusNextTab();
 
-            } else if (ke.isControlDown() && !ke.isShiftDown()
+            } else if (isPlatformKeyDown(ke) && !ke.isShiftDown()
                     && ke.getKeyCode() == KeyEvent.VK_TAB) {
                 segmentView.requestFocusTable();
 
-            } else if (ke.isControlDown() && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
+            } else if (isPlatformKeyDown(ke) && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
                 if (segmentView.getSelectedSegment() != null) {
                     NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView();
                     addLQIView.setSegment(segmentAttrView.getSelectedSegment());
