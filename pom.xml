@@ -62,20 +62,20 @@
         <version>1.9.13</version>
     </dependency>
     <dependency>
-  		<groupId>net.sf.okapi</groupId>
-  		<artifactId>okapi-core</artifactId>
-  		<version>${okapi.version}</version>
-   	</dependency>
+        <groupId>net.sf.okapi</groupId>
+        <artifactId>okapi-core</artifactId>
+        <version>${okapi.version}</version>
+    </dependency>
     <dependency>
-  		<groupId>net.sf.okapi.filters</groupId>
-  		<artifactId>okapi-filter-its</artifactId>
-  		<version>${okapi.version}</version>
-   	</dependency>
+        <groupId>net.sf.okapi.filters</groupId>
+        <artifactId>okapi-filter-its</artifactId>
+        <version>${okapi.version}</version>
+    </dependency>
     <dependency>
-  		<groupId>net.sf.okapi.filters</groupId>
-  		<artifactId>okapi-filter-xliff</artifactId>
-  		<version>${okapi.version}</version>
-   	</dependency>
+        <groupId>net.sf.okapi.filters</groupId>
+        <artifactId>okapi-filter-xliff</artifactId>
+        <version>${okapi.version}</version>
+    </dependency>
     <dependency>
         <groupId>diff_match_patch</groupId>
         <artifactId>diff_match_patch</artifactId>
@@ -139,9 +139,50 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>      
+      </plugin>
+      <plugin>
+          <groupId>com.akathist.maven.plugins.launch4j</groupId>
+          <artifactId>launch4j-maven-plugin</artifactId>
+          <version>1.5.2</version>
+          <executions>
+              <execution>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>launch4j</goal>
+                  </goals>
+                  <configuration>
+                      <headerType>gui</headerType>
+                      <outfile>target/${project.artifactId}-${project.version}.exe</outfile>
+                      <jar>target/${project.artifactId}-${project.version}.jar</jar>
+                      <errTitle>Application Error</errTitle>
+                      <icon>src/main/resources/com/vistatec/ocelot/logo.ico</icon>
+                      <jre>
+                          <minVersion>1.6.0</minVersion>
+                      </jre>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin>
+      <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>osxappbundle-maven-plugin</artifactId>
+          <version>1.0-alpha-2</version>
+          <configuration>
+              <mainClass>com.vistatec.ocelot.Ocelot</mainClass>
+              <iconFile>src/main/resources/com/vistatec/ocelot/mac.icns</iconFile>
+          </configuration>
+          <executions>
+              <execution>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>bundle</goal>
+                  </goals>
+              </execution>
+          </executions>
+      </plugin>
     </plugins>
-        <pluginManagement>
+
+    <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
