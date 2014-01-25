@@ -32,12 +32,14 @@ import com.vistatec.ocelot.rules.Matchers;
 import com.vistatec.ocelot.rules.RuleMatcher;
 import com.vistatec.ocelot.rules.RuleFilter;
 import com.vistatec.ocelot.rules.DataCategoryField;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.*;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.Segment;
 
@@ -45,6 +47,22 @@ import static org.junit.Assert.*;
 
 public class TestRules {
 
+    @Test
+    public void testMtConfidence() throws Exception {
+        List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
+        // Look for MT confidence of 75 and below
+        ruleMatchers.add(new RuleMatcher(DataCategoryField.MT_CONFIDENCE, numericMatcher(0, 75)));
+        RuleFilter filter = new RuleFilter(ruleMatchers);
+        
+        Segment segment = new Segment(1, 1, 1, null, null, null);
+        segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50)));
+        assertTrue(filter.matches(segment));
+        
+        segment = new Segment(1, 1, 1, null, null, null);
+        segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(80)));
+        assertFalse(filter.matches(segment));
+    }
+    
 	@Test
 	public void testLQIMatching() throws Exception {
 		List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
