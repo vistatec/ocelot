@@ -34,12 +34,17 @@ import com.vistatec.ocelot.rules.RuleFilter;
 import com.vistatec.ocelot.rules.DataCategoryField;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import net.sf.okapi.common.annotation.GenericAnnotation;
+import net.sf.okapi.common.annotation.GenericAnnotationType;
 
 import org.junit.*;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
+import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.Segment;
 
@@ -118,7 +123,128 @@ public class TestRules {
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
 	}
-	
+
+    @Test
+    public void testProvenanceBasicFieldsMatches() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_ORG, "S",
+                GenericAnnotationType.PROV_PERSON, "T",
+                GenericAnnotationType.PROV_TOOL, "U"));
+        testBasicProvenance(matchingProv, true);
+    }
+
+    @Test
+    public void testProvenanceBasicFieldsFailsOrg() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_ORG, "X",
+                GenericAnnotationType.PROV_PERSON, "T",
+                GenericAnnotationType.PROV_TOOL, "U"));
+        testBasicProvenance(matchingProv, false);
+    }
+
+    @Test
+    public void testProvenanceBasicFieldsFailsPerson() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_ORG, "S",
+                GenericAnnotationType.PROV_PERSON, "X",
+                GenericAnnotationType.PROV_TOOL, "U"));
+        testBasicProvenance(matchingProv, false);
+    }
+
+    @Test
+    public void testProvenanceBasicFieldsFailsTool() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_ORG, "S",
+                GenericAnnotationType.PROV_PERSON, "T",
+                GenericAnnotationType.PROV_TOOL, "X"));
+        testBasicProvenance(matchingProv, false);
+    }
+
+    
+    private void testBasicProvenance(Provenance prov, boolean expectedMatchResult) {
+        // Match provenance that:
+        // - has an organization starting with 'S'
+        // - has a person starting with 'T'
+        // - has a tool starting with 'U'
+        RuleFilter filter = ruleFilter(
+                new RuleMatcher(DataCategoryField.PROV_ORG, regexMatcher("^S.*")),
+                new RuleMatcher(DataCategoryField.PROV_PERSON, regexMatcher("^T.*")),
+                new RuleMatcher(DataCategoryField.PROV_TOOL, regexMatcher("^U.*")));
+        
+        assertEquals(expectedMatchResult, filter.matches(provSegment(prov)));
+    }
+    
+    @Test
+    public void testProvenanceRevFieldsMatches() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_REVORG, "S",
+                GenericAnnotationType.PROV_REVPERSON, "T",
+                GenericAnnotationType.PROV_REVTOOL, "U"));
+        testRevisionProvenance(matchingProv, true);
+    }
+
+    @Test
+    public void testProvenanceRevFieldsFailsOrg() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_REVORG, "X",
+                GenericAnnotationType.PROV_REVPERSON, "T",
+                GenericAnnotationType.PROV_REVTOOL, "U"));
+        testRevisionProvenance(matchingProv, false);
+    }
+
+    @Test
+    public void testProvenanceRevFieldsFailsPerson() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_REVORG, "S",
+                GenericAnnotationType.PROV_REVPERSON, "X",
+                GenericAnnotationType.PROV_REVTOOL, "U"));
+        testRevisionProvenance(matchingProv, false);
+    }
+
+    @Test
+    public void testProvenanceRevFieldsFailsTool() throws Exception {
+        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_REVORG, "S",
+                GenericAnnotationType.PROV_REVPERSON, "T",
+                GenericAnnotationType.PROV_REVTOOL, "X"));
+        testRevisionProvenance(matchingProv, false);
+    }
+
+    private void testRevisionProvenance(Provenance prov, boolean expectedMatchResult) {
+        // Match provenance that:
+        // - has a revision organization starting with 'S'
+        // - has a revision person starting with 'T'
+        // - has a revision tool starting with 'U'
+        RuleFilter filter = ruleFilter(
+                new RuleMatcher(DataCategoryField.PROV_REVORG, regexMatcher("^S.*")),
+                new RuleMatcher(DataCategoryField.PROV_REVPERSON, regexMatcher("^T.*")),
+                new RuleMatcher(DataCategoryField.PROV_REVTOOL, regexMatcher("^U.*")));
+        
+        assertEquals(expectedMatchResult, filter.matches(provSegment(prov)));
+    }
+    
+    @Test
+    public void testProvenanceRevRef() throws Exception {
+        RuleFilter filter = ruleFilter(
+                new RuleMatcher(DataCategoryField.PROV_PROVREF, regexMatcher("^S.*")));
+
+        assertTrue(filter.matches(provSegment(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_PROVREF, "S")))));
+        
+        assertFalse(filter.matches(provSegment(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_PROVREF, "T")))));
+    }
+    
+    private Segment provSegment(Provenance prov) {
+        Segment segment = new Segment(1, 1, 1, null, null, null);
+        segment.addProvenance(prov);
+        return segment;
+    }
+
+    private RuleFilter ruleFilter(RuleMatcher... matchers) {
+        return new RuleFilter(Arrays.asList(matchers));
+    }
+    
 	private Matcher regexMatcher(String regex) {
 		Matcher m = new Matchers.RegexMatcher();
 		assertTrue(m.validatePattern(regex));
