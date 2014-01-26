@@ -55,7 +55,6 @@ import org.apache.log4j.Logger;
  */
 public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
-    private File rwDir, rulesFile;
     private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat,
             stateQualifierFormat;
 
@@ -96,10 +95,11 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
     }
     
     public RuleConfiguration(RuleListener listener) {
+        this();
         this.ruleListeners.add(listener);
-        rwDir = new File(System.getProperty("user.home"), ".ocelot");
-        rulesFile = new File(rwDir, "rules.properties");
+    }
 
+    public RuleConfiguration() {
         rules = new HashMap<String, RuleFilter>();
         flags = new HashMap<String, DataCategoryFlag>();
         quickAdd = new HashMap<String, LanguageQualityIssue>();
@@ -120,10 +120,9 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         // [id-match|exact-match|fuzzy-match|mt-suggestion] = hex
         stateQualifierFormat = Pattern.compile("(id-match|exact-match|fuzzy-match|mt-suggestion)\\s*=\\s*(.*)");
 
-        loadConfig();
     }
     
-    public final void loadConfig() {
+    public final void loadConfig(File rulesFile) {
         if (rulesFile.exists()) {
             BufferedReader in;
             try {

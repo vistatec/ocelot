@@ -25,13 +25,13 @@ public class TestRuleConfiguration {
         assertFalse(config.getRuleEnabled("rule2"));
         assertTrue(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
-        
+
         config.enableRule("rule2", true);
         assertTrue(config.getRuleEnabled("rule1"));
         assertTrue(config.getRuleEnabled("rule2"));
         assertTrue(listener.isEnabled("rule1"));
         assertTrue(listener.isEnabled("rule2"));
-        
+
         config.enableRule("rule1", false);
         config.enableRule("rule2", false);
         assertFalse(config.getRuleEnabled("rule1"));
@@ -40,8 +40,28 @@ public class TestRuleConfiguration {
         assertFalse(listener.isEnabled("rule2"));
     }
     
+    // XXX Default behavior of RuleConfiguration is that
+    // allSegments is true and allMetadataSegments is false
+    @Test
+    public void testSegmentToggles() {
+        TestRuleListener listener = new TestRuleListener();
+        RuleConfiguration config = new RuleConfiguration(listener);
+        
+        config.setAllSegments(false);
+        assertFalse(listener.allSegmentsIsSet);
+        config.setAllSegments(true);
+        assertTrue(listener.allSegmentsIsSet);
+        
+        config.setMetadataSegments(true);
+        assertTrue(listener.allMetadataSegmentsIsSet);
+        config.setMetadataSegments(false);
+        assertFalse(listener.allMetadataSegmentsIsSet);
+    }
+    
     class TestRuleListener implements RuleListener {
         Map<String, Boolean> enabledRules = new HashMap<String, Boolean>();
+        boolean allSegmentsIsSet = false;
+        boolean allMetadataSegmentsIsSet = false;
         
         boolean isEnabled(String ruleLabel) {
             return enabledRules.containsKey(ruleLabel) && enabledRules.get(ruleLabel);
@@ -54,14 +74,12 @@ public class TestRuleConfiguration {
 
         @Override
         public void allSegments(boolean enabled) {
-            // TODO Auto-generated method stub
-            
+            allSegmentsIsSet = enabled;
         }
 
         @Override
         public void allMetadataSegments(boolean enabled) {
-            // TODO Auto-generated method stub
-            
+            allMetadataSegmentsIsSet = enabled;
         }
         
     }

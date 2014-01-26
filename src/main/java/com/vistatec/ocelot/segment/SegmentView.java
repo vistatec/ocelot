@@ -38,6 +38,7 @@ import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -49,6 +50,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EventObject;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -68,7 +70,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
+
 import net.sf.okapi.common.resource.TextContainer;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -89,10 +93,12 @@ public class SegmentView extends JScrollPane implements RuleListener {
     protected PluginManager pluginManager;
 
     public SegmentView(SegmentAttributeView attr, SegmentController segController,
-            AppConfig appConfig) throws IOException, InstantiationException, InstantiationException, IllegalAccessException {
+            AppConfig appConfig, RuleConfiguration ruleConfig) throws IOException, 
+                InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
         segmentController = segController;
-        ruleConfig = new RuleConfiguration(this);
+        this.ruleConfig = ruleConfig;
+        this.ruleConfig.addRuleListener(this);
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         pluginManager = new PluginManager(appConfig);

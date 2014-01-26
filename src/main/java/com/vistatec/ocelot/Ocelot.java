@@ -34,6 +34,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;
+import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
@@ -55,6 +56,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -109,7 +111,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     protected AppConfig config;
     private String platformOS;
 
-    public Ocelot(AppConfig config) throws IOException, InstantiationException, IllegalAccessException {
+    public Ocelot(AppConfig config, RuleConfiguration ruleConfig) 
+            throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.config = config;
         
@@ -125,10 +128,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 segmentAttrView, itsDetailView);
         segAttrSplitPane.setOneTouchExpandable(true);
-
+        
         Dimension segSize = new Dimension(500, 500);
         segmentController = new SegmentController();
-        segmentView = new SegmentView(segmentAttrView, segmentController, config);
+        segmentView = new SegmentView(segmentAttrView, segmentController, config, ruleConfig);
         segmentView.setMinimumSize(segSize);
         segmentController.setSegmentView(segmentView);
 
@@ -437,7 +440,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         File cfgFile = new File(ocelotDir, "ocelot_cfg.xml");
         AppConfig appConfig = new AppConfig(cfgFile);
 
-        Ocelot ocelot = new Ocelot(appConfig);
+        RuleConfiguration ruleConfig = new RuleConfiguration();
+        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
+        File rulesFile = new File(rwDir, "rules.properties");
+        ruleConfig.loadConfig(rulesFile);
+
+        Ocelot ocelot = new Ocelot(appConfig, ruleConfig);
 
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
