@@ -31,7 +31,6 @@ package com.vistatec.ocelot.rules;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentTableModel;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
@@ -46,14 +45,13 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
-import javax.swing.RowFilter;
 import org.apache.log4j.Logger;
 
 /**
  * Collection of RuleFilters used to determine whether to filter out a segment
  * from the SegmentView.
  */
-public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
+public class RuleConfiguration {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
     private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat,
             stateQualifierFormat;
@@ -233,6 +231,10 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         return ruleOrdering;
     }
     
+    public HashMap<String, RuleFilter> getRules() {
+        return rules;
+    }
+
     public boolean getRuleEnabled(String ruleLabel) {
         return rules.get(ruleLabel).getEnabled();
     }
@@ -244,6 +246,10 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         }
     }
 
+    public boolean getAllSegments() {
+        return all;
+    }
+
     public void setAllSegments(boolean enabled) {
         if (this.all != enabled) {
             this.all = enabled;
@@ -251,6 +257,10 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
                 listener.allSegments(enabled);
             }
         }
+    }
+
+    public boolean getAllMetadataSegments() {
+        return allWithMetadata;
     }
 
     public void setMetadataSegments(boolean enabled) {
@@ -378,6 +388,10 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
             return null;
         }
     }
+    
+    public HashMap<StateQualifier, Boolean> getStateQualifierRules() {
+        return stateQualifierRules;
+    }
 
     public boolean getStateQualifierEnabled(String sq) {
         StateQualifier stateQualifier = StateQualifier.get(sq);
@@ -400,27 +414,4 @@ public class RuleConfiguration extends RowFilter<SegmentTableModel, Integer> {
         }
     }
 
-    @Override
-    public boolean include(Entry<? extends SegmentTableModel, ? extends Integer> entry) {
-        if (all) { return true; }
-
-        SegmentTableModel model = entry.getModel();
-        Segment s = model.getSegment(entry.getIdentifier());
-        if (allWithMetadata) {
-            return s.getAllITSMetadata().size() > 0;
-        } else {
-            for (StateQualifier sq : stateQualifierRules.keySet()) {
-                if (stateQualifierRules.get(sq) && sq.getName().equals(
-                    s.getStateQualifier())) {
-                    return true;
-                }
-            }
-            for (RuleFilter r : rules.values()) {
-                if (r.getEnabled() && r.matches(s)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
 }

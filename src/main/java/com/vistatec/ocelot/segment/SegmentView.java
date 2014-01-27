@@ -35,6 +35,7 @@ import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
+import com.vistatec.ocelot.rules.RuleBasedRowFilter;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
@@ -194,7 +195,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void addFilters() {
         sort = new TableRowSorter(segmentController.getSegmentTableModel());
         sourceTargetTable.setRowSorter(sort);
-        sort.setRowFilter(ruleConfig);
+        sort.setRowFilter(new RuleBasedRowFilter(ruleConfig));
     }
 
     protected void updateRowHeights() {
