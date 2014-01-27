@@ -6,6 +6,7 @@ import java.util.Map;
 import org.junit.*;
 
 import static org.junit.Assert.*;
+import static com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier.*;
 
 public class TestRuleConfiguration {
 
@@ -38,6 +39,29 @@ public class TestRuleConfiguration {
         assertFalse(config.getRuleEnabled("rule2"));
         assertFalse(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
+    }
+    
+    @Test
+    public void testStateQualifierRuleListener() {
+        TestRuleListener listener = new TestRuleListener();
+        RuleConfiguration config = new RuleConfiguration(listener);
+        
+        // Verify initial state
+        assertFalse(config.getStateQualifierEnabled(EXACT.getName()));
+        assertFalse(config.getStateQualifierEnabled(FUZZY.getName()));
+        assertFalse(config.getStateQualifierEnabled(ID.getName()));
+        assertFalse(config.getStateQualifierEnabled(MT.getName()));
+
+        // Verify that setting them generates the appropriate rule 
+        // listener events
+        config.setStateQualifierEnabled(EXACT, true);
+        config.setStateQualifierEnabled(FUZZY, true);
+        config.setStateQualifierEnabled(ID, true);
+        config.setStateQualifierEnabled(MT, true);
+        assertTrue(listener.enabledRules.get(EXACT.getName()));
+        assertTrue(listener.enabledRules.get(FUZZY.getName()));
+        assertTrue(listener.enabledRules.get(ID.getName()));
+        assertTrue(listener.enabledRules.get(MT.getName()));
     }
     
     // XXX Default behavior of RuleConfiguration is that
