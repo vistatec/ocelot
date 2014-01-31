@@ -72,7 +72,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 
@@ -238,6 +237,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         });
         fd.setVisible(true);
         File sourceFile = getSelectedFile(fd);
+        fd.dispose();
         if (sourceFile != null) {
             try {
                 segmentController.parseXLIFFFile(sourceFile);
@@ -261,7 +261,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private File promptSaveAs() {
         FileDialog fd = new FileDialog(mainframe, "Save As...", FileDialog.SAVE);
         fd.setVisible(true);
-        return getSelectedFile(fd);
+        File f = getSelectedFile(fd);
+        fd.dispose();
+        return f;
     }
 
     private File getSelectedFile(FileDialog fd) {
