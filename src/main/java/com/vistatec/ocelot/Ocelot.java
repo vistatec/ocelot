@@ -298,10 +298,22 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         JOptionPane.showMessageDialog(mainframe, message, windowTitle, JOptionPane.ERROR_MESSAGE);
     }
 
+    /**
+     * Set menu mnemonics for non-Mac platforms.  (Mnemonics
+     * violate the Mac interface guidelines.)
+     */
+    private void setMenuMnemonics() {
+        if (!isMac()) {
+            menuFile.setMnemonic(KeyEvent.VK_F);
+            menuView.setMnemonic(KeyEvent.VK_V);
+            menuFilter.setMnemonic(KeyEvent.VK_T);
+            menuHelp.setMnemonic(KeyEvent.VK_H);
+        }
+    }
+
     private void initializeMenuBar() {
         menuBar = new JMenuBar();
         menuFile = new JMenu("File");
-        menuFile.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menuFile);
 
 //        menuOpenHTML = new JMenuItem("Open HTML");
@@ -342,7 +354,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuFile.add(menuExit);
 
         menuView = new JMenu("View");
-        menuView.setMnemonic(KeyEvent.VK_V);
         menuBar.add(menuView);
 
         menuTgtDiff = new JCheckBoxMenuItem("Show Target Differences");
@@ -351,7 +362,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuView.add(menuTgtDiff);
 
         menuFilter = new JMenu("Filter");
-        menuFilter.setMnemonic(KeyEvent.VK_T);
         menuBar.add(menuFilter);
 
         menuRules = new JMenuItem("Rules");
@@ -368,12 +378,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuExtensions.add(menuPlugins);
 
         menuHelp = new JMenu("Help");
-        menuHelp.setMnemonic(KeyEvent.VK_H);
         menuBar.add(menuHelp);
 
         menuAbout = new JMenuItem("About");
         menuAbout.addActionListener(this);
         menuHelp.add(menuAbout);
+
+        setMenuMnemonics();
 
         mainframe.setJMenuBar(menuBar);
     }
