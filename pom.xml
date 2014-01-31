@@ -170,6 +170,7 @@
           <configuration>
               <mainClass>com.vistatec.ocelot.Ocelot</mainClass>
               <iconFile>src/main/resources/com/vistatec/ocelot/mac.icns</iconFile>
+              <javaApplicationStub>src/main/resources/build/JavaApplicationStub</javaApplicationStub>
           </configuration>
           <executions>
               <execution>
