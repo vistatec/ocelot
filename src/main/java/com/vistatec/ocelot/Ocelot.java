@@ -109,7 +109,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
     protected AppConfig config;
     private String platformOS;
-    private int platformKeyMask;
 
     public Ocelot(AppConfig config, RuleConfiguration ruleConfig) 
             throws IOException, InstantiationException, IllegalAccessException {
@@ -117,7 +116,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.config = config;
         
         platformOS = System.getProperty("os.name");
-        platformKeyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
@@ -390,7 +388,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private int getPlatformKeyMask() {
-        return platformKeyMask;
+        return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     }
 
     private boolean isPlatformKeyDown(KeyEvent ke) {
