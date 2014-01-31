@@ -110,6 +110,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
     protected AppConfig config;
     private String platformOS;
+    private int platformKeyMask;
 
     public Ocelot(AppConfig config, RuleConfiguration ruleConfig) 
             throws IOException, InstantiationException, IllegalAccessException {
@@ -117,7 +118,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.config = config;
         
         platformOS = System.getProperty("os.name");
-        String arch = System.getProperty("os.arch");
+        platformKeyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
@@ -368,11 +369,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private int getPlatformKeyMask() {
-        return isMac() ? KeyEvent.META_DOWN_MASK : Event.CTRL_MASK;
+        return platformKeyMask;
     }
 
     private boolean isPlatformKeyDown(KeyEvent ke) {
-        return isMac() ? ke.isMetaDown() : ke.isControlDown();
+        // For reasons that are mysterious to me, the value of
+        // platformKeyMask isn't the same as the modifiers to a KeyEvent.
+        return isMac() ? ke.isMetaDown() : ke.isControlDown(); 
     }
 
     boolean isMac() {
