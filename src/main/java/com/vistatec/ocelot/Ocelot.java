@@ -61,7 +61,6 @@ import java.io.UnsupportedEncodingException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -108,7 +107,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     SegmentController segmentController;
     OpenHTMLView openHTMLView;
 
-    private JFileChooser saveFileChooser;
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
     protected AppConfig config;
     private String platformOS;
@@ -239,9 +237,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             }
         });
         fd.setVisible(true);
-        String filename = fd.getFile();
-        if (filename != null) {
-            File sourceFile = new File(fd.getDirectory(), filename);            
+        File sourceFile = getSelectedFile(fd);
+        if (sourceFile != null) {
             try {
                 segmentController.parseXLIFFFile(sourceFile);
                 this.openSrcFile = sourceFile;
@@ -262,11 +259,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private File promptSaveAs() {
-        int returnVal = saveFileChooser.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            return saveFileChooser.getSelectedFile();
-        }
-        return null;
+        FileDialog fd = new FileDialog(mainframe, "Save As...", FileDialog.SAVE);
+        fd.setVisible(true);
+        return getSelectedFile(fd);
+    }
+
+    private File getSelectedFile(FileDialog fd) {
+        return (fd.getFile() == null) ? null :
+                new File(fd.getDirectory(), fd.getFile());
     }
     
     private boolean save() {
@@ -404,33 +404,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         icon = kit.createImage(Ocelot.class.getResource("logo64.png"));
         mainframe.setIconImage(icon);
 
-        saveFileChooser = new JFileChooser() {
-            @Override
-            public void approveSelection() {
-                File saveFile = getSelectedFile();
-                if (saveFile.exists() && getDialogType() == SAVE_DIALOG) {
-                    int confirm = JOptionPane.showConfirmDialog(this,
-                            "Overwrite existing file?", "File exists",
-                            JOptionPane.YES_NO_OPTION);
-                    switch (confirm) {
-                        case JOptionPane.YES_OPTION:
-                            super.approveSelection();
-                            break;
-
-                        case JOptionPane.NO_OPTION:
-                            break;
-
-                        case JOptionPane.CLOSED_OPTION:
-                            break;
-
-                        default:
-                            break;
-                    }
-                } else if (!saveFile.exists() && getDialogType() == SAVE_DIALOG) {
-                    super.approveSelection();
-                }
-            }
-        };
         initializeMenuBar();
         mainframe.getContentPane().add(this);
 
