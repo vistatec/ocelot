@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.FileDialog;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
@@ -54,6 +55,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
@@ -229,11 +231,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private void promptOpenXLIFFFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("XLIFF 1.2 file", "xlf");
-        fileChooser.setFileFilter(fileFilter);
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File sourceFile = fileChooser.getSelectedFile();
+        FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
+        fd.setFilenameFilter(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(".xlf");
+            }
+        });
+        fd.setVisible(true);
+        String filename = fd.getFile();
+        if (filename != null) {
+            File sourceFile = new File(fd.getDirectory(), filename);            
             try {
                 segmentController.parseXLIFFFile(sourceFile);
                 this.openSrcFile = sourceFile;
