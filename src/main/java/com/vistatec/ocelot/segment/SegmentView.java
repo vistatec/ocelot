@@ -177,8 +177,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void reloadTable() {
         clearTable();
         setViewportView(sourceTargetTable);
-        segmentController.fireTableDataChanged();
         addFilters();
+        segmentController.fireTableDataChanged();
         // Adjust the segment number column width
         tableColumnModel.getColumn(
                 segmentController.getSegmentNumColumnIndex())
