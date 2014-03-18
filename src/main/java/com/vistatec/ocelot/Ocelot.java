@@ -185,7 +185,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             }
 
         } else if (e.getSource() == this.menuExit) {
-            mainframe.dispose();
+            handleApplicationExit();
         } else if (e.getSource() == this.menuSaveAs
                 || e.getSource() == this.menuSave) {
             if (segmentController.isHTML()) {
@@ -305,7 +305,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     "\nJava " + javaVersion,
                 "About", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(icon));
     }
-    
+
+    /**
+     * Exit handler.  This should prompt to save unsaved data.
+     */
+    private void handleApplicationExit() {
+        mainframe.dispose();
+    }
+
     /**
      * Set menu mnemonics for non-Mac platforms.  (Mnemonics
      * violate the Mac interface guidelines.)
@@ -393,6 +400,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuHelp.add(menuAbout);
 
         setMenuMnemonics();
+        setMacSpecific();
 
         mainframe.setJMenuBar(menuBar);
     }
@@ -495,5 +503,26 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             }
         }
         return false;
+    }
+
+    /**
+     * Perform Mac OSX-specific platform initialization.
+     */
+    private void setMacSpecific() {
+        if (isMac()) {
+            OSXPlatformSupport.init();
+            OSXPlatformSupport.setQuitHandler(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    handleApplicationExit();
+                }
+            });
+            OSXPlatformSupport.setAboutHandler(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showAbout();
+                }
+            });
+        }
     }
 }
