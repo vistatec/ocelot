@@ -31,20 +31,14 @@ package com.vistatec.ocelot.rules;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
+
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import javax.swing.BorderFactory;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -53,8 +47,6 @@ import org.apache.log4j.Logger;
  */
 public class RuleConfiguration {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
-    private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat,
-            stateQualifierFormat;
 
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
     private ArrayList<String> ruleOrdering = new ArrayList<String>();
@@ -107,122 +99,8 @@ public class RuleConfiguration {
         for (StateQualifier sq : StateQualifier.values()) {
             stateQualifierRules.put(sq, false);
         }
-
-        // ruleLabel.dataCategory = regex
-        ruleFormat = Pattern.compile("([^.]+)\\.(\\w+)\\s*=(.*)");
-        // ruleLabel.flag.flagType = display
-        flagFormat = Pattern.compile("([^.]+)\\.flag\\.(\\w+)\\s*=(.*)");
-        // ruleLabel.quickAdd.LQIType = value
-        quickAddFormat = Pattern.compile("([^.]+)\\.quickAdd\\.(\\w+)\\s*=(.*)");
-        quickAddHotkeyFormat = Pattern.compile("[0-9]");
-        // [id-match|exact-match|fuzzy-match|mt-suggestion] = hex
-        stateQualifierFormat = Pattern.compile("(id-match|exact-match|fuzzy-match|mt-suggestion)\\s*=\\s*(.*)");
-
     }
     
-    public final void loadConfig(File rulesFile) {
-        if (rulesFile.exists()) {
-            BufferedReader in;
-            try {
-                in = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(rulesFile), "UTF-8"));
-                parse(in);
-            } catch (UnsupportedEncodingException ex) {
-                LOG.error("Encoding not supported",ex);
-            } catch (FileNotFoundException ex) {
-                LOG.error("Rules file not found", ex);
-            } catch (IOException ex) {
-                LOG.error("IO error", ex);
-            } catch (InstantiationException ex) {
-                LOG.error("Failed to instantiate Matcher class", ex);
-            } catch (IllegalAccessException ex) {
-                LOG.error("Matcher class not accessible", ex);
-            }
-        } else {
-            LOG.warn("No rules.properties file found at location:"+rulesFile.getAbsolutePath());
-        }
-    }
-
-    public void parse(BufferedReader configFile) throws IOException, InstantiationException, IllegalAccessException {
-        String line;
-        while ((line = configFile.readLine()) != null) {
-            Matcher rulePattern = ruleFormat.matcher(line);
-            Matcher flagPattern = flagFormat.matcher(line);
-            Matcher quickAddPattern = quickAddFormat.matcher(line);
-            Matcher stateQualifierPattern = stateQualifierFormat.matcher(line);
-            Matcher whitespace = Pattern.compile("\\s*").matcher(line);
-            if (stateQualifierPattern.matches()) {
-                String state = stateQualifierPattern.group(1);
-                StateQualifier stateQualifier = StateQualifier.get(state);
-                String hexColor = stateQualifierPattern.group(2).trim();
-                if (stateQualifier != null) {
-                    stateQualifierDisplay.put(stateQualifier, new Color(Integer.decode(hexColor)));
-                } else {
-                    LOG.debug("Ignoring state-qualifier: "+state);
-                }
-
-            } else if (rulePattern.matches()) {
-                String ruleLabel = rulePattern.group(1);
-                String dataCategory = rulePattern.group(2);
-                String regex = rulePattern.group(3).trim();
-
-                DataCategoryField dataCategoryField =
-                        DataCategoryField.byName(dataCategory);
-                if (dataCategoryField == null) {
-                    LOG.error("Unrecognized datacategory: "+dataCategory
-                            +", line: "+line);
-                } else {
-                    DataCategoryField.Matcher dcfMatcher = 
-                            dataCategoryField.getMatcherClass().newInstance();
-                    dcfMatcher.setPattern(regex);
-
-                    RuleMatcher ruleMatcher =
-                            new RuleMatcher(dataCategoryField, dcfMatcher);
-                    addRuleConstaint(ruleLabel, ruleMatcher);
-                }
-            } else if (flagPattern.matches()) {
-                String ruleLabel = flagPattern.group(1);
-                String flagType = flagPattern.group(2);
-                String value = flagPattern.group(3).trim();
-
-                if (flagType.equals("fill")) {
-                    addFill(ruleLabel, new Color(Integer.decode(value)));
-                } else if (flagType.equals("border")) {
-                    addBorder(ruleLabel, new Color(Integer.decode(value)));
-                } else if (flagType.equals("text")) {
-                    addText(ruleLabel, value);
-                } else {
-                    LOG.error("Unrecognized flag: "+line);
-                }
-            } else if (quickAddPattern.matches()) {
-                String ruleLabel = quickAddPattern.group(1);
-                String LQIType = quickAddPattern.group(2);
-                String value = quickAddPattern.group(3).trim();
-
-                if (LQIType.equals(DataCategoryField.LQI_TYPE.getName())) {
-                    setLQIType(ruleLabel, value);
-
-                } else if (LQIType.equals(DataCategoryField.LQI_SEVERITY.getName())) {
-                    setLQISeverity(ruleLabel, Double.parseDouble(value));
-
-                } else if (LQIType.equals(DataCategoryField.LQI_COMMENT.getName())) {
-                    setLQIComment(ruleLabel, value);
-
-                } else if (LQIType.equals("hotkey")) {
-                    if (quickAddHotkeyFormat.matcher(value).matches()) {
-                        quickAddHotkeys.put(Integer.parseInt(value), ruleLabel);
-                    } else {
-                        LOG.error("Illegal quickAdd hotkey: "+value);
-                    }
-                } else {
-                    LOG.error("Illegal quickAdd type: "+LQIType);
-                }
-            } else if (!whitespace.matches()) {
-                LOG.error("Unrecognized rule: "+line);
-            }
-        }
-    }
-
     public void addRuleListener(RuleListener listener) {
         this.ruleListeners.add(listener);
     }
@@ -270,6 +148,14 @@ public class RuleConfiguration {
                 listener.allMetadataSegments(enabled);
             }
         }
+    }
+
+    public void addStateQualifierDisplay(StateQualifier stateQualifier, Color color) {
+        stateQualifierDisplay.put(stateQualifier, color);
+    }
+
+    public void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
+        quickAddHotkeys.put(hotkey, ruleLabel);
     }
 
     public void addRuleConstaint(String ruleLabel, RuleMatcher ruleMatcher) {
