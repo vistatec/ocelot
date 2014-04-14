@@ -32,6 +32,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
+import static com.vistatec.ocelot.rules.StateQualifier.*;
 import java.io.IOException;
 import java.util.List;
 import net.sf.okapi.common.resource.TextContainer;
@@ -176,5 +177,17 @@ public class TestXLIFFParser {
         assertEquals("Discrepancy in the number of MTConfidence annotations", 1, otherITSMetadata.size());
         Double mtConfidence = (Double)otherITSMetadata.get(0).getValue();
         assertEquals(0.85, mtConfidence, 0.01);
+    }
+
+    @Test
+    public void testStateQualifiers() throws IOException, InstantiationException, IllegalAccessException {
+        XLIFFParser parser = new XLIFFParser();
+        List<Segment> segments = parser.parseXLIFFFile(getClass().getResourceAsStream("state_qualifiers.xlf"));
+        assertEquals(ID, segments.get(0).getStateQualifier());
+        assertEquals(EXACT, segments.get(1).getStateQualifier());
+        assertEquals(MT, segments.get(2).getStateQualifier());
+        assertEquals(FUZZY, segments.get(3).getStateQualifier());
+        assertEquals(null, segments.get(4).getStateQualifier());
+        assertEquals(null, segments.get(5).getStateQualifier());
     }
 }

@@ -32,10 +32,13 @@ import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
 import net.sf.okapi.common.resource.TextContainer;
 
 /**
@@ -44,7 +47,8 @@ import net.sf.okapi.common.resource.TextContainer;
 public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
     private TextContainer source, target;
-    private String phase_name, state_qualifier;
+    private String phase_name;
+    private StateQualifier state_qualifier;
     private boolean addedProvenance = false, setOriginalTarget = false;
     private String lqiID, provID;
     private LinkedList<LanguageQualityIssue> lqiList = new LinkedList<LanguageQualityIssue>();
@@ -158,11 +162,11 @@ public class Segment {
         this.phase_name = phaseName;
     }
 
-    public String getStateQualifier() {
+    public StateQualifier getStateQualifier() {
         return this.state_qualifier;
     }
 
-    public void setStateQualifier(String state) {
+    public void setStateQualifier(StateQualifier state) {
         this.state_qualifier = state;
     }
 

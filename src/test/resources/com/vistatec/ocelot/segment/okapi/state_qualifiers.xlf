@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns:its="http://www.w3.org/2005/11/its" version="1.2">
+    <file source-language="en-US" target-language="fr-FR" original="none" datatype="plaintext">
+        <header>
+            <phase-group>
+                <phase phase-name="review" process-name="review"/>
+                <phase phase-name="final review" process-name="review"/>
+                <phase phase-name="rebuttal" process-name="review"/>
+                <phase phase-name="translator approval" process-name="review"/>
+                <phase phase-name="unknown" process-name="unknown"/>
+            </phase-group>
+            <tool tool-id="Ocelot" tool-name="Ocelot"/>
+        </header>
+        <body>
+            <trans-unit id="1">
+                <source>example source 1</source>
+                <target state-qualifier="id-match">example target 3</target>
+            </trans-unit>
+            <trans-unit id="2">
+                <source>example source 2</source>
+                <target state-qualifier="exact-match">example target 4</target>
+            </trans-unit>
+            <trans-unit id="3">
+                <source>example source 3</source>
+                <target state-qualifier="mt-suggestion">example target 3</target>
+            </trans-unit>
+            <trans-unit id="4">
+                <source>example source 4</source>
+                <target state-qualifier="fuzzy-match">example target 4</target>
+            </trans-unit>
+            <trans-unit id="5">
+                <source>example source 5</source>
+                <target state-qualifier="unrecognized">example target 4</target>
+            </trans-unit>
+            <trans-unit id="6">
+                <source>example source 6</source>
+                <target state-qualifier="x-id-match">example target 4</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

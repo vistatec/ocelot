@@ -32,12 +32,15 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField;
+import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.Segment;
+
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.AltTranslation;
@@ -58,6 +61,7 @@ import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.filters.xliff.Parameters;
 import net.sf.okapi.filters.xliff.XLIFFFilter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,7 +184,14 @@ public class XLIFFParser {
         seg.setTransUnitId(tu.getId());
         Property stateQualifier = tgtTu.getProperty("state-qualifier");
         if (stateQualifier != null) {
-            seg.setStateQualifier(stateQualifier.getValue());
+            StateQualifier sq = StateQualifier.get(stateQualifier.getValue());
+            if (sq != null) {
+                seg.setStateQualifier(sq);
+            }
+            else {
+                LOG.info("Ignoring state-qualifier value '" + 
+                         stateQualifier.getValue() + "'");
+            }
         }
         XLIFFPhaseAnnotation phaseAnn = tu.getAnnotation(XLIFFPhaseAnnotation.class);
         if (phaseAnn != null) {

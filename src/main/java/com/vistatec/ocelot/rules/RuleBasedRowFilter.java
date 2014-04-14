@@ -28,8 +28,8 @@ public class RuleBasedRowFilter extends RowFilter<SegmentTableModel, Integer> {
         if (ruleConfig.getAllMetadataSegments()) {
             return s.getAllITSMetadata().size() > 0;
         } else {
-            StateQualifier sq = StateQualifier.get(s.getStateQualifier());
-            if (ruleConfig.getStateQualifierEnabled(sq)) {
+            if (s.getStateQualifier() != null && 
+                ruleConfig.getStateQualifierEnabled(s.getStateQualifier())) {
                 return true;
             }
             for (Rule r : ruleConfig.getRules().values()) {

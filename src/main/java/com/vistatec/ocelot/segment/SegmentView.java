@@ -380,13 +380,11 @@ public class SegmentView extends JScrollPane implements RuleListener {
         }
 
         private Color getSegmentColor(Segment seg) {
-            // XXX It would be nice if Segment returned a StateQualifier
-            String sq = seg.getStateQualifier();
+            StateQualifier sq = seg.getStateQualifier();
             if (sq != null) {
-                StateQualifier stateQualifier = StateQualifier.get(sq);
-                Color sqColor = ruleConfig.getStateQualifierColor(stateQualifier);
+                Color sqColor = ruleConfig.getStateQualifierColor(sq);
                 if (sqColor == null) {
-                    LOG.debug("No UI color for state-qualifier '" + stateQualifier + "'");
+                    LOG.debug("No UI color for state-qualifier '" + sq + "'");
                 }
                 return sqColor;
             }
