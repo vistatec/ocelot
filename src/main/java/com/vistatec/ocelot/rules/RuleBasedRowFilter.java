@@ -1,10 +1,7 @@
 package com.vistatec.ocelot.rules;
 
-import java.util.HashMap;
-
 import javax.swing.RowFilter;
 
-import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 
@@ -31,13 +28,9 @@ public class RuleBasedRowFilter extends RowFilter<SegmentTableModel, Integer> {
         if (ruleConfig.getAllMetadataSegments()) {
             return s.getAllITSMetadata().size() > 0;
         } else {
-            HashMap<StateQualifier, Boolean> stateQualifierRules = 
-                    ruleConfig.getStateQualifierRules();
-            for (StateQualifier sq : stateQualifierRules.keySet()) {
-                if (stateQualifierRules.get(sq) && sq.getName().equals(
-                    s.getStateQualifier())) {
-                    return true;
-                }
+            StateQualifier sq = StateQualifier.get(s.getStateQualifier());
+            if (ruleConfig.getStateQualifierEnabled(sq)) {
+                return true;
             }
             for (Rule r : ruleConfig.getRules().values()) {
                 if (r.getEnabled() && r.matches(s)) {

@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.rules;
 
-import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -38,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -102,9 +102,9 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
 
-        for (StateQualifier stateQualifier : RuleConfiguration.StateQualifier.values()) {
+        for (StateQualifier stateQualifier : StateQualifier.values()) {
             addFilterCheckBox(stateQualifier.getName(),
-                    filterRules.getStateQualifierEnabled(stateQualifier.getName()), gridBag, gridy++);
+                    filterRules.getStateQualifierEnabled(stateQualifier), gridBag, gridy++);
         }
 
         for (Rule rule : filterRules.getRules().values()) {
@@ -141,7 +141,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         Object source = e.getItemSelectable();
         if (source.getClass().equals(JCheckBox.class)) {
             JCheckBox check = (JCheckBox) source;
-            StateQualifier stateQualifier = RuleConfiguration.StateQualifier.get(check.getText());
+            StateQualifier stateQualifier = StateQualifier.get(check.getText());
             if (stateQualifier != null) {
                 filterRules.setStateQualifierEnabled(stateQualifier, e.getStateChange() == ItemEvent.SELECTED);
             } else {

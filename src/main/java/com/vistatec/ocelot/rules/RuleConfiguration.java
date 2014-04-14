@@ -34,9 +34,11 @@ import com.vistatec.ocelot.segment.Segment;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 
@@ -49,45 +51,15 @@ import org.apache.log4j.Logger;
 public class RuleConfiguration {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
 
-    /**
-     * LinkedHashMap gives us a predictable iteration order (order in which
-     * elements were inserted.)
-     */
     private HashMap<String,Rule> rules = new HashMap<String, Rule>();
     private List<Rule> ruleOrdering = new ArrayList<Rule>();
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
     private HashMap<String, LanguageQualityIssue> quickAdd;
-    private HashMap<StateQualifier, Boolean> stateQualifierRules;
-    private HashMap<StateQualifier, Color> stateQualifierDisplay;
     private HashMap<Integer, String> quickAddHotkeys;
+    private EnumMap<StateQualifier, StateQualifierRule> stateQualifierRules =
+            new EnumMap<StateQualifier, StateQualifierRule>(StateQualifier.class);
     protected boolean all = true, allWithMetadata;
 
-    public enum StateQualifier {
-        ID("id-match"),
-        EXACT("exact-match"),
-        FUZZY("fuzzy-match"),
-        MT("mt-suggestion");
-
-        private String name;
-
-        private StateQualifier(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public static StateQualifier get(String name) {
-            for (StateQualifier sq : values()) {
-                if (sq.getName().equals(name)) {
-                    return sq;
-                }
-            }
-            return null;
-        }
-    }
-    
     public RuleConfiguration(RuleListener listener) {
         this();
         this.ruleListeners.add(listener);
@@ -96,10 +68,13 @@ public class RuleConfiguration {
     public RuleConfiguration() {
         quickAdd = new HashMap<String, LanguageQualityIssue>();
         quickAddHotkeys = new HashMap<Integer, String>();
-        stateQualifierDisplay = new HashMap<StateQualifier, Color>();
-        stateQualifierRules = new HashMap<StateQualifier, Boolean>();
+        initStateQualifierRules();
+    }
+
+    void initStateQualifierRules() {
         for (StateQualifier sq : StateQualifier.values()) {
-            stateQualifierRules.put(sq, false);
+            StateQualifierRule rule = new StateQualifierRule(sq);
+            stateQualifierRules.put(sq, rule);
         }
     }
     
@@ -142,10 +117,6 @@ public class RuleConfiguration {
                 listener.allMetadataSegments(enabled);
             }
         }
-    }
-
-    void addStateQualifierDisplay(StateQualifier stateQualifier, Color color) {
-        stateQualifierDisplay.put(stateQualifier, color);
     }
 
     void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
@@ -262,44 +233,26 @@ public class RuleConfiguration {
         return null;
     }
 
-    public Color getStateQualifierColor(Segment seg) {
-        String sq = seg.getStateQualifier();
-        if (sq != null) {
-            StateQualifier stateQualifier = StateQualifier.get(sq);
-            Color sqColor = stateQualifierDisplay.get(stateQualifier);
-            if (sqColor != null) {
-                return sqColor;
-            } else {
-                LOG.debug("No UI color for state-qualifier '" + stateQualifier + "'");
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-    
-    public HashMap<StateQualifier, Boolean> getStateQualifierRules() {
-        return stateQualifierRules;
+    public void setStateQualifierColor(StateQualifier stateQualifier, Color color) {
+        stateQualifierRules.get(stateQualifier).setColor(color);
     }
 
-    public boolean getStateQualifierEnabled(String sq) {
-        StateQualifier stateQualifier = StateQualifier.get(sq);
-        if (stateQualifier != null) {
-            return stateQualifierRules.get(stateQualifier);
-        } else {
-            LOG.warn("Unrecognized state-qualifier when checking if enabled: "+sq);
-            return false;
-        }
+    public Color getStateQualifierColor(StateQualifier stateQualifier) {
+        return stateQualifierRules.get(stateQualifier).getColor();
+    }
+
+    public boolean getStateQualifierEnabled(StateQualifier stateQualifier) {
+        return stateQualifierRules.get(stateQualifier).getEnabled();
     }
 
     public void setStateQualifierEnabled(StateQualifier stateQualifier, boolean flag) {
-        if (stateQualifierRules.containsKey(stateQualifier)) {
-            stateQualifierRules.put(stateQualifier, flag);
+        StateQualifierRule rule = stateQualifierRules.get(stateQualifier);
+        // Only notify listeners on change
+        if (flag != rule.getEnabled()) {
+            rule.setEnabled(flag);
             for (RuleListener listener : ruleListeners) {
                 listener.enabledRule(stateQualifier.getName(), flag);
             }
-        } else {
-            LOG.warn("Unrecognized state-qualifier rule '"+stateQualifier+"'");
         }
     }
 

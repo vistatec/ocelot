@@ -6,7 +6,7 @@ import java.util.Map;
 import org.junit.*;
 
 import static org.junit.Assert.*;
-import static com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier.*;
+import static com.vistatec.ocelot.rules.StateQualifier.*;
 
 public class TestRuleConfiguration {
 
@@ -47,10 +47,10 @@ public class TestRuleConfiguration {
         RuleConfiguration config = new RuleConfiguration(listener);
         
         // Verify initial state
-        assertFalse(config.getStateQualifierEnabled(EXACT.getName()));
-        assertFalse(config.getStateQualifierEnabled(FUZZY.getName()));
-        assertFalse(config.getStateQualifierEnabled(ID.getName()));
-        assertFalse(config.getStateQualifierEnabled(MT.getName()));
+        assertFalse(config.getStateQualifierEnabled(EXACT));
+        assertFalse(config.getStateQualifierEnabled(FUZZY));
+        assertFalse(config.getStateQualifierEnabled(ID));
+        assertFalse(config.getStateQualifierEnabled(MT));
 
         // Verify that setting them generates the appropriate rule 
         // listener events
@@ -62,6 +62,15 @@ public class TestRuleConfiguration {
         assertTrue(listener.enabledRules.get(FUZZY.getName()));
         assertTrue(listener.enabledRules.get(ID.getName()));
         assertTrue(listener.enabledRules.get(MT.getName()));
+
+        // Verify that we don't notify the listener if the
+        // state doesn't change
+        listener.enabledRules.clear();
+        config.setStateQualifierEnabled(EXACT, true);
+        config.setStateQualifierEnabled(FUZZY, true);
+        config.setStateQualifierEnabled(ID, true);
+        config.setStateQualifierEnabled(MT, true);
+        assertEquals(0, listener.enabledRules.size());
     }
     
     // XXX Default behavior of RuleConfiguration is that

@@ -15,8 +15,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier;
-
 public class RulesParser {
     private static Logger LOG = Logger.getLogger(RulesParser.class);
 
@@ -67,7 +65,7 @@ public class RulesParser {
                 StateQualifier stateQualifier = StateQualifier.get(state);
                 String hexColor = stateQualifierPattern.group(2).trim();
                 if (stateQualifier != null) {
-                    config.addStateQualifierDisplay(stateQualifier, new Color(Integer.decode(hexColor)));
+                    config.setStateQualifierColor(stateQualifier, new Color(Integer.decode(hexColor)));
                 } else {
                     LOG.debug("Ignoring state-qualifier: "+state);
                 }

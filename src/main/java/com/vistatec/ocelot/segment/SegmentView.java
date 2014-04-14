@@ -38,6 +38,7 @@ import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.RuleBasedRowFilter;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
+import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
 
 import java.awt.Color;
@@ -378,11 +379,26 @@ public class SegmentView extends JScrollPane implements RuleListener {
             setOpaque(true);
         }
 
+        private Color getSegmentColor(Segment seg) {
+            // XXX It would be nice if Segment returned a StateQualifier
+            String sq = seg.getStateQualifier();
+            if (sq != null) {
+                StateQualifier stateQualifier = StateQualifier.get(sq);
+                Color sqColor = ruleConfig.getStateQualifierColor(stateQualifier);
+                if (sqColor == null) {
+                    LOG.debug("No UI color for state-qualifier '" + stateQualifier + "'");
+                }
+                return sqColor;
+            }
+            return null;
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             Integer segNum = (Integer) obj;
             Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
-            Color background = ruleConfig.getStateQualifierColor(seg);
+
+            Color background = getSegmentColor(seg);
             background = background != null ? background :
                     isSelected ?
                         seg.isEditablePhase() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY
