@@ -39,7 +39,7 @@ public class RuleBasedRowFilter extends RowFilter<SegmentTableModel, Integer> {
                     return true;
                 }
             }
-            for (RuleFilter r : ruleConfig.getRules().values()) {
+            for (Rule r : ruleConfig.getRules().values()) {
                 if (r.getEnabled() && r.matches(s)) {
                     return true;
                 }

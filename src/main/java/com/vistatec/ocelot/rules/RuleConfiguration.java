@@ -36,6 +36,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 
@@ -48,10 +49,13 @@ import org.apache.log4j.Logger;
 public class RuleConfiguration {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
 
+    /**
+     * LinkedHashMap gives us a predictable iteration order (order in which
+     * elements were inserted.)
+     */
+    private HashMap<String,Rule> rules = new HashMap<String, Rule>();
+    private List<Rule> ruleOrdering = new ArrayList<Rule>();
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
-    private ArrayList<String> ruleOrdering = new ArrayList<String>();
-    private HashMap<String,RuleFilter> rules;
-    private HashMap<String, DataCategoryFlag> flags;
     private HashMap<String, LanguageQualityIssue> quickAdd;
     private HashMap<StateQualifier, Boolean> stateQualifierRules;
     private HashMap<StateQualifier, Color> stateQualifierDisplay;
@@ -90,8 +94,6 @@ public class RuleConfiguration {
     }
 
     public RuleConfiguration() {
-        rules = new HashMap<String, RuleFilter>();
-        flags = new HashMap<String, DataCategoryFlag>();
         quickAdd = new HashMap<String, LanguageQualityIssue>();
         quickAddHotkeys = new HashMap<Integer, String>();
         stateQualifierDisplay = new HashMap<StateQualifier, Color>();
@@ -104,17 +106,9 @@ public class RuleConfiguration {
     public void addRuleListener(RuleListener listener) {
         this.ruleListeners.add(listener);
     }
-
-    public ArrayList<String> getRuleLabels() {
-        return ruleOrdering;
-    }
     
-    public HashMap<String, RuleFilter> getRules() {
+    public HashMap<String, Rule> getRules() {
         return rules;
-    }
-
-    public boolean getRuleEnabled(String ruleLabel) {
-        return rules.get(ruleLabel).getEnabled();
     }
 
     public void enableRule(String ruleLabel, boolean enabled) {
@@ -150,49 +144,51 @@ public class RuleConfiguration {
         }
     }
 
-    public void addStateQualifierDisplay(StateQualifier stateQualifier, Color color) {
+    void addStateQualifierDisplay(StateQualifier stateQualifier, Color color) {
         stateQualifierDisplay.put(stateQualifier, color);
     }
 
-    public void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
+    void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
         quickAddHotkeys.put(hotkey, ruleLabel);
     }
 
-    public void addRuleConstaint(String ruleLabel, RuleMatcher ruleMatcher) {
-        if (rules.get(ruleLabel) == null) {
-            RuleFilter ruleFilter = new RuleFilter();
-            ruleFilter.addRuleMatcher(ruleMatcher);
-            rules.put(ruleLabel, ruleFilter);
-            ruleOrdering.add(ruleLabel);
-        } else {
-            rules.get(ruleLabel).addRuleMatcher(ruleMatcher);
+    public void addRule(Rule rule) {
+        rules.put(rule.getLabel(), rule);
+        ruleOrdering.add(rule);
+    }
+
+    public Rule getRule(String label) {
+        return rules.get(label);
+    }
+
+    private Rule getOrCreateRule(String label) {
+        Rule r = getRule(label);
+        if (r == null) {
+            r = new Rule();
+            r.setLabel(label);
+            addRule(r);
         }
+        return r;
     }
 
-    public DataCategoryFlag getDataCategoryFlag(String ruleLabel) {
-        DataCategoryFlag ret = flags.get(ruleLabel);
-        if (ret == null) {
-            ret = new DataCategoryFlag();
-        }
-        return ret;
+    void addRuleConstaint(String ruleLabel, RuleMatcher ruleMatcher) {
+        getOrCreateRule(ruleLabel).addRuleMatcher(ruleMatcher);
     }
 
-    public void addFill(String ruleLabel, Color fill) {
-        DataCategoryFlag flag = getDataCategoryFlag(ruleLabel);
-        flag.setFill(fill);
-        flags.put(ruleLabel, flag);
+    private DataCategoryFlag getDataCategoryFlag(String ruleLabel) {
+        return getOrCreateRule(ruleLabel).getFlag();
     }
 
-    public void addBorder(String ruleLabel, Color border) {
-        DataCategoryFlag flag = getDataCategoryFlag(ruleLabel);
-        flag.setBorder(BorderFactory.createLineBorder(border));
-        flags.put(ruleLabel, flag);
+    void addFill(String ruleLabel, Color fill) {
+        getDataCategoryFlag(ruleLabel).setFill(fill);
     }
 
-    public void addText(String ruleLabel, String text) {
-        DataCategoryFlag flag = getDataCategoryFlag(ruleLabel);
-        flag.setText(text);
-        flags.put(ruleLabel, flag);
+    void addBorder(String ruleLabel, Color border) {
+        getDataCategoryFlag(ruleLabel).setBorder(BorderFactory.createLineBorder(border));
+    }
+
+    void addText(String ruleLabel, String text) {
+        getDataCategoryFlag(ruleLabel).setText(text);
     }
 
     public LanguageQualityIssue getQuickAddLQI(int hotkey) {
@@ -225,18 +221,25 @@ public class RuleConfiguration {
         quickAdd.put(ruleLabel, lqi);
     }
 
+    /**
+     * Note: this examines rules in reverse-order in which they are added
+     * to the configuration (ie, last rule in rules.properties) is checked
+     * first.
+     */
     public ITSMetadata getTopDataCategory(Segment seg, int flagCol) {
         LinkedList<ITSMetadata> displayFlags = new LinkedList<ITSMetadata>();
         for (int pos = ruleOrdering.size()-1; pos >= 0; pos--) {
-            RuleFilter r = rules.get(ruleOrdering.get(pos));
-            LinkedList<ITSMetadata> itsMatches = r.displayMatches(seg);
+            Rule r = ruleOrdering.get(pos);
+            List<ITSMetadata> itsMatches = r.displayMatches(seg);
             for (ITSMetadata its : itsMatches) {
-                DataCategoryFlag dcf = flags.get(ruleOrdering.get(pos));
+                DataCategoryFlag dcf = r.getFlag();
                 if (dcf != null) {
                     its.setFill(dcf.getFill());
                     its.setBorder(dcf.getBorder());
                     its.setText(dcf.getText());
                 }
+                // XXX This is part of the thing - it prevents multiple rules
+                // from being flagged on a single piece of metadata
                 if (!displayFlags.contains(its)) {
                     displayFlags.add(its);
                 }

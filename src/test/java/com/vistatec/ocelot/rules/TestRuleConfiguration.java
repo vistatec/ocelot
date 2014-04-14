@@ -18,25 +18,25 @@ public class TestRuleConfiguration {
                 new RuleMatcher(DataCategoryField.LQI_COMMENT, new NullMatcher()));
         config.addRuleConstaint("rule2", 
                 new RuleMatcher(DataCategoryField.LQI_SEVERITY, new NullMatcher()));
-        assertFalse(config.getRuleEnabled("rule1"));
-        assertFalse(config.getRuleEnabled("rule2"));
+        assertFalse(config.getRule("rule1").getEnabled());
+        assertFalse(config.getRule("rule2").getEnabled());
 
         config.enableRule("rule1", true);
-        assertTrue(config.getRuleEnabled("rule1"));
-        assertFalse(config.getRuleEnabled("rule2"));
+        assertTrue(config.getRule("rule1").getEnabled());
+        assertFalse(config.getRule("rule2").getEnabled());
         assertTrue(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
 
         config.enableRule("rule2", true);
-        assertTrue(config.getRuleEnabled("rule1"));
-        assertTrue(config.getRuleEnabled("rule2"));
+        assertTrue(config.getRule("rule1").getEnabled());
+        assertTrue(config.getRule("rule2").getEnabled());
         assertTrue(listener.isEnabled("rule1"));
         assertTrue(listener.isEnabled("rule2"));
 
         config.enableRule("rule1", false);
         config.enableRule("rule2", false);
-        assertFalse(config.getRuleEnabled("rule1"));
-        assertFalse(config.getRuleEnabled("rule2"));
+        assertFalse(config.getRule("rule1").getEnabled());
+        assertFalse(config.getRule("rule2").getEnabled());
         assertFalse(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
     }

@@ -107,8 +107,8 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
                     filterRules.getStateQualifierEnabled(stateQualifier.getName()), gridBag, gridy++);
         }
 
-        for (String rule : filterRules.getRuleLabels()) {
-            addFilterCheckBox(rule, filterRules.getRuleEnabled(rule), gridBag, gridy++);
+        for (Rule rule : filterRules.getRules().values()) {
+            addFilterCheckBox(rule.getLabel(), rule.getEnabled(), gridBag, gridy++);
         }
     }
 

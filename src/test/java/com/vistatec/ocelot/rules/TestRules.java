@@ -30,7 +30,7 @@ package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.rules.Matchers;
 import com.vistatec.ocelot.rules.RuleMatcher;
-import com.vistatec.ocelot.rules.RuleFilter;
+import com.vistatec.ocelot.rules.Rule;
 import com.vistatec.ocelot.rules.DataCategoryField;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public class TestRules {
         List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
         // Look for MT confidence of 75 and below
         ruleMatchers.add(new RuleMatcher(DataCategoryField.MT_CONFIDENCE, numericMatcher(0, 75)));
-        RuleFilter filter = new RuleFilter(ruleMatchers);
+        Rule filter = new Rule(ruleMatchers);
         
         Segment segment = new Segment(1, 1, 1, null, null, null);
         segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50)));
@@ -75,7 +75,7 @@ public class TestRules {
 		ruleMatchers.add(new RuleMatcher(DataCategoryField.LQI_TYPE, regexMatcher("omission")));
 		ruleMatchers.add(new RuleMatcher(DataCategoryField.LQI_SEVERITY, numericMatcher(85, 100)));
 		
-		RuleFilter filter = new RuleFilter(ruleMatchers);
+		Rule filter = new Rule(ruleMatchers);
 		
 		// This one should match
 		LanguageQualityIssue lqi1 = new LanguageQualityIssue();
@@ -166,7 +166,7 @@ public class TestRules {
         // - has an organization starting with 'S'
         // - has a person starting with 'T'
         // - has a tool starting with 'U'
-        RuleFilter filter = ruleFilter(
+        Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_ORG, regexMatcher("^S.*")),
                 new RuleMatcher(DataCategoryField.PROV_PERSON, regexMatcher("^T.*")),
                 new RuleMatcher(DataCategoryField.PROV_TOOL, regexMatcher("^U.*")));
@@ -215,7 +215,7 @@ public class TestRules {
         // - has a revision organization starting with 'S'
         // - has a revision person starting with 'T'
         // - has a revision tool starting with 'U'
-        RuleFilter filter = ruleFilter(
+        Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_REVORG, regexMatcher("^S.*")),
                 new RuleMatcher(DataCategoryField.PROV_REVPERSON, regexMatcher("^T.*")),
                 new RuleMatcher(DataCategoryField.PROV_REVTOOL, regexMatcher("^U.*")));
@@ -225,7 +225,7 @@ public class TestRules {
     
     @Test
     public void testProvenanceRevRef() throws Exception {
-        RuleFilter filter = ruleFilter(
+        Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_PROVREF, regexMatcher("^S.*")));
 
         assertTrue(filter.matches(provSegment(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
@@ -241,8 +241,8 @@ public class TestRules {
         return segment;
     }
 
-    private RuleFilter ruleFilter(RuleMatcher... matchers) {
-        return new RuleFilter(Arrays.asList(matchers));
+    private Rule ruleFilter(RuleMatcher... matchers) {
+        return new Rule(Arrays.asList(matchers));
     }
     
 	private Matcher regexMatcher(String regex) {
