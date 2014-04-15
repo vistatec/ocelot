@@ -28,10 +28,12 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.rules.DataCategoryFlag;
-import com.vistatec.ocelot.rules.NullDataCategoryFlag;
+import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.rules.NullITSMetadata;
+
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -83,7 +85,7 @@ public class SegmentTableModel extends AbstractTableModel {
                 || columnIndex == getColumnIndex(COLSEGTGTORI)) {
             return String.class;
         }
-        return DataCategoryFlag.class;
+        return ITSMetadata.class;
     }
 
     @Override
@@ -112,7 +114,7 @@ public class SegmentTableModel extends AbstractTableModel {
         }
         Object ret = segmentController.getRuleConfig().getTopDataCategory(
                 segments.get(row), col-NONFLAGCOLS);
-        return ret != null ? ret : new NullDataCategoryFlag();
+        return ret != null ? ret : NullITSMetadata.getInstance();
     }
 
     @Override

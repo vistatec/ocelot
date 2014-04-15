@@ -122,8 +122,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
         tableSelectionModel.addListSelectionListener(selectSegmentHandler);
 
         sourceTargetTable.setDefaultRenderer(Integer.class, new IntegerRenderer());
-        sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
-                new DataCategoryFlagRenderer());
+        sourceTargetTable.setDefaultRenderer(ITSMetadata.class,
+                new ITSMetadataRenderer());
         sourceTargetTable.setDefaultRenderer(String.class,
                 new SegmentTextRenderer());
 
@@ -354,15 +354,15 @@ public class SegmentView extends JScrollPane implements RuleListener {
         }
     }
 
-    public class DataCategoryFlagRenderer extends JLabel implements TableCellRenderer {
+    public class ITSMetadataRenderer extends JLabel implements TableCellRenderer {
 
-        public DataCategoryFlagRenderer() {
+        public ITSMetadataRenderer() {
             setOpaque(true);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
-            DataCategoryFlag flag = (DataCategoryFlag) obj;
+            DataCategoryFlag flag = ((ITSMetadata)obj).getFlag();
             setBackground(flag.getFill());
             setBorder(hasFocus ?
                     UIManager.getBorder("Table.focusCellHighlightBorder") :

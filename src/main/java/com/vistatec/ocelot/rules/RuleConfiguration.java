@@ -203,14 +203,7 @@ public class RuleConfiguration {
             Rule r = ruleOrdering.get(pos);
             List<ITSMetadata> itsMatches = r.displayMatches(seg);
             for (ITSMetadata its : itsMatches) {
-                DataCategoryFlag dcf = r.getFlag();
-                if (dcf != null) {
-                    its.setFill(dcf.getFill());
-                    its.setBorder(dcf.getBorder());
-                    its.setText(dcf.getText());
-                }
-                // XXX This is part of the thing - it prevents multiple rules
-                // from being flagged on a single piece of metadata
+                its.setFlag(r.getFlag());
                 if (!displayFlags.contains(its)) {
                     displayFlags.add(its);
                 }
