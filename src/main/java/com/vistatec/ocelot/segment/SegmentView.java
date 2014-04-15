@@ -35,6 +35,7 @@ import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
+import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.RuleBasedRowFilter;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
@@ -354,22 +355,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
         }
     }
 
-    public class ITSMetadataRenderer extends JLabel implements TableCellRenderer {
+    public class ITSMetadataRenderer extends DataCategoryFlagRenderer {
 
         public ITSMetadataRenderer() {
-            setOpaque(true);
+            super();
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             DataCategoryFlag flag = ((ITSMetadata)obj).getFlag();
-            setBackground(flag.getFill());
-            setBorder(hasFocus ?
-                    UIManager.getBorder("Table.focusCellHighlightBorder") :
-                    flag.getBorder());
-            setText(flag.getText());
-            setHorizontalAlignment(CENTER);
-            return this;
+            return super.getTableCellRendererComponent(jtable, flag, isSelected, hasFocus, row, col);
         }
     }
 

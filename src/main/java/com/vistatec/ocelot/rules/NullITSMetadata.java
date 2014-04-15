@@ -52,11 +52,15 @@ public class NullITSMetadata extends ITSMetadata {
 
     @Override
     public DataCategoryFlag getFlag() {
-        return NULL_FLAG;
+        return NullDataCategoryFlag.getInstance();
     }
 
-    static final DataCategoryFlag NULL_FLAG = new NullDataCategoryFlag();
     static class NullDataCategoryFlag extends DataCategoryFlag {
+        static final DataCategoryFlag NULL_FLAG = new NullDataCategoryFlag();
+
+        public static DataCategoryFlag getInstance() {
+            return NULL_FLAG;
+        }
 
         @Override
         public Color getFill() {
