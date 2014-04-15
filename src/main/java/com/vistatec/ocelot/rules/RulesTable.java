@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
 
 import com.vistatec.ocelot.rules.NullITSMetadata.NullDataCategoryFlag;
 
@@ -21,9 +22,17 @@ public class RulesTable extends JPanel implements Runnable {
         super(); // XX Layout?
 
         this.ruleConfig = ruleConfig;
-        
+ 
         JTable table = new JTable(new TableModel());
         table.setDefaultRenderer(DataCategoryFlag.class, new DataCategoryFlagRenderer());
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(0).setMinWidth(100);
+        columnModel.getColumn(0).setPreferredWidth(200);
+        columnModel.getColumn(0).setMaxWidth(500);
+        columnModel.getColumn(1).setMinWidth(15);
+        columnModel.getColumn(1).setPreferredWidth(15);
+        columnModel.getColumn(1).setMaxWidth(15);
+
         add(table);
     }
     
@@ -36,15 +45,8 @@ public class RulesTable extends JPanel implements Runnable {
         frame.setVisible(true);
     }
 
-    // TODO register renderers
     class TableModel extends AbstractTableModel {
-        List<String> keys = new ArrayList<String>();
-
         TableModel() {
-            // XXX Hack - because ruleConfig itself doesn't sort
-            // XXX no longer correct order
-            keys.addAll(ruleConfig.getRules().keySet());
-            Collections.sort(keys);
         }
 
         @Override
@@ -54,17 +56,17 @@ public class RulesTable extends JPanel implements Runnable {
 
         @Override
         public int getRowCount() {
-            return keys.size();
+            return ruleConfig.getRules().size();
         }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            String key = keys.get(rowIndex);
+            Rule rule = ruleConfig.getRules().get(rowIndex);
             switch (columnIndex) {
             case 0:
-                return key;
+                return rule.getLabel();
             case 1:
-                DataCategoryFlag flag = ruleConfig.getRules().get(key).getFlag();
+                DataCategoryFlag flag = rule.getFlag();
                 return (flag != null) ? flag : NullDataCategoryFlag.getInstance();
             }
             throw new IllegalArgumentException("Invalid column " + columnIndex);

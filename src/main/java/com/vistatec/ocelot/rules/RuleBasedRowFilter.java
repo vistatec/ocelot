@@ -32,7 +32,7 @@ public class RuleBasedRowFilter extends RowFilter<SegmentTableModel, Integer> {
                 ruleConfig.getStateQualifierEnabled(s.getStateQualifier())) {
                 return true;
             }
-            for (Rule r : ruleConfig.getRules().values()) {
+            for (Rule r : ruleConfig.getRules()) {
                 if (r.getEnabled() && r.matches(s)) {
                     return true;
                 }

@@ -81,10 +81,6 @@ public class RuleConfiguration {
     public void addRuleListener(RuleListener listener) {
         this.ruleListeners.add(listener);
     }
-    
-    public HashMap<String, Rule> getRules() {
-        return rules;
-    }
 
     public void enableRule(String ruleLabel, boolean enabled) {
         rules.get(ruleLabel).setEnabled(enabled);
@@ -121,6 +117,14 @@ public class RuleConfiguration {
 
     void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
         quickAddHotkeys.put(hotkey, ruleLabel);
+    }
+
+    /**
+     * Return a list of all rules in the order they're defined.
+     * @return list of Rule objects
+     */
+    public List<Rule> getRules() {
+        return ruleOrdering;
     }
 
     public void addRule(Rule rule) {
