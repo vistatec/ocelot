@@ -36,6 +36,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
+import com.vistatec.ocelot.rules.NullITSMetadata;
 import com.vistatec.ocelot.rules.RuleBasedRowFilter;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
@@ -358,8 +359,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
-            DataCategoryFlag flag = ((ITSMetadata)obj).getFlag();
-            return super.getTableCellRendererComponent(jtable, flag, isSelected, hasFocus, row, col);
+            ITSMetadata its = (obj != null) ? ((ITSMetadata)obj) : NullITSMetadata.getInstance();
+            return super.getTableCellRendererComponent(jtable, its.getFlag(), isSelected, hasFocus, row, col);
         }
     }
 
