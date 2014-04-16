@@ -76,7 +76,11 @@ public class Rule {
         return enabled;
     }
 
-    public void setEnabled(boolean flag) {
+    /**
+     * Enabled state should be set through
+     * {@link RuleConfiguration#enableRule}
+     */
+    void setEnabled(boolean flag) {
         enabled = flag;
     }
 

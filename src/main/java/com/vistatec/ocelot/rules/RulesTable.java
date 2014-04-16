@@ -128,7 +128,7 @@ public class RulesTable {
         public void setValueAt(Object obj, int row, int column) {
             if (obj instanceof Boolean && column == 0) {
                 Rule rule = ruleConfig.getRules().get(row);
-                rule.setEnabled((Boolean)obj);
+                ruleConfig.enableRule(rule, (Boolean)obj);
                 fireTableCellUpdated(row, column);
             }
         }

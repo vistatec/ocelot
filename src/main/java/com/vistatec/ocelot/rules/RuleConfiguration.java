@@ -88,10 +88,10 @@ public class RuleConfiguration {
         this.ruleListeners.add(listener);
     }
 
-    public void enableRule(String ruleLabel, boolean enabled) {
-        rules.get(ruleLabel).setEnabled(enabled);
+    public void enableRule(Rule rule, boolean enabled) {
+        rule.setEnabled(enabled);
         for (RuleListener listener : ruleListeners) {
-            listener.enabledRule(ruleLabel, enabled);
+            listener.enabledRule(rule.getLabel(), enabled);
         }
     }
 

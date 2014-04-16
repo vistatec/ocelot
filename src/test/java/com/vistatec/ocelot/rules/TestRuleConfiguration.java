@@ -23,22 +23,24 @@ public class TestRuleConfiguration {
         assertFalse(config.getRule("rule1").getEnabled());
         assertFalse(config.getRule("rule2").getEnabled());
 
-        config.enableRule("rule1", true);
-        assertTrue(config.getRule("rule1").getEnabled());
-        assertFalse(config.getRule("rule2").getEnabled());
+        Rule rule1 = config.getRule("rule1");
+        Rule rule2 = config.getRule("rule2");
+        config.enableRule(rule1, true);
+        assertTrue(rule1.getEnabled());
+        assertFalse(rule2.getEnabled());
         assertTrue(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
 
-        config.enableRule("rule2", true);
-        assertTrue(config.getRule("rule1").getEnabled());
-        assertTrue(config.getRule("rule2").getEnabled());
+        config.enableRule(rule2, true);
+        assertTrue(rule1.getEnabled());
+        assertTrue(rule2.getEnabled());
         assertTrue(listener.isEnabled("rule1"));
         assertTrue(listener.isEnabled("rule2"));
 
-        config.enableRule("rule1", false);
-        config.enableRule("rule2", false);
-        assertFalse(config.getRule("rule1").getEnabled());
-        assertFalse(config.getRule("rule2").getEnabled());
+        config.enableRule(rule1, false);
+        config.enableRule(rule2, false);
+        assertFalse(rule1.getEnabled());
+        assertFalse(rule2.getEnabled());
         assertFalse(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
     }
