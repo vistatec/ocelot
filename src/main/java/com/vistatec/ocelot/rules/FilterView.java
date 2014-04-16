@@ -50,7 +50,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * Window for selecting which filter rules to apply to the segment table.
  */
-public class FilterView extends JPanel implements Runnable, ActionListener, ItemListener {
+public class FilterView extends JPanel implements Runnable, ActionListener {
     private static final long serialVersionUID = 1L;
 
     private JFrame frame;
@@ -61,7 +61,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
             customString = "Selected Rules:";
     private JRadioButton all, allWithMetadata, custom;
     private HashMap<String, JCheckBox> rules = new HashMap<String, JCheckBox>();
-    private JTable rulesTable;
+    private RulesTable rulesTable;
 
     public FilterView(RuleConfiguration filterRules, Image icon) {
         super(new GridBagLayout());
@@ -106,38 +106,14 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
 
-        /*
-        for (StateQualifier stateQualifier : StateQualifier.values()) {
-            addFilterCheckBox(stateQualifier.getName(),
-                    filterRules.getStateQualifierEnabled(stateQualifier), gridBag, gridy++);
-        }
-
-        for (Rule rule : filterRules.getRules()) {
-            addFilterCheckBox(rule.getLabel(), rule.getEnabled(), gridBag, gridy++);
-        }
-        */
-        
         // TODO handle state qualifier metadata
 
-        rulesTable = RulesTable.createRulesTable(filterRules);
+        rulesTable = new RulesTable(filterRules);
         gridBag.gridwidth = 3;
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
         gridBag.fill = GridBagConstraints.HORIZONTAL;
-        add(rulesTable, gridBag);
-    }
-
-    public final void addFilterCheckBox(String checkboxName, boolean selected, GridBagConstraints gridBag, int gridy) {
-        JCheckBox filterButton = new JCheckBox(checkboxName);
-        filterButton.setEnabled(custom.isSelected());
-        filterButton.setSelected(selected);
-        filterButton.addItemListener(this);
-        gridBag.gridwidth = 1;
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy;
-        gridBag.insets = new Insets(0, 20, 0, 0);
-        add(filterButton, gridBag);
-        rules.put(checkboxName, filterButton);
+        add(rulesTable.getTable(), gridBag);
     }
 
     @Override
@@ -152,39 +128,20 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
     }
 
     @Override
-    public void itemStateChanged(ItemEvent e) {
-        Object source = e.getItemSelectable();
-        if (source.getClass().equals(JCheckBox.class)) {
-            JCheckBox check = (JCheckBox) source;
-            StateQualifier stateQualifier = StateQualifier.get(check.getText());
-            if (stateQualifier != null) {
-                filterRules.setStateQualifierEnabled(stateQualifier, e.getStateChange() == ItemEvent.SELECTED);
-            } else {
-                filterRules.enableRule(check.getText(), e.getStateChange() == ItemEvent.SELECTED);
-            }
-        }
-    }
-
-    @Override
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == all) {
-            enableRules(false);
+            rulesTable.setAllowEnableDisable(false);
             filterRules.setAllSegments(true);
             filterRules.setMetadataSegments(false);
         } else if (ae.getSource() == allWithMetadata) {
-            enableRules(false);
+            rulesTable.setAllowEnableDisable(false);
             filterRules.setAllSegments(false);
             filterRules.setMetadataSegments(true);
         } else if (ae.getSource() == custom) {
-            enableRules(true);
+            rulesTable.setAllowEnableDisable(true);
             filterRules.setAllSegments(false);
             filterRules.setMetadataSegments(false);
         }
     }
 
-    private void enableRules(boolean flag) {
-        for (JCheckBox checkbox : rules.values()) {
-            checkbox.setEnabled(flag);
-        }
-    }
 }

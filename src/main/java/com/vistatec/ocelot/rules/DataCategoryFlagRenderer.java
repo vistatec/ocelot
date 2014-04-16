@@ -20,11 +20,13 @@ public class DataCategoryFlagRenderer extends JLabel implements TableCellRendere
     @Override
     public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
         DataCategoryFlag flag = (DataCategoryFlag)obj;
-        setBackground(flag.getFill());
-        setBorder(hasFocus ?
-                UIManager.getBorder("Table.focusCellHighlightBorder") :
-                    flag.getBorder());
-        setText(flag.getText());
+        if (flag != null) {
+            setBackground(flag.getFill());
+            setBorder(hasFocus ?
+                    UIManager.getBorder("Table.focusCellHighlightBorder") :
+                        flag.getBorder());
+            setText(flag.getText());
+        }
         setHorizontalAlignment(CENTER);
         return this;
     }
