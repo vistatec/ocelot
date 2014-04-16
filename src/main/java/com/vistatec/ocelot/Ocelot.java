@@ -36,7 +36,6 @@ import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
-import com.vistatec.ocelot.rules.RulesTable;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
@@ -97,7 +96,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
     JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
             menuRules, menuProv, menuSave, menuSaveAs;
-    JMenuItem menuRules2;
     JMenuItem menuPlugins;
     JCheckBoxMenuItem menuTgtDiff;
 
@@ -168,10 +166,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         } else if (e.getSource() == this.menuRules) {
             FilterView rules = new FilterView(segmentView.getRuleConfig(), icon);
-            SwingUtilities.invokeLater(rules);
-
-        } else if (e.getSource() == this.menuRules2) {
-            RulesTable rules = new RulesTable(segmentView.getRuleConfig());
             SwingUtilities.invokeLater(rules);
 
         } else if (e.getSource() == this.menuPlugins) {
@@ -391,10 +385,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuRules.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_R, getPlatformKeyMask()));
         menuFilter.add(menuRules);
-
-        menuRules2 = new JMenuItem("Rules2");
-        menuRules2.addActionListener(this);
-        menuFilter.add(menuRules2);
 
         menuExtensions = new JMenu("Extensions");
         menuBar.add(menuExtensions);

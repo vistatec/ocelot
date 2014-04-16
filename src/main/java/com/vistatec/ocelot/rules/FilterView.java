@@ -44,21 +44,24 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 
 /**
  * Window for selecting which filter rules to apply to the segment table.
  */
 public class FilterView extends JPanel implements Runnable, ActionListener, ItemListener {
+    private static final long serialVersionUID = 1L;
 
     private JFrame frame;
     private static Image icon;
     RuleConfiguration filterRules;
     private String allString = "All Segments",
             metadataString = "All w/metadata",
-            customString = "Custom Rules:";
+            customString = "Selected Rules:";
     private JRadioButton all, allWithMetadata, custom;
     private HashMap<String, JCheckBox> rules = new HashMap<String, JCheckBox>();
+    private JTable rulesTable;
 
     public FilterView(RuleConfiguration filterRules, Image icon) {
         super(new GridBagLayout());
@@ -68,33 +71,34 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
-        gridBag.gridwidth = 1;
+        gridBag.gridwidth = 3;
         int gridy = 0;
 
         JLabel title = new JLabel("Show segments matching rules:");
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
         add(title, gridBag);
 
         all = new JRadioButton(allString);
         all.setSelected(filterRules.all);
         all.addActionListener(this);
+        gridBag.gridwidth = 1;
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
+        gridBag.fill = 0;
         add(all, gridBag);
 
         allWithMetadata = new JRadioButton(metadataString);
         allWithMetadata.setSelected(filterRules.allWithMetadata);
         allWithMetadata.addActionListener(this);
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
+        gridBag.gridx = 1;
         add(allWithMetadata, gridBag);
 
         custom = new JRadioButton(customString);
         custom.setSelected(!filterRules.all && !filterRules.allWithMetadata);
         custom.addActionListener(this);
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
+        gridBag.gridx = 2;
         add(custom, gridBag);
 
         ButtonGroup filterGroup = new ButtonGroup();
@@ -102,6 +106,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
 
+        /*
         for (StateQualifier stateQualifier : StateQualifier.values()) {
             addFilterCheckBox(stateQualifier.getName(),
                     filterRules.getStateQualifierEnabled(stateQualifier), gridBag, gridy++);
@@ -110,6 +115,16 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         for (Rule rule : filterRules.getRules()) {
             addFilterCheckBox(rule.getLabel(), rule.getEnabled(), gridBag, gridy++);
         }
+        */
+        
+        // TODO handle state qualifier metadata
+
+        rulesTable = RulesTable.createRulesTable(filterRules);
+        gridBag.gridwidth = 3;
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        add(rulesTable, gridBag);
     }
 
     public final void addFilterCheckBox(String checkboxName, boolean selected, GridBagConstraints gridBag, int gridy) {

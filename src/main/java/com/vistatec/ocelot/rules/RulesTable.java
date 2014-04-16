@@ -1,29 +1,21 @@
 package com.vistatec.ocelot.rules;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
 
 import com.vistatec.ocelot.rules.NullITSMetadata.NullDataCategoryFlag;
 
-public class RulesTable extends JPanel implements Runnable {
-    private static final long serialVersionUID = 1L;
-    private JFrame frame;
-    private RuleConfiguration ruleConfig;
-
-    public RulesTable(RuleConfiguration ruleConfig) {
-        //super(new GridBagLayout());
-        super(); // XX Layout?
-
-        this.ruleConfig = ruleConfig;
- 
-        JTable table = new JTable(new TableModel());
+/**
+ * Class that wraps a {@link JTable} that contains rule information
+ * and checkboxes to select them.
+ */
+public class RulesTable {
+    // XXX I may need this thing to be an instance that exposes the state.
+    // (checkboxes)
+    public static JTable createRulesTable(RuleConfiguration ruleConfig) {
+        JTable table = new JTable(new TableModel(ruleConfig));
         table.setDefaultRenderer(DataCategoryFlag.class, new DataCategoryFlagRenderer());
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.getColumn(0).setMinWidth(100);
@@ -32,21 +24,15 @@ public class RulesTable extends JPanel implements Runnable {
         columnModel.getColumn(1).setMinWidth(15);
         columnModel.getColumn(1).setPreferredWidth(15);
         columnModel.getColumn(1).setMaxWidth(15);
-
-        add(table);
-    }
-    
-    @Override
-    public void run() {
-        frame = new JFrame("Rules");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.getContentPane().add(this);
-        frame.pack();
-        frame.setVisible(true);
+        return table;
     }
 
-    class TableModel extends AbstractTableModel {
-        TableModel() {
+    static class TableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        private RuleConfiguration ruleConfig;
+
+        TableModel(RuleConfiguration ruleConfig) {
+            this.ruleConfig = ruleConfig;
         }
 
         @Override
