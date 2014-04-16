@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.junit.*;
 
+import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+
 import static org.junit.Assert.*;
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
@@ -73,28 +75,22 @@ public class TestRuleConfiguration {
         assertEquals(0, listener.enabledRules.size());
     }
     
-    // XXX Default behavior of RuleConfiguration is that
-    // allSegments is true and allMetadataSegments is false
     @Test
-    public void testSegmentToggles() {
+    public void testFilterModeListener() {
         TestRuleListener listener = new TestRuleListener();
         RuleConfiguration config = new RuleConfiguration(listener);
         
-        config.setAllSegments(false);
-        assertFalse(listener.allSegmentsIsSet);
-        config.setAllSegments(true);
-        assertTrue(listener.allSegmentsIsSet);
-        
-        config.setMetadataSegments(true);
-        assertTrue(listener.allMetadataSegmentsIsSet);
-        config.setMetadataSegments(false);
-        assertFalse(listener.allMetadataSegmentsIsSet);
+        config.setFilterMode(FilterMode.ALL);
+        assertEquals(FilterMode.ALL, listener.mode);
+        config.setFilterMode(FilterMode.ALL_WITH_METADATA);
+        assertEquals(FilterMode.ALL_WITH_METADATA, listener.mode);
+        config.setFilterMode(FilterMode.SELECTED_SEGMENTS);
+        assertEquals(FilterMode.SELECTED_SEGMENTS, listener.mode);
     }
     
     class TestRuleListener implements RuleListener {
         Map<String, Boolean> enabledRules = new HashMap<String, Boolean>();
-        boolean allSegmentsIsSet = false;
-        boolean allMetadataSegmentsIsSet = false;
+        RuleConfiguration.FilterMode mode;
         
         boolean isEnabled(String ruleLabel) {
             return enabledRules.containsKey(ruleLabel) && enabledRules.get(ruleLabel);
@@ -106,15 +102,9 @@ public class TestRuleConfiguration {
         }
 
         @Override
-        public void allSegments(boolean enabled) {
-            allSegmentsIsSet = enabled;
+        public void setFilterMode(RuleConfiguration.FilterMode mode) {
+            this.mode = mode;
         }
-
-        @Override
-        public void allMetadataSegments(boolean enabled) {
-            allMetadataSegmentsIsSet = enabled;
-        }
-        
     }
     
     class NullMatcher implements DataCategoryField.Matcher {

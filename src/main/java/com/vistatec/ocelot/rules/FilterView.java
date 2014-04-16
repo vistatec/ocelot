@@ -47,6 +47,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 
+import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+
 /**
  * Window for selecting which filter rules to apply to the segment table.
  */
@@ -81,7 +83,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         add(title, gridBag);
 
         all = new JRadioButton(allString);
-        all.setSelected(filterRules.all);
+        all.setSelected(filterRules.getFilterMode() == FilterMode.ALL);
         all.addActionListener(this);
         gridBag.gridwidth = 1;
         gridBag.gridx = 0;
@@ -90,13 +92,13 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         add(all, gridBag);
 
         allWithMetadata = new JRadioButton(metadataString);
-        allWithMetadata.setSelected(filterRules.allWithMetadata);
+        allWithMetadata.setSelected(filterRules.getFilterMode() == FilterMode.ALL_WITH_METADATA);
         allWithMetadata.addActionListener(this);
         gridBag.gridx = 1;
         add(allWithMetadata, gridBag);
 
         custom = new JRadioButton(customString);
-        custom.setSelected(!filterRules.all && !filterRules.allWithMetadata);
+        custom.setSelected(filterRules.getFilterMode() == FilterMode.SELECTED_SEGMENTS);
         custom.addActionListener(this);
         gridBag.gridx = 2;
         add(custom, gridBag);
@@ -131,16 +133,13 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == all) {
             rulesTable.setAllowEnableDisable(false);
-            filterRules.setAllSegments(true);
-            filterRules.setMetadataSegments(false);
+            filterRules.setFilterMode(FilterMode.ALL);
         } else if (ae.getSource() == allWithMetadata) {
             rulesTable.setAllowEnableDisable(false);
-            filterRules.setAllSegments(false);
-            filterRules.setMetadataSegments(true);
+            filterRules.setFilterMode(FilterMode.ALL_WITH_METADATA);
         } else if (ae.getSource() == custom) {
             rulesTable.setAllowEnableDisable(true);
-            filterRules.setAllSegments(false);
-            filterRules.setMetadataSegments(false);
+            filterRules.setFilterMode(FilterMode.SELECTED_SEGMENTS);
         }
     }
 

@@ -2,6 +2,7 @@ package com.vistatec.ocelot.rules;
 
 import javax.swing.RowFilter;
 
+import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 
@@ -19,13 +20,13 @@ public class RuleBasedRowFilter extends RowFilter<SegmentTableModel, Integer> {
     
     @Override
     public boolean include(Entry<? extends SegmentTableModel, ? extends Integer> entry) {
-        if (ruleConfig.getAllSegments()) { 
+        if (ruleConfig.getFilterMode() == FilterMode.ALL) { 
             return true; 
         }
 
         SegmentTableModel model = entry.getModel();
         Segment s = model.getSegment(entry.getIdentifier());
-        if (ruleConfig.getAllMetadataSegments()) {
+        if (ruleConfig.getFilterMode() == FilterMode.ALL_WITH_METADATA) {
             return s.getAllITSMetadata().size() > 0;
         } else {
             if (s.getStateQualifier() != null && 

@@ -58,8 +58,14 @@ public class RuleConfiguration {
     private HashMap<Integer, String> quickAddHotkeys;
     private EnumMap<StateQualifier, StateQualifierRule> stateQualifierRules =
             new EnumMap<StateQualifier, StateQualifierRule>(StateQualifier.class);
-    protected boolean all = true, allWithMetadata;
+    protected FilterMode filterMode = FilterMode.ALL;
 
+    public enum FilterMode {
+        ALL,
+        ALL_WITH_METADATA,
+        SELECTED_SEGMENTS;
+    }
+    
     public RuleConfiguration(RuleListener listener) {
         this();
         this.ruleListeners.add(listener);
@@ -89,29 +95,14 @@ public class RuleConfiguration {
         }
     }
 
-    public boolean getAllSegments() {
-        return all;
+    public FilterMode getFilterMode() {
+        return filterMode;
     }
 
-    public void setAllSegments(boolean enabled) {
-        if (this.all != enabled) {
-            this.all = enabled;
-            for (RuleListener listener : ruleListeners) {
-                listener.allSegments(enabled);
-            }
-        }
-    }
-
-    public boolean getAllMetadataSegments() {
-        return allWithMetadata;
-    }
-
-    public void setMetadataSegments(boolean enabled) {
-        if (this.allWithMetadata != enabled) {
-            this.allWithMetadata = enabled;
-            for (RuleListener listener : ruleListeners) {
-                listener.allMetadataSegments(enabled);
-            }
+    public void setFilterMode(FilterMode mode) {
+        this.filterMode = mode;
+        for (RuleListener listener : ruleListeners) {
+            listener.setFilterMode(mode);
         }
     }
 

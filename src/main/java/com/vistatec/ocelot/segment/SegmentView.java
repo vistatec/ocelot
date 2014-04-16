@@ -299,12 +299,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     @Override
-    public void allSegments(boolean enabled) {
-        reloadTable();
-    }
-
-    @Override
-    public void allMetadataSegments(boolean enabled) {
+    public void setFilterMode(RuleConfiguration.FilterMode mode) {
         reloadTable();
     }
 

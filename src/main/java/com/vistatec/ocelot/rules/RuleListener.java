@@ -39,12 +39,7 @@ public interface RuleListener {
     public void enabledRule(String ruleLabel, boolean enabled);
 
     /**
-     * Notify if all segments filter option is enabled.
+     * Notify that the filter mode has changed.
      */
-    public void allSegments(boolean enabled);
-
-    /**
-     * Notify if all segments with metadata filter option is enabled.
-     */
-    public void allMetadataSegments(boolean enabled);
+    public void setFilterMode(RuleConfiguration.FilterMode filterMode);
 }

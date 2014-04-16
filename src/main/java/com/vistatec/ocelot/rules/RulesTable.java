@@ -9,6 +9,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import com.vistatec.ocelot.rules.NullITSMetadata.NullDataCategoryFlag;
+import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 
 /**
  * Class that wraps a {@link JTable} that contains rule information
@@ -23,10 +24,8 @@ public class RulesTable {
     public RulesTable(RuleConfiguration ruleConfig) {
         this.table = createRulesTable();
         this.ruleConfig = ruleConfig;
-        // XXX Ugly
         this.allowEnableDisable = 
-                !ruleConfig.getAllSegments() &&
-                !ruleConfig.getAllMetadataSegments();
+                (ruleConfig.getFilterMode() == FilterMode.SELECTED_SEGMENTS);
     }
 
     public JTable getTable() {
