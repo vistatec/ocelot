@@ -123,6 +123,12 @@ public class RuleConfiguration {
         ruleOrdering.add(rule);
     }
 
+    public Rule removeRule(Rule rule) {
+        Rule r = rules.remove(rule.getLabel());
+        ruleOrdering.remove(rule);
+        return r;
+    }
+
     public Rule getRule(String label) {
         return rules.get(label);
     }

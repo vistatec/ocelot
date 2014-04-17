@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.rules.Matchers;
+
 import org.junit.*;
 
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
@@ -64,5 +65,19 @@ public class TestMatchers {
 		assertFalse(m.matches(80));
 		assertFalse(m.matches(100));
 		assertFalse(m.matches(Integer.MAX_VALUE));
+	}
+
+	@Test
+	public void testRegexMatcherEquality() {
+	    Matcher m1 = Matchers.regex("test"),
+	            m2 = Matchers.regex("test");
+	    assertEquals(m1, m2);
+	}
+
+	@Test
+	public void testNumericMatcher() {
+	    Matcher m1 = Matchers.numeric(50, 60),
+                m2 = Matchers.numeric(50, 60);
+        assertEquals(m1, m2);
 	}
 }
