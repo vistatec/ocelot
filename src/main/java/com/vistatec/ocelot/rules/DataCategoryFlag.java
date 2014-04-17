@@ -40,6 +40,12 @@ public class DataCategoryFlag {
     private Border border;
     private String text = "?";
 
+    private static final DataCategoryFlag DEFAULT = new DataCategoryFlag();
+
+    public static DataCategoryFlag getDefault() {
+        return DEFAULT;
+    }
+
     public Color getFill() {
         return fill;
     }

@@ -53,6 +53,17 @@ import static org.junit.Assert.*;
 public class TestRules {
 
     @Test
+    public void testEmptyRulesMatchNothing() {
+        Rule rule = new Rule(new ArrayList<RuleMatcher>());
+        assertFalse(rule.matches(lqi("omission", 100)));
+        assertFalse(rule.matches(lqi("non-conformance", 100)));
+        assertFalse(rule.matches(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_ORG, "S",
+                GenericAnnotationType.PROV_PERSON, "T",
+                GenericAnnotationType.PROV_TOOL, "U"))));
+    }
+
+    @Test
     public void testMtConfidence() throws Exception {
         List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
         // Look for MT confidence of 75 and below
@@ -78,19 +89,13 @@ public class TestRules {
 		Rule filter = new Rule(ruleMatchers);
 		
 		// This one should match
-		LanguageQualityIssue lqi1 = new LanguageQualityIssue();
-		lqi1.setSeverity(85);
-		lqi1.setType("omission");
+		LanguageQualityIssue lqi1 = lqi("omission", 85);
 
 		// This one should not match - incorrect type
-		LanguageQualityIssue lqi2 = new LanguageQualityIssue();
-		lqi2.setSeverity(85);
-		lqi2.setType("terminology");
+		LanguageQualityIssue lqi2 = lqi("terminology", 85);
 		
 		// This one should not match - incorrect severity
-		LanguageQualityIssue lqi3 = new LanguageQualityIssue();
-		lqi3.setSeverity(60);
-		lqi3.setType("omission");
+		LanguageQualityIssue lqi3 = lqi("omission", 60);
 		
 		Segment segment = new Segment(1, 1, 1, null, null, null);
 		segment.addLQI(lqi1);
@@ -131,6 +136,13 @@ public class TestRules {
                 GenericAnnotationType.PROV_PERSON, "T",
                 GenericAnnotationType.PROV_TOOL, "U"));
         testBasicProvenance(matchingProv, true);
+    }
+
+    @Test
+    public void testProvenanceRuleShouldntMatchNonProvenance() throws Exception {
+        Rule filter = ruleFilter(
+                new RuleMatcher(DataCategoryField.PROV_TOOL, regexMatcher("Google Translator's Toolkit")));
+        assertFalse(filter.matches(lqi("non-conformance", 85)));
     }
 
     @Test
@@ -258,5 +270,12 @@ public class TestRules {
 		assertTrue(m.validatePattern(s));
 		m.setPattern(s);
 		return m;
+	}
+
+	private LanguageQualityIssue lqi(String type, int severity) {
+	    LanguageQualityIssue lqi = new LanguageQualityIssue();
+	    lqi.setType(type);
+	    lqi.setSeverity(severity);
+	    return lqi;
 	}
 }

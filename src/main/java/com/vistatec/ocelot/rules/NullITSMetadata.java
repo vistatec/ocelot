@@ -55,7 +55,7 @@ public class NullITSMetadata extends ITSMetadata {
         return NullDataCategoryFlag.getInstance();
     }
 
-    static class NullDataCategoryFlag extends DataCategoryFlag {
+    public static class NullDataCategoryFlag extends DataCategoryFlag {
         static final DataCategoryFlag NULL_FLAG = new NullDataCategoryFlag();
 
         public static DataCategoryFlag getInstance() {

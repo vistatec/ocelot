@@ -113,9 +113,12 @@ public class Rule {
 
     /**
      * The filter matches a piece of ITS metadata if all of its rules match that
-     * piece of metadata.
+     * piece of metadata.  Rules with no matchers match nothing.
      */
     boolean matches(ITSMetadata its) {
+        if (matchers.isEmpty()) {
+            return false;
+        }
         for (RuleMatcher matcher : matchers) {
             if (!matches(matcher, its)) {
                 return false;
@@ -141,4 +144,8 @@ public class Rule {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return label;
+    }
 }

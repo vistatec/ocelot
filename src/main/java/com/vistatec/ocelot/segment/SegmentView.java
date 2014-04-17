@@ -360,7 +360,9 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             ITSMetadata its = (obj != null) ? ((ITSMetadata)obj) : NullITSMetadata.getInstance();
-            return super.getTableCellRendererComponent(jtable, its.getFlag(), isSelected, hasFocus, row, col);
+            DataCategoryFlag flag = its.getFlag();
+            flag = (flag != null) ? flag : DataCategoryFlag.getDefault();
+            return super.getTableCellRendererComponent(jtable, flag, isSelected, hasFocus, row, col);
         }
     }
 
