@@ -1,9 +1,14 @@
 package com.vistatec.ocelot.rules;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
 
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -35,8 +40,13 @@ public class RulesTable {
     private JTable createRulesTable() {
         tableModel = new TableModel();
         JTable table = new JTable(tableModel);
+        table.setCellSelectionEnabled(false);
+        table.setShowGrid(false);
         table.setDefaultRenderer(Boolean.class, new GreyableCheckboxRenderer());
         table.setDefaultRenderer(DataCategoryFlag.class, new DataCategoryFlagRenderer());
+        // Add a little little breathing room, particularly around the edge
+        table.setRowHeight(table.getRowHeight() + 4);
+
         TableColumnModel columnModel = table.getColumnModel();
         // Hack - size the column to fit a checkbox exactly.  Otherwise
         // there's a rendering glitch where the checkbox can jump around

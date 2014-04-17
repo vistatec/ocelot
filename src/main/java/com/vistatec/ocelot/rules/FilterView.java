@@ -38,13 +38,16 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
@@ -107,15 +110,32 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         filterGroup.add(all);
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
-
-        // TODO handle state qualifier metadata
+        // XXX Does this do anything?  We never add it to the UI.
 
         rulesTable = new RulesTable(filterRules);
-        gridBag.gridwidth = 3;
+        gridBag = new GridBagConstraints();
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
+        gridBag.gridwidth = GridBagConstraints.REMAINDER;
+        gridBag.weightx = 1.0;
+        gridBag.weighty = 1.0;
         gridBag.fill = GridBagConstraints.HORIZONTAL;
+        gridBag.insets = new Insets(10, 10, 10, 10);
+
         add(rulesTable.getTable(), gridBag);
+
+        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+        gridBag = new GridBagConstraints();
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.gridwidth = GridBagConstraints.REMAINDER;
+        gridBag.weightx = 0;
+        gridBag.weighty = 0;
+        gridBag.insets = new Insets(10, 0, 10, 0);
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        add(sep, gridBag);
+
+        // TODO: state-qualifier rules
     }
 
     @Override
