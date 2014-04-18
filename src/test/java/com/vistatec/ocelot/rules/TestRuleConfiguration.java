@@ -6,6 +6,7 @@ import java.util.Map;
 import org.junit.*;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 
 import static org.junit.Assert.*;
 import static com.vistatec.ocelot.rules.StateQualifier.*;
@@ -83,16 +84,29 @@ public class TestRuleConfiguration {
         RuleConfiguration config = new RuleConfiguration(listener);
         
         config.setFilterMode(FilterMode.ALL);
-        assertEquals(FilterMode.ALL, listener.mode);
+        assertEquals(FilterMode.ALL, listener.filterMode);
         config.setFilterMode(FilterMode.ALL_WITH_METADATA);
-        assertEquals(FilterMode.ALL_WITH_METADATA, listener.mode);
+        assertEquals(FilterMode.ALL_WITH_METADATA, listener.filterMode);
         config.setFilterMode(FilterMode.SELECTED_SEGMENTS);
-        assertEquals(FilterMode.SELECTED_SEGMENTS, listener.mode);
+        assertEquals(FilterMode.SELECTED_SEGMENTS, listener.filterMode);
+    }
+
+    @Test
+    public void testStateQualifierListener() {
+        TestRuleListener listener = new TestRuleListener();
+        RuleConfiguration config = new RuleConfiguration(listener);
+        
+        config.setStateQualifierMode(StateQualifierMode.ALL);
+        assertEquals(StateQualifierMode.ALL, listener.stateQualifierMode);
+        config.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
+        assertEquals(StateQualifierMode.SELECTED_STATES, listener.stateQualifierMode);
     }
     
     class TestRuleListener implements RuleListener {
         Map<String, Boolean> enabledRules = new HashMap<String, Boolean>();
-        RuleConfiguration.FilterMode mode;
+        RuleConfiguration.FilterMode filterMode;
+        RuleConfiguration.StateQualifierMode stateQualifierMode;
+        
         
         boolean isEnabled(String ruleLabel) {
             return enabledRules.containsKey(ruleLabel) && enabledRules.get(ruleLabel);
@@ -105,7 +119,12 @@ public class TestRuleConfiguration {
 
         @Override
         public void setFilterMode(RuleConfiguration.FilterMode mode) {
-            this.mode = mode;
+            this.filterMode = mode;
+        }
+
+        @Override
+        public void setStateQualifierMode(StateQualifierMode mode) {
+            this.stateQualifierMode = mode;
         }
     }
     

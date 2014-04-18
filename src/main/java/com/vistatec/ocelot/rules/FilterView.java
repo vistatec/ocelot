@@ -34,23 +34,17 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.HashMap;
-
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 
 /**
  * Window for selecting which filter rules to apply to the segment table.
@@ -64,9 +58,10 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
     private String allString = "All Segments",
             metadataString = "All w/metadata",
             customString = "Selected Rules:";
-    private JRadioButton all, allWithMetadata, custom;
-    private HashMap<String, JCheckBox> rules = new HashMap<String, JCheckBox>();
+    private JRadioButton all, allWithMetadata, custom,
+            allStates, customStates;
     private RulesTable rulesTable;
+    private StateQualifierTable statesTable;
 
     public FilterView(RuleConfiguration filterRules, Image icon) {
         super(new GridBagLayout());
@@ -110,7 +105,6 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         filterGroup.add(all);
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
-        // XXX Does this do anything?  We never add it to the UI.
 
         rulesTable = new RulesTable(filterRules);
         gridBag = new GridBagConstraints();
@@ -135,7 +129,36 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         gridBag.fill = GridBagConstraints.HORIZONTAL;
         add(sep, gridBag);
 
-        // TODO: state-qualifier rules
+        JLabel sqTitle = new JLabel("Filter segments by state-qualifier:");
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        add(sqTitle, gridBag);
+        
+        allStates = new JRadioButton("Show All");
+        allStates.setSelected(filterRules.getStateQualifierMode() == StateQualifierMode.ALL);
+        allStates.addActionListener(this);
+        gridBag = new GridBagConstraints();
+        gridBag.gridy = gridy++;
+        add(allStates, gridBag);
+        customStates = new JRadioButton("Show Only These:");
+        customStates.setSelected(filterRules.getStateQualifierMode() == StateQualifierMode.SELECTED_STATES);
+        customStates.addActionListener(this);
+        gridBag.gridx = 1;
+        add(customStates, gridBag);
+        ButtonGroup statesGroup = new ButtonGroup();
+        statesGroup.add(allStates);
+        statesGroup.add(customStates);
+
+        this.statesTable = new StateQualifierTable(filterRules);
+        gridBag = new GridBagConstraints();
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.gridwidth = GridBagConstraints.REMAINDER;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        gridBag.insets = new Insets(10, 10, 10, 10);
+
+        add(statesTable.getTable(), gridBag);
     }
 
     @Override
@@ -152,15 +175,20 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
     @Override
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == all) {
-            rulesTable.setAllowEnableDisable(false);
+            rulesTable.setAllowSelection(false);
             filterRules.setFilterMode(FilterMode.ALL);
         } else if (ae.getSource() == allWithMetadata) {
-            rulesTable.setAllowEnableDisable(false);
+            rulesTable.setAllowSelection(false);
             filterRules.setFilterMode(FilterMode.ALL_WITH_METADATA);
         } else if (ae.getSource() == custom) {
-            rulesTable.setAllowEnableDisable(true);
+            rulesTable.setAllowSelection(true);
             filterRules.setFilterMode(FilterMode.SELECTED_SEGMENTS);
+        } else if (ae.getSource() == allStates) {
+            statesTable.setAllowSelection(false);
+            filterRules.setStateQualifierMode(StateQualifierMode.ALL);
+        } else if (ae.getSource() == customStates) {
+            statesTable.setAllowSelection(true);
+            filterRules.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
         }
     }
-
 }

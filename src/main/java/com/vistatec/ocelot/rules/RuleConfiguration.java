@@ -38,7 +38,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 
@@ -59,11 +58,17 @@ public class RuleConfiguration {
     private EnumMap<StateQualifier, StateQualifierRule> stateQualifierRules =
             new EnumMap<StateQualifier, StateQualifierRule>(StateQualifier.class);
     protected FilterMode filterMode = FilterMode.ALL;
+    protected StateQualifierMode stateQualifierMode = StateQualifierMode.ALL;
 
     public enum FilterMode {
         ALL,
         ALL_WITH_METADATA,
         SELECTED_SEGMENTS;
+    }
+
+    public enum StateQualifierMode {
+        ALL,
+        SELECTED_STATES;
     }
     
     public RuleConfiguration(RuleListener listener) {
@@ -225,6 +230,17 @@ public class RuleConfiguration {
         }
 
         return null;
+    }
+
+    public StateQualifierMode getStateQualifierMode() {
+        return stateQualifierMode;
+    }
+
+    public void setStateQualifierMode(StateQualifierMode mode) {
+        this.stateQualifierMode = mode;
+        for (RuleListener listener : ruleListeners) {
+            listener.setStateQualifierMode(mode);
+        }
     }
 
     public void setStateQualifierColor(StateQualifier stateQualifier, Color color) {

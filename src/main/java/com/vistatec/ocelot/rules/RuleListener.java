@@ -42,4 +42,9 @@ public interface RuleListener {
      * Notify that the filter mode has changed.
      */
     public void setFilterMode(RuleConfiguration.FilterMode filterMode);
+
+    /**
+     * Notify that the state qualifier mode has changed.
+     */
+    public void setStateQualifierMode(RuleConfiguration.StateQualifierMode mode);
 }

@@ -3,6 +3,7 @@ package com.vistatec.ocelot.rules;
 import javax.swing.RowFilter;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 
@@ -20,25 +21,31 @@ public class RuleBasedRowFilter extends RowFilter<SegmentTableModel, Integer> {
     
     @Override
     public boolean include(Entry<? extends SegmentTableModel, ? extends Integer> entry) {
-        if (ruleConfig.getFilterMode() == FilterMode.ALL) { 
+        if (ruleConfig.getFilterMode() == FilterMode.ALL &&
+            ruleConfig.getStateQualifierMode() == StateQualifierMode.ALL) { 
             return true; 
         }
 
         SegmentTableModel model = entry.getModel();
         Segment s = model.getSegment(entry.getIdentifier());
-        if (ruleConfig.getFilterMode() == FilterMode.ALL_WITH_METADATA) {
+        if (ruleConfig.getStateQualifierMode() == StateQualifierMode.SELECTED_STATES &&
+            (s.getStateQualifier() == null || 
+             !ruleConfig.getStateQualifierEnabled(s.getStateQualifier()))) {
+            return false;
+        }
+        switch (ruleConfig.getFilterMode()) {
+        case ALL:
+            return true;
+        case ALL_WITH_METADATA:
             return s.getAllITSMetadata().size() > 0;
-        } else {
-            if (s.getStateQualifier() != null && 
-                ruleConfig.getStateQualifierEnabled(s.getStateQualifier())) {
-                return true;
-            }
+        case SELECTED_SEGMENTS:
             for (Rule r : ruleConfig.getRules()) {
                 if (r.getEnabled() && r.matches(s)) {
                     return true;
                 }
             }
-            return false;
+            break;
         }
+        return false;
     }
 }

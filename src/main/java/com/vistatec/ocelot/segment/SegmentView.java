@@ -304,6 +304,11 @@ public class SegmentView extends JScrollPane implements RuleListener {
         reloadTable();
     }
 
+    @Override
+    public void setStateQualifierMode(RuleConfiguration.StateQualifierMode mode) {
+        reloadTable();
+    }
+
     public PluginManager getPluginManager() {
         return this.pluginManager;
     }
