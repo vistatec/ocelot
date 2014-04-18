@@ -357,6 +357,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public class ITSMetadataRenderer extends DataCategoryFlagRenderer {
+        private static final long serialVersionUID = 1L;
 
         public ITSMetadataRenderer() {
             super();
@@ -372,6 +373,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public class IntegerRenderer extends JLabel implements TableCellRenderer {
+        private static final long serialVersionUID = 1L;
 
         public IntegerRenderer() {
             setOpaque(true);
@@ -409,12 +411,15 @@ public class SegmentView extends JScrollPane implements RuleListener {
             setBackground(background);
             setForeground(foreground);
             setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
-            setText(segNum.toString());
+            if (segNum != null) {
+                setText(segNum.toString());
+            }
             return this;
         }
     }
 
     public class SegmentEditor extends AbstractCellEditor implements TableCellEditor {
+        private static final long serialVersionUID = 1L;
 
         protected SegmentTextCell editorComponent;
         protected SegmentCellEditorListener editListener;
@@ -432,6 +437,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
             editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
             editorComponent.getActionMap().put("finish", new AbstractAction() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     fireEditingStopped();
