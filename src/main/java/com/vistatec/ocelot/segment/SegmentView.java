@@ -37,7 +37,7 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
-import com.vistatec.ocelot.rules.RuleBasedRowFilter;
+import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
 import com.vistatec.ocelot.rules.StateQualifier;
@@ -63,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.UIManager;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -198,7 +199,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void addFilters() {
         sort = new TableRowSorter(segmentController.getSegmentTableModel());
         sourceTargetTable.setRowSorter(sort);
-        sort.setRowFilter(new RuleBasedRowFilter(ruleConfig));
+        sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
+            private SegmentSelector selector = new SegmentSelector(ruleConfig);
+            @Override
+            public boolean include(
+                    RowFilter.Entry<? extends SegmentTableModel, ? extends Integer> entry) {
+                return selector.matches(entry.getModel().getSegment(entry.getIdentifier()));
+            }
+        });
     }
 
     protected void updateRowHeights() {
