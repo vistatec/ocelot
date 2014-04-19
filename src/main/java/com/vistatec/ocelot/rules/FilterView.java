@@ -47,6 +47,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
@@ -170,9 +171,13 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         gridBag.gridwidth = GridBagConstraints.REMAINDER;
         gridBag.fill = GridBagConstraints.HORIZONTAL;
         gridBag.insets = new Insets(10, 10, 10, 10);
-        JTable t = statesTable.getTable();
-        t.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        add(statesTable.getTable(), gridBag);
+        scrollPane = new JScrollPane(statesTable.getTable());
+        dim = scrollPane.getPreferredSize();
+        dim.width = statesTable.getTable().getPreferredSize().width;
+        dim.height= statesTable.getTable().getPreferredSize().height + 5;
+        scrollPane.setPreferredSize(dim);
+        statesTable.getTable().setFillsViewportHeight(true);
+        add(scrollPane, gridBag);
     }
 
     @Override

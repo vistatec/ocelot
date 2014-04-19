@@ -1,11 +1,16 @@
 package com.vistatec.ocelot.rules;
 
 import java.awt.Component;
+
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+
+import com.vistatec.ocelot.ui.OTable;
 
 /**
  * Class that wraps a {@link JTable} that contains rule information
@@ -37,7 +42,8 @@ public abstract class FilterViewTable {
 
     protected JTable createFilterViewTable() {
         tableModel = getTableModel();
-        JTable table = new JTable(tableModel);
+        //JTable table = new JTable(tableModel);
+        JTable table = new OTable(tableModel);
         table.setTableHeader(null);
         table.setCellSelectionEnabled(false);
         table.setShowGrid(false);
@@ -51,7 +57,7 @@ public abstract class FilterViewTable {
         // there's a rendering glitch where the checkbox can jump around
         // in the cell when clicked.
         JCheckBox cb = new JCheckBox();
-        int cbWidth = cb.getPreferredSize().width;
+        int cbWidth = cb.getPreferredSize().width + 4;
         columnModel.getColumn(0).setMinWidth(cbWidth);
         columnModel.getColumn(0).setPreferredWidth(cbWidth);
         columnModel.getColumn(0).setMaxWidth(cbWidth);
@@ -61,6 +67,7 @@ public abstract class FilterViewTable {
         columnModel.getColumn(2).setMinWidth(25);
         columnModel.getColumn(2).setPreferredWidth(25);
         columnModel.getColumn(2).setMaxWidth(25);
+        
         return table;
     }
 
@@ -76,6 +83,7 @@ public abstract class FilterViewTable {
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             this.setEnabled(allowSelection);
+            setHorizontalAlignment(JLabel.CENTER);
             if (value instanceof Boolean) {
                 this.setSelected((Boolean)value);
             }
