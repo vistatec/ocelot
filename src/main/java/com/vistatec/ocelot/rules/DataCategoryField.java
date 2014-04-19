@@ -29,17 +29,17 @@
 package com.vistatec.ocelot.rules;
 
 public enum DataCategoryField {
-	LQI_TYPE("locQualityIssueType", Matchers.RegexMatcher.class),
-	LQI_COMMENT("locQualityIssueComment", Matchers.RegexMatcher.class),
-	LQI_SEVERITY("locQualityIssueSeverity", Matchers.NumericMatcher.class),
-        PROV_ORG("org", Matchers.RegexMatcher.class),
-        PROV_PERSON("person", Matchers.RegexMatcher.class),
-        PROV_TOOL("tool", Matchers.RegexMatcher.class),
-        PROV_REVORG("revOrg", Matchers.RegexMatcher.class),
-        PROV_REVPERSON("revPerson", Matchers.RegexMatcher.class),
-        PROV_REVTOOL("revTool", Matchers.RegexMatcher.class),
-        PROV_PROVREF("provRef", Matchers.RegexMatcher.class),
-        MT_CONFIDENCE("mtConfidence", Matchers.NumericMatcher.class);
+    LQI_TYPE("locQualityIssueType", Matchers.RegexMatcher.class),
+    LQI_COMMENT("locQualityIssueComment", Matchers.RegexMatcher.class),
+    LQI_SEVERITY("locQualityIssueSeverity", Matchers.NumericMatcher.class),
+    PROV_ORG("org", Matchers.RegexMatcher.class),
+    PROV_PERSON("person", Matchers.RegexMatcher.class),
+    PROV_TOOL("tool", Matchers.RegexMatcher.class),
+    PROV_REVORG("revOrg", Matchers.RegexMatcher.class),
+    PROV_REVPERSON("revPerson", Matchers.RegexMatcher.class),
+    PROV_REVTOOL("revTool", Matchers.RegexMatcher.class),
+    PROV_PROVREF("provRef", Matchers.RegexMatcher.class),
+    MT_CONFIDENCE("mtConfidence", Matchers.NumericMatcher.class);
 	
 	private String name;
 	private Class<? extends Matcher> clazz;

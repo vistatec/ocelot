@@ -59,6 +59,8 @@ public class Segment {
     private TextContainer originalTarget;
     private ArrayList<String> targetDiff = new ArrayList<String>();
 
+    public Segment() { }
+
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
             TextContainer source, TextContainer target, TextContainer originalTarget) {
         this.segmentNumber = segNum;
