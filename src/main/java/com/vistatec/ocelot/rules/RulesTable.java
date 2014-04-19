@@ -1,18 +1,6 @@
 package com.vistatec.ocelot.rules;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Insets;
-
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
 import javax.swing.JTable;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
-
 import com.vistatec.ocelot.rules.NullITSMetadata.NullDataCategoryFlag;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 

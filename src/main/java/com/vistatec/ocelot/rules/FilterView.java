@@ -28,18 +28,24 @@
  */
 package com.vistatec.ocelot.rules;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -77,12 +83,14 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         JLabel title = new JLabel("Show segments matching rules:");
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
+        gridBag.insets = new Insets(10, 0, 10, 0);
         gridBag.fill = GridBagConstraints.HORIZONTAL;
         add(title, gridBag);
 
         all = new JRadioButton(allString);
         all.setSelected(filterRules.getFilterMode() == FilterMode.ALL);
         all.addActionListener(this);
+        gridBag.insets = new Insets(0, 0, 0, 0);
         gridBag.gridwidth = 1;
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
@@ -115,8 +123,13 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         gridBag.weighty = 1.0;
         gridBag.fill = GridBagConstraints.HORIZONTAL;
         gridBag.insets = new Insets(10, 10, 10, 10);
-
-        add(rulesTable.getTable(), gridBag);
+        JScrollPane scrollPane = new JScrollPane(rulesTable.getTable());
+        Dimension dim = scrollPane.getPreferredSize();
+        dim.width = rulesTable.getTable().getPreferredSize().width;
+        scrollPane.setPreferredSize(dim);
+        rulesTable.getTable().setFillsViewportHeight(true);
+        
+        add(scrollPane, gridBag);
 
         JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
         gridBag = new GridBagConstraints();
@@ -157,7 +170,8 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         gridBag.gridwidth = GridBagConstraints.REMAINDER;
         gridBag.fill = GridBagConstraints.HORIZONTAL;
         gridBag.insets = new Insets(10, 10, 10, 10);
-
+        JTable t = statesTable.getTable();
+        t.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         add(statesTable.getTable(), gridBag);
     }
 
@@ -169,6 +183,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
 
         frame.getContentPane().add(this);
         frame.pack();
+        frame.setResizable(false);
         frame.setVisible(true);
     }
 

@@ -38,6 +38,7 @@ public abstract class FilterViewTable {
     protected JTable createFilterViewTable() {
         tableModel = getTableModel();
         JTable table = new JTable(tableModel);
+        table.setTableHeader(null);
         table.setCellSelectionEnabled(false);
         table.setShowGrid(false);
         table.setDefaultRenderer(Boolean.class, new GreyableCheckboxRenderer());
@@ -55,8 +56,8 @@ public abstract class FilterViewTable {
         columnModel.getColumn(0).setPreferredWidth(cbWidth);
         columnModel.getColumn(0).setMaxWidth(cbWidth);
         columnModel.getColumn(1).setMinWidth(100);
-        columnModel.getColumn(1).setPreferredWidth(200);
-        columnModel.getColumn(1).setMaxWidth(500);
+        columnModel.getColumn(1).setPreferredWidth(325);
+        columnModel.getColumn(1).setMaxWidth(325);
         columnModel.getColumn(2).setMinWidth(25);
         columnModel.getColumn(2).setPreferredWidth(25);
         columnModel.getColumn(2).setMaxWidth(25);
