@@ -50,6 +50,8 @@ import javax.swing.border.EmptyBorder;
  * Provenance configuration view.
  */
 public class ProvenanceProfileView extends JPanel implements Runnable, ActionListener {
+    private static final long serialVersionUID = 1L;
+
     private JFrame frame;
     private static Image icon;
     private JTextField inputRevPerson, inputRevOrg, inputExtRef;

@@ -46,11 +46,13 @@ import javax.swing.table.TableRowSorter;
  * Table View for displaying segment ITS metadata.
  */
 public class LanguageQualityIssueTableView extends JScrollPane {
+    private static final long serialVersionUID = 1L;
+
     private SegmentAttributeView segAttrView;
     protected JTable lqiTable;
     protected LQITableModel lqiTableModel;
     private ListSelectionModel tableSelectionModel;
-    private TableRowSorter sort;
+    private TableRowSorter<LQITableModel> sort;
     
     public LanguageQualityIssueTableView(SegmentAttributeView sav) {
         segAttrView = sav;
@@ -69,7 +71,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         List<LanguageQualityIssue> lqiData = seg.getLQI();
         lqiTableModel.setRows(lqiData);
 
-        sort = new TableRowSorter(lqiTableModel);
+        sort = new TableRowSorter<LQITableModel>(lqiTableModel);
         lqiTable.setRowSorter(sort);
         lqiTable.addMouseListener(new LQIPopupMenuListener());
 
@@ -99,6 +101,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     }
 
     public class LQITableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
 
         public static final int NUMCOLS = 3;
         public String[] colNames = {"Type", "Severity", "Comment"};

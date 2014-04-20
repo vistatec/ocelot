@@ -6,7 +6,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -42,7 +41,6 @@ public abstract class FilterViewTable {
 
     protected JTable createFilterViewTable() {
         tableModel = getTableModel();
-        //JTable table = new JTable(tableModel);
         JTable table = new OTable(tableModel);
         table.setTableHeader(null);
         table.setCellSelectionEnabled(false);

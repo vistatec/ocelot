@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
  * Table view for displaying simple key-value pair ITS metadata on a segment.
  */
 public class OtherITSTableView extends JScrollPane {
+    private static final long serialVersionUID = 1L;
+
     private Logger LOG = LoggerFactory.getLogger(OtherITSTableView.class);
     protected JTable itsTable;
     private OtherITSTableModel itsTableModel;
@@ -84,6 +86,8 @@ public class OtherITSTableView extends JScrollPane {
     }
 
     public class OtherITSTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+
         public static final int NUMCOLS = 2;
         public String[] colNames = {"Name", "Value"};
         private List<OtherITSMetadata> rows = new ArrayList<OtherITSMetadata>();

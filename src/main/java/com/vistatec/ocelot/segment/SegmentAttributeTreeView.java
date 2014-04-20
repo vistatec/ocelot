@@ -41,6 +41,8 @@ import javax.swing.tree.DefaultTreeModel;
  * Tree View for displaying segment ITS metadata.
  */
 public class SegmentAttributeTreeView extends JScrollPane implements TreeSelectionListener {
+    private static final long serialVersionUID = 1L;
+
     private SegmentAttributeView segAttrView;
 
     protected JTree tree;

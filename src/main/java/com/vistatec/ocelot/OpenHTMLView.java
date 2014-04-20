@@ -45,6 +45,8 @@ import javax.swing.border.EmptyBorder;
  * View for importing aligned files into the workbench.
  */
 public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
+    private static final long serialVersionUID = 1L;
+
     private JFrame frame;
     private Ocelot rw;
     private SegmentController segmentController;

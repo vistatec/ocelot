@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
 import java.util.EnumMap;
 import java.util.Map;
 import net.sf.okapi.common.annotation.GenericAnnotation;

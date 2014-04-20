@@ -85,6 +85,8 @@ import org.apache.log4j.Logger;
  * opened file. Indicates attached LTS metadata as flags.
  */
 public class SegmentView extends JScrollPane implements RuleListener {
+    private static final long serialVersionUID = 1L;
+
     private static Logger LOG = Logger.getLogger(SegmentView.class);
 
     protected SegmentController segmentController;
@@ -92,7 +94,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
-    protected TableRowSorter sort;
+    protected TableRowSorter<SegmentTableModel> sort;
 
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
@@ -197,7 +199,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public void addFilters() {
-        sort = new TableRowSorter(segmentController.getSegmentTableModel());
+        sort = new TableRowSorter<SegmentTableModel>(segmentController.getSegmentTableModel());
         sourceTargetTable.setRowSorter(sort);
         sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
             private SegmentSelector selector = new SegmentSelector(ruleConfig);

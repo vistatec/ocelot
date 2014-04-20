@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
  * Detail view showing the raw source and target segment text.
  */
 public class SegmentDetailView extends JScrollPane {
+    private static final long serialVersionUID = 1L;
+
     private Logger LOG = LoggerFactory.getLogger(SegmentDetailView.class);
     private JTable table;
     private DetailTableModel tableModel;
@@ -132,6 +134,8 @@ public class SegmentDetailView extends JScrollPane {
     }
 
     public class DetailTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+
         public static final int SEGMENTROWS = 3;
         private String[] column = {"Label", "Segments"};
         private String[] rowName = {"Source:", "Target:", "Original Target:", "Edit Distance: "};
@@ -152,7 +156,7 @@ public class SegmentDetailView extends JScrollPane {
         }
 
         @Override
-        public Class getColumnClass(int col) {
+        public Class<?> getColumnClass(int col) {
             return String.class;
         }
 

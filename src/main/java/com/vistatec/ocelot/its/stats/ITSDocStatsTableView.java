@@ -41,15 +41,17 @@ import javax.swing.table.TableRowSorter;
  * Table View for displaying segment ITS metadata.
  */
 public class ITSDocStatsTableView extends JScrollPane {
+    private static final long serialVersionUID = 1L;
+
     protected JTable docStatsTable;
     private DocumentStatsTableModel docStatsModel;
-    private TableRowSorter sort;
+    private TableRowSorter<DocumentStatsTableModel> sort;
 
     public ITSDocStatsTableView() {
         docStatsModel = new DocumentStatsTableModel();
         docStatsTable = new JTable(docStatsModel);
 
-        sort = new TableRowSorter(docStatsModel);
+        sort = new TableRowSorter<DocumentStatsTableModel>(docStatsModel);
         docStatsTable.setRowSorter(sort);
 
         setViewportView(docStatsTable);
@@ -68,6 +70,8 @@ public class ITSDocStatsTableView extends JScrollPane {
     }
 
     private class DocumentStatsTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+
         public static final int NUMCOLS = 4;
         public String[] colNames = {"Data Category", "Type", "Value", "Count"};
         private List<ITSStats> rows = new LinkedList<ITSStats>();
@@ -88,7 +92,7 @@ public class ITSDocStatsTableView extends JScrollPane {
         }
 
         @Override
-        public Class getColumnClass(int col) {
+        public Class<?> getColumnClass(int col) {
             if (col == 3) {
                 return Integer.class;
             } else {

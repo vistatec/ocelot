@@ -41,6 +41,7 @@ import javax.swing.table.AbstractTableModel;
  * shown in the SegmentView.
  */
 public class SegmentTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = 1L;
 
     private SegmentController segmentController;
     private LinkedList<Segment> segments = new LinkedList<Segment>();
@@ -76,7 +77,7 @@ public class SegmentTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Class getColumnClass(int columnIndex) {
+    public Class<?> getColumnClass(int columnIndex) {
         if (columnIndex == getColumnIndex(COLSEGNUM)) {
             return Integer.class;
         }
