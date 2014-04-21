@@ -47,7 +47,7 @@ public class RulesParser {
         } else {
             LOG.warn("No rules.properties file found at location:"+rulesFile.getAbsolutePath());
         }
-        return null;
+        return new RuleConfiguration();
     }
 
     public RuleConfiguration parse(BufferedReader configFile) throws IOException, InstantiationException, IllegalAccessException {
