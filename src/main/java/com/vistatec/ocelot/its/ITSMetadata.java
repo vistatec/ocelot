@@ -29,22 +29,22 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
-import java.awt.Color;
+import com.vistatec.ocelot.rules.DataCategoryFlag;
+
 import java.util.Map;
-import javax.swing.border.Border;
 
-public interface ITSMetadata {
-    Map<DataCategoryField, Object> getFieldValues();
+public abstract class ITSMetadata {
+    private DataCategoryFlag flag = null;
 
-    public Color getFill();
+    protected ITSMetadata() { }
 
-    public void setFill(Color f);
+    public abstract Map<DataCategoryField, Object> getFieldValues();
 
-    public Border getBorder();
+    public DataCategoryFlag getFlag() {
+        return flag;
+    }
 
-    public void setBorder(Border b);
-
-    public String getText();
-
-    public void setText(String t);
+    public void setFlag(DataCategoryFlag flag) {
+        this.flag = flag;
+    }
 }

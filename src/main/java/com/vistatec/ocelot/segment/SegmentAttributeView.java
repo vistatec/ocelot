@@ -46,6 +46,8 @@ import javax.swing.event.ChangeListener;
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  */
 public class SegmentAttributeView extends JTabbedPane {
+    private static final long serialVersionUID = 1L;
+
     protected ITSDocStatsTableView aggregateTableView;
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;

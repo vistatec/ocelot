@@ -42,6 +42,8 @@ import javax.swing.border.EmptyBorder;
  * Detail view showing ITS metadata on the selected Provenance in SegmentAttributeView.
  */
 public class ProvenanceView extends JScrollPane {
+    private static final long serialVersionUID = 1L;
+
     private JLabel dataCategoryLabel, segmentLabel;
     private JLabel personLabel, orgLabel, toolLabel,
             revPersonLabel, revOrgLabel, revToolLabel;

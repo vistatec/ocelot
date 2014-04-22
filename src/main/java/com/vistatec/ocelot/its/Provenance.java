@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
 import java.util.EnumMap;
 import java.util.Map;
 import net.sf.okapi.common.annotation.GenericAnnotation;
@@ -38,10 +37,11 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 /**
  * Represents Provenance Data Category in the ITS 2.0 spec.
  */
-public class Provenance extends DataCategoryFlag implements ITSMetadata {
+public class Provenance extends ITSMetadata {
     private String person, org, tool, revPerson, revOrg, revTool, provRef, recsRef;
 
     public Provenance(GenericAnnotation ga) {
+        super();
         if (ga.getString(GenericAnnotationType.PROV_RECSREF) != null) {
             this.recsRef = ga.getString(GenericAnnotationType.PROV_RECSREF);
         }

@@ -28,37 +28,43 @@
  */
 package com.vistatec.ocelot.rules;
 
-import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.HashMap;
+
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 
 /**
  * Window for selecting which filter rules to apply to the segment table.
  */
-public class FilterView extends JPanel implements Runnable, ActionListener, ItemListener {
+public class FilterView extends JPanel implements Runnable, ActionListener {
+    private static final long serialVersionUID = 1L;
 
     private JFrame frame;
     private static Image icon;
     RuleConfiguration filterRules;
     private String allString = "All Segments",
             metadataString = "All w/metadata",
-            customString = "Custom Rules:";
-    private JRadioButton all, allWithMetadata, custom;
-    private HashMap<String, JCheckBox> rules = new HashMap<String, JCheckBox>();
+            customString = "Selected Rules:";
+    private JRadioButton all, allWithMetadata, custom,
+            allStates, customStates;
+    private RulesTable rulesTable;
+    private StateQualifierTable statesTable;
 
     public FilterView(RuleConfiguration filterRules, Image icon) {
         super(new GridBagLayout());
@@ -68,33 +74,36 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
-        gridBag.gridwidth = 1;
+        gridBag.gridwidth = 3;
         int gridy = 0;
 
         JLabel title = new JLabel("Show segments matching rules:");
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
+        gridBag.insets = new Insets(10, 0, 10, 0);
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
         add(title, gridBag);
 
         all = new JRadioButton(allString);
-        all.setSelected(filterRules.all);
+        all.setSelected(filterRules.getFilterMode() == FilterMode.ALL);
         all.addActionListener(this);
+        gridBag.insets = new Insets(0, 0, 0, 0);
+        gridBag.gridwidth = 1;
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;
+        gridBag.fill = 0;
         add(all, gridBag);
 
         allWithMetadata = new JRadioButton(metadataString);
-        allWithMetadata.setSelected(filterRules.allWithMetadata);
+        allWithMetadata.setSelected(filterRules.getFilterMode() == FilterMode.ALL_WITH_METADATA);
         allWithMetadata.addActionListener(this);
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
+        gridBag.gridx = 1;
         add(allWithMetadata, gridBag);
 
         custom = new JRadioButton(customString);
-        custom.setSelected(!filterRules.all && !filterRules.allWithMetadata);
+        custom.setSelected(filterRules.getFilterMode() == FilterMode.SELECTED_SEGMENTS);
         custom.addActionListener(this);
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
+        gridBag.gridx = 2;
         add(custom, gridBag);
 
         ButtonGroup filterGroup = new ButtonGroup();
@@ -102,27 +111,69 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
         filterGroup.add(allWithMetadata);
         filterGroup.add(custom);
 
-        for (StateQualifier stateQualifier : RuleConfiguration.StateQualifier.values()) {
-            addFilterCheckBox(stateQualifier.getName(),
-                    filterRules.getStateQualifierEnabled(stateQualifier.getName()), gridBag, gridy++);
-        }
-
-        for (String rule : filterRules.getRuleLabels()) {
-            addFilterCheckBox(rule, filterRules.getRuleEnabled(rule), gridBag, gridy++);
-        }
-    }
-
-    public final void addFilterCheckBox(String checkboxName, boolean selected, GridBagConstraints gridBag, int gridy) {
-        JCheckBox filterButton = new JCheckBox(checkboxName);
-        filterButton.setEnabled(custom.isSelected());
-        filterButton.setSelected(selected);
-        filterButton.addItemListener(this);
-        gridBag.gridwidth = 1;
+        rulesTable = new RulesTable(filterRules);
+        gridBag = new GridBagConstraints();
         gridBag.gridx = 0;
-        gridBag.gridy = gridy;
-        gridBag.insets = new Insets(0, 20, 0, 0);
-        add(filterButton, gridBag);
-        rules.put(checkboxName, filterButton);
+        gridBag.gridy = gridy++;
+        gridBag.gridwidth = GridBagConstraints.REMAINDER;
+        gridBag.weightx = 1.0;
+        gridBag.weighty = 1.0;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        gridBag.insets = new Insets(10, 10, 10, 10);
+        JScrollPane scrollPane = new JScrollPane(rulesTable.getTable());
+        Dimension dim = scrollPane.getPreferredSize();
+        dim.width = rulesTable.getTable().getPreferredSize().width;
+        scrollPane.setPreferredSize(dim);
+        rulesTable.getTable().setFillsViewportHeight(true);
+        
+        add(scrollPane, gridBag);
+
+        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+        gridBag = new GridBagConstraints();
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.gridwidth = GridBagConstraints.REMAINDER;
+        gridBag.weightx = 0;
+        gridBag.weighty = 0;
+        gridBag.insets = new Insets(10, 0, 10, 0);
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        add(sep, gridBag);
+
+        JLabel sqTitle = new JLabel("Filter segments by state-qualifier:");
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        add(sqTitle, gridBag);
+        
+        allStates = new JRadioButton("Show All");
+        allStates.setSelected(filterRules.getStateQualifierMode() == StateQualifierMode.ALL);
+        allStates.addActionListener(this);
+        gridBag = new GridBagConstraints();
+        gridBag.gridy = gridy++;
+        add(allStates, gridBag);
+        customStates = new JRadioButton("Show Only These:");
+        customStates.setSelected(filterRules.getStateQualifierMode() == StateQualifierMode.SELECTED_STATES);
+        customStates.addActionListener(this);
+        gridBag.gridx = 1;
+        add(customStates, gridBag);
+        ButtonGroup statesGroup = new ButtonGroup();
+        statesGroup.add(allStates);
+        statesGroup.add(customStates);
+
+        this.statesTable = new StateQualifierTable(filterRules);
+        gridBag = new GridBagConstraints();
+        gridBag.gridx = 0;
+        gridBag.gridy = gridy++;
+        gridBag.gridwidth = GridBagConstraints.REMAINDER;
+        gridBag.fill = GridBagConstraints.HORIZONTAL;
+        gridBag.insets = new Insets(10, 10, 10, 10);
+        scrollPane = new JScrollPane(statesTable.getTable());
+        dim = scrollPane.getPreferredSize();
+        dim.width = statesTable.getTable().getPreferredSize().width;
+        dim.height= statesTable.getTable().getPreferredSize().height + 5;
+        scrollPane.setPreferredSize(dim);
+        statesTable.getTable().setFillsViewportHeight(true);
+        add(scrollPane, gridBag);
     }
 
     @Override
@@ -133,43 +184,27 @@ public class FilterView extends JPanel implements Runnable, ActionListener, Item
 
         frame.getContentPane().add(this);
         frame.pack();
+        frame.setResizable(false);
         frame.setVisible(true);
-    }
-
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-        Object source = e.getItemSelectable();
-        if (source.getClass().equals(JCheckBox.class)) {
-            JCheckBox check = (JCheckBox) source;
-            StateQualifier stateQualifier = RuleConfiguration.StateQualifier.get(check.getText());
-            if (stateQualifier != null) {
-                filterRules.setStateQualifierEnabled(stateQualifier, e.getStateChange() == ItemEvent.SELECTED);
-            } else {
-                filterRules.enableRule(check.getText(), e.getStateChange() == ItemEvent.SELECTED);
-            }
-        }
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == all) {
-            enableRules(false);
-            filterRules.setAllSegments(true);
-            filterRules.setMetadataSegments(false);
+            rulesTable.setAllowSelection(false);
+            filterRules.setFilterMode(FilterMode.ALL);
         } else if (ae.getSource() == allWithMetadata) {
-            enableRules(false);
-            filterRules.setAllSegments(false);
-            filterRules.setMetadataSegments(true);
+            rulesTable.setAllowSelection(false);
+            filterRules.setFilterMode(FilterMode.ALL_WITH_METADATA);
         } else if (ae.getSource() == custom) {
-            enableRules(true);
-            filterRules.setAllSegments(false);
-            filterRules.setMetadataSegments(false);
-        }
-    }
-
-    private void enableRules(boolean flag) {
-        for (JCheckBox checkbox : rules.values()) {
-            checkbox.setEnabled(flag);
+            rulesTable.setAllowSelection(true);
+            filterRules.setFilterMode(FilterMode.SELECTED_SEGMENTS);
+        } else if (ae.getSource() == allStates) {
+            statesTable.setAllowSelection(false);
+            filterRules.setStateQualifierMode(StateQualifierMode.ALL);
+        } else if (ae.getSource() == customStates) {
+            statesTable.setAllowSelection(true);
+            filterRules.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
         }
     }
 }

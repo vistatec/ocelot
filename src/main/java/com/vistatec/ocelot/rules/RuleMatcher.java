@@ -28,6 +28,8 @@
  */
 package com.vistatec.ocelot.rules;
 
+import net.sf.okapi.common.HashCodeUtil;
+
 /**
  * A rule element consisting of a field and an instance of a configured matcher 
  * appropriate for that field.
@@ -54,5 +56,21 @@ public class RuleMatcher {
 	@Override
 	public String toString() {
 		return field.toString() + "=>" + matcher;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+	    if (o == this) return true;
+        if (o == null || !(o instanceof RuleMatcher)) return false;
+        RuleMatcher m = (RuleMatcher)o;
+        return field.equals(m.field) &&
+               matcher.equals(m.matcher);
+	}
+
+	@Override
+	public int hashCode() {
+	    return HashCodeUtil.hash(
+	                HashCodeUtil.hash(HashCodeUtil.SEED, field),
+	                matcher);
 	}
 }

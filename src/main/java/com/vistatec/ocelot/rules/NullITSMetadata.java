@@ -29,31 +29,62 @@
 package com.vistatec.ocelot.rules;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.Map;
+
 import javax.swing.border.Border;
 
+import com.vistatec.ocelot.its.ITSMetadata;
+
 /**
- * Data Flag for segments that don't have ITS metadata in the specified column
- * in the segment table view.
+ * Dummy ITS Metadata for empty columns.
  */
-public class NullDataCategoryFlag extends DataCategoryFlag {
-    
-    @Override
-    public Color getFill() {
-        return null;
+public class NullITSMetadata extends ITSMetadata { 
+    private NullITSMetadata() {
+        super();
+    }
+
+    private static final NullITSMetadata INSTANCE = new NullITSMetadata();
+
+    public static NullITSMetadata getInstance() {
+        return INSTANCE;
     }
 
     @Override
-    public Border getBorder() {
-        return null;
+    public DataCategoryFlag getFlag() {
+        return NullDataCategoryFlag.getInstance();
+    }
+
+    public static class NullDataCategoryFlag extends DataCategoryFlag {
+        static final DataCategoryFlag NULL_FLAG = new NullDataCategoryFlag();
+
+        public static DataCategoryFlag getInstance() {
+            return NULL_FLAG;
+        }
+
+        @Override
+        public Color getFill() {
+            return null;
+        }
+
+        @Override
+        public Border getBorder() {
+            return null;
+        }
+
+        @Override
+        public String getText() {
+            return "";
+        }
+
+        @Override
+        public String toString() {
+            return "";
+        }
     }
 
     @Override
-    public String getText() {
-        return "";
-    }
-
-    @Override
-    public String toString() {
-        return "";
+    public Map<DataCategoryField, Object> getFieldValues() {
+        return Collections.emptyMap();
     }
 }

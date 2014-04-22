@@ -52,6 +52,8 @@ import org.apache.log4j.Logger;
  * the editor behavior and the underlying data structure.
  */
 public class SegmentTextCell extends JTextPane {
+    private static final long serialVersionUID = 1L;
+
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
     public static String tagStyle = "tag", regularStyle = "regular",
             insertStyle = "insert", deleteStyle = "delete";
@@ -253,7 +255,7 @@ public class SegmentTextCell extends JTextPane {
 
         public void modifyChars(int offset, int charsToRemove, String replacementChars) {
             Iterator<TextPart> textParts = tc.iterator();
-            int textPos = 0, partIndex = 0;
+            int textPos = 0;
             while (textParts.hasNext()) {
                 TextPart tp = textParts.next();
                 TextFragment tf = tp.text;
@@ -271,7 +273,6 @@ public class SegmentTextCell extends JTextPane {
                     }
                     tp.setContent(tf);
                 }
-                partIndex++;
                 textPos += tf.length();
             }
         }

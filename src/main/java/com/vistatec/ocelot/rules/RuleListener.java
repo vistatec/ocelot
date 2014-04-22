@@ -39,12 +39,12 @@ public interface RuleListener {
     public void enabledRule(String ruleLabel, boolean enabled);
 
     /**
-     * Notify if all segments filter option is enabled.
+     * Notify that the filter mode has changed.
      */
-    public void allSegments(boolean enabled);
+    public void setFilterMode(RuleConfiguration.FilterMode filterMode);
 
     /**
-     * Notify if all segments with metadata filter option is enabled.
+     * Notify that the state qualifier mode has changed.
      */
-    public void allMetadataSegments(boolean enabled);
+    public void setStateQualifierMode(RuleConfiguration.StateQualifierMode mode);
 }

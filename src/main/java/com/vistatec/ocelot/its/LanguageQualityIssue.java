@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.EnumMap;
@@ -40,13 +39,15 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 /**
  * Represents Language Quality Issue Data Category in the ITS 2.0 spec.
  */
-public class LanguageQualityIssue extends DataCategoryFlag implements ITSMetadata {
+public class LanguageQualityIssue extends ITSMetadata {
     private String type, comment, issuesRef;
     private double severity;
     private URL profileReference;
     private boolean enabled;
 
-    public LanguageQualityIssue() {}
+    public LanguageQualityIssue() {
+        super();
+    }
     
     public LanguageQualityIssue(GenericAnnotation ga) {
         if (ga.getString(GenericAnnotationType.LQI_ISSUESREF) != null) {

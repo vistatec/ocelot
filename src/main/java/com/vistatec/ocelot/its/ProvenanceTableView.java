@@ -43,11 +43,13 @@ import javax.swing.table.TableRowSorter;
  * Table View for displaying segment ITS Provenance metadata.
  */
 public class ProvenanceTableView extends JScrollPane {
+    private static final long serialVersionUID = 1L;
+
     private SegmentAttributeView segAttrView;
     protected JTable provTable;
     private ProvTableModel provTableModel;
     private ListSelectionModel tableSelectionModel;
-    private TableRowSorter sort;
+    private TableRowSorter<ProvTableModel> sort;
 
     public ProvenanceTableView(SegmentAttributeView sav) {
         segAttrView = sav;
@@ -65,7 +67,7 @@ public class ProvenanceTableView extends JScrollPane {
         List<Provenance> provData = seg.getProv();
         provTableModel.setRows(provData);
 
-        sort = new TableRowSorter(provTableModel);
+        sort = new TableRowSorter<ProvTableModel>(provTableModel);
         provTable.setRowSorter(sort);
 
         setViewportView(provTable);
@@ -94,6 +96,8 @@ public class ProvenanceTableView extends JScrollPane {
     }
 
     public class ProvTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+
         public static final int NUMCOLS = 6;
         public String [] colNames = {"Person", "Org", "Tool",
             "RevPerson", "RevOrg", "RevTool", "ProvRef"};

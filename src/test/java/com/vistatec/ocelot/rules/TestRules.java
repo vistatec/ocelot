@@ -30,7 +30,7 @@ package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.rules.Matchers;
 import com.vistatec.ocelot.rules.RuleMatcher;
-import com.vistatec.ocelot.rules.RuleFilter;
+import com.vistatec.ocelot.rules.Rule;
 import com.vistatec.ocelot.rules.DataCategoryField;
 
 import java.util.ArrayList;
@@ -53,11 +53,22 @@ import static org.junit.Assert.*;
 public class TestRules {
 
     @Test
+    public void testEmptyRulesMatchNothing() {
+        Rule rule = new Rule(new ArrayList<RuleMatcher>());
+        assertFalse(rule.matches(lqi("omission", 100)));
+        assertFalse(rule.matches(lqi("non-conformance", 100)));
+        assertFalse(rule.matches(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+                GenericAnnotationType.PROV_ORG, "S",
+                GenericAnnotationType.PROV_PERSON, "T",
+                GenericAnnotationType.PROV_TOOL, "U"))));
+    }
+
+    @Test
     public void testMtConfidence() throws Exception {
         List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
         // Look for MT confidence of 75 and below
         ruleMatchers.add(new RuleMatcher(DataCategoryField.MT_CONFIDENCE, numericMatcher(0, 75)));
-        RuleFilter filter = new RuleFilter(ruleMatchers);
+        Rule filter = new Rule(ruleMatchers);
         
         Segment segment = new Segment(1, 1, 1, null, null, null);
         segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50)));
@@ -75,22 +86,16 @@ public class TestRules {
 		ruleMatchers.add(new RuleMatcher(DataCategoryField.LQI_TYPE, regexMatcher("omission")));
 		ruleMatchers.add(new RuleMatcher(DataCategoryField.LQI_SEVERITY, numericMatcher(85, 100)));
 		
-		RuleFilter filter = new RuleFilter(ruleMatchers);
+		Rule filter = new Rule(ruleMatchers);
 		
 		// This one should match
-		LanguageQualityIssue lqi1 = new LanguageQualityIssue();
-		lqi1.setSeverity(85);
-		lqi1.setType("omission");
+		LanguageQualityIssue lqi1 = lqi("omission", 85);
 
 		// This one should not match - incorrect type
-		LanguageQualityIssue lqi2 = new LanguageQualityIssue();
-		lqi2.setSeverity(85);
-		lqi2.setType("terminology");
+		LanguageQualityIssue lqi2 = lqi("terminology", 85);
 		
 		// This one should not match - incorrect severity
-		LanguageQualityIssue lqi3 = new LanguageQualityIssue();
-		lqi3.setSeverity(60);
-		lqi3.setType("omission");
+		LanguageQualityIssue lqi3 = lqi("omission", 60);
 		
 		Segment segment = new Segment(1, 1, 1, null, null, null);
 		segment.addLQI(lqi1);
@@ -134,6 +139,13 @@ public class TestRules {
     }
 
     @Test
+    public void testProvenanceRuleShouldntMatchNonProvenance() throws Exception {
+        Rule filter = ruleFilter(
+                new RuleMatcher(DataCategoryField.PROV_TOOL, regexMatcher("Google Translator's Toolkit")));
+        assertFalse(filter.matches(lqi("non-conformance", 85)));
+    }
+
+    @Test
     public void testProvenanceBasicFieldsFailsOrg() throws Exception {
         Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_ORG, "X",
@@ -166,7 +178,7 @@ public class TestRules {
         // - has an organization starting with 'S'
         // - has a person starting with 'T'
         // - has a tool starting with 'U'
-        RuleFilter filter = ruleFilter(
+        Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_ORG, regexMatcher("^S.*")),
                 new RuleMatcher(DataCategoryField.PROV_PERSON, regexMatcher("^T.*")),
                 new RuleMatcher(DataCategoryField.PROV_TOOL, regexMatcher("^U.*")));
@@ -215,7 +227,7 @@ public class TestRules {
         // - has a revision organization starting with 'S'
         // - has a revision person starting with 'T'
         // - has a revision tool starting with 'U'
-        RuleFilter filter = ruleFilter(
+        Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_REVORG, regexMatcher("^S.*")),
                 new RuleMatcher(DataCategoryField.PROV_REVPERSON, regexMatcher("^T.*")),
                 new RuleMatcher(DataCategoryField.PROV_REVTOOL, regexMatcher("^U.*")));
@@ -225,7 +237,7 @@ public class TestRules {
     
     @Test
     public void testProvenanceRevRef() throws Exception {
-        RuleFilter filter = ruleFilter(
+        Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_PROVREF, regexMatcher("^S.*")));
 
         assertTrue(filter.matches(provSegment(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
@@ -241,8 +253,8 @@ public class TestRules {
         return segment;
     }
 
-    private RuleFilter ruleFilter(RuleMatcher... matchers) {
-        return new RuleFilter(Arrays.asList(matchers));
+    private Rule ruleFilter(RuleMatcher... matchers) {
+        return new Rule(Arrays.asList(matchers));
     }
     
 	private Matcher regexMatcher(String regex) {
@@ -258,5 +270,12 @@ public class TestRules {
 		assertTrue(m.validatePattern(s));
 		m.setPattern(s);
 		return m;
+	}
+
+	private LanguageQualityIssue lqi(String type, int severity) {
+	    LanguageQualityIssue lqi = new LanguageQualityIssue();
+	    lqi.setType(type);
+	    lqi.setSeverity(severity);
+	    return lqi;
 	}
 }

@@ -31,20 +31,16 @@ package com.vistatec.ocelot.rules;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
+
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
+
 import javax.swing.BorderFactory;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -53,43 +49,26 @@ import org.apache.log4j.Logger;
  */
 public class RuleConfiguration {
     private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
-    private Pattern ruleFormat, flagFormat, quickAddFormat, quickAddHotkeyFormat,
-            stateQualifierFormat;
 
+    private HashMap<String,Rule> rules = new HashMap<String, Rule>();
+    private List<Rule> ruleOrdering = new ArrayList<Rule>();
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
-    private ArrayList<String> ruleOrdering = new ArrayList<String>();
-    private HashMap<String,RuleFilter> rules;
-    private HashMap<String, DataCategoryFlag> flags;
     private HashMap<String, LanguageQualityIssue> quickAdd;
-    private HashMap<StateQualifier, Boolean> stateQualifierRules;
-    private HashMap<StateQualifier, Color> stateQualifierDisplay;
     private HashMap<Integer, String> quickAddHotkeys;
-    protected boolean all = true, allWithMetadata;
+    private EnumMap<StateQualifier, StateQualifierRule> stateQualifierRules =
+            new EnumMap<StateQualifier, StateQualifierRule>(StateQualifier.class);
+    protected FilterMode filterMode = FilterMode.ALL;
+    protected StateQualifierMode stateQualifierMode = StateQualifierMode.ALL;
 
-    public enum StateQualifier {
-        ID("id-match"),
-        EXACT("exact-match"),
-        FUZZY("fuzzy-match"),
-        MT("mt-suggestion");
+    public enum FilterMode {
+        ALL,
+        ALL_WITH_METADATA,
+        SELECTED_SEGMENTS;
+    }
 
-        private String name;
-
-        private StateQualifier(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public static StateQualifier get(String name) {
-            for (StateQualifier sq : values()) {
-                if (sq.getName().equals(name)) {
-                    return sq;
-                }
-            }
-            return null;
-        }
+    public enum StateQualifierMode {
+        ALL,
+        SELECTED_STATES;
     }
     
     public RuleConfiguration(RuleListener listener) {
@@ -98,215 +77,95 @@ public class RuleConfiguration {
     }
 
     public RuleConfiguration() {
-        rules = new HashMap<String, RuleFilter>();
-        flags = new HashMap<String, DataCategoryFlag>();
         quickAdd = new HashMap<String, LanguageQualityIssue>();
         quickAddHotkeys = new HashMap<Integer, String>();
-        stateQualifierDisplay = new HashMap<StateQualifier, Color>();
-        stateQualifierRules = new HashMap<StateQualifier, Boolean>();
+        initStateQualifierRules();
+    }
+
+    void initStateQualifierRules() {
         for (StateQualifier sq : StateQualifier.values()) {
-            stateQualifierRules.put(sq, false);
+            StateQualifierRule rule = new StateQualifierRule(sq);
+            stateQualifierRules.put(sq, rule);
         }
-
-        // ruleLabel.dataCategory = regex
-        ruleFormat = Pattern.compile("([^.]+)\\.(\\w+)\\s*=(.*)");
-        // ruleLabel.flag.flagType = display
-        flagFormat = Pattern.compile("([^.]+)\\.flag\\.(\\w+)\\s*=(.*)");
-        // ruleLabel.quickAdd.LQIType = value
-        quickAddFormat = Pattern.compile("([^.]+)\\.quickAdd\\.(\\w+)\\s*=(.*)");
-        quickAddHotkeyFormat = Pattern.compile("[0-9]");
-        // [id-match|exact-match|fuzzy-match|mt-suggestion] = hex
-        stateQualifierFormat = Pattern.compile("(id-match|exact-match|fuzzy-match|mt-suggestion)\\s*=\\s*(.*)");
-
     }
     
-    public final void loadConfig(File rulesFile) {
-        if (rulesFile.exists()) {
-            BufferedReader in;
-            try {
-                in = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(rulesFile), "UTF-8"));
-                parse(in);
-            } catch (UnsupportedEncodingException ex) {
-                LOG.error("Encoding not supported",ex);
-            } catch (FileNotFoundException ex) {
-                LOG.error("Rules file not found", ex);
-            } catch (IOException ex) {
-                LOG.error("IO error", ex);
-            } catch (InstantiationException ex) {
-                LOG.error("Failed to instantiate Matcher class", ex);
-            } catch (IllegalAccessException ex) {
-                LOG.error("Matcher class not accessible", ex);
-            }
-        } else {
-            LOG.warn("No rules.properties file found at location:"+rulesFile.getAbsolutePath());
-        }
-    }
-
-    public void parse(BufferedReader configFile) throws IOException, InstantiationException, IllegalAccessException {
-        String line;
-        while ((line = configFile.readLine()) != null) {
-            Matcher rulePattern = ruleFormat.matcher(line);
-            Matcher flagPattern = flagFormat.matcher(line);
-            Matcher quickAddPattern = quickAddFormat.matcher(line);
-            Matcher stateQualifierPattern = stateQualifierFormat.matcher(line);
-            Matcher whitespace = Pattern.compile("\\s*").matcher(line);
-            if (stateQualifierPattern.matches()) {
-                String state = stateQualifierPattern.group(1);
-                StateQualifier stateQualifier = StateQualifier.get(state);
-                String hexColor = stateQualifierPattern.group(2).trim();
-                if (stateQualifier != null) {
-                    stateQualifierDisplay.put(stateQualifier, new Color(Integer.decode(hexColor)));
-                } else {
-                    LOG.debug("Ignoring state-qualifier: "+state);
-                }
-
-            } else if (rulePattern.matches()) {
-                String ruleLabel = rulePattern.group(1);
-                String dataCategory = rulePattern.group(2);
-                String regex = rulePattern.group(3).trim();
-
-                DataCategoryField dataCategoryField =
-                        DataCategoryField.byName(dataCategory);
-                if (dataCategoryField == null) {
-                    LOG.error("Unrecognized datacategory: "+dataCategory
-                            +", line: "+line);
-                } else {
-                    DataCategoryField.Matcher dcfMatcher = 
-                            dataCategoryField.getMatcherClass().newInstance();
-                    dcfMatcher.setPattern(regex);
-
-                    RuleMatcher ruleMatcher =
-                            new RuleMatcher(dataCategoryField, dcfMatcher);
-                    addRuleConstaint(ruleLabel, ruleMatcher);
-                }
-            } else if (flagPattern.matches()) {
-                String ruleLabel = flagPattern.group(1);
-                String flagType = flagPattern.group(2);
-                String value = flagPattern.group(3).trim();
-
-                if (flagType.equals("fill")) {
-                    addFill(ruleLabel, new Color(Integer.decode(value)));
-                } else if (flagType.equals("border")) {
-                    addBorder(ruleLabel, new Color(Integer.decode(value)));
-                } else if (flagType.equals("text")) {
-                    addText(ruleLabel, value);
-                } else {
-                    LOG.error("Unrecognized flag: "+line);
-                }
-            } else if (quickAddPattern.matches()) {
-                String ruleLabel = quickAddPattern.group(1);
-                String LQIType = quickAddPattern.group(2);
-                String value = quickAddPattern.group(3).trim();
-
-                if (LQIType.equals(DataCategoryField.LQI_TYPE.getName())) {
-                    setLQIType(ruleLabel, value);
-
-                } else if (LQIType.equals(DataCategoryField.LQI_SEVERITY.getName())) {
-                    setLQISeverity(ruleLabel, Double.parseDouble(value));
-
-                } else if (LQIType.equals(DataCategoryField.LQI_COMMENT.getName())) {
-                    setLQIComment(ruleLabel, value);
-
-                } else if (LQIType.equals("hotkey")) {
-                    if (quickAddHotkeyFormat.matcher(value).matches()) {
-                        quickAddHotkeys.put(Integer.parseInt(value), ruleLabel);
-                    } else {
-                        LOG.error("Illegal quickAdd hotkey: "+value);
-                    }
-                } else {
-                    LOG.error("Illegal quickAdd type: "+LQIType);
-                }
-            } else if (!whitespace.matches()) {
-                LOG.error("Unrecognized rule: "+line);
-            }
-        }
-    }
-
     public void addRuleListener(RuleListener listener) {
         this.ruleListeners.add(listener);
     }
 
-    public ArrayList<String> getRuleLabels() {
+    public void enableRule(Rule rule, boolean enabled) {
+        rule.setEnabled(enabled);
+        for (RuleListener listener : ruleListeners) {
+            listener.enabledRule(rule.getLabel(), enabled);
+        }
+    }
+
+    public FilterMode getFilterMode() {
+        return filterMode;
+    }
+
+    public void setFilterMode(FilterMode mode) {
+        this.filterMode = mode;
+        for (RuleListener listener : ruleListeners) {
+            listener.setFilterMode(mode);
+        }
+    }
+
+    void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
+        quickAddHotkeys.put(hotkey, ruleLabel);
+    }
+
+    /**
+     * Return a list of all rules in the order they're defined.
+     * @return list of Rule objects
+     */
+    public List<Rule> getRules() {
         return ruleOrdering;
     }
-    
-    public HashMap<String, RuleFilter> getRules() {
-        return rules;
+
+    public void addRule(Rule rule) {
+        rules.put(rule.getLabel(), rule);
+        ruleOrdering.add(rule);
     }
 
-    public boolean getRuleEnabled(String ruleLabel) {
-        return rules.get(ruleLabel).getEnabled();
+    public Rule removeRule(Rule rule) {
+        Rule r = rules.remove(rule.getLabel());
+        ruleOrdering.remove(rule);
+        return r;
     }
 
-    public void enableRule(String ruleLabel, boolean enabled) {
-        rules.get(ruleLabel).setEnabled(enabled);
-        for (RuleListener listener : ruleListeners) {
-            listener.enabledRule(ruleLabel, enabled);
+    public Rule getRule(String label) {
+        return rules.get(label);
+    }
+
+    private Rule getOrCreateRule(String label) {
+        Rule r = getRule(label);
+        if (r == null) {
+            r = new Rule();
+            r.setLabel(label);
+            addRule(r);
         }
+        return r;
     }
 
-    public boolean getAllSegments() {
-        return all;
+    void addRuleConstaint(String ruleLabel, RuleMatcher ruleMatcher) {
+        getOrCreateRule(ruleLabel).addRuleMatcher(ruleMatcher);
     }
 
-    public void setAllSegments(boolean enabled) {
-        if (this.all != enabled) {
-            this.all = enabled;
-            for (RuleListener listener : ruleListeners) {
-                listener.allSegments(enabled);
-            }
-        }
+    private DataCategoryFlag getDataCategoryFlag(String ruleLabel) {
+        return getOrCreateRule(ruleLabel).getFlag();
     }
 
-    public boolean getAllMetadataSegments() {
-        return allWithMetadata;
+    void addFill(String ruleLabel, Color fill) {
+        getDataCategoryFlag(ruleLabel).setFill(fill);
     }
 
-    public void setMetadataSegments(boolean enabled) {
-        if (this.allWithMetadata != enabled) {
-            this.allWithMetadata = enabled;
-            for (RuleListener listener : ruleListeners) {
-                listener.allMetadataSegments(enabled);
-            }
-        }
+    void addBorder(String ruleLabel, Color border) {
+        getDataCategoryFlag(ruleLabel).setBorder(BorderFactory.createLineBorder(border));
     }
 
-    public void addRuleConstaint(String ruleLabel, RuleMatcher ruleMatcher) {
-        if (rules.get(ruleLabel) == null) {
-            RuleFilter ruleFilter = new RuleFilter();
-            ruleFilter.addRuleMatcher(ruleMatcher);
-            rules.put(ruleLabel, ruleFilter);
-            ruleOrdering.add(ruleLabel);
-        } else {
-            rules.get(ruleLabel).addRuleMatcher(ruleMatcher);
-        }
-    }
-
-    public DataCategoryFlag getDataCategoryFlag(String ruleLabel) {
-        DataCategoryFlag ret = flags.get(ruleLabel);
-        if (ret == null) {
-            ret = new DataCategoryFlag();
-        }
-        return ret;
-    }
-
-    public void addFill(String ruleLabel, Color fill) {
-        DataCategoryFlag flag = getDataCategoryFlag(ruleLabel);
-        flag.setFill(fill);
-        flags.put(ruleLabel, flag);
-    }
-
-    public void addBorder(String ruleLabel, Color border) {
-        DataCategoryFlag flag = getDataCategoryFlag(ruleLabel);
-        flag.setBorder(BorderFactory.createLineBorder(border));
-        flags.put(ruleLabel, flag);
-    }
-
-    public void addText(String ruleLabel, String text) {
-        DataCategoryFlag flag = getDataCategoryFlag(ruleLabel);
-        flag.setText(text);
-        flags.put(ruleLabel, flag);
+    void addText(String ruleLabel, String text) {
+        getDataCategoryFlag(ruleLabel).setText(text);
     }
 
     public LanguageQualityIssue getQuickAddLQI(int hotkey) {
@@ -339,18 +198,18 @@ public class RuleConfiguration {
         quickAdd.put(ruleLabel, lqi);
     }
 
+    /**
+     * Note: this examines rules in reverse-order in which they are added
+     * to the configuration (ie, last rule in rules.properties) is checked
+     * first.
+     */
     public ITSMetadata getTopDataCategory(Segment seg, int flagCol) {
         LinkedList<ITSMetadata> displayFlags = new LinkedList<ITSMetadata>();
         for (int pos = ruleOrdering.size()-1; pos >= 0; pos--) {
-            RuleFilter r = rules.get(ruleOrdering.get(pos));
-            LinkedList<ITSMetadata> itsMatches = r.displayMatches(seg);
+            Rule r = ruleOrdering.get(pos);
+            List<ITSMetadata> itsMatches = r.displayMatches(seg);
             for (ITSMetadata its : itsMatches) {
-                DataCategoryFlag dcf = flags.get(ruleOrdering.get(pos));
-                if (dcf != null) {
-                    its.setFill(dcf.getFill());
-                    its.setBorder(dcf.getBorder());
-                    its.setText(dcf.getText());
-                }
+                its.setFlag(r.getFlag());
                 if (!displayFlags.contains(its)) {
                     displayFlags.add(its);
                 }
@@ -373,44 +232,37 @@ public class RuleConfiguration {
         return null;
     }
 
-    public Color getStateQualifierColor(Segment seg) {
-        String sq = seg.getStateQualifier();
-        if (sq != null) {
-            StateQualifier stateQualifier = StateQualifier.get(sq);
-            Color sqColor = stateQualifierDisplay.get(stateQualifier);
-            if (sqColor != null) {
-                return sqColor;
-            } else {
-                LOG.debug("No UI color for state-qualifier '" + stateQualifier + "'");
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-    
-    public HashMap<StateQualifier, Boolean> getStateQualifierRules() {
-        return stateQualifierRules;
+    public StateQualifierMode getStateQualifierMode() {
+        return stateQualifierMode;
     }
 
-    public boolean getStateQualifierEnabled(String sq) {
-        StateQualifier stateQualifier = StateQualifier.get(sq);
-        if (stateQualifier != null) {
-            return stateQualifierRules.get(stateQualifier);
-        } else {
-            LOG.warn("Unrecognized state-qualifier when checking if enabled: "+sq);
-            return false;
+    public void setStateQualifierMode(StateQualifierMode mode) {
+        this.stateQualifierMode = mode;
+        for (RuleListener listener : ruleListeners) {
+            listener.setStateQualifierMode(mode);
         }
+    }
+
+    public void setStateQualifierColor(StateQualifier stateQualifier, Color color) {
+        stateQualifierRules.get(stateQualifier).setColor(color);
+    }
+
+    public Color getStateQualifierColor(StateQualifier stateQualifier) {
+        return stateQualifierRules.get(stateQualifier).getColor();
+    }
+
+    public boolean getStateQualifierEnabled(StateQualifier stateQualifier) {
+        return stateQualifierRules.get(stateQualifier).getEnabled();
     }
 
     public void setStateQualifierEnabled(StateQualifier stateQualifier, boolean flag) {
-        if (stateQualifierRules.containsKey(stateQualifier)) {
-            stateQualifierRules.put(stateQualifier, flag);
+        StateQualifierRule rule = stateQualifierRules.get(stateQualifier);
+        // Only notify listeners on change
+        if (flag != rule.getEnabled()) {
+            rule.setEnabled(flag);
             for (RuleListener listener : ruleListeners) {
                 listener.enabledRule(stateQualifier.getName(), flag);
             }
-        } else {
-            LOG.warn("Unrecognized state-qualifier rule '"+stateQualifier+"'");
         }
     }
 

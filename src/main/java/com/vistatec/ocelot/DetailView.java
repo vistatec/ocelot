@@ -43,6 +43,8 @@ import javax.swing.JPanel;
  * Detail pane displaying data related to a selected segment in the SegmentView.
  */
 public class DetailView extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private NewLanguageQualityIssueView lqiDetailView;
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;

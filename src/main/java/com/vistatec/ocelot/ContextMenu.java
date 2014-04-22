@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.Segment;

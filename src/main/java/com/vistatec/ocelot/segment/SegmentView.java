@@ -35,9 +35,12 @@ import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
-import com.vistatec.ocelot.rules.RuleBasedRowFilter;
+import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
+import com.vistatec.ocelot.rules.NullITSMetadata;
+import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
+import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
 
 import java.awt.Color;
@@ -60,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.UIManager;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -81,6 +85,8 @@ import org.apache.log4j.Logger;
  * opened file. Indicates attached LTS metadata as flags.
  */
 public class SegmentView extends JScrollPane implements RuleListener {
+    private static final long serialVersionUID = 1L;
+
     private static Logger LOG = Logger.getLogger(SegmentView.class);
 
     protected SegmentController segmentController;
@@ -88,7 +94,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
-    protected TableRowSorter sort;
+    protected TableRowSorter<SegmentTableModel> sort;
 
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
@@ -121,8 +127,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
         tableSelectionModel.addListSelectionListener(selectSegmentHandler);
 
         sourceTargetTable.setDefaultRenderer(Integer.class, new IntegerRenderer());
-        sourceTargetTable.setDefaultRenderer(DataCategoryFlag.class,
-                new DataCategoryFlagRenderer());
+        sourceTargetTable.setDefaultRenderer(ITSMetadata.class,
+                new ITSMetadataRenderer());
         sourceTargetTable.setDefaultRenderer(String.class,
                 new SegmentTextRenderer());
 
@@ -193,9 +199,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public void addFilters() {
-        sort = new TableRowSorter(segmentController.getSegmentTableModel());
+        sort = new TableRowSorter<SegmentTableModel>(segmentController.getSegmentTableModel());
         sourceTargetTable.setRowSorter(sort);
-        sort.setRowFilter(new RuleBasedRowFilter(ruleConfig));
+        sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
+            private SegmentSelector selector = new SegmentSelector(ruleConfig);
+            @Override
+            public boolean include(
+                    RowFilter.Entry<? extends SegmentTableModel, ? extends Integer> entry) {
+                return selector.matches(entry.getModel().getSegment(entry.getIdentifier()));
+            }
+        });
     }
 
     protected void updateRowHeights() {
@@ -297,12 +310,12 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     @Override
-    public void allSegments(boolean enabled) {
+    public void setFilterMode(RuleConfiguration.FilterMode mode) {
         reloadTable();
     }
 
     @Override
-    public void allMetadataSegments(boolean enabled) {
+    public void setStateQualifierMode(RuleConfiguration.StateQualifierMode mode) {
         reloadTable();
     }
 
@@ -353,36 +366,47 @@ public class SegmentView extends JScrollPane implements RuleListener {
         }
     }
 
-    public class DataCategoryFlagRenderer extends JLabel implements TableCellRenderer {
+    public class ITSMetadataRenderer extends DataCategoryFlagRenderer {
+        private static final long serialVersionUID = 1L;
 
-        public DataCategoryFlagRenderer() {
-            setOpaque(true);
+        public ITSMetadataRenderer() {
+            super();
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
-            DataCategoryFlag flag = (DataCategoryFlag) obj;
-            setBackground(flag.getFill());
-            setBorder(hasFocus ?
-                    UIManager.getBorder("Table.focusCellHighlightBorder") :
-                    flag.getBorder());
-            setText(flag.getText());
-            setHorizontalAlignment(CENTER);
-            return this;
+            ITSMetadata its = (obj != null) ? ((ITSMetadata)obj) : NullITSMetadata.getInstance();
+            DataCategoryFlag flag = its.getFlag();
+            flag = (flag != null) ? flag : DataCategoryFlag.getDefault();
+            return super.getTableCellRendererComponent(jtable, flag, isSelected, hasFocus, row, col);
         }
     }
 
     public class IntegerRenderer extends JLabel implements TableCellRenderer {
+        private static final long serialVersionUID = 1L;
 
         public IntegerRenderer() {
             setOpaque(true);
+        }
+
+        private Color getSegmentColor(Segment seg) {
+            StateQualifier sq = seg.getStateQualifier();
+            if (sq != null) {
+                Color sqColor = ruleConfig.getStateQualifierColor(sq);
+                if (sqColor == null) {
+                    LOG.debug("No UI color for state-qualifier '" + sq + "'");
+                }
+                return sqColor;
+            }
+            return null;
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             Integer segNum = (Integer) obj;
             Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
-            Color background = ruleConfig.getStateQualifierColor(seg);
+
+            Color background = getSegmentColor(seg);
             background = background != null ? background :
                     isSelected ?
                         seg.isEditablePhase() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY
@@ -397,12 +421,15 @@ public class SegmentView extends JScrollPane implements RuleListener {
             setBackground(background);
             setForeground(foreground);
             setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
-            setText(segNum.toString());
+            if (segNum != null) {
+                setText(segNum.toString());
+            }
             return this;
         }
     }
 
     public class SegmentEditor extends AbstractCellEditor implements TableCellEditor {
+        private static final long serialVersionUID = 1L;
 
         protected SegmentTextCell editorComponent;
         protected SegmentCellEditorListener editListener;
@@ -420,6 +447,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
             editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
             editorComponent.getActionMap().put("finish", new AbstractAction() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     fireEditingStopped();

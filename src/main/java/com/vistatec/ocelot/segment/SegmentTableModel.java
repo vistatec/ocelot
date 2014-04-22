@@ -28,10 +28,12 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.rules.DataCategoryFlag;
-import com.vistatec.ocelot.rules.NullDataCategoryFlag;
+import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.rules.NullITSMetadata;
+
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -39,6 +41,7 @@ import javax.swing.table.AbstractTableModel;
  * shown in the SegmentView.
  */
 public class SegmentTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = 1L;
 
     private SegmentController segmentController;
     private LinkedList<Segment> segments = new LinkedList<Segment>();
@@ -74,7 +77,7 @@ public class SegmentTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Class getColumnClass(int columnIndex) {
+    public Class<?> getColumnClass(int columnIndex) {
         if (columnIndex == getColumnIndex(COLSEGNUM)) {
             return Integer.class;
         }
@@ -83,7 +86,7 @@ public class SegmentTableModel extends AbstractTableModel {
                 || columnIndex == getColumnIndex(COLSEGTGTORI)) {
             return String.class;
         }
-        return DataCategoryFlag.class;
+        return ITSMetadata.class;
     }
 
     @Override
@@ -112,7 +115,7 @@ public class SegmentTableModel extends AbstractTableModel {
         }
         Object ret = segmentController.getRuleConfig().getTopDataCategory(
                 segments.get(row), col-NONFLAGCOLS);
-        return ret != null ? ret : new NullDataCategoryFlag();
+        return ret != null ? ret : NullITSMetadata.getInstance();
     }
 
     @Override

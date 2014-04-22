@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -37,9 +36,13 @@ import java.util.Map;
  * Represents ITS metadata in the ITS 2.0 spec that are simple key-value pairs.
  * For example, MT confidence.
  */
-public class OtherITSMetadata extends DataCategoryFlag implements ITSMetadata {
+public class OtherITSMetadata extends ITSMetadata {
     private DataCategoryField itsType;
     private Object value;
+
+    public OtherITSMetadata() {
+        super();
+    }
 
     public OtherITSMetadata(DataCategoryField itsType, Object value) {
         this.itsType = itsType;

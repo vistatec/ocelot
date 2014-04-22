@@ -35,6 +35,7 @@ import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
@@ -453,10 +454,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         File cfgFile = new File(ocelotDir, "ocelot_cfg.xml");
         AppConfig appConfig = new AppConfig(cfgFile);
 
-        RuleConfiguration ruleConfig = new RuleConfiguration();
         File rwDir = new File(System.getProperty("user.home"), ".ocelot");
         File rulesFile = new File(rwDir, "rules.properties");
-        ruleConfig.loadConfig(rulesFile);
+        RuleConfiguration ruleConfig = new RulesParser().loadConfig(rulesFile);
 
         Ocelot ocelot = new Ocelot(appConfig, ruleConfig);
 

@@ -5,8 +5,11 @@ import java.util.Map;
 
 import org.junit.*;
 
+import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
+import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
+
 import static org.junit.Assert.*;
-import static com.vistatec.ocelot.rules.RuleConfiguration.StateQualifier.*;
+import static com.vistatec.ocelot.rules.StateQualifier.*;
 
 public class TestRuleConfiguration {
 
@@ -18,25 +21,27 @@ public class TestRuleConfiguration {
                 new RuleMatcher(DataCategoryField.LQI_COMMENT, new NullMatcher()));
         config.addRuleConstaint("rule2", 
                 new RuleMatcher(DataCategoryField.LQI_SEVERITY, new NullMatcher()));
-        assertFalse(config.getRuleEnabled("rule1"));
-        assertFalse(config.getRuleEnabled("rule2"));
+        assertFalse(config.getRule("rule1").getEnabled());
+        assertFalse(config.getRule("rule2").getEnabled());
 
-        config.enableRule("rule1", true);
-        assertTrue(config.getRuleEnabled("rule1"));
-        assertFalse(config.getRuleEnabled("rule2"));
+        Rule rule1 = config.getRule("rule1");
+        Rule rule2 = config.getRule("rule2");
+        config.enableRule(rule1, true);
+        assertTrue(rule1.getEnabled());
+        assertFalse(rule2.getEnabled());
         assertTrue(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
 
-        config.enableRule("rule2", true);
-        assertTrue(config.getRuleEnabled("rule1"));
-        assertTrue(config.getRuleEnabled("rule2"));
+        config.enableRule(rule2, true);
+        assertTrue(rule1.getEnabled());
+        assertTrue(rule2.getEnabled());
         assertTrue(listener.isEnabled("rule1"));
         assertTrue(listener.isEnabled("rule2"));
 
-        config.enableRule("rule1", false);
-        config.enableRule("rule2", false);
-        assertFalse(config.getRuleEnabled("rule1"));
-        assertFalse(config.getRuleEnabled("rule2"));
+        config.enableRule(rule1, false);
+        config.enableRule(rule2, false);
+        assertFalse(rule1.getEnabled());
+        assertFalse(rule2.getEnabled());
         assertFalse(listener.isEnabled("rule1"));
         assertFalse(listener.isEnabled("rule2"));
     }
@@ -47,10 +52,10 @@ public class TestRuleConfiguration {
         RuleConfiguration config = new RuleConfiguration(listener);
         
         // Verify initial state
-        assertFalse(config.getStateQualifierEnabled(EXACT.getName()));
-        assertFalse(config.getStateQualifierEnabled(FUZZY.getName()));
-        assertFalse(config.getStateQualifierEnabled(ID.getName()));
-        assertFalse(config.getStateQualifierEnabled(MT.getName()));
+        assertFalse(config.getStateQualifierEnabled(EXACT));
+        assertFalse(config.getStateQualifierEnabled(FUZZY));
+        assertFalse(config.getStateQualifierEnabled(ID));
+        assertFalse(config.getStateQualifierEnabled(MT));
 
         // Verify that setting them generates the appropriate rule 
         // listener events
@@ -62,30 +67,46 @@ public class TestRuleConfiguration {
         assertTrue(listener.enabledRules.get(FUZZY.getName()));
         assertTrue(listener.enabledRules.get(ID.getName()));
         assertTrue(listener.enabledRules.get(MT.getName()));
+
+        // Verify that we don't notify the listener if the
+        // state doesn't change
+        listener.enabledRules.clear();
+        config.setStateQualifierEnabled(EXACT, true);
+        config.setStateQualifierEnabled(FUZZY, true);
+        config.setStateQualifierEnabled(ID, true);
+        config.setStateQualifierEnabled(MT, true);
+        assertEquals(0, listener.enabledRules.size());
     }
     
-    // XXX Default behavior of RuleConfiguration is that
-    // allSegments is true and allMetadataSegments is false
     @Test
-    public void testSegmentToggles() {
+    public void testFilterModeListener() {
         TestRuleListener listener = new TestRuleListener();
         RuleConfiguration config = new RuleConfiguration(listener);
         
-        config.setAllSegments(false);
-        assertFalse(listener.allSegmentsIsSet);
-        config.setAllSegments(true);
-        assertTrue(listener.allSegmentsIsSet);
+        config.setFilterMode(FilterMode.ALL);
+        assertEquals(FilterMode.ALL, listener.filterMode);
+        config.setFilterMode(FilterMode.ALL_WITH_METADATA);
+        assertEquals(FilterMode.ALL_WITH_METADATA, listener.filterMode);
+        config.setFilterMode(FilterMode.SELECTED_SEGMENTS);
+        assertEquals(FilterMode.SELECTED_SEGMENTS, listener.filterMode);
+    }
+
+    @Test
+    public void testStateQualifierListener() {
+        TestRuleListener listener = new TestRuleListener();
+        RuleConfiguration config = new RuleConfiguration(listener);
         
-        config.setMetadataSegments(true);
-        assertTrue(listener.allMetadataSegmentsIsSet);
-        config.setMetadataSegments(false);
-        assertFalse(listener.allMetadataSegmentsIsSet);
+        config.setStateQualifierMode(StateQualifierMode.ALL);
+        assertEquals(StateQualifierMode.ALL, listener.stateQualifierMode);
+        config.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
+        assertEquals(StateQualifierMode.SELECTED_STATES, listener.stateQualifierMode);
     }
     
     class TestRuleListener implements RuleListener {
         Map<String, Boolean> enabledRules = new HashMap<String, Boolean>();
-        boolean allSegmentsIsSet = false;
-        boolean allMetadataSegmentsIsSet = false;
+        RuleConfiguration.FilterMode filterMode;
+        RuleConfiguration.StateQualifierMode stateQualifierMode;
+        
         
         boolean isEnabled(String ruleLabel) {
             return enabledRules.containsKey(ruleLabel) && enabledRules.get(ruleLabel);
@@ -97,15 +118,14 @@ public class TestRuleConfiguration {
         }
 
         @Override
-        public void allSegments(boolean enabled) {
-            allSegmentsIsSet = enabled;
+        public void setFilterMode(RuleConfiguration.FilterMode mode) {
+            this.filterMode = mode;
         }
 
         @Override
-        public void allMetadataSegments(boolean enabled) {
-            allMetadataSegmentsIsSet = enabled;
+        public void setStateQualifierMode(StateQualifierMode mode) {
+            this.stateQualifierMode = mode;
         }
-        
     }
     
     class NullMatcher implements DataCategoryField.Matcher {

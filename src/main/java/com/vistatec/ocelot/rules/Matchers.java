@@ -31,9 +31,25 @@ package com.vistatec.ocelot.rules;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import net.sf.okapi.common.HashCodeUtil;
+
 import org.apache.log4j.Logger;
 
 public class Matchers {
+
+    public static RegexMatcher regex(String pattern) {
+        RegexMatcher m = new RegexMatcher();
+        m.setPattern(pattern);
+        return m;
+    }
+
+    public static NumericMatcher numeric(double lowerBound, double upperBound) {
+        NumericMatcher m = new NumericMatcher();
+        m.setLowerBound(lowerBound);
+        m.setUpperBound(upperBound);
+        return m;
+    }
 
 	public static class RegexMatcher implements DataCategoryField.Matcher {
 		private Pattern pattern;
@@ -71,6 +87,23 @@ public class Matchers {
 		public String toString() {
 			return "RegexMatcher(" + pattern + ")";
 		}
+
+		@Override
+		public boolean equals(Object o) {
+		    if (o == this) return true;
+		    if (o == null || !(o instanceof RegexMatcher)) return false;
+		    RegexMatcher m = (RegexMatcher)o;
+		    if (pattern == null && m.pattern == null) return true;
+		    if (pattern == null || m.pattern == null) return false;
+		    // Pattern doesn't override equals()!  Compare the string
+		    // representations instead.
+		    return pattern.toString().equals(m.pattern.toString());
+		}
+
+		@Override
+		public int hashCode() {
+		    return pattern.toString().hashCode();
+		}
 	}
 	
 	// Matches bounded ranges within 0-100
@@ -83,22 +116,38 @@ public class Matchers {
 
 		@Override
 		public boolean validatePattern(String pattern) {
-                        Values numValues = null;
-                        try {
-                            numValues = getValues(pattern);
-                        } catch (NumberFormatException e) {
-                            LOG.error("Unaccepted Numeric Matcher Syntax: "+pattern, e);
-                        }
+		    Values numValues = null;
+		    try {
+		        numValues = getValues(pattern);
+		    } catch (NumberFormatException e) {
+		        LOG.error("Unaccepted Numeric Matcher Syntax: "+pattern, e);
+		    }
 			return (numValues != null);
+		}
+
+		public double getLowerBound() {
+		    return lowerBound;
+		}
+
+		public double getUpperBound() {
+		    return upperBound;
+		}
+
+		public void setLowerBound(double d) {
+		    this.lowerBound = d;
+		}
+
+		public void setUpperBound(double d) {
+		    this.upperBound = d;
 		}
 
 		@Override
 		public void setPattern(String pattern) {
 			Values v = getValues(pattern);
-                        if (v == null) {
-                            LOG.error(new IllegalArgumentException(
-                                    "Unaccepted Numeric Matcher Syntax: "+pattern));
-                        }
+			if (v == null) {
+			    LOG.error(new IllegalArgumentException(
+			            "Unaccepted Numeric Matcher Syntax: "+pattern));
+			}
 			lowerBound = v.min;
 			upperBound = v.max;
 		}
@@ -112,8 +161,8 @@ public class Matchers {
 				return null;
 			}
 			Values v = new Values();
-                        v.min = Double.valueOf(m.group(1));
-                        v.max = Double.valueOf(m.group(2));
+			v.min = Double.valueOf(m.group(1));
+			v.max = Double.valueOf(m.group(2));
 			return v;
 		}
 		
@@ -127,17 +176,17 @@ public class Matchers {
 			if (lowerBound == -1 || upperBound == -1) {
 				throw new IllegalStateException("setPattern() was not called");
 			}
-                        if (value instanceof Integer) {
-                            Integer v = (Integer) value;
-                            return lowerBound == upperBound ? v == lowerBound :
-                                    (v >= lowerBound && v < upperBound);
-                        }
-                        if (value instanceof Double) {
-                            Double v = (Double) value;
-                            return lowerBound == upperBound ? v == lowerBound :
-                                    (v >= lowerBound && v < upperBound);
-                        }
-                        return false;
+			if (value instanceof Integer) {
+			    Integer v = (Integer) value;
+			    return lowerBound == upperBound ? v == lowerBound :
+			        (v >= lowerBound && v < upperBound);
+			}
+			if (value instanceof Double) {
+			    Double v = (Double) value;
+			    return lowerBound == upperBound ? v == lowerBound :
+			        (v >= lowerBound && v < upperBound);
+			}
+			return false;
 		}
 		
 		@Override
@@ -145,5 +194,20 @@ public class Matchers {
 			return "NumericMatcher(" + lowerBound + ", " + upperBound + ")";
 		}
 
+		@Override
+		public boolean equals(Object o) {
+		    if (o == this) return true;
+		    if (o == null || !(o instanceof NumericMatcher)) return false;
+		    NumericMatcher m = (NumericMatcher)o;
+		    return lowerBound == m.lowerBound &&
+		           upperBound == m.upperBound;
+		}
+
+		@Override
+		public int hashCode() {
+		    return  HashCodeUtil.hash(
+		                HashCodeUtil.hash(HashCodeUtil.SEED, lowerBound),
+		                upperBound);
+		}
 	}
 }
