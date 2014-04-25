@@ -75,6 +75,16 @@ public class TestRulesParser {
         assertEquals(rules, config.getRules());
     }
 
+    @Test
+    public void testStateQualifierRules() throws Exception {
+        RuleConfiguration config = getConfig("/statequals.properties");
+        assertEquals(0, config.getRules().size());
+        assertEquals(new Color(Integer.decode("#f0f0f0")), config.getStateQualifierColor(StateQualifier.MT));
+        assertEquals(new Color(Integer.decode("#ff0000")), config.getStateQualifierColor(StateQualifier.EXACT));
+        assertEquals(new Color(Integer.decode("#00ff00")), config.getStateQualifierColor(StateQualifier.ID));
+        assertEquals(new Color(Integer.decode("#0000ff")), config.getStateQualifierColor(StateQualifier.FUZZY));
+    }
+
     private DataCategoryFlag getDataCategoryFlag(String text, String fill, String border) {
         DataCategoryFlag flag = new DataCategoryFlag();
         flag.setText(text);
