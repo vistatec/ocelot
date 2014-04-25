@@ -28,9 +28,12 @@
  */
 package com.vistatec.ocelot.rules;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.*;
 
@@ -51,6 +54,33 @@ public class TestRulesParser {
         Rule r = config.getRules().get(0);
         assertEquals(1, r.matchers.size());
         assertEquals(new RuleMatcher(DataCategoryField.PROV_TOOL, Matchers.regex("Tool")), r.matchers.get(0));
+    }
+
+    @Test
+    public void testLQIRules() throws Exception {
+        RuleConfiguration config = getConfig("/lqi.properties");
+        assertEquals(2, config.getRules().size());
+        List<Rule> rules = new ArrayList<Rule>();
+        Rule r = new Rule();
+        r.setLabel("any_50_100");
+        r.setFlag(getDataCategoryFlag("*", "#00ff00", "#0000ff"));
+        r.addRuleMatcher(new RuleMatcher(DataCategoryField.LQI_SEVERITY, Matchers.numeric(50, 100)));
+        rules.add(r);
+        r = new Rule();
+        r.setLabel("noncon_90_100");
+        r.setFlag(getDataCategoryFlag("*", "#ff0000", "#00ff00"));
+        r.addRuleMatcher(new RuleMatcher(DataCategoryField.LQI_TYPE, Matchers.regex("non-conformance")));
+        r.addRuleMatcher(new RuleMatcher(DataCategoryField.LQI_SEVERITY, Matchers.numeric(90, 100)));
+        rules.add(r);
+        assertEquals(rules, config.getRules());
+    }
+
+    private DataCategoryFlag getDataCategoryFlag(String text, String fill, String border) {
+        DataCategoryFlag flag = new DataCategoryFlag();
+        flag.setText(text);
+        flag.setFill(new Color(Integer.decode(fill)));
+        flag.setBorderColor(new Color(Integer.decode(border)));
+        return flag;
     }
 
     private RuleConfiguration getConfig(String resource) throws IOException, IllegalAccessException, InstantiationException {

@@ -29,15 +29,19 @@
 package com.vistatec.ocelot.rules;
 
 import java.awt.Color;
+
+import javax.swing.BorderFactory;
 import javax.swing.border.Border;
+
+import net.sf.okapi.common.HashCodeUtil;
 
 /**
  * Display methods for flags in SegmentView Table.
  */
 public class DataCategoryFlag {
-    private boolean setFill = true, setBorder = true, setText = true;
     private Color fill = Color.gray;
-    private Border border;
+    private Color borderColor = Color.gray;
+    private Border border = BorderFactory.createEmptyBorder();
     private String text = "?";
 
     private static final DataCategoryFlag DEFAULT = new DataCategoryFlag();
@@ -51,21 +55,20 @@ public class DataCategoryFlag {
     }
 
     public void setFill(Color f) {
-        if (this.setFill) {
             this.fill = f;
-            this.setFill = false;
-        }
     }
 
     public Border getBorder() {
         return border;
     }
 
-    public void setBorder(Border b) {
-        if (this.setBorder) {
-            this.border = b;
-            this.setBorder = false;
-        }
+    /**
+     * Set border color instead of border, so that we can centralize
+     * border styling and also because Border does not implement equals().
+     */
+    public void setBorderColor(Color color) {
+        this.borderColor = color;
+        this.border = BorderFactory.createLineBorder(color);
     }
 
     public String getText() {
@@ -73,9 +76,23 @@ public class DataCategoryFlag {
     }
 
     public void setText(String t) {
-        if (this.setText) {
-            this.text = t;
-            this.setText = false;
-        }
+        this.text = t;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null || !(o instanceof DataCategoryFlag)) return false;
+        DataCategoryFlag f = (DataCategoryFlag)o;
+        return text.equals(f.text) && fill.equals(f.fill) &&
+               borderColor.equals(f.borderColor);
+    }
+
+    @Override
+    public int hashCode() {
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, text);
+        h = HashCodeUtil.hash(h, fill);
+        h = HashCodeUtil.hash(h, border);
+        return h;
     }
 }

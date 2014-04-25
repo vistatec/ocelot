@@ -161,7 +161,7 @@ public class RuleConfiguration {
     }
 
     void addBorder(String ruleLabel, Color border) {
-        getDataCategoryFlag(ruleLabel).setBorder(BorderFactory.createLineBorder(border));
+        getDataCategoryFlag(ruleLabel).setBorderColor(border);
     }
 
     void addText(String ruleLabel, String text) {

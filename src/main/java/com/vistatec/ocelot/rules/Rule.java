@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.okapi.common.HashCodeUtil;
+
 /**
  * Representation of all data associated with a single, user-defined rule.
  */
@@ -147,5 +149,28 @@ public class Rule {
     @Override
     public String toString() {
         return label;
+    }
+
+    // BUG: This is overly strict, because it compares matchers as a
+    // list instead of a set.  Really this should be using set
+    // semantics
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null || !(o instanceof Rule)) return false;
+        Rule r = (Rule)o;
+        return enabled == r.enabled &&
+               label.equals(r.label) &&
+               flag.equals(r.flag) &&
+               matchers.equals(r.matchers);
+    }
+
+    @Override
+    public int hashCode() {
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, enabled);
+        h = HashCodeUtil.hash(h, label);
+        h = HashCodeUtil.hash(h, flag);
+        h = HashCodeUtil.hash(h, matchers);
+        return h;
     }
 }
