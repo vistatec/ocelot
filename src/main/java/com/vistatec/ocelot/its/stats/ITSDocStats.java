@@ -1,7 +1,9 @@
 package com.vistatec.ocelot.its.stats;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
@@ -11,7 +13,7 @@ import com.vistatec.ocelot.its.Provenance;
  */
 public class ITSDocStats {
     private List<ITSStats> stats = new ArrayList<ITSStats>();
-
+    private Map<String, ITSStats> statsMap = new HashMap<String, ITSStats>();
     
     public List<ITSStats> getStats() {
         return stats;
@@ -19,13 +21,19 @@ public class ITSDocStats {
 
     public void clear() {
         stats.clear();
+        statsMap.clear();
     }
 
-    void add(ITSStats stat) {
+    private void add(ITSStats stat) {
         stats.add(stat);
+        statsMap.put(stat.getKey(), stat);
     }
 
-    public void updateProvStats(Provenance prov) {
+    public void addLQIStats(LanguageQualityIssue lqi) {
+        updateStats(new LanguageQualityIssueStats(lqi));
+    }
+
+    public void addProvenanceStats(Provenance prov) {
         calcProvenanceStats("person", prov.getPerson());
         calcProvenanceStats("org", prov.getOrg());
         calcProvenanceStats("tool", prov.getTool());
@@ -36,42 +44,17 @@ public class ITSDocStats {
 
     private void calcProvenanceStats(String type, String value) {
         if (value != null) {
-            boolean foundExistingStat = false;
-            for (ITSStats stat : getStats()) {
-                if (stat instanceof ProvenanceStats) {
-                    ProvenanceStats provStat = (ProvenanceStats)stat;
-                    if (provStat.getProvType().equals(type+":"+value)) {
-                        provStat.setCount(provStat.getCount() + 1);
-                        foundExistingStat = true;
-                    }
-                }
-            }
-            if (!foundExistingStat) {
-                ProvenanceStats provStat = new ProvenanceStats();
-                provStat.setProvType(type+":"+value);
-                provStat.setType(type);
-                provStat.setValue(value);
-                add(provStat);
-            }
+            updateStats(new ProvenanceStats(type, value));
         }
     }
 
-    public void updateLQIStats(LanguageQualityIssue lqi) {
-        boolean foundExistingStat = false;
-        for (ITSStats stat : getStats()) {
-            if (stat instanceof LanguageQualityIssueStats) {
-                LanguageQualityIssueStats lqiStat = (LanguageQualityIssueStats) stat;
-                if (lqiStat.getType().equals(lqi.getType())) {
-                    lqiStat.setRange(lqi.getSeverity());
-                    foundExistingStat = true;
-                }
-            }
+    private void updateStats(ITSStats stats) {
+        ITSStats oldStats = statsMap.get(stats.getKey());
+        if (oldStats != null) {
+            oldStats.combine(stats);
         }
-        if (!foundExistingStat) {
-            LanguageQualityIssueStats lqiStat = new LanguageQualityIssueStats();
-            lqiStat.setType(lqi.getType());
-            lqiStat.setRange(lqi.getSeverity());
-            add(lqiStat);
+        else {
+            add(stats);
         }
     }
 }

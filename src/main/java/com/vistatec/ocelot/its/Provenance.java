@@ -40,6 +40,8 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 public class Provenance extends ITSMetadata {
     private String person, org, tool, revPerson, revOrg, revTool, provRef, recsRef;
 
+    public Provenance() { }
+
     public Provenance(GenericAnnotation ga) {
         super();
         if (ga.getString(GenericAnnotationType.PROV_RECSREF) != null) {

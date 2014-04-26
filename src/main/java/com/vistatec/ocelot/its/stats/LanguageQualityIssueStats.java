@@ -28,17 +28,40 @@
  */
 package com.vistatec.ocelot.its.stats;
 
+import net.sf.okapi.common.HashCodeUtil;
+
+import com.vistatec.ocelot.its.LanguageQualityIssue;
+
 /**
  * Aggregate data representation for LQI displayed in SegmentAttributeTableView.
  */
 public class LanguageQualityIssueStats implements ITSStats {
-    private String type, value;
-    private Double minRange, maxRange;
-    private Integer count = 0;
+    private String type;
+    private double minRange = Double.POSITIVE_INFINITY,
+                   maxRange = Double.NEGATIVE_INFINITY;
+    private Integer count = 1;
+
+    public LanguageQualityIssueStats() { }
+
+    public LanguageQualityIssueStats(LanguageQualityIssue lqi) {
+        setType(lqi.getType());
+        setRange(lqi.getSeverity());
+    }
 
     @Override
     public String getDataCategory() {
         return "LQI";
+    }
+
+    @Override
+    public String getKey() {
+        return getClass().getName() + ":" + type;
+    }
+
+    @Override
+    public void combine(ITSStats stats) {
+        setRange(((LanguageQualityIssueStats)stats).minRange);
+        setRange(((LanguageQualityIssueStats)stats).maxRange);
     }
 
     @Override
@@ -52,12 +75,7 @@ public class LanguageQualityIssueStats implements ITSStats {
 
     @Override
     public String getValue() {
-        if (minRange != null && maxRange != null) {
-            return minRange + "-" + maxRange;
-        } else if (value != null) {
-            return value;
-        }
-        return null;
+        return minRange + "-" + maxRange;
     }
 
     @Override
@@ -71,17 +89,33 @@ public class LanguageQualityIssueStats implements ITSStats {
     }
 
     public void setRange(double range) {
-        if (minRange == null || minRange > range) {
+        if (minRange > range) {
             minRange = range;
         }
-        if (maxRange == null || maxRange < range) {
+        if (maxRange < range) {
             maxRange = range;
         }
-        count++;
     }
 
-    public void setValue(String val) {
-        this.value = val;
-        count++;
+    /**
+     * Equality only takes type and range into account, not count.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null || !(o instanceof LanguageQualityIssueStats)) return false;
+        LanguageQualityIssueStats lqi = (LanguageQualityIssueStats)o;
+        return type.equals(lqi.type) &&
+               minRange == lqi.minRange && 
+               maxRange == lqi.maxRange &&
+               count == lqi.count;
+    }
+
+    @Override
+    public int hashCode() {
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, type);
+        h = HashCodeUtil.hash(h, minRange);
+        h = HashCodeUtil.hash(h, maxRange);
+        return h;
     }
 }

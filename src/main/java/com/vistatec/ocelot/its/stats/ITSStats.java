@@ -34,6 +34,18 @@ package com.vistatec.ocelot.its.stats;
 public interface ITSStats {
 
     /**
+     * Returns the key used to identify this statistics category.
+     */
+    public String getKey();
+
+    /**
+     * Add the specified stats object to this object.  The specified
+     * object should be of the same type as this object (or at least,
+     * it will contain a matching key).
+     */
+    public void combine(ITSStats stats);
+
+    /**
      * Returns the field value for Data Category in the doc stats table.
      */
     public String getDataCategory();

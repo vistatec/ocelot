@@ -28,13 +28,36 @@
  */
 package com.vistatec.ocelot.its.stats;
 
+import net.sf.okapi.common.HashCodeUtil;
+
 /**
  * Aggregate data representation for Provenance displayed in SegmentAttributeTableView.
  */
 public class ProvenanceStats implements ITSStats {
-    private String displayType, provType, value;
-    private Double minRange, maxRange;
-    private Integer count = 0;
+    private String displayType, value;
+    private Integer count = 1;
+
+    public ProvenanceStats() { }
+
+    public ProvenanceStats(String type, String value) {
+        this.displayType = type;
+        this.value = value;
+    }
+
+    /**
+     * Combination of "displayType:value" used to identify unique ProvStatistics.
+     * Each ITSProvenance generates multiple ProvStatistics records for each
+     * data attribute=value key-value pair.
+     */
+    @Override
+    public String getKey() {
+        return getClass().getName() + ":" + displayType + ":" + value;
+    }
+
+    @Override
+    public void combine(ITSStats stats) {
+        count++;
+    }
 
     @Override
     public String getDataCategory() {
@@ -50,27 +73,9 @@ public class ProvenanceStats implements ITSStats {
         this.displayType = type;
     }
 
-    /**
-     * Combination of "displayType:value" used to identify unique ProvStatistics.
-     * Each ITSProvenance generates multiple ProvStatistics records for each
-     * data attribute=value key-value pair.
-     */
-    public String getProvType() {
-        return provType;
-    }
-
-    public void setProvType(String provType) {
-        this.provType = provType;
-    }
-
     @Override
     public String getValue() {
-        if (minRange != null && maxRange != null) {
-            return minRange + "-" + maxRange;
-        } else if (value != null) {
-            return value;
-        }
-        return null;
+        return value;
     }
 
     @Override
@@ -85,6 +90,21 @@ public class ProvenanceStats implements ITSStats {
 
     public void setValue(String val) {
         this.value = val;
-        count++;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null || !(o instanceof ProvenanceStats)) return false;
+        ProvenanceStats prov = (ProvenanceStats)o;
+        return displayType.equals(prov.displayType) &&
+               value == prov.value && count == prov.count;
+    }
+
+    @Override
+    public int hashCode() {
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, displayType);
+        h = HashCodeUtil.hash(h, value);
+        return h;
     }
 }

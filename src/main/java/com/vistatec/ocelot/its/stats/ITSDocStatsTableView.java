@@ -129,12 +129,12 @@ public class ITSDocStatsTableView extends JScrollPane {
         }
 
         private void updateLQIStats(LanguageQualityIssue lqi) {
-            stats.updateLQIStats(lqi);
+            stats.addLQIStats(lqi);
             fireTableDataChanged();
         }
 
         private void updateProvStats(Provenance prov) {
-            stats.updateProvStats(prov);
+            stats.addProvenanceStats(prov);
             fireTableDataChanged();
         }
     }
