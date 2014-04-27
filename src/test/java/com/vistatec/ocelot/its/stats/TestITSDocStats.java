@@ -30,7 +30,7 @@ public class TestITSDocStats {
     }
 
     @Test
-    public void addProvenance() {
+    public void testAddProvenance() {
         ITSDocStats docStats = new ITSDocStats();
         // XXX Bit of a cheat here, I'm assuming the order that the
         // stats are added to the docStats object
@@ -57,6 +57,15 @@ public class TestITSDocStats {
                             getProvStats(Type.revOrg, "testRevOrg", 1),
                             getProvStats(Type.revTool, "testRevTool", 1)),
                      docStats.getStats());
+    }
+
+    @Test
+    public void testClearStats() {
+        ITSDocStats docStats = new ITSDocStats();
+        docStats.addLQIStats(getLQI("omission", 50));
+        assertEquals(Collections.singletonList(getLQIStats("omission", 50)), docStats.getStats());
+        docStats.clear();
+        assertEquals(Collections.emptyList(), docStats.getStats());
     }
 
     private LanguageQualityIssue getLQI(String type, int severity) {
