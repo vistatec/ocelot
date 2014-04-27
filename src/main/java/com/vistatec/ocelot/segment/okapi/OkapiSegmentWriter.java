@@ -98,9 +98,9 @@ public abstract class OkapiSegmentWriter {
             provAnns.add(ga);
 
             // Check for existing RW annotation.
-            if (p.getProperty("revPerson").equals(prov.getRevPerson())
-                    && p.getProperty("revOrganization").equals(prov.getRevOrg())
-                    && p.getProperty("externalReference").equals(prov.getProvRef())) {
+            if (p.getProperty("revPerson", "").equals(prov.getRevPerson())
+                    && p.getProperty("revOrganization", "").equals(prov.getRevOrg())
+                    && p.getProperty("externalReference", "").equals(prov.getProvRef())) {
                 seg.setAddedRWProvenance(true);
             }
         }
