@@ -34,12 +34,22 @@ import net.sf.okapi.common.HashCodeUtil;
  * Aggregate data representation for Provenance displayed in SegmentAttributeTableView.
  */
 public class ProvenanceStats implements ITSStats {
-    private String displayType, value;
+    private Type displayType;
+    private String value;
     private Integer count = 1;
+
+    enum Type {
+        person,
+        org,
+        tool,
+        revPerson,
+        revOrg,
+        revTool;
+    }
 
     public ProvenanceStats() { }
 
-    public ProvenanceStats(String type, String value) {
+    public ProvenanceStats(Type type, String value) {
         this.displayType = type;
         this.value = value;
     }
@@ -66,10 +76,10 @@ public class ProvenanceStats implements ITSStats {
 
     @Override
     public String getType() {
-        return displayType;
+        return displayType.toString();
     }
 
-    public void setType(String type) {
+    public void setType(Type type) {
         this.displayType = type;
     }
 

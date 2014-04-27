@@ -10,6 +10,7 @@ import org.junit.*;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.stats.ProvenanceStats.Type;
 
 import static org.junit.Assert.*;
 
@@ -37,10 +38,9 @@ public class TestITSDocStats {
                 GenericAnnotationType.PROV_PERSON, "testPerson",
                 GenericAnnotationType.PROV_ORG, "testOrg",
                 GenericAnnotationType.PROV_TOOL, "testTool")));
-        // TODO the key needs to be a constant
-        assertEquals(Arrays.asList(getProvStats("person", "testPerson", 1),
-                                   getProvStats("org", "testOrg", 1),
-                                   getProvStats("tool", "testTool", 1)),
+        assertEquals(Arrays.asList(getProvStats(Type.person, "testPerson", 1),
+                                   getProvStats(Type.org, "testOrg", 1),
+                                   getProvStats(Type.tool, "testTool", 1)),
                      docStats.getStats());
         docStats.addProvenanceStats(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_PERSON, "testPerson",
@@ -50,12 +50,12 @@ public class TestITSDocStats {
                 GenericAnnotationType.PROV_REVORG, "testRevOrg",
                 GenericAnnotationType.PROV_REVTOOL, "testRevTool")));
         assertEquals(Arrays.asList(
-                            getProvStats("person", "testPerson", 2),
-                            getProvStats("org", "testOrg", 2),
-                            getProvStats("tool", "testTool", 2),
-                            getProvStats("revPerson", "testRevPerson", 1),
-                            getProvStats("revOrg", "testRevOrg", 1),
-                            getProvStats("revTool", "testRevTool", 1)),
+                            getProvStats(Type.person, "testPerson", 2),
+                            getProvStats(Type.org, "testOrg", 2),
+                            getProvStats(Type.tool, "testTool", 2),
+                            getProvStats(Type.revPerson, "testRevPerson", 1),
+                            getProvStats(Type.revOrg, "testRevOrg", 1),
+                            getProvStats(Type.revTool, "testRevTool", 1)),
                      docStats.getStats());
     }
 
@@ -81,7 +81,7 @@ public class TestITSDocStats {
         return lqiStats;
     }
 
-    private ProvenanceStats getProvStats(String type, String value, int count) {
+    private ProvenanceStats getProvStats(Type type, String value, int count) {
         ProvenanceStats stats = new ProvenanceStats(type, value);
         stats.setCount(count);
         return stats;

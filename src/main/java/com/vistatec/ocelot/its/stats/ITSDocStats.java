@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.stats.ProvenanceStats.Type;
 
 /**
  * Collect and merge ITS metadata statistics for the document.
@@ -34,15 +35,15 @@ public class ITSDocStats {
     }
 
     public void addProvenanceStats(Provenance prov) {
-        calcProvenanceStats("person", prov.getPerson());
-        calcProvenanceStats("org", prov.getOrg());
-        calcProvenanceStats("tool", prov.getTool());
-        calcProvenanceStats("revPerson", prov.getRevPerson());
-        calcProvenanceStats("revOrg", prov.getRevOrg());
-        calcProvenanceStats("revTool", prov.getRevTool());
+        calcProvenanceStats(Type.person, prov.getPerson());
+        calcProvenanceStats(Type.org, prov.getOrg());
+        calcProvenanceStats(Type.tool, prov.getTool());
+        calcProvenanceStats(Type.revPerson, prov.getRevPerson());
+        calcProvenanceStats(Type.revOrg, prov.getRevOrg());
+        calcProvenanceStats(Type.revTool, prov.getRevTool());
     }
 
-    private void calcProvenanceStats(String type, String value) {
+    private void calcProvenanceStats(ProvenanceStats.Type type, String value) {
         if (value != null) {
             updateStats(new ProvenanceStats(type, value));
         }
