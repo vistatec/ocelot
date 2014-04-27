@@ -110,14 +110,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
     protected AppConfig config;
     private String platformOS;
+    private boolean useNativeUI = false;
 
     public Ocelot(AppConfig config, RuleConfiguration ruleConfig) 
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.config = config;
-        
-        platformOS = System.getProperty("os.name");
 
+        platformOS = System.getProperty("os.name");
+        useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
+        
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView();
         itsDetailView.setPreferredSize(segAttrSize);
@@ -449,6 +451,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             PropertyConfigurator.configure(System.getProperty("log4j.configuration"));
         }
 
+        // XXX I don't like the fact that the values of these properties
+        // aren't known by the running application itself, only main.
         File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
         ocelotDir.mkdirs();
         File cfgFile = new File(ocelotDir, "ocelot_cfg.xml");
@@ -461,8 +465,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         Ocelot ocelot = new Ocelot(appConfig, ruleConfig);
 
         try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            if (ocelot.useNativeUI) {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+            else {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            }
         } catch (UnsupportedLookAndFeelException e) {
             System.err.println(e.getMessage());
         } catch (ClassNotFoundException e) {
