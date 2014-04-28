@@ -141,7 +141,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         tableColumnModel.getColumn(segmentController.getSegmentTargetColumnIndex())
                 .setCellEditor(new SegmentEditor());
-        int flagMinWidth = 15, flagPrefWidth = 15, flagMaxWidth = 20;
+        int flagMinWidth = 15, flagPrefWidth = 20, flagMaxWidth = 20;
         for (int i = SegmentTableModel.NONFLAGCOLS;
              i < SegmentTableModel.NONFLAGCOLS+SegmentTableModel.NUMFLAGS; i++) {
             tableColumnModel.getColumn(i).setMinWidth(flagMinWidth);
