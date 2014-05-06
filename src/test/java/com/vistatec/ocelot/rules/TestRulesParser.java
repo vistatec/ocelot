@@ -36,8 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.*;
-
 import static org.junit.Assert.*;
+
+import static com.vistatec.ocelot.rules.RulesTestHelpers.lqi;
 
 public class TestRulesParser {
     @Test
@@ -83,6 +84,14 @@ public class TestRulesParser {
         assertEquals(new Color(Integer.decode("#ff0000")), config.getStateQualifierColor(StateQualifier.EXACT));
         assertEquals(new Color(Integer.decode("#00ff00")), config.getStateQualifierColor(StateQualifier.ID));
         assertEquals(new Color(Integer.decode("#0000ff")), config.getStateQualifierColor(StateQualifier.FUZZY));
+    }
+
+    @Test
+    public void testQuickAddRules() throws Exception {
+        RuleConfiguration config = getConfig("/quickadd.properties");
+        assertEquals(2, config.getQuickAdds().size());
+        assertEquals(new QuickAdd("addOmission", lqi("omission", 75, "Omission")), config.getQuickAddLQI(1));
+        assertEquals(new QuickAdd("validNoComment", lqi("mistranslation", 85)), config.getQuickAddLQI(4));
     }
 
     private DataCategoryFlag getDataCategoryFlag(String text, String fill, String border) {

@@ -35,6 +35,7 @@ import com.vistatec.ocelot.segment.Segment;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -54,7 +55,7 @@ public class RuleConfiguration {
     private List<Rule> ruleOrdering = new ArrayList<Rule>();
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
     private HashMap<String, QuickAdd> quickAdds = new HashMap<String, QuickAdd>();
-    private List<QuickAdd> quickAddHotkeys = new ArrayList<QuickAdd>(10);
+    private HashMap<Integer, QuickAdd> quickAddHotkeys = new HashMap<Integer, QuickAdd>();
     private EnumMap<StateQualifier, StateQualifierRule> stateQualifierRules =
             new EnumMap<StateQualifier, StateQualifierRule>(StateQualifier.class);
     protected FilterMode filterMode = FilterMode.ALL;
@@ -162,6 +163,18 @@ public class RuleConfiguration {
         getDataCategoryFlag(ruleLabel).setText(text);
     }
 
+    public void removeQuickAdd(QuickAdd quickAdd) {
+        quickAdds.remove(quickAdd.getName());
+        for (Map.Entry<Integer, QuickAdd> e : 
+                new ArrayList<Map.Entry<Integer, QuickAdd>>(quickAddHotkeys.entrySet())) {
+            if (e.getValue().getName().equals(quickAdd.getName())) {
+                quickAddHotkeys.remove(e.getKey());
+                break;
+            }
+        }
+        return;
+    }
+
     public Collection<QuickAdd> getQuickAdds() {
         return quickAdds.values();
     }
@@ -174,8 +187,7 @@ public class RuleConfiguration {
         if (hotkey < 0 || hotkey > 9) {
             throw new IllegalArgumentException("Invalid hotkey: " + hotkey);
         }
-        quickAddHotkeys.set(hotkey, quickAdd);
-        quickAdd.setHotkey(hotkey);
+        quickAddHotkeys.put(hotkey, quickAdd);
     }
 
     QuickAdd getQuickAddByLabel(String label) {

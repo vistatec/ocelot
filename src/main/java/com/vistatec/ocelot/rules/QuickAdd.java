@@ -9,15 +9,17 @@ import static com.vistatec.ocelot.ObjectUtils.safeEquals;
 /**
  * Data for a quickAdd rule.
  */
-public class QuickAdd {
-    public static final int INVALID_HOTKEY = -1;
-    
+public class QuickAdd { 
     private String name;
     private LanguageQualityIssue lqiData = new LanguageQualityIssue();
-    private int hotkey = INVALID_HOTKEY;
 
     QuickAdd(String name) {
         this.name = name;
+    }
+
+    QuickAdd(String name, LanguageQualityIssue lqiData) {
+        this.name = name;
+        this.lqiData = lqiData;
     }
 
     public String getName() {
@@ -28,14 +30,6 @@ public class QuickAdd {
         return lqiData;
     }
 
-    public int getHotkey() {
-        return hotkey;
-    }
-
-    void setHotkey(int hotkey) {
-        this.hotkey = hotkey;
-    }
-
     /**
      * Check the validity of this rule.  A QuickAdd rule is valid if:
      * <ul>
@@ -44,7 +38,6 @@ public class QuickAdd {
      * </ul>
      */
     boolean isValid() {
-        if (hotkey == INVALID_HOTKEY) return false;
         if (lqiData.getType() != null &&
             lqiData.getSeverity() != 0) {
             return true;
@@ -57,15 +50,13 @@ public class QuickAdd {
         if (o == this) return true;
         if (o == null || !(o instanceof QuickAdd)) return false;
         QuickAdd qa = (QuickAdd)o;
-        return hotkey == qa.hotkey &&
-               safeEquals(name, qa.name) &&
+        return safeEquals(name, qa.name) &&
                safeEquals(lqiData, qa.lqiData);
     }
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, hotkey);
-        h = HashCodeUtil.hash(h, name);
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, name);
         h = HashCodeUtil.hash(h, lqiData);
         return h;
     }

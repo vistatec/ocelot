@@ -35,12 +35,12 @@ import java.util.List;
 
 import org.junit.*;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.Matchers.NumericMatcher;
 import com.vistatec.ocelot.rules.Matchers.RegexMatcher;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 import com.vistatec.ocelot.segment.Segment;
+import static com.vistatec.ocelot.rules.RulesTestHelpers.lqi;
 
 import static org.junit.Assert.*;
 
@@ -199,12 +199,5 @@ public class TestSegmentSelector {
             }
         }
         return selected;
-    }
-
-    private static LanguageQualityIssue lqi(String type, int severity) {
-        LanguageQualityIssue lqi = new LanguageQualityIssue();
-        lqi.setType(type);
-        lqi.setSeverity(severity);
-        return lqi;
     }
 }

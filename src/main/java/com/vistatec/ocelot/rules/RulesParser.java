@@ -145,7 +145,7 @@ public class RulesParser {
         for (QuickAdd qa : new ArrayList<QuickAdd>(config.getQuickAdds())) {
             if (!qa.isValid()) {
                 LOG.warn("Ignoring invalid quickAdd rule '" + qa.getName());
-                config.getQuickAdds().remove(qa.getName());
+                config.removeQuickAdd(qa);
             }
         }
         return config;
