@@ -28,11 +28,16 @@
  */
 package com.vistatec.ocelot.its;
 
+import static com.vistatec.ocelot.ObjectUtils.safeEquals;
+
 import com.vistatec.ocelot.rules.DataCategoryField;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.Map;
+
+import net.sf.okapi.common.HashCodeUtil;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 
@@ -139,5 +144,29 @@ public class LanguageQualityIssue extends ITSMetadata {
     @Override
     public String toString() {
         return getType();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null || !(o instanceof LanguageQualityIssue)) return false;
+        LanguageQualityIssue lqi = (LanguageQualityIssue)o;
+        return severity == lqi.severity &&
+               enabled == lqi.enabled &&
+               safeEquals(profileReference, lqi.profileReference) &&
+               safeEquals(type, lqi.type) &&
+               safeEquals(comment, lqi.comment) &&
+               safeEquals(issuesRef, lqi.issuesRef);
+    }
+
+    @Override
+    public int hashCode() {
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, severity);
+        h = HashCodeUtil.hash(h, enabled);
+        h = HashCodeUtil.hash(h, profileReference);
+        h = HashCodeUtil.hash(h, type);
+        h = HashCodeUtil.hash(h, comment);
+        h = HashCodeUtil.hash(h, issuesRef);
+        return h;
     }
 }

@@ -1,6 +1,10 @@
 package com.vistatec.ocelot.rules;
 
+import net.sf.okapi.common.HashCodeUtil;
+
 import com.vistatec.ocelot.its.LanguageQualityIssue;
+
+import static com.vistatec.ocelot.ObjectUtils.safeEquals;
 
 /**
  * Data for a quickAdd rule.
@@ -48,5 +52,21 @@ public class QuickAdd {
         return false;
     }
 
-    // TODO: equals etc
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null || !(o instanceof QuickAdd)) return false;
+        QuickAdd qa = (QuickAdd)o;
+        return hotkey == qa.hotkey &&
+               safeEquals(name, qa.name) &&
+               safeEquals(lqiData, qa.lqiData);
+    }
+
+    @Override
+    public int hashCode() {
+        int h = HashCodeUtil.hash(HashCodeUtil.SEED, hotkey);
+        h = HashCodeUtil.hash(h, name);
+        h = HashCodeUtil.hash(h, lqiData);
+        return h;
+    }
 }
