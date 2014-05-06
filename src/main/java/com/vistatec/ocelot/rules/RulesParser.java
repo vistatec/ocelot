@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,18 +109,20 @@ public class RulesParser {
                 String LQIType = quickAddPattern.group(2);
                 String value = quickAddPattern.group(3).trim();
 
+                QuickAdd quickAdd = config.getQuickAddByLabel(ruleLabel);
+
                 if (LQIType.equals(DataCategoryField.LQI_TYPE.getName())) {
-                    config.setLQIType(ruleLabel, value);
+                    quickAdd.getLQIData().setType(value);
 
                 } else if (LQIType.equals(DataCategoryField.LQI_SEVERITY.getName())) {
-                    config.setLQISeverity(ruleLabel, Double.parseDouble(value));
+                    quickAdd.getLQIData().setSeverity(Double.parseDouble(value));
 
                 } else if (LQIType.equals(DataCategoryField.LQI_COMMENT.getName())) {
-                    config.setLQIComment(ruleLabel, value);
+                    quickAdd.getLQIData().setComment(value);
 
                 } else if (LQIType.equals("hotkey")) {
                     if (quickAddHotkeyFormat.matcher(value).matches()) {
-                        config.addQuickAddHotkey(Integer.parseInt(value), ruleLabel);
+                        config.setQuickAddHotkey(Integer.parseInt(value), quickAdd);
                     } else {
                         LOG.error("Illegal quickAdd hotkey: "+value);
                     }
@@ -135,6 +139,13 @@ public class RulesParser {
                 LOG.warn("Ignoring rule '" + r.getLabel() + 
                           "' that has no matchers.");
                 config.removeRule(r);
+            }
+        }
+        // Validate quick add rules
+        for (QuickAdd qa : new ArrayList<QuickAdd>(config.getQuickAdds())) {
+            if (!qa.isValid()) {
+                LOG.warn("Ignoring invalid quickAdd rule '" + qa.getName());
+                config.getQuickAdds().remove(qa.getName());
             }
         }
         return config;

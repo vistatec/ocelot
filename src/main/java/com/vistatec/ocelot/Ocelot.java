@@ -34,6 +34,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;
+import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.segment.Segment;
@@ -489,9 +490,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             if (isPlatformKeyDown(ke) && (ke.getKeyCode() >= KeyEvent.VK_0
                     && ke.getKeyCode() <= KeyEvent.VK_9)) {
                 Segment seg = segmentView.getSelectedSegment();
-                LanguageQualityIssue lqi = segmentView.getRuleConfig().getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
-                if (seg != null && lqi != null && seg.isEditablePhase()) {
-                    seg.addNewLQI(lqi);
+                QuickAdd qa = segmentView.getRuleConfig().getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
+                if (seg != null && qa != null && seg.isEditablePhase()) {
+                    seg.addNewLQI(qa.getLQIData());
                 }
 
             } else if (isPlatformKeyDown(ke) && ke.isShiftDown()

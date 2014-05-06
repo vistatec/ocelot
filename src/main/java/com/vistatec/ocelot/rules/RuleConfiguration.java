@@ -34,12 +34,12 @@ import com.vistatec.ocelot.segment.Segment;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.BorderFactory;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -53,8 +53,8 @@ public class RuleConfiguration {
     private HashMap<String,Rule> rules = new HashMap<String, Rule>();
     private List<Rule> ruleOrdering = new ArrayList<Rule>();
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();
-    private HashMap<String, LanguageQualityIssue> quickAdd;
-    private HashMap<Integer, String> quickAddHotkeys;
+    private HashMap<String, QuickAdd> quickAdds = new HashMap<String, QuickAdd>();
+    private List<QuickAdd> quickAddHotkeys = new ArrayList<QuickAdd>(10);
     private EnumMap<StateQualifier, StateQualifierRule> stateQualifierRules =
             new EnumMap<StateQualifier, StateQualifierRule>(StateQualifier.class);
     protected FilterMode filterMode = FilterMode.ALL;
@@ -77,8 +77,6 @@ public class RuleConfiguration {
     }
 
     public RuleConfiguration() {
-        quickAdd = new HashMap<String, LanguageQualityIssue>();
-        quickAddHotkeys = new HashMap<Integer, String>();
         initStateQualifierRules();
     }
 
@@ -109,10 +107,6 @@ public class RuleConfiguration {
         for (RuleListener listener : ruleListeners) {
             listener.setFilterMode(mode);
         }
-    }
-
-    void addQuickAddHotkey(Integer hotkey, String ruleLabel) {
-        quickAddHotkeys.put(hotkey, ruleLabel);
     }
 
     /**
@@ -168,34 +162,29 @@ public class RuleConfiguration {
         getDataCategoryFlag(ruleLabel).setText(text);
     }
 
-    public LanguageQualityIssue getQuickAddLQI(int hotkey) {
-        return quickAdd.get(quickAddHotkeys.get(hotkey));
+    public Collection<QuickAdd> getQuickAdds() {
+        return quickAdds.values();
     }
 
-    public LanguageQualityIssue getQuickAddLQI(String ruleLabel) {
-        LanguageQualityIssue lqi = quickAdd.get(ruleLabel);
-        if (lqi == null) {
-            lqi = new LanguageQualityIssue();
+    public QuickAdd getQuickAddLQI(int hotkey) {
+        return quickAddHotkeys.get(hotkey);
+    }
+
+    void setQuickAddHotkey(int hotkey, QuickAdd quickAdd) {
+        if (hotkey < 0 || hotkey > 9) {
+            throw new IllegalArgumentException("Invalid hotkey: " + hotkey);
         }
-        return lqi;
+        quickAddHotkeys.set(hotkey, quickAdd);
+        quickAdd.setHotkey(hotkey);
     }
 
-    public void setLQIType(String ruleLabel, String type) {
-        LanguageQualityIssue lqi = getQuickAddLQI(ruleLabel);
-        lqi.setType(type);
-        quickAdd.put(ruleLabel, lqi);
-    }
-
-    public void setLQISeverity(String ruleLabel, double severity) {
-        LanguageQualityIssue lqi = getQuickAddLQI(ruleLabel);
-        lqi.setSeverity(severity);
-        quickAdd.put(ruleLabel, lqi);
-    }
-
-    public void setLQIComment(String ruleLabel, String comment) {
-        LanguageQualityIssue lqi = getQuickAddLQI(ruleLabel);
-        lqi.setComment(comment);
-        quickAdd.put(ruleLabel, lqi);
+    QuickAdd getQuickAddByLabel(String label) {
+        QuickAdd qa = quickAdds.get(label);
+        if (qa == null) {
+            qa = new QuickAdd(label);
+            quickAdds.put(label, qa);
+        }
+        return qa;
     }
 
     /**
