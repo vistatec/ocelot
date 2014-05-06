@@ -69,7 +69,10 @@ Filter display rules control how to display segments that match a particular fil
     <value> = String - basically anything, though a single character is recommended.
     
 ## Quick Add Rules ##
-Quick add rules are hotkeys for adding a particular LQI metadata to a segment. There must be a "hotkey" type in order to use the quick add functionality. They are specified in the same file as the filter rules (the rules.properties file).
+
+Quick add rules allow you to map the keys CTRL-0 to CTRL-9 (on the Mac, ⌘-0 to
+⌘-9) to LQI metadata, allowing you to easily flag common segment issues.  They
+are specified in the same file as the filter rules (the rules.properties file).
 
     Quick add rules are in the format:
       <label>.quickAdd.<type> = <value>
@@ -94,7 +97,6 @@ Quick add rules are hotkeys for adding a particular LQI metadata to a segment. T
     
     <type> = hotkey
     <value> = 0-9
-    *Hotkeys are limited to CTRL + 0-9
 
 ## XLIFF State Qualifier Display Rules ##
 These rules control how the state qualifier attribute of a target in XLIFF will be indicated in the segment view. Each rule controls the background color of the segment number of a segment that has the specified state-qualifier attribute. They are specified in the same file as the filter rules (the rules.properties file).
