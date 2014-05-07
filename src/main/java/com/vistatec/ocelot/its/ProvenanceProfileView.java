@@ -53,7 +53,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
     private static final long serialVersionUID = 1L;
 
     private JFrame frame;
-    private static Image icon;
+    private Image icon;
     private JTextField inputRevPerson, inputRevOrg, inputExtRef;
     private JButton save;
     private String revPerson, revOrg, extRef;

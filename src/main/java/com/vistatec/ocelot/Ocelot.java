@@ -30,7 +30,6 @@ package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.plugins.PluginManagerView;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;

@@ -30,6 +30,7 @@ package com.vistatec.ocelot.its.stats;
 
 import net.sf.okapi.common.HashCodeUtil;
 
+import com.vistatec.ocelot.ObjectUtils;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 
 /**
@@ -108,7 +109,7 @@ public class LanguageQualityIssueStats implements ITSStats {
         return type.equals(lqi.type) &&
                minRange == lqi.minRange && 
                maxRange == lqi.maxRange &&
-               count == lqi.count;
+               ObjectUtils.safeEquals(count, lqi.count);
     }
 
     @Override

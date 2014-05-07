@@ -29,13 +29,11 @@
 package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.its.ITSMetadata;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -49,8 +47,6 @@ import org.apache.log4j.Logger;
  * from the SegmentView.
  */
 public class RuleConfiguration {
-    private static Logger LOG = Logger.getLogger(RuleConfiguration.class);
-
     private HashMap<String,Rule> rules = new HashMap<String, Rule>();
     private List<Rule> ruleOrdering = new ArrayList<Rule>();
     private ArrayList<RuleListener> ruleListeners = new ArrayList<RuleListener>();

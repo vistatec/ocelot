@@ -160,6 +160,8 @@ public abstract class OkapiSegmentWriter {
                 case END_SUBFILTER:
                     tmp.append(skelWriter.processEndSubfilter((EndSubfilter) event.getResource()));
                     break;
+                default:
+                    break;
             }
         }
         skelWriter.close();

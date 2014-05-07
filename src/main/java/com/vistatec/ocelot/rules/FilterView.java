@@ -56,7 +56,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
     private static final long serialVersionUID = 1L;
 
     private JFrame frame;
-    private static Image icon;
+    private Image icon;
     RuleConfiguration filterRules;
     private String allString = "All Segments",
             metadataString = "All w/metadata",
