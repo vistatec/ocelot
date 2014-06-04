@@ -281,15 +281,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private void showAbout() {
-        String javaVersion = System.getProperty("java.version");
-        String osVersion = System.getProperty("os.version");
-        String osArch = System.getProperty("os.arch");
-        JOptionPane.showMessageDialog(this, 
-                APPNAME + ", version " + Version.PROJECT_VERSION + 
-                    " (Build " + Version.SOURCE_VERSION + ")" +
-                    "\n" + platformOS + " " + osVersion + " (" + osArch + ")" +
-                    "\nJava " + javaVersion,
-                "About", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(icon));
+        SwingUtilities.invokeLater(new AboutDialog(icon));
     }
 
     /**
