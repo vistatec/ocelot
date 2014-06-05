@@ -32,8 +32,6 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,19 +67,13 @@ public abstract class OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(OkapiSegmentWriter.class);
 
     public abstract void updateEvent(Segment seg, SegmentController segController);
+    private Properties provenanceProperties;
 
+    public OkapiSegmentWriter(Properties provenanceProperties) {
+        this.provenanceProperties = provenanceProperties;
+    }
+    
     public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
-        Properties p = new Properties();
-        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
-        File provFile = new File(rwDir, "provenance.properties");
-        if (provFile.exists()) {
-            try {
-                p.load(new FileInputStream(provFile));
-            } catch (IOException ex) {
-                LOG.warn("Problems with loading provenance properties file", ex);
-            }
-        }
-
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
         for (Provenance prov : seg.getProv()) {
             String revPerson = prov.getRevPerson();
@@ -98,18 +90,18 @@ public abstract class OkapiSegmentWriter {
             provAnns.add(ga);
 
             // Check for existing RW annotation.
-            if (p.getProperty("revPerson", "").equals(prov.getRevPerson())
-                    && p.getProperty("revOrganization", "").equals(prov.getRevOrg())
-                    && p.getProperty("externalReference", "").equals(prov.getProvRef())) {
+            if (provenanceProperties.getProperty("revPerson", "").equals(prov.getRevPerson())
+                    && provenanceProperties.getProperty("revOrganization", "").equals(prov.getRevOrg())
+                    && provenanceProperties.getProperty("externalReference", "").equals(prov.getProvRef())) {
                 seg.setAddedRWProvenance(true);
             }
         }
 
         if (!seg.addedRWProvenance()) {
             GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
-                    GenericAnnotationType.PROV_REVPERSON, p.getProperty("revPerson"),
-                    GenericAnnotationType.PROV_REVORG, p.getProperty("revOrganization"),
-                    GenericAnnotationType.PROV_PROVREF, p.getProperty("externalReference"));
+                    GenericAnnotationType.PROV_REVPERSON, provenanceProperties.getProperty("revPerson"),
+                    GenericAnnotationType.PROV_REVORG, provenanceProperties.getProperty("revOrganization"),
+                    GenericAnnotationType.PROV_PROVREF, provenanceProperties.getProperty("externalReference"));
             provAnns.add(provGA);
             seg.addProvenance(new Provenance(provGA));
             seg.setAddedRWProvenance(true);

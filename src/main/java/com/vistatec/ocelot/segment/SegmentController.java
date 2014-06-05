@@ -36,18 +36,25 @@ import com.vistatec.ocelot.segment.okapi.HTML5Writer;
 import com.vistatec.ocelot.segment.okapi.OkapiSegmentWriter;
 import com.vistatec.ocelot.segment.okapi.XLIFFParser;
 import com.vistatec.ocelot.segment.okapi.XLIFFWriter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for handling events related to segments, such as parsing/updating the
  * data, writing out the segments, refreshing their table view, etc.
  */
 public class SegmentController {
+    private Logger LOG = LoggerFactory.getLogger(SegmentController.class);
+
     private SegmentTableModel segmentModel;
     private SegmentView segmentView;
     private OkapiSegmentWriter segmentWriter;
@@ -162,7 +169,7 @@ public class SegmentController {
 
         setOpenFile(true);
         setHTML(false);
-        segmentWriter = new XLIFFWriter(xliffParser);
+        segmentWriter = new XLIFFWriter(xliffParser, loadUserProperties());
         segmentView.reloadTable();
     }
 
@@ -181,8 +188,22 @@ public class SegmentController {
 
         setOpenFile(true);
         setHTML(true);
-        segmentWriter = new HTML5Writer(html5Parser);
+        segmentWriter = new HTML5Writer(html5Parser, loadUserProperties());
         segmentView.reloadTable();
+    }
+
+    Properties loadUserProperties() {
+        Properties p = new Properties();
+        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
+        File provFile = new File(rwDir, "provenance.properties");
+        if (provFile.exists()) {
+            try {
+                p.load(new FileInputStream(provFile));
+            } catch (IOException ex) {
+                LOG.warn("Problems with loading provenance properties file", ex);
+            }
+        }
+        return p;
     }
 
     public void addSegment(Segment seg) {
