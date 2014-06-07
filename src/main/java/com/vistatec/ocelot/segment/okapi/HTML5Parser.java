@@ -164,7 +164,7 @@ public class HTML5Parser {
             List<GenericAnnotation> annotations, int srcEventNum, int tgtEventNum,
             String fileOri, String transUnitId) {
         Segment seg = new Segment(documentSegmentNum++, srcEventNum, tgtEventNum,
-                sourceText, targetText, null);
+                new TextContainerVariant(sourceText), new TextContainerVariant(targetText), null);
         seg.setFileOriginal(fileOri);
         seg.setTransUnitId(transUnitId);
         attachITSDataToSegment(seg, annotations);

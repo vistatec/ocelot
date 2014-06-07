@@ -32,11 +32,15 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.SegmentVariant;
+
 import static com.vistatec.ocelot.rules.StateQualifier.*;
+
 import java.io.IOException;
 import java.util.List;
-import net.sf.okapi.common.resource.TextContainer;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 /**
@@ -124,21 +128,21 @@ public class TestXLIFFParser {
     }
 
     public void testReadExistingAltTrans(Segment seg) {
-        TextContainer originalTarget = seg.getOriginalTarget();
+        SegmentVariant originalTarget = seg.getOriginalTarget();
         assertNotNull(originalTarget);
-        assertEquals("Original target is incorrect", "Original example target 5", originalTarget.getCodedText());
+        assertEquals("Original target is incorrect", "Original example target 5", originalTarget.getDisplayText());
     }
 
     public void testIgnoreUnrelatedAltTrans(Segment seg) {
-        TextContainer originalTarget = seg.getOriginalTarget();
+        SegmentVariant originalTarget = seg.getOriginalTarget();
         assertNotNull(originalTarget);
-        assertEquals("Original target", "", originalTarget.getCodedText());
+        assertEquals("Original target", "", originalTarget.getDisplayText());
     }
 
     public void testReadCorrectAltTrans(Segment seg) {
-        TextContainer originalTarget = seg.getOriginalTarget();
+        SegmentVariant originalTarget = seg.getOriginalTarget();
         assertNotNull(originalTarget);
-        assertEquals("Original target is incorrect", "Original example target 7", originalTarget.getCodedText());
+        assertEquals("Original target is incorrect", "Original example target 7", originalTarget.getDisplayText());
     }
 
     public void testReadReviewPhaseName(Segment seg) {

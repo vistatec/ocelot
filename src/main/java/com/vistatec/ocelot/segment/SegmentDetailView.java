@@ -43,7 +43,6 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import net.sf.okapi.common.resource.TextContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +109,7 @@ public class SegmentDetailView extends JScrollPane {
                     table.getColumnModel().getColumn(0).getWidth(), row);
             for (int col = 1; col < 2; col++) {
                 int width = table.getColumnModel().getColumn(col).getWidth();
-                segmentCell.setTextContainer((TextContainer) tableModel.getValueAt(row, col), true);
+                segmentCell.setVariant((SegmentVariant) tableModel.getValueAt(row, col), true);
                 // Need to set width to force text area to calculate a pref height
                 segmentCell.setSize(new Dimension(width, table.getRowHeight(row)));
                 rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
@@ -210,7 +209,7 @@ public class SegmentDetailView extends JScrollPane {
                         Integer editDistance = (Integer) tableModel.getValueAt(row, col);
                         renderTextPane.setText(editDistance.toString());
                     } else {
-                        renderTextPane.setTextContainer((TextContainer) o, true);
+                        renderTextPane.setVariant((SegmentVariant) o, true);
                     }
                 } else {
                     String s = (String)tableModel.getValueAt(row, col);

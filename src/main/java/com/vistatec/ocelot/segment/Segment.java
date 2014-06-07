@@ -34,19 +34,18 @@ import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
+import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import net.sf.okapi.common.resource.TextContainer;
 
 /**
  * Represents source, target segments with ITS metadata
  */
 public class Segment {
     private int segmentNumber, srcEventNum, tgtEventNum;
-    private TextContainer source, target;
+    private SegmentVariant source, target;
     private String phase_name;
     private StateQualifier state_qualifier;
     private boolean addedProvenance = false, setOriginalTarget = false;
@@ -56,13 +55,13 @@ public class Segment {
     private LinkedList<OtherITSMetadata> otherITSList = new LinkedList<OtherITSMetadata>();
     private SegmentController segmentListener;
     private String fileOriginal, transUnitId;
-    private TextContainer originalTarget;
+    private SegmentVariant originalTarget;
     private ArrayList<String> targetDiff = new ArrayList<String>();
 
     public Segment() { }
 
     public Segment(int segNum, int srcEventNum, int tgtEventNum,
-            TextContainer source, TextContainer target, TextContainer originalTarget) {
+            SegmentVariant source, SegmentVariant target, SegmentVariant originalTarget) {
         this.segmentNumber = segNum;
         this.srcEventNum = srcEventNum;
         this.tgtEventNum = tgtEventNum;
@@ -74,7 +73,7 @@ public class Segment {
 
             this.targetDiff = EditDistance.styleTextDifferences(target, originalTarget);
         } else {
-            this.originalTarget = new TextContainer();
+            this.originalTarget = target.createEmpty();
         }
     }
 
@@ -94,20 +93,21 @@ public class Segment {
         return tgtEventNum;
     }
 
-    public TextContainer getSource() {
+    public SegmentVariant getSource() {
         return this.source;
     }
 
-    public TextContainer getTarget() {
+    public SegmentVariant getTarget() {
         return this.target;
     }
 
-    public TextContainer getOriginalTarget() {
+    public SegmentVariant getOriginalTarget() {
         return this.originalTarget;
     }
 
-    public void setOriginalTarget(TextContainer oriTgt) {
+    public void setOriginalTarget(SegmentVariant oriTgt) {
         if (!this.setOriginalTarget) {
+            // XXX Unclear when this branch is ever taken since the ctor always sets a value 
             this.originalTarget = oriTgt;
         }
         this.setOriginalTarget = true;
@@ -118,7 +118,7 @@ public class Segment {
     }
 
     public void resetTarget() {
-        getTarget().setContent(getOriginalTarget().getUnSegmentedContentCopy());
+        getTarget().setContent(getOriginalTarget());
         if (segmentListener != null) {
             segmentListener.fireTableDataChanged();
         }

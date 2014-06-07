@@ -76,8 +76,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import net.sf.okapi.common.resource.TextContainer;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -223,10 +221,10 @@ public class SegmentView extends JScrollPane implements RuleListener {
             for (int col = 1; col < 4; col++) {
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
-                    String text = segmentController.getSegment(modelRow).getSource().getCodedText();
+                    String text = segmentController.getSegment(modelRow).getSource().getDisplayText();
                     segmentCell.setText(text);
                 } else if (col == 2) {
-                    String text = segmentController.getSegment(modelRow).getTarget().getCodedText();
+                    String text = segmentController.getSegment(modelRow).getTarget().getDisplayText();
                     segmentCell.setText(text);
                 } else if (col == 3) {
                     String text;
@@ -238,7 +236,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                         }
                         text = displayText.toString();
                     } else {
-                        text = segmentController.getSegment(modelRow).getOriginalTarget().getCodedText();
+                        text = segmentController.getSegment(modelRow).getOriginalTarget().getDisplayText();
                     }
                     segmentCell.setText(text.toString());
                 }
@@ -334,18 +332,18 @@ public class SegmentView extends JScrollPane implements RuleListener {
             SegmentTextCell renderTextPane = new SegmentTextCell();
             if (segmentController.getNumSegments() > row) {
                 Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
-                TextContainer tc = null;
+                SegmentVariant v = null;
                 if (segmentController.getSegmentSourceColumnIndex() == col) {
-                    tc = seg.getSource();
+                    v = seg.getSource();
                 } else if (segmentController.getSegmentTargetColumnIndex() == col) {
-                    tc = seg.getTarget();
+                    v = seg.getTarget();
                 } else if (segmentController.getSegmentTargetOriginalColumnIndex() == col) {
                     if (!segmentController.enabledTargetDiff()) {
-                        tc = seg.getOriginalTarget();
+                        v = seg.getOriginalTarget();
                     }
                 }
-                if (tc != null) {
-                    renderTextPane.setTextContainer(tc, false);
+                if (v != null) {
+                    renderTextPane.setVariant(v, false);
                 } else {
                     renderTextPane.setTargetDiff(seg.getTargetDiff());
                 }
@@ -443,7 +441,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         public Component getTableCellEditorComponent(JTable jtable, Object value,
             boolean isSelected, int row, int col) {
             Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
-            editListener.setBeginEdit(seg, seg.getTarget().getCodedText());
+            editListener.setBeginEdit(seg, seg.getTarget().getDisplayText());
             editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
             editorComponent.getActionMap().put("finish", new AbstractAction() {
@@ -465,7 +463,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         @Override
         public Object getCellEditorValue() {
-            return editorComponent.getTextContainer();
+            return editorComponent.getVariant();
         }
 
         @Override
@@ -480,13 +478,13 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public class SegmentCellEditorListener implements CellEditorListener {
         private Segment seg;
         private String codedText;
-        private TextContainer targetClone;
+        private SegmentVariant targetClone;
 
         public void setBeginEdit(Segment seg, String codedText) {
             this.seg = seg;
             this.codedText = codedText;
             if (!this.seg.hasOriginalTarget()) {
-                this.targetClone = seg.getTarget().clone();
+                this.targetClone = seg.getTarget().createCopy();
             }
             pluginManager.notifySegmentTargetEnter(seg);
         }
@@ -494,7 +492,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public void editingStopped(ChangeEvent ce) {
             pluginManager.notifySegmentTargetExit(seg);
-            if (!this.seg.getTarget().getCodedText().equals(codedText)) {
+            if (!this.seg.getTarget().getDisplayText().equals(codedText)) {
                 if (!this.seg.hasOriginalTarget()) {
                     this.seg.setOriginalTarget(this.targetClone);
                 }

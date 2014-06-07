@@ -29,22 +29,24 @@
 package com.vistatec.ocelot.segment.editdistance;
 
 import com.vistatec.ocelot.segment.SegmentTextCell;
+import com.vistatec.ocelot.segment.SegmentVariant;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
+
 import name.fraser.neil.plaintext.diff_match_patch;
 import name.fraser.neil.plaintext.diff_match_patch.Diff;
-import net.sf.okapi.common.resource.TextContainer;
 
 /**
  * Calculate the insertion/deletion difference between the target and target
  * original for segments.
  */
 public class EditDistance {
-    public static ArrayList<String> styleTextDifferences(TextContainer target, TextContainer original) {
+    public static ArrayList<String> styleTextDifferences(SegmentVariant target, SegmentVariant original) {
         diff_match_patch dmp = new diff_match_patch();
         ArrayList<String> styledDiff = new ArrayList<String>();
 
-        LinkedList<Diff> diffList = dmp.diff_main(original.getCodedText(), target.getCodedText());
+        LinkedList<Diff> diffList = dmp.diff_main(original.getDisplayText(), target.getDisplayText());
         dmp.diff_cleanupSemantic(diffList);
         for (Diff diff : diffList) {
             styledDiff.add(diff.text);
@@ -63,8 +65,8 @@ public class EditDistance {
         return styledDiff;
     }
 
-    public static int calcEditDistance(TextContainer target, TextContainer tgtOriginal) {
+    public static int calcEditDistance(SegmentVariant target, SegmentVariant tgtOriginal) {
         diff_match_patch dmp = new diff_match_patch();
-        return dmp.diff_levenshtein(dmp.diff_main(tgtOriginal.getCodedText(), target.getCodedText()));
+        return dmp.diff_levenshtein(dmp.diff_main(tgtOriginal.getDisplayText(), target.getDisplayText()));
     }
 }

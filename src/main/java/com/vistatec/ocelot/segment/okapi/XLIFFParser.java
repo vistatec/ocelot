@@ -179,7 +179,8 @@ public class XLIFFParser {
         TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
 
         Segment seg = new Segment(documentSegmentNum++, fileEventNum, fileEventNum,
-                srcTu, tgtTu, oriTgtTu);
+                new TextContainerVariant(srcTu), new TextContainerVariant(tgtTu),
+                oriTgtTu != null ? new TextContainerVariant(oriTgtTu) : null);
         seg.setFileOriginal(fileOriginal);
         seg.setTransUnitId(tu.getId());
         Property stateQualifier = tgtTu.getProperty("state-qualifier");

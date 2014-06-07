@@ -105,13 +105,13 @@ public class SegmentTableModel extends AbstractTableModel {
             return getSegment(row).getSegmentNumber();
         }
         if (col == getColumnIndex(COLSEGSRC)) {
-            return getSegment(row).getSource().getCodedText();
+            return getSegment(row).getSource();
         }
         if (col == getColumnIndex(COLSEGTGT)) {
-            return getSegment(row).getTarget().getCodedText();
+            return getSegment(row).getTarget();
         }
         if (col == getColumnIndex(COLSEGTGTORI)) {
-            return getSegment(row).getOriginalTarget().getCodedText();
+            return getSegment(row).getOriginalTarget();
         }
         Object ret = segmentController.getRuleConfig().getTopDataCategory(
                 segments.get(row), col-NONFLAGCOLS);

@@ -39,6 +39,7 @@ import java.util.List;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
+import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.*;
 
@@ -47,6 +48,8 @@ import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 import static org.junit.Assert.*;
 
@@ -63,6 +66,14 @@ public class TestRules {
                 GenericAnnotationType.PROV_TOOL, "U"))));
     }
 
+    SegmentVariant emptyVariant() {
+        return new TextContainerVariant(new TextContainer());
+    }
+
+    Segment emptySegment() {
+        return new Segment(1, 1, 1, emptyVariant(), emptyVariant(), emptyVariant());
+    }
+
     @Test
     public void testMtConfidence() throws Exception {
         List<RuleMatcher> ruleMatchers = new ArrayList<RuleMatcher>();
@@ -70,11 +81,11 @@ public class TestRules {
         ruleMatchers.add(new RuleMatcher(DataCategoryField.MT_CONFIDENCE, numericMatcher(0, 75)));
         Rule filter = new Rule(ruleMatchers);
         
-        Segment segment = new Segment(1, 1, 1, null, null, null);
+        Segment segment = emptySegment();
         segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50)));
         assertTrue(filter.matches(segment));
         
-        segment = new Segment(1, 1, 1, null, null, null);
+        segment = emptySegment();
         segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(80)));
         assertFalse(filter.matches(segment));
     }
@@ -97,25 +108,25 @@ public class TestRules {
 		// This one should not match - incorrect severity
 		LanguageQualityIssue lqi3 = lqi("omission", 60);
 		
-		Segment segment = new Segment(1, 1, 1, null, null, null);
+		Segment segment = emptySegment();
 		segment.addLQI(lqi1);
 		segment.addLQI(lqi2);
 		segment.addLQI(lqi3);
 		assertTrue(filter.matches(segment));
 		
-		segment = new Segment(2, 2, 2, null, null, null);
+		segment = emptySegment();
 		segment.addLQI(lqi1);
 		assertTrue(filter.matches(segment));
 		
-		segment = new Segment(3, 3, 3, null, null, null);
+		segment = emptySegment();
 		segment.addLQI(lqi2);
 		assertFalse(filter.matches(segment));
 
-		segment = new Segment(4, 4, 4, null, null, null);
+		segment = emptySegment();
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
 		
-		segment = new Segment(5, 5, 5, null, null, null);
+		segment = emptySegment();
 		segment.addLQI(lqi1);
 		segment.addLQI(lqi2);
 		assertTrue(filter.matches(segment));
@@ -123,7 +134,7 @@ public class TestRules {
 		// Tricky!  Make sure we don't get a false positive
 		// because we have an omission AND a valid severity!
 		// (We do have each, but not on the same issue.)
-		segment = new Segment(6, 6, 6, null, null, null);
+		segment = new Segment(6, 6, 6, emptyVariant(), emptyVariant(), emptyVariant());
 		segment.addLQI(lqi2);
 		segment.addLQI(lqi3);
 		assertFalse(filter.matches(segment));
@@ -248,7 +259,7 @@ public class TestRules {
     }
     
     private Segment provSegment(Provenance prov) {
-        Segment segment = new Segment(1, 1, 1, null, null, null);
+        Segment segment = emptySegment();
         segment.addProvenance(prov);
         return segment;
     }
