@@ -72,10 +72,10 @@ public class PluginManager {
         private File pluginDir;
         protected AppConfig appConfig;
 	
-	public PluginManager(AppConfig appConfig) {
+	public PluginManager(AppConfig appConfig, File pluginDir) {
             this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
             this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
-            pluginDir = new File(System.getProperty("user.home"), ".ocelot/plugins");
+            this.pluginDir = pluginDir;
             this.appConfig = appConfig;
 	}
 
@@ -233,6 +233,15 @@ public class PluginManager {
                 }
             }
         }
+
+    /**
+     * Search the default directory for plugins. Equivalent to 
+     * <code>discover(getPluginDir())</code>.
+     * @throws IOException
+     */
+    public void discover() throws IOException {
+        discover(getPluginDir());
+    }
 
 	/**
 	 * Search the provided directory for any JAR files containing valid 

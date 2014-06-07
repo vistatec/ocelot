@@ -29,12 +29,16 @@
 package com.vistatec.ocelot.config;
 
 import com.vistatec.ocelot.plugins.Plugin;
-import java.io.File;
+
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,19 +49,33 @@ import org.slf4j.LoggerFactory;
  */
 public class AppConfig {
     private Logger LOG = LoggerFactory.getLogger(AppConfig.class);
-    protected File cfgFile;
+    protected Configs configs;
     protected JAXBContext jaxb;
-    protected RootConfig config;
+    protected RootConfig config = new RootConfig();
 
-    public AppConfig(File cfgFile) {
-        this.cfgFile = cfgFile;
+    /**
+     * Create an empty configuration.
+     */
+    public AppConfig() { }
+
+    /**
+     * Create a configuration based on the specified files.
+     * @param configs
+     */
+    public AppConfig(Configs configs) {
+        this.configure(configs);
+    }
+
+    public void configure(Configs configs) {
+        this.configs = configs;
         try {
             jaxb = JAXBContext.newInstance(RootConfig.class);
-            if (cfgFile.createNewFile()) {
+            Reader r = configs.getOcelotReader();
+            if (r == null) {
                 config = new RootConfig();
                 marshal();
             } else {
-                unmarshal();
+                unmarshal(r);
             }
         } catch (JAXBException ex) {
             LOG.error("Exception handling JAXB content", ex);
@@ -75,20 +93,22 @@ public class AppConfig {
         config.enablePlugin(plugin, enabled);
         try {
             marshal();
-        } catch (JAXBException ex) {
+        } catch (Exception ex) {
             LOG.error("Failed to save plugin enabled configuration", ex);
         }
     }
 
-    public final void unmarshal() throws JAXBException {
+    private void unmarshal(Reader r) throws JAXBException {
         Unmarshaller unmarshal = jaxb.createUnmarshaller();
-        config = (RootConfig) unmarshal.unmarshal(cfgFile);
+        config = (RootConfig) unmarshal.unmarshal(r);
     }
 
-    public final void marshal() throws JAXBException {
+    private void marshal() throws JAXBException, IOException {
         Marshaller marshaller = jaxb.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(config, cfgFile);
+        Writer w = configs.getOcelotWriter();
+        marshaller.marshal(config, w);
+        w.close();
     }
 }

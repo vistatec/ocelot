@@ -1,6 +1,5 @@
 package com.vistatec.ocelot.segment.okapi;
 
-import java.util.Collections;
 import java.util.Properties;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;

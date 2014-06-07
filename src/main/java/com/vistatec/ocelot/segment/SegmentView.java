@@ -98,16 +98,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
     protected PluginManager pluginManager;
 
     public SegmentView(SegmentAttributeView attr, SegmentController segController,
-            AppConfig appConfig, RuleConfiguration ruleConfig) throws IOException, 
+            AppConfig appConfig, RuleConfiguration ruleConfig,
+            PluginManager pluginManager) throws IOException, 
                 InstantiationException, InstantiationException, IllegalAccessException {
         attrView = attr;
         segmentController = segController;
         this.ruleConfig = ruleConfig;
         this.ruleConfig.addRuleListener(this);
+        this.pluginManager = pluginManager;
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
-        pluginManager = new PluginManager(appConfig);
-        pluginManager.discover(pluginManager.getPluginDir());
     }
 
     public final void initializeTable() {

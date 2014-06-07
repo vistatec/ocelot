@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.RuleConfiguration;
@@ -41,6 +42,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
@@ -61,8 +63,10 @@ public class SegmentController {
     private XLIFFParser xliffParser;
     private HTML5Parser html5Parser;
     private boolean openFile = false, isHTML, targetDiff = true;
+    private Configs configs;
 
-    public SegmentController() {
+    public SegmentController(Configs configs) {
+        this.configs = configs;
         this.segmentModel = new SegmentTableModel(this);
     }
 
@@ -194,14 +198,12 @@ public class SegmentController {
 
     Properties loadUserProperties() {
         Properties p = new Properties();
-        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
-        File provFile = new File(rwDir, "provenance.properties");
-        if (provFile.exists()) {
-            try {
-                p.load(new FileInputStream(provFile));
-            } catch (IOException ex) {
-                LOG.warn("Problems with loading provenance properties file", ex);
-            }
+        try {
+            Reader r = configs.getProvenanceReader();
+            p.load(r);
+            r.close();
+        } catch (IOException ex) {
+            LOG.warn("Problems with loading provenance properties file", ex);
         }
         return p;
     }

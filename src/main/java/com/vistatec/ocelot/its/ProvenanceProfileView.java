@@ -33,18 +33,20 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Properties;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
+import com.vistatec.ocelot.config.Configs;
 
 /**
  * Provenance configuration view.
@@ -58,9 +60,9 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
     private JButton save;
     private String revPerson, revOrg, extRef;
     private Properties p;
-    private File provFile;
+    private Configs configs;
 
-    public ProvenanceProfileView(Image icon) throws IOException {
+    public ProvenanceProfileView(Configs configs, Image icon) throws IOException {
         super(new GridBagLayout());
         this.icon = icon;
         setBorder(new EmptyBorder(10,10,10,10));
@@ -114,11 +116,10 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
 
     public final void readConfigFile() throws IOException {
         p = new Properties();
-        File rwDir = new File(System.getProperty("user.home"), ".ocelot");
-        rwDir.mkdirs();
-        provFile = new File(rwDir, "provenance.properties");
-        if (provFile.exists()) {
-            p.load(new FileInputStream(provFile));
+        Reader r = configs.getProvenanceReader();
+        if (r != null) {
+            p.load(r);
+            r.close();
         }
     }
 
@@ -133,9 +134,9 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         p.setProperty("revPerson", revPerson);
         p.setProperty("revOrganization", revOrg);
         p.setProperty("externalReference", extRef);
-        File rwDir = new File(System.getProperty("user.home"),".ocelot");
-        provFile = new File(rwDir, "provenance.properties");
-        p.store(new FileOutputStream(provFile), null);
+        Writer w = configs.getProvenanceWriter();
+        p.store(w, null);
+        w.close();
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -27,25 +28,21 @@ public class RulesParser {
     // [id-match|exact-match|fuzzy-match|mt-suggestion] = hex
     private Pattern stateQualifierFormat = Pattern.compile("(id-match|exact-match|fuzzy-match|mt-suggestion)\\s*=\\s*(.*)");
 
-    public RuleConfiguration loadConfig(File rulesFile) {
-        if (rulesFile.exists()) {
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(rulesFile), "UTF-8"));
-                return parse(in);
-            } catch (UnsupportedEncodingException ex) {
-                LOG.error("Encoding not supported",ex);
-            } catch (FileNotFoundException ex) {
-                LOG.error("Rules file not found", ex);
-            } catch (IOException ex) {
-                LOG.error("IO error", ex);
-            } catch (InstantiationException ex) {
-                LOG.error("Failed to instantiate Matcher class", ex);
-            } catch (IllegalAccessException ex) {
-                LOG.error("Matcher class not accessible", ex);
+    public RuleConfiguration loadConfig(Reader reader) {
+        try {
+            if (reader != null) {
+                return parse(new BufferedReader(reader));
             }
-        } else {
-            LOG.warn("No rules.properties file found at location:"+rulesFile.getAbsolutePath());
+        } catch (UnsupportedEncodingException ex) {
+            LOG.error("Encoding not supported",ex);
+        } catch (FileNotFoundException ex) {
+            LOG.error("Rules file not found", ex);
+        } catch (IOException ex) {
+            LOG.error("IO error", ex);
+        } catch (InstantiationException ex) {
+            LOG.error("Failed to instantiate Matcher class", ex);
+        } catch (IllegalAccessException ex) {
+            LOG.error("Matcher class not accessible", ex);
         }
         return new RuleConfiguration();
     }

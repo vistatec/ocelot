@@ -29,11 +29,13 @@
 package com.vistatec.ocelot.plugins;
 
 import com.vistatec.ocelot.config.AppConfig;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class TestPluginManager {
@@ -46,9 +48,8 @@ public class TestPluginManager {
         assertNotNull(url);
 
         File pluginDir = new File(url.toURI());
-        File testConfig = new File(pluginDir, "ocelot_test_cfg.xml");
-        PluginManager pluginManager = new PluginManager(new AppConfig(testConfig));
-        pluginManager.discover(pluginDir);
+        PluginManager pluginManager = new PluginManager(new AppConfig(), pluginDir);
+        pluginManager.discover();
 
         Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
         assertEquals(1, itsPlugins.size());
@@ -61,7 +62,5 @@ public class TestPluginManager {
         Plugin segPlugin = segPlugins.iterator().next();
         assertEquals("Sample Segment Plugin", segPlugin.getPluginName());
         assertEquals("1.0", segPlugin.getPluginVersion());
-
-        testConfig.delete();
     }
 }
