@@ -2,8 +2,6 @@ package com.vistatec.ocelot.segment;
 
 import java.util.List;
 
-import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
-
 /**
  * Abstract representation of a segment variant (eg, the source
  * or target).
@@ -14,13 +12,13 @@ public interface SegmentVariant {
      * Create a new (empty) variant of this type.
      * @return
      */
-    TextContainerVariant createEmpty();
+    SegmentVariant createEmpty();
 
     /**
      * Create a new variant containing the same content as
      * this variant.
      */
-    TextContainerVariant createCopy();
+    SegmentVariant createCopy();
 
     /**
      * Set the content of this variant to a copy of the 

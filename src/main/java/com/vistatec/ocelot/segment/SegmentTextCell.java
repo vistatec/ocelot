@@ -111,7 +111,12 @@ public class SegmentTextCell extends JTextPane {
 
     public final void setVariant(SegmentVariant v, boolean raw) {
         this.v = v;
-        setTextPane(v.getStyleData(raw));
+        if (v != null) {
+            setTextPane(v.getStyleData(raw));
+        }
+        else {
+            setTextPane(new ArrayList<String>());
+        }
     }
 
     public void setTargetDiff(ArrayList<String> targetDiff) {
@@ -162,7 +167,7 @@ public class SegmentTextCell extends JTextPane {
                     v.modifyChars(offset, length, str);
                 }
             } else {
-                if (!v.canInsertAt(offset)) {
+                if (v.canInsertAt(offset)) {
                     // Insert string into cell editor.
                     super.replace(fb, offset, length, str, a);
 

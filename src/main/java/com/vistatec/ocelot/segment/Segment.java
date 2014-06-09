@@ -34,7 +34,6 @@ import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
-import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

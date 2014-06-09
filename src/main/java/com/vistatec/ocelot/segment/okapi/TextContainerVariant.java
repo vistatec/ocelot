@@ -43,14 +43,17 @@ public class TextContainerVariant implements SegmentVariant {
 
     @Override
     public String getDisplayText() {
-        return tc.getCodedText();
+        List<String> rendered = getStyleData(false);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rendered.size(); i+= 2) {
+            sb.append(rendered.get(i));
+        }
+        return sb.toString();
     }
 
     @Override
     public List<String> getStyleData(boolean verbose) {
         ArrayList<String> textToStyle = new ArrayList<String>();
-        // XXX Not clear to me why we can't just use tc.getCodedText() here
-        // instead of iterating over the fragments.
         Iterator<TextPart> textParts = tc.iterator();
         while (textParts.hasNext()) {
             TextFragment tf = textParts.next().text;
@@ -64,17 +67,7 @@ public class TextContainerVariant implements SegmentVariant {
 
                     char codeMarker = tf.charAt(++i);
                     int index = TextFragment.toIndex(codeMarker);
-                    Code code = tf.getCode(index);
-                    String tag;
-                    if (verbose) {
-                        if (code.hasOuterData()) {
-                            tag = code.getOuterData();
-                        } else {
-                            tag = code.getData();
-                        }
-                    } else {
-                        tag = ""+tfChar+codeMarker;
-                    }
+                    String tag = getCodeText(tf.getCode(index), verbose);
                     textToStyle.add(tag);
                     textToStyle.add(SegmentTextCell.tagStyle);
                 } else {
@@ -89,40 +82,61 @@ public class TextContainerVariant implements SegmentVariant {
         return textToStyle;
     }
 
+    private String getCodeText(Code code, boolean verbose) {
+        if (verbose) {
+            return code.hasOuterData() ? code.getOuterData() : code.getData();
+        }
+        switch (code.getTagType()) {
+        case OPENING:
+            return "<" + code.getType() + ">"; 
+        case CLOSING:
+            return "</" + code.getType() + ">";
+        case PLACEHOLDER:
+            return "<" + code.getType() + "/>";
+        }
+        throw new IllegalStateException();
+    }
+    
     @Override
     public boolean containsTag(int offset, int length) {
-        /*
-         * TextFragment marker is composed of 2 unicode chars:
-         * 1st char indicates it's a code marker
-         * 2nd char indicates the code index position for retrieval
-         * -Need 1st char to determine there's a marker in removal text.
-         * So this is necessary paranoia - make sure we get enough characters to
-         * determine if we've got a tag in here.
-         */
-        if (offset > 0) {
-            offset--;
-        }
-        return checkForCode(tc.getCodedText(), offset, length);
+        return checkForCode(offset, length);
     }
     
     @Override
     public boolean textIsInsertable(String text) {
-        return !checkForCode(text, 0, text.length());
+        return true;
     }
 
     @Override
     public boolean canInsertAt(int offset) {
-        return (offset == 0) ?
-                checkForCode(tc.getCodedText(), 0, 1) :
-                checkForCode(tc.getCodedText(), offset - 1, 2); // breaks when appending
+        return !checkForCode(offset, 0);
     }
 
-    private boolean checkForCode(String s, int offset, int length) {
-        char[] text = s.toCharArray();
-        int max = Math.min(offset + length, s.length());
-        for (int i = offset; i < max; i++) {
-            if (TextFragment.isMarker(text[i])) {
-                return true;
+    private boolean checkForCode(int offset, int length) {
+        Iterator<TextPart> textParts = tc.iterator();
+        int offsetEnd = offset + length;
+        int index = 0;
+        while (textParts.hasNext()) {
+            TextFragment tf = textParts.next().text;
+            for (int i = 0; i < tf.length(); i++) {
+                char tfChar = tf.charAt(i);
+                if (TextFragment.isMarker(tfChar)) {
+                    char codeMarker = tf.charAt(++i);
+                    int codeIndex = TextFragment.toIndex(codeMarker);
+                    String tag = getCodeText(tf.getCode(codeIndex), false);
+                    int codeEnd = index + tag.length();
+                    if (offsetEnd > index && offset < codeEnd) {
+                        return true; 
+                    }
+                    index += tag.length();
+                }
+                else if (index > offset + length) {
+                    // We've drifted out of the danger zone
+                    return false;
+                }
+                else {
+                    index++;
+                }
             }
         }
         return false;
@@ -131,25 +145,48 @@ public class TextContainerVariant implements SegmentVariant {
     @Override
     public void modifyChars(int offset, int charsToReplace, String newText) {
         Iterator<TextPart> textParts = tc.iterator();
-        int textPos = 0;
+        int index = 0;
+        boolean isReplacing = false;
+        if (newText == null) newText = "";
         while (textParts.hasNext()) {
             TextPart tp = textParts.next();
             TextFragment tf = tp.text;
-            if (offset <= textPos + tf.length()) {
-                int adjustedOffset = offset - textPos;
-                int adjustedLength = charsToReplace;
-                if (adjustedOffset + charsToReplace > tf.length()) {
-                    adjustedLength = tf.length() - adjustedOffset;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < tf.length(); i++) {
+                char tfChar = tf.charAt(i);
+                // Is it time to replace?
+                if (index == offset) {
+                    // Time to start replacing
+                    isReplacing = true;
+                    sb.append(newText);
+                    index += newText.length(); // not really necessary any more
                 }
-                tf.remove(adjustedOffset, adjustedOffset + adjustedLength);
-                charsToReplace -= adjustedLength;
-                if (newText != null) {
-                    tf.insert(adjustedOffset, new TextFragment(newText));
-                    newText = null;
+                if (isReplacing && charsToReplace-- <= 0) {
+                    isReplacing = false;
                 }
-                tp.setContent(tf);
+                if (TextFragment.isMarker(tfChar)) {
+                    char codeMarker = tf.charAt(++i);
+                    int codeIndex = TextFragment.toIndex(codeMarker);
+                    String tag = getCodeText(tf.getCode(codeIndex), false);
+                    index += tag.length();
+                    // We should never be replacing the tag tex, just count it. 
+                    sb.append(tfChar).append(codeMarker);
+                }
+                else {
+                    if (!isReplacing) {
+                        sb.append(tfChar);
+                        index++;
+                    }
+                }
             }
-            textPos += tf.length();
+            // Check for append
+            if (index == offset) {
+                sb.append(newText);
+            }
+            tf.setCodedText(sb.toString());
+            if (index > offset) {
+                return; // don't need to process further
+            }
         }
     }
 
