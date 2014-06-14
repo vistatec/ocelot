@@ -166,6 +166,13 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     public class LQIPopupMenuListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
+            lqiPopup(e);
+        }
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            lqiPopup(e);
+        }
+        void lqiPopup(MouseEvent e) {
             LanguageQualityIssue selectedLQI = null;
             if (lqiTable != null) {
                 int r = lqiTable.rowAtPoint(e.getPoint());
