@@ -31,8 +31,8 @@ package com.vistatec.ocelot.segment;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.rules.NullITSMetadata;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -44,7 +44,7 @@ public class SegmentTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
 
     private SegmentController segmentController;
-    private LinkedList<Segment> segments = new LinkedList<Segment>();
+    private ArrayList<Segment> segments = new ArrayList<Segment>(100);
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
     public static final int NUMFLAGS = 5;
