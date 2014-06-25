@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
+import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
@@ -36,7 +37,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Properties;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.IResource;
@@ -60,8 +60,8 @@ public class HTML5Writer extends OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(HTML5Writer.class);
     private HTML5Parser parser;
 
-    public HTML5Writer(HTML5Parser parser, Properties provenanceProperties) {
-        super(provenanceProperties);
+    public HTML5Writer(HTML5Parser parser, UserProvenance prov) {
+        super(prov);
         this.parser = parser;
     }
 

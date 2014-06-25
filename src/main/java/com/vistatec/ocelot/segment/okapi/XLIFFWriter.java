@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
+import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
@@ -37,7 +38,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Properties;
 import java.util.Set;
 
 import net.sf.okapi.common.Event;
@@ -66,8 +66,8 @@ public class XLIFFWriter extends OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(XLIFFWriter.class);
     private XLIFFParser parser;
 
-    public XLIFFWriter(XLIFFParser xliffParser, Properties provenanceProperties) {
-        super(provenanceProperties);
+    public XLIFFWriter(XLIFFParser xliffParser, UserProvenance prov) {
+        super(prov);
         this.parser = xliffParser;
     }
 

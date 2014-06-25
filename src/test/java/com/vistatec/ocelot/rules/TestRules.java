@@ -49,6 +49,7 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 import static org.junit.Assert.*;
@@ -60,7 +61,7 @@ public class TestRules {
         Rule rule = new Rule(new ArrayList<RuleMatcher>());
         assertFalse(rule.matches(lqi("omission", 100)));
         assertFalse(rule.matches(lqi("non-conformance", 100)));
-        assertFalse(rule.matches(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        assertFalse(rule.matches(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_ORG, "S",
                 GenericAnnotationType.PROV_PERSON, "T",
                 GenericAnnotationType.PROV_TOOL, "U"))));
@@ -142,7 +143,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceBasicFieldsMatches() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_ORG, "S",
                 GenericAnnotationType.PROV_PERSON, "T",
                 GenericAnnotationType.PROV_TOOL, "U"));
@@ -158,7 +159,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceBasicFieldsFailsOrg() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_ORG, "X",
                 GenericAnnotationType.PROV_PERSON, "T",
                 GenericAnnotationType.PROV_TOOL, "U"));
@@ -167,7 +168,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceBasicFieldsFailsPerson() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_ORG, "S",
                 GenericAnnotationType.PROV_PERSON, "X",
                 GenericAnnotationType.PROV_TOOL, "U"));
@@ -176,7 +177,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceBasicFieldsFailsTool() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_ORG, "S",
                 GenericAnnotationType.PROV_PERSON, "T",
                 GenericAnnotationType.PROV_TOOL, "X"));
@@ -199,7 +200,7 @@ public class TestRules {
     
     @Test
     public void testProvenanceRevFieldsMatches() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_REVTOOL, "U"));
@@ -208,7 +209,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceRevFieldsFailsOrg() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "X",
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_REVTOOL, "U"));
@@ -217,7 +218,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceRevFieldsFailsPerson() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "X",
                 GenericAnnotationType.PROV_REVTOOL, "U"));
@@ -226,7 +227,7 @@ public class TestRules {
 
     @Test
     public void testProvenanceRevFieldsFailsTool() throws Exception {
-        Provenance matchingProv = new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        Provenance matchingProv = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_REVTOOL, "X"));
@@ -251,10 +252,10 @@ public class TestRules {
         Rule filter = ruleFilter(
                 new RuleMatcher(DataCategoryField.PROV_PROVREF, regexMatcher("^S.*")));
 
-        assertTrue(filter.matches(provSegment(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        assertTrue(filter.matches(provSegment(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_PROVREF, "S")))));
         
-        assertFalse(filter.matches(provSegment(new Provenance(new GenericAnnotation(GenericAnnotationType.PROV,
+        assertFalse(filter.matches(provSegment(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_PROVREF, "T")))));
     }
     

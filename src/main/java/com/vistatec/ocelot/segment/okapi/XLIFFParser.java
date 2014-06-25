@@ -215,7 +215,7 @@ public class XLIFFParser {
         List<GenericAnnotation> provList = provAnns.getAnnotations(GenericAnnotationType.PROV);
         if (provList != null) {
             for (GenericAnnotation ga : provList) {
-                seg.addProvenance(new Provenance(ga));
+                seg.addProvenance(new OkapiProvenance(ga));
                 seg.setProvID(provAnns.getData());
             }
         }

@@ -28,9 +28,11 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
+import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
+
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -39,7 +41,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.List;
-import java.util.Properties;
+
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.GenericAnnotation;
@@ -56,6 +58,7 @@ import net.sf.okapi.common.resource.StartGroup;
 import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.StartSubfilter;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +70,10 @@ public abstract class OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(OkapiSegmentWriter.class);
 
     public abstract void updateEvent(Segment seg, SegmentController segController);
-    private Properties provenanceProperties;
+    private UserProvenance userProvenance;
 
-    public OkapiSegmentWriter(Properties provenanceProperties) {
-        this.provenanceProperties = provenanceProperties;
+    public OkapiSegmentWriter(UserProvenance userProv) {
+        this.userProvenance = userProv;
     }
     
     public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
@@ -90,20 +93,20 @@ public abstract class OkapiSegmentWriter {
             provAnns.add(ga);
 
             // Check for existing RW annotation.
-            if (provenanceProperties.getProperty("revPerson", "").equals(prov.getRevPerson())
-                    && provenanceProperties.getProperty("revOrganization", "").equals(prov.getRevOrg())
-                    && provenanceProperties.getProperty("externalReference", "").equals(prov.getProvRef())) {
+            if (prov.getRevPerson().equals(userProvenance.getRevPerson())
+                    && prov.getRevOrg().equals(userProvenance.getRevOrg())
+                    && prov.getProvRef().equals(userProvenance.getProvRef())) {
                 seg.setAddedRWProvenance(true);
             }
         }
 
         if (!seg.addedRWProvenance()) {
             GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
-                    GenericAnnotationType.PROV_REVPERSON, provenanceProperties.getProperty("revPerson"),
-                    GenericAnnotationType.PROV_REVORG, provenanceProperties.getProperty("revOrganization"),
-                    GenericAnnotationType.PROV_PROVREF, provenanceProperties.getProperty("externalReference"));
+                    GenericAnnotationType.PROV_REVPERSON, userProvenance.getRevPerson(),
+                    GenericAnnotationType.PROV_REVORG, userProvenance.getRevOrg(),
+                    GenericAnnotationType.PROV_PROVREF, userProvenance.getProvRef());
             provAnns.add(provGA);
-            seg.addProvenance(new Provenance(provGA));
+            seg.addProvenance(new OkapiProvenance(provGA));
             seg.setAddedRWProvenance(true);
         }
 

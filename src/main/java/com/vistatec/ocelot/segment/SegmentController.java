@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.config.Configs;
+import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.RuleConfiguration;
@@ -42,11 +42,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,10 +60,10 @@ public class SegmentController {
     private XLIFFParser xliffParser;
     private HTML5Parser html5Parser;
     private boolean openFile = false, isHTML, targetDiff = true;
-    private Configs configs;
+    private ProvenanceConfig provConfig;
 
-    public SegmentController(Configs configs) {
-        this.configs = configs;
+    public SegmentController(ProvenanceConfig provConfig) {
+        this.provConfig = provConfig;
         this.segmentModel = new SegmentTableModel(this);
     }
 
@@ -173,7 +170,7 @@ public class SegmentController {
 
         setOpenFile(true);
         setHTML(false);
-        segmentWriter = new XLIFFWriter(xliffParser, loadUserProperties());
+        segmentWriter = new XLIFFWriter(xliffParser, provConfig.getUserProvenance());
         segmentView.reloadTable();
     }
 
@@ -192,20 +189,8 @@ public class SegmentController {
 
         setOpenFile(true);
         setHTML(true);
-        segmentWriter = new HTML5Writer(html5Parser, loadUserProperties());
+        segmentWriter = new HTML5Writer(html5Parser, provConfig.getUserProvenance());
         segmentView.reloadTable();
-    }
-
-    Properties loadUserProperties() {
-        Properties p = new Properties();
-        try {
-            Reader r = configs.getProvenanceReader();
-            p.load(r);
-            r.close();
-        } catch (IOException ex) {
-            LOG.warn("Problems with loading provenance properties file", ex);
-        }
-        return p;
     }
 
     public void addSegment(Segment seg) {

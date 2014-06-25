@@ -33,11 +33,7 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -46,31 +42,37 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import com.vistatec.ocelot.config.Configs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.config.UserProvenance;
 
 /**
  * Provenance configuration view.
  */
 public class ProvenanceProfileView extends JPanel implements Runnable, ActionListener {
     private static final long serialVersionUID = 1L;
+    private Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
     private JFrame frame;
     private Image icon;
     private JTextField inputRevPerson, inputRevOrg, inputExtRef;
     private JButton save;
-    private String revPerson, revOrg, extRef;
-    private Properties p;
-    private Configs configs;
+    private ProvenanceConfig config;
+    private UserProvenance prov;
 
-    public ProvenanceProfileView(Configs configs, Image icon) throws IOException {
+    public ProvenanceProfileView(ProvenanceConfig config, Image icon) throws IOException {
         super(new GridBagLayout());
+        this.config = config;
         this.icon = icon;
         setBorder(new EmptyBorder(10,10,10,10));
-        parseConfig();
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 1;
+
+        prov = config.getUserProvenance();
 
         JLabel revPersonLabel = new JLabel("Reviewer: ");
         gridBag.gridx = 0;
@@ -78,7 +80,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         add(revPersonLabel, gridBag);
 
         inputRevPerson = new JTextField(15);
-        inputRevPerson.setText(revPerson);
+        inputRevPerson.setText(prov.getRevPerson());
         gridBag.gridx = 1;
         gridBag.gridy = 0;
         add(inputRevPerson, gridBag);
@@ -89,7 +91,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         add(revOrgLabel, gridBag);
 
         inputRevOrg = new JTextField(15);
-        inputRevOrg.setText(revOrg);
+        inputRevOrg.setText(prov.getRevOrg());
         gridBag.gridx = 1;
         gridBag.gridy = 1;
         add(inputRevOrg, gridBag);
@@ -100,7 +102,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         add(extRefLabel, gridBag);
 
         inputExtRef = new JTextField(15);
-        inputExtRef.setText(extRef);
+        inputExtRef.setText(prov.getProvRef());
         gridBag.gridx = 1;
         gridBag.gridy = 2;
         add(inputExtRef, gridBag);
@@ -112,31 +114,6 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         gridBag.gridx = 1;
         gridBag.gridy = 3;
         add(actionPanel, gridBag);
-    }
-
-    public final void readConfigFile() throws IOException {
-        p = new Properties();
-        Reader r = configs.getProvenanceReader();
-        if (r != null) {
-            p.load(r);
-            r.close();
-        }
-    }
-
-    public final void parseConfig() throws IOException {
-        readConfigFile();
-        revPerson = p.getProperty("revPerson");
-        revOrg = p.getProperty("revOrganization");
-        extRef = p.getProperty("externalReference");
-    }
-
-    public void saveConfig() throws FileNotFoundException, IOException {
-        p.setProperty("revPerson", revPerson);
-        p.setProperty("revOrganization", revOrg);
-        p.setProperty("externalReference", extRef);
-        Writer w = configs.getProvenanceWriter();
-        p.store(w, null);
-        w.close();
     }
 
     @Override
@@ -153,15 +130,13 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == save) {
-            revPerson = inputRevPerson.getText();
-            revOrg = inputRevOrg.getText();
-            extRef = inputExtRef.getText();
+            prov.setRevPerson(inputRevPerson.getText());
+            prov.setRevOrg(inputRevOrg.getText());
+            prov.setProvRef(inputExtRef.getText());
             try {
-                saveConfig();
-            } catch (FileNotFoundException ex) {
-                System.err.println(ex.getMessage());
+                config.save(prov);
             } catch (IOException ex) {
-                System.err.println(ex.getMessage());
+                LOG.warn("Unable to save changes to user provenance", ex);
             }
             frame.dispose();
         }

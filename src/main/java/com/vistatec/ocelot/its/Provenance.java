@@ -31,44 +31,13 @@ package com.vistatec.ocelot.its;
 import com.vistatec.ocelot.rules.DataCategoryField;
 import java.util.EnumMap;
 import java.util.Map;
-import net.sf.okapi.common.annotation.GenericAnnotation;
-import net.sf.okapi.common.annotation.GenericAnnotationType;
-
 /**
  * Represents Provenance Data Category in the ITS 2.0 spec.
  */
-public class Provenance extends ITSMetadata {
+public abstract class Provenance extends ITSMetadata {
     private String person, org, tool, revPerson, revOrg, revTool, provRef, recsRef;
 
     public Provenance() { }
-
-    public Provenance(GenericAnnotation ga) {
-        super();
-        if (ga.getString(GenericAnnotationType.PROV_RECSREF) != null) {
-            this.recsRef = ga.getString(GenericAnnotationType.PROV_RECSREF);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_PERSON) != null) {
-            this.person = ga.getString(GenericAnnotationType.PROV_PERSON);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_ORG) != null) {
-            this.org = ga.getString(GenericAnnotationType.PROV_ORG);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_TOOL) != null) {
-            this.tool = ga.getString(GenericAnnotationType.PROV_TOOL);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_REVPERSON) != null) {
-            this.revPerson = ga.getString(GenericAnnotationType.PROV_REVPERSON);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_REVORG) != null) {
-            this.revOrg = ga.getString(GenericAnnotationType.PROV_REVORG);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_REVTOOL) != null) {
-            this.revTool = ga.getString(GenericAnnotationType.PROV_REVTOOL);
-        }
-        if (ga.getString(GenericAnnotationType.PROV_PROVREF) != null) {
-            this.provRef = ga.getString(GenericAnnotationType.PROV_PROVREF);
-        }
-    }
     
     public String getRecsRef() {
         return recsRef;
@@ -100,6 +69,38 @@ public class Provenance extends ITSMetadata {
 
     public String getProvRef() {
         return provRef;
+    }
+
+    public void setPerson(String person) {
+        this.person = person;
+    }
+
+    public void setOrg(String org) {
+        this.org = org;
+    }
+
+    public void setTool(String tool) {
+        this.tool = tool;
+    }
+
+    public void setRevPerson(String revPerson) {
+        this.revPerson = revPerson;
+    }
+
+    public void setRevOrg(String revOrg) {
+        this.revOrg = revOrg;
+    }
+
+    public void setRevTool(String revTool) {
+        this.revTool = revTool;
+    }
+
+    public void setProvRef(String provRef) {
+        this.provRef = provRef;
+    }
+
+    public void setRecsRef(String recsRef) {
+        this.recsRef = recsRef;
     }
 
     @Override

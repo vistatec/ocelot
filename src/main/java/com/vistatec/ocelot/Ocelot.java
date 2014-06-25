@@ -31,6 +31,7 @@ package com.vistatec.ocelot;
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
+import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
@@ -111,17 +112,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     OpenHTMLView openHTMLView;
 
     protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
-    protected AppConfig config;
+    protected AppConfig appConfig;
     private String platformOS;
     private boolean useNativeUI = false;
-    private Configs configs;
+    private ProvenanceConfig provConfig;
 
-    public Ocelot(Configs configs, AppConfig config, PluginManager pluginManager, 
-                  RuleConfiguration ruleConfig)
+    public Ocelot(AppConfig config, PluginManager pluginManager, 
+                  RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
-        this.configs = configs;
-        this.config = config;
+        this.appConfig = config;
+        this.provConfig = provConfig;
 
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
@@ -137,7 +138,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         segAttrSplitPane.setOneTouchExpandable(true);
         
         Dimension segSize = new Dimension(500, 500);
-        segmentController = new SegmentController(configs);
+        segmentController = new SegmentController(provConfig);
 
         segmentView = new SegmentView(segmentAttrView, segmentController, config,
                                       ruleConfig, pluginManager);
@@ -185,7 +186,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView prov = null;
             try {
-                prov = new ProvenanceProfileView(configs, icon);
+                prov = new ProvenanceProfileView(provConfig, icon);
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
             }
@@ -465,12 +466,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         ocelotDir.mkdirs();
         Configs configs = new DirectoryBasedConfigs(ocelotDir);
         AppConfig appConfig = new AppConfig(configs);
-
+        ProvenanceConfig provConfig = new ProvenanceConfig(configs);
         RuleConfiguration ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
         PluginManager pluginManager = new PluginManager(appConfig, new File(ocelotDir, "plugins"));
         pluginManager.discover();
 
-        Ocelot ocelot = new Ocelot(configs, appConfig, pluginManager, ruleConfig);
+        Ocelot ocelot = new Ocelot(appConfig, pluginManager, ruleConfig, provConfig);
 
         try {
             if (ocelot.useNativeUI) {

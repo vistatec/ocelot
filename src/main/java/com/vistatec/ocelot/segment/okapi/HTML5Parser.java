@@ -177,7 +177,7 @@ public class HTML5Parser {
                 seg.addLQI(new LanguageQualityIssue(annotation));
 
             } else if (annotation.getType().equals(GenericAnnotationType.PROV)) {
-                seg.addProvenance(new Provenance(annotation));
+                seg.addProvenance(new OkapiProvenance(annotation));
 
             }
         }
