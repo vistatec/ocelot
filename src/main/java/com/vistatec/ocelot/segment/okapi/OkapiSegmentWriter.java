@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
+import com.vistatec.ocelot.ObjectUtils;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.okapi.common.Event;
@@ -93,9 +95,9 @@ public abstract class OkapiSegmentWriter {
             provAnns.add(ga);
 
             // Check for existing RW annotation.
-            if (prov.getRevPerson().equals(userProvenance.getRevPerson())
-                    && prov.getRevOrg().equals(userProvenance.getRevOrg())
-                    && prov.getProvRef().equals(userProvenance.getProvRef())) {
+            if (ObjectUtils.safeEquals(prov.getRevPerson(), userProvenance.getRevPerson()) &&
+                ObjectUtils.safeEquals(prov.getRevOrg(), userProvenance.getRevOrg()) &&
+                ObjectUtils.safeEquals(prov.getProvRef(), userProvenance.getProvRef())) {
                 seg.setAddedRWProvenance(true);
             }
         }

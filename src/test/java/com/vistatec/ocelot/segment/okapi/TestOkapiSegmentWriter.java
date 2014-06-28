@@ -6,9 +6,7 @@ import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 
 import org.junit.*;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
 
@@ -17,7 +15,7 @@ import static org.junit.Assert.*;
 public class TestOkapiSegmentWriter {
 
     @Test
-    public void testMissingProvenance() throws Exception {
+    public void testMissingProvenance() {
         Segment seg = new Segment();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
@@ -31,6 +29,10 @@ public class TestOkapiSegmentWriter {
         // current behavior.  A bogus second its-prov annotation with 
         // null/empty values is added.
         assertEquals(2, provAnns.getAnnotations("its-prov").size());
+
+        // Do it again, make sure it doesn't crash
+        ITSProvenanceAnnotations provAnns2 = segmentWriter.addRWProvenance(seg);
+        assertEquals(2, provAnns2.getAnnotations("its-prov").size());
     }
 
     @Test

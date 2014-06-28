@@ -280,7 +280,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         attrView.setSelectedMetadata(lqi);
         attrView.setSelectedSegment(seg);
-        segmentController.updateSegment(seg);
         int selectedRow = sourceTargetTable.getSelectedRow();
         reloadTable();
         sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
