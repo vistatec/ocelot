@@ -271,6 +271,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 }
             }
         }
+        segmentController.selectSegment(seg);
     }
 
     public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {

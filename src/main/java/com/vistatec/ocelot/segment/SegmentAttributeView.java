@@ -106,6 +106,10 @@ public class SegmentAttributeView extends JTabbedPane {
         itsTableView.clearSegment();
     }
 
+    public LanguageQualityIssueTableView getLQITableView() {
+        return lqiTableView;
+    }
+
     public void deletedSegments() {
         aggregateTableView.clearStats();
         clearSegment();

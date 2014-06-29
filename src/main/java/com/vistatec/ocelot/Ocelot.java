@@ -34,15 +34,19 @@ import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
+import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
+import com.vistatec.ocelot.segment.LQISelectionListener;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.segment.SegmentSelectionListener;
+import com.vistatec.ocelot.segment.SegmentVariant;
 import com.vistatec.ocelot.segment.SegmentView;
 
 import java.awt.BorderLayout;
@@ -88,7 +92,8 @@ import org.xml.sax.SAXException;
  * Main UI Thread class. Handles menu and file operations
  *
  */
-public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
+public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher,
+                SegmentSelectionListener, LQISelectionListener {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
     private static String APPNAME = "Ocelot";
@@ -97,9 +102,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     JFrame mainframe;
 
     JMenuBar menuBar;
-    JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
+    JMenu menuFile, menuView, menuFilter, menuSegments, menuExtensions, menuHelp;
     JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
             menuRules, menuProv, menuSave, menuSaveAs;
+    JMenuItem menuAddIssue, menuRemoveIssue, menuRestoreTarget;
     JMenuItem menuPlugins;
     JCheckBoxMenuItem menuTgtDiff;
 
@@ -116,6 +122,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private String platformOS;
     private boolean useNativeUI = false;
     private ProvenanceConfig provConfig;
+    private Segment selectedSegment = null;
+    private LanguageQualityIssue selectedLQI = null;
 
     public Ocelot(AppConfig config, PluginManager pluginManager, 
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
@@ -144,6 +152,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                                       ruleConfig, pluginManager);
         segmentView.setMinimumSize(segSize);
         segmentController.setSegmentView(segmentView);
+        segmentController.addSegmentSelectionListener(this);
+        segmentAttrView.getLQITableView().addSelectionListener(this);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 segAttrSplitPane, segmentView);
@@ -232,6 +242,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             }
         } else if (e.getSource() == this.menuTgtDiff) {
             this.segmentController.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
+        } else if (e.getSource() == this.menuAddIssue) {
+            // XXX refactor with ContextMenu
+            NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView();
+            addLQIView.setSegment(selectedSegment);
+            SwingUtilities.invokeLater(addLQIView);
+        } else if (e.getSource() == this.menuRemoveIssue) {
+            selectedSegment.removeLQI(selectedLQI);
+        } else if (e.getSource() == this.menuRestoreTarget) {
+            selectedSegment.resetTarget();
+            menuRestoreTarget.setEnabled(false);
         }
     }
 
@@ -397,6 +417,21 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 KeyStroke.getKeyStroke(KeyEvent.VK_R, getPlatformKeyMask()));
         menuFilter.add(menuRules);
 
+        menuSegments = new JMenu("Segment");
+        menuBar.add(menuSegments);
+        menuAddIssue = new JMenuItem("Add Issue");
+        menuAddIssue.addActionListener(this);
+        menuAddIssue.setEnabled(false);
+        menuSegments.add(menuAddIssue);
+        menuRemoveIssue = new JMenuItem("Remove Issue");
+        menuRemoveIssue.addActionListener(this);
+        menuRemoveIssue.setEnabled(false);
+        menuSegments.add(menuRemoveIssue);
+        menuRestoreTarget = new JMenuItem("Restore Target");
+        menuRestoreTarget.addActionListener(this);
+        menuRestoreTarget.setEnabled(false);
+        menuSegments.add(menuRestoreTarget);
+        
         menuExtensions = new JMenu("Extensions");
         menuBar.add(menuExtensions);
 
@@ -541,5 +576,37 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 }
             });
         }
+    }
+
+    @Override
+    public void segmentSelected(Segment segment) {
+        // XXX Why is this ever null?
+        if (segment != null) {
+            menuAddIssue.setEnabled(true);
+            menuRestoreTarget.setEnabled(segment.hasOriginalTarget());
+        }
+        else {
+            menuAddIssue.setEnabled(false);
+            menuRemoveIssue.setEnabled(false);
+            menuRestoreTarget.setEnabled(false);
+        }
+        this.selectedSegment = segment;
+    }
+
+    @Override
+    public void segmentEdited(Segment segment, SegmentVariant previousTarget) {
+        menuRestoreTarget.setEnabled(segment.hasOriginalTarget());
+    }
+
+    @Override
+    public void lqiSelected(LanguageQualityIssue lqi) {
+        selectedLQI = lqi;
+        menuRemoveIssue.setEnabled(true);
+    }
+
+    @Override
+    public void lqiSelectionCleared() {
+        selectedLQI = null;
+        menuRemoveIssue.setEnabled(false);
     }
 }

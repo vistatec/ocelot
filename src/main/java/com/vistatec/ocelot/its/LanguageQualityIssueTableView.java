@@ -29,11 +29,15 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.segment.LQISelectionListener;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -53,12 +57,17 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     protected LQITableModel lqiTableModel;
     private ListSelectionModel tableSelectionModel;
     private TableRowSorter<LQITableModel> sort;
+    private List<LQISelectionListener> selectionListeners = new ArrayList<LQISelectionListener>();
     
     public LanguageQualityIssueTableView(SegmentAttributeView sav) {
         segAttrView = sav;
         addMouseListener(new LQIPopupMenuListener());
     }
 
+    public void addSelectionListener(LQISelectionListener listener) {
+        selectionListeners.add(listener);
+    }
+    
     public void setSegment(Segment seg) {
         setViewportView(null);
         lqiTableModel = new LQITableModel();
@@ -90,13 +99,20 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     public void selectedLQI() {
         int rowIndex = lqiTable.getSelectedRow();
         if (rowIndex >= 0) {
-            segAttrView.setSelectedMetadata(lqiTableModel.getRow(rowIndex));
+            ITSMetadata selected = lqiTableModel.getRow(rowIndex);
+            segAttrView.setSelectedMetadata(selected);
+            for (LQISelectionListener listener : selectionListeners) {
+                listener.lqiSelected((LanguageQualityIssue)selected);
+            }
         }
     }
 
     public void deselectLQI() {
         if (lqiTable != null) {
             lqiTable.clearSelection();
+        }
+        for (LQISelectionListener listener : selectionListeners) {
+            listener.lqiSelectionCleared();
         }
     }
 

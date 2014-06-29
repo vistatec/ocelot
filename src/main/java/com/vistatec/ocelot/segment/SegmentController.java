@@ -43,7 +43,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +63,8 @@ public class SegmentController {
     private HTML5Parser html5Parser;
     private boolean openFile = false, isHTML, targetDiff = true;
     private ProvenanceConfig provConfig;
+    private List<SegmentSelectionListener> segmentSelectionListeners =
+            new ArrayList<SegmentSelectionListener>();
 
     public SegmentController(ProvenanceConfig provConfig) {
         this.provConfig = provConfig;
@@ -81,6 +85,10 @@ public class SegmentController {
 
     public boolean enabledTargetDiff() {
         return this.targetDiff;
+    }
+
+    public void addSegmentSelectionListener(SegmentSelectionListener listener) {
+        this.segmentSelectionListeners.add(listener);
     }
 
     public void setEnabledTargetDiff(boolean enableTargetDiff) {
@@ -130,6 +138,16 @@ public class SegmentController {
         return getSegmentTableModel().getColumnIndex(SegmentTableModel.COLSEGTGTORI);
     }
 
+    /**
+     * Signal that a segment has been selected.  Notify all listeners.
+     * @param segment
+     */
+    public void selectSegment(Segment segment) {
+        for (SegmentSelectionListener l : segmentSelectionListeners) {
+            l.segmentSelected(segment);
+        }
+    }
+    
     protected void fireTableDataChanged() {
         getSegmentTableModel().fireTableDataChanged();
         segmentView.updateRowHeights();
