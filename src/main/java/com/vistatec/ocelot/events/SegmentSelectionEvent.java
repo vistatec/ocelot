@@ -2,14 +2,11 @@ package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.segment.Segment;
 
-public class SegmentSelectionEvent {
-    private Segment segment;
-
+/**
+ * Signals that a segment has been selected in the UI.
+ */
+public class SegmentSelectionEvent extends SegmentEvent {
     public SegmentSelectionEvent(Segment segment) {
-        this.segment = segment;
-    }
-
-    public Segment getSegment() {
-        return segment;
+        super(segment);
     }
 }

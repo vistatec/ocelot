@@ -94,7 +94,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     protected SegmentController segmentController;
     protected JTable sourceTargetTable;
-    private ListSelectionModel tableSelectionModel;
     private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
     protected TableRowSorter<SegmentTableModel> sort;
@@ -127,7 +126,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 selectedSegment();
             }
         };
-        tableSelectionModel = sourceTargetTable.getSelectionModel();
+        ListSelectionModel tableSelectionModel = sourceTargetTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(selectSegmentHandler);
 

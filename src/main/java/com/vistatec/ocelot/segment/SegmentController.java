@@ -65,13 +65,11 @@ public class SegmentController {
     private boolean openFile = false, isHTML, targetDiff = true;
     private ProvenanceConfig provConfig;
     private EventBus eventBus;
-    private RuleConfiguration ruleConfig;
 
     public SegmentController(EventBus eventBus, RuleConfiguration ruleConfig,
                              ProvenanceConfig provConfig) {
         this.eventBus = eventBus;
         this.provConfig = provConfig;
-        this.ruleConfig = ruleConfig;
         this.segmentModel = new SegmentTableModel(eventBus, ruleConfig);
     }
 

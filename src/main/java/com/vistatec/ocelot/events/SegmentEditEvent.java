@@ -2,14 +2,11 @@ package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.segment.Segment;
 
-public class SegmentEditEvent {
-    private Segment segment;
-
+/**
+ * Signals that a segment has been edited by the user.
+ */
+public class SegmentEditEvent extends SegmentEvent {
     public SegmentEditEvent(Segment segment) {
-        this.segment = segment;
-    }
-
-    public Segment getSegment() {
-        return segment;
+        super(segment);
     }
 }

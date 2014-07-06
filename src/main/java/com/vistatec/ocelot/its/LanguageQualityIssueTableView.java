@@ -57,7 +57,6 @@ public class LanguageQualityIssueTableView extends JScrollPane {
 
     protected JTable lqiTable;
     protected LQITableModel lqiTableModel;
-    private ListSelectionModel tableSelectionModel;
     private TableRowSorter<LQITableModel> sort;
     private EventBus eventBus;
     private Segment selectedSegment;
@@ -75,7 +74,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         lqiTableModel = new LQITableModel();
         lqiTable = new JTable(lqiTableModel);
 
-        tableSelectionModel = lqiTable.getSelectionModel();
+        ListSelectionModel tableSelectionModel = lqiTable.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
 

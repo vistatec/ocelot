@@ -60,11 +60,9 @@ public class SegmentAttributeView extends JTabbedPane {
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
     private DetailView detailView;
-    private EventBus eventBus;
     private Segment selectedSegment;
 
     public SegmentAttributeView(EventBus eventBus, DetailView detailView) {
-        this.eventBus = eventBus;
         this.detailView = detailView;
 
         aggregateTableView = new ITSDocStatsTableView();
