@@ -84,7 +84,7 @@ public class SegmentTableModel extends AbstractTableModel {
         if (columnIndex == getColumnIndex(COLSEGSRC)
                 || columnIndex == getColumnIndex(COLSEGTGT)
                 || columnIndex == getColumnIndex(COLSEGTGTORI)) {
-            return String.class;
+            return SegmentVariant.class;
         }
         return ITSMetadata.class;
     }

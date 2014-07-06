@@ -203,6 +203,6 @@ public class TextContainerVariant implements SegmentVariant {
 
     @Override
     public String toString() {
-        return tc.toString();
+        return getDisplayText();
     }
 }
