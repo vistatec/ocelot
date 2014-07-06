@@ -28,12 +28,19 @@
  */
 package com.vistatec.ocelot.its;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.SegmentDeselectionEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +54,9 @@ public class OtherITSTableView extends JScrollPane {
     protected JTable itsTable;
     private OtherITSTableModel itsTableModel;
 
-    public OtherITSTableView() {}
+    public OtherITSTableView(EventBus eventBus) {
+        eventBus.register(this);
+    }
 
     public JTable getTable() {
         return this.itsTable;
@@ -57,7 +66,9 @@ public class OtherITSTableView extends JScrollPane {
         return this.itsTableModel;
     }
 
-    public void setSegment(Segment seg) {
+    @Subscribe
+    public void setSegment(SegmentSelectionEvent e) {
+        Segment seg = e.getSegment();
         setViewportView(null);
         this.itsTableModel = new OtherITSTableModel();
         this.itsTable = new JTable(this.itsTableModel);
@@ -67,7 +78,7 @@ public class OtherITSTableView extends JScrollPane {
         setViewportView(this.itsTable);
     }
 
-    public void clearSegment() {
+    public void clearSegment(SegmentDeselectionEvent e) {
         clearTableSelection();
         deleteTableValues();
         setViewportView(null);

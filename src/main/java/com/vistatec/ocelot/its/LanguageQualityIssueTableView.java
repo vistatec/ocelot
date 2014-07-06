@@ -29,9 +29,12 @@
 package com.vistatec.ocelot.its;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.SegmentDeselectionEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 
@@ -64,9 +67,12 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         this.eventBus = eventBus;
         segAttrView = sav;
         addMouseListener(new LQIPopupMenuListener());
+        eventBus.register(this);
     }
     
-    public void setSegment(Segment seg) {
+    @Subscribe
+    public void setSegment(SegmentSelectionEvent e) {
+        Segment seg = e.getSegment();
         setViewportView(null);
         lqiTableModel = new LQITableModel();
         lqiTable = new JTable(lqiTableModel);
@@ -85,7 +91,8 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         setViewportView(lqiTable);
     }
 
-    public void clearSegment() {
+    @Subscribe
+    public void clearSegment(SegmentDeselectionEvent e) {
         if (lqiTable != null) {
             lqiTable.clearSelection();
             lqiTableModel.deleteRows();

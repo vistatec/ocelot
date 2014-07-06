@@ -28,6 +28,9 @@
  */
 package com.vistatec.ocelot;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
@@ -35,8 +38,10 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.ProvenanceView;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentDetailView;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+
 import javax.swing.JPanel;
 
 /**
@@ -48,10 +53,13 @@ public class DetailView extends JPanel {
     private NewLanguageQualityIssueView lqiDetailView;
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
+    private EventBus eventBus;
 
-    public DetailView() {
+    public DetailView(EventBus eventBus) {
+        this.eventBus = eventBus;
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(500, 250));
+        eventBus.register(this);
     }
 
     public void clearDisplay() {
@@ -83,7 +91,9 @@ public class DetailView extends JPanel {
         revalidate();
     }
 
-    public void setSegment(Segment seg) {
+    @Subscribe
+    public void setSegment(SegmentSelectionEvent e) {
+        Segment seg = e.getSegment();
         removeProvenanceDetailView();
         removeLQIDetailView();
         addSegmentDetailView();
@@ -100,6 +110,7 @@ public class DetailView extends JPanel {
 
     public void removeProvenanceDetailView() {
         if (provDetailView != null) {
+            eventBus.unregister(provDetailView);
             remove(provDetailView);
             provDetailView = null;
         }
@@ -114,6 +125,7 @@ public class DetailView extends JPanel {
 
     public void removeLQIDetailView() {
         if (lqiDetailView != null) {
+            eventBus.unregister(lqiDetailView);
             remove(lqiDetailView);
             lqiDetailView = null;
         }
@@ -128,6 +140,7 @@ public class DetailView extends JPanel {
 
     public void removeSegmentDetailView() {
         if (segDetailView != null) {
+            eventBus.unregister(segDetailView);
             remove(segDetailView);
             segDetailView = null;
         }

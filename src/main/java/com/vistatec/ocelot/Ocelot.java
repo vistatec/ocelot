@@ -130,7 +130,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
         
         Dimension segAttrSize = new Dimension(385, 280);
-        itsDetailView = new DetailView();
+        itsDetailView = new DetailView(eventBus);
         itsDetailView.setPreferredSize(segAttrSize);
         segmentAttrView = new SegmentAttributeView(eventBus, itsDetailView);
         segmentAttrView.setMinimumSize(new Dimension(305, 280));
@@ -140,7 +140,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         segAttrSplitPane.setOneTouchExpandable(true);
         
         Dimension segSize = new Dimension(500, 500);
-        segmentController = new SegmentController(eventBus, provConfig);
+        segmentController = new SegmentController(eventBus, ruleConfig, provConfig);
 
         segmentView = new SegmentView(eventBus, segmentAttrView, segmentController, config,
                                       ruleConfig, pluginManager);

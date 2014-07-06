@@ -30,6 +30,7 @@ package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.RuleConfiguration;
@@ -64,11 +65,14 @@ public class SegmentController {
     private boolean openFile = false, isHTML, targetDiff = true;
     private ProvenanceConfig provConfig;
     private EventBus eventBus;
+    private RuleConfiguration ruleConfig;
 
-    public SegmentController(EventBus eventBus, ProvenanceConfig provConfig) {
+    public SegmentController(EventBus eventBus, RuleConfiguration ruleConfig,
+                             ProvenanceConfig provConfig) {
         this.eventBus = eventBus;
         this.provConfig = provConfig;
-        this.segmentModel = new SegmentTableModel(this);
+        this.ruleConfig = ruleConfig;
+        this.segmentModel = new SegmentTableModel(eventBus, ruleConfig);
     }
 
     public void setSegmentView(SegmentView segView) {
@@ -152,20 +156,12 @@ public class SegmentController {
         segmentView.notifyAddedProv(prov);
     }
 
-    public void notifyDeletedSegments() {
-        segmentView.notifyDeletedSegments();
-    }
-
-    public RuleConfiguration getRuleConfig() {
-        return segmentView.ruleConfig;
-    }
-
     public void parseXLIFFFile(File xliffFile) throws FileNotFoundException {
         XLIFFParser newParser = new XLIFFParser();
         List<Segment> segments = newParser.parseXLIFFFile(new FileInputStream(xliffFile));
 
-        segmentView.clearTable();
-        getSegmentTableModel().deleteSegments();
+        segmentView.clearTable(); // XXX make this an event listener
+        eventBus.post(new ClearAllSegmentsEvent());
         xliffParser = newParser;
         for (Segment seg : segments) {
             seg.setSegmentListener(this);
@@ -184,7 +180,7 @@ public class SegmentController {
                 new FileInputStream(tgtHTMLFile));
 
         segmentView.clearTable();
-        getSegmentTableModel().deleteSegments();
+        eventBus.post(new ClearAllSegmentsEvent());
         html5Parser = newParser;
         for (Segment seg : segments) {
             seg.setSegmentListener(this);

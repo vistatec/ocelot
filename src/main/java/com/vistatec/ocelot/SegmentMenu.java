@@ -15,7 +15,6 @@ import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentVariant;
 
 public class SegmentMenu {
     private JMenu menu;
@@ -57,16 +56,9 @@ public class SegmentMenu {
 
     @Subscribe
     public void selectedSegment(SegmentSelectionEvent e) {
-        // XXX Why is this ever null?
-        if (e.getSegment() != null) {
-            menuAddIssue.setEnabled(true);
-            menuRestoreTarget.setEnabled(e.getSegment().hasOriginalTarget());
-        }
-        else {
-            menuAddIssue.setEnabled(false);
-            menuRemoveIssue.setEnabled(false);
-            menuRestoreTarget.setEnabled(false);
-        }
+        menuAddIssue.setEnabled(true);
+        menuRemoveIssue.setEnabled(false);
+        menuRestoreTarget.setEnabled(e.getSegment().hasOriginalTarget());
         this.selectedSegment = e.getSegment();
     }
 

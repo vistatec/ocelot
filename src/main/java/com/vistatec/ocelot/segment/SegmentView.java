@@ -266,7 +266,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void selectedSegment() {
         Segment seg = getSelectedSegment();
         if (seg != null) {
-            attrView.setSelectedSegment(seg);
             int colIndex = sourceTargetTable.getSelectedColumn();
             if (colIndex >= SegmentTableModel.NONFLAGCOLS) {
                 int adjustedFlagIndex = colIndex - SegmentTableModel.NONFLAGCOLS;
@@ -276,7 +275,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 }
             }
         }
-        eventBus.post(new SegmentSelectionEvent(seg));
+        postSegmentSelection(seg);
     }
 
     public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
@@ -285,7 +284,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         attrView.setSelectedMetadata(lqi);
-        attrView.setSelectedSegment(seg);
+        postSegmentSelection(seg);
         int selectedRow = sourceTargetTable.getSelectedRow();
         reloadTable();
         sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
@@ -294,10 +293,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     public void notifyAddedProv(Provenance prov) {
         attrView.addProvMetadata(prov);
-    }
-
-    public void notifyDeletedSegments() {
-        attrView.deletedSegments();
     }
 
     /**
@@ -324,6 +319,12 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     public PluginManager getPluginManager() {
         return this.pluginManager;
+    }
+
+    private void postSegmentSelection(Segment seg) {
+        if (seg != null) {
+            eventBus.post(new SegmentSelectionEvent(seg));
+        }
     }
 
     /**
@@ -506,7 +507,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 segmentController.updateSegment(seg);
                 eventBus.post(new SegmentEditEvent(seg));
             }
-            attrView.setSelectedSegment(seg);
+            postSegmentSelection(seg);
             reloadTable();
         }
 

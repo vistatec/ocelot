@@ -28,8 +28,12 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.rules.NullITSMetadata;
+import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +47,7 @@ import javax.swing.table.AbstractTableModel;
 public class SegmentTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
 
-    private SegmentController segmentController;
+    private RuleConfiguration ruleConfig;
     private ArrayList<Segment> segments = new ArrayList<Segment>(100);
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
@@ -54,8 +58,8 @@ public class SegmentTableModel extends AbstractTableModel {
     public static final String COLSEGTGT = "Target";
     public static final String COLSEGTGTORI = "Target Original";
 
-    public SegmentTableModel(SegmentController segController) {
-        segmentController = segController;
+    public SegmentTableModel(EventBus eventBus, RuleConfiguration ruleConfig) {
+        this.ruleConfig = ruleConfig;
         colNameToIndex = new HashMap<String, Integer>();
         colNameToIndex.put(COLSEGNUM, 0);
         colNameToIndex.put(COLSEGSRC, 1);
@@ -65,6 +69,7 @@ public class SegmentTableModel extends AbstractTableModel {
         for (String key : colNameToIndex.keySet()) {
             colIndexToName.put(colNameToIndex.get(key), key);
         }
+        eventBus.register(this);
     }
 
     @Override
@@ -113,7 +118,7 @@ public class SegmentTableModel extends AbstractTableModel {
         if (col == getColumnIndex(COLSEGTGTORI)) {
             return getSegment(row).getOriginalTarget();
         }
-        Object ret = segmentController.getRuleConfig().getTopDataCategory(
+        Object ret = ruleConfig.getTopDataCategory(
                 segments.get(row), col-NONFLAGCOLS);
         return ret != null ? ret : NullITSMetadata.getInstance();
     }
@@ -131,8 +136,8 @@ public class SegmentTableModel extends AbstractTableModel {
         return segments.get(row);
     }
 
-    protected void deleteSegments() {
+    @Subscribe
+    protected void clearAllSegments(ClearAllSegmentsEvent e) {
         segments.clear();
-        segmentController.notifyDeletedSegments();
     }
 }

@@ -29,7 +29,11 @@
 package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.DetailView;
+import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
+import com.vistatec.ocelot.events.SegmentDeselectionEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.LanguageQualityIssueTableView;
@@ -56,10 +60,11 @@ public class SegmentAttributeView extends JTabbedPane {
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
     private DetailView detailView;
-
+    private EventBus eventBus;
     private Segment selectedSegment;
 
     public SegmentAttributeView(EventBus eventBus, DetailView detailView) {
+        this.eventBus = eventBus;
         this.detailView = detailView;
 
         aggregateTableView = new ITSDocStatsTableView();
@@ -68,10 +73,10 @@ public class SegmentAttributeView extends JTabbedPane {
         lqiTableView = new LanguageQualityIssueTableView(eventBus, this);
         addTab("LQI", lqiTableView);
 
-        provTableView = new ProvenanceTableView(this);
+        provTableView = new ProvenanceTableView(eventBus, this);
         addTab("Prov", provTableView);
 
-        itsTableView = new OtherITSTableView();
+        itsTableView = new OtherITSTableView(eventBus);
         addTab("Other ITS", itsTableView);
 
         // Deselect metadata to allow reselection for detail view after switching tabs.
@@ -88,30 +93,26 @@ public class SegmentAttributeView extends JTabbedPane {
                 }
             }
         });
+        eventBus.register(this);
     }
 
     public Segment getSelectedSegment() {
         return this.selectedSegment;
     }
-    
-    public void setSelectedSegment(Segment seg) {
-        this.selectedSegment = seg;
-        lqiTableView.setSegment(seg);
-        provTableView.setSegment(seg);
-        itsTableView.setSegment(seg);
-        detailView.setSegment(seg);
+
+    @Subscribe
+    public void setSelectedSegment(SegmentSelectionEvent e) {
+        this.selectedSegment = e.getSegment();
     }
 
-    public void clearSegment() {
+    @Subscribe
+    public void clearSegment(SegmentDeselectionEvent e) {
         this.selectedSegment = null;
-        lqiTableView.clearSegment();
-        provTableView.clearSegment();
-        itsTableView.clearSegment();
     }
 
-    public void deletedSegments() {
+    @Subscribe
+    public void deletedSegments(ClearAllSegmentsEvent e) {
         aggregateTableView.clearStats();
-        clearSegment();
     }
 
     public void addLQIMetadata(LanguageQualityIssue lqi) {
