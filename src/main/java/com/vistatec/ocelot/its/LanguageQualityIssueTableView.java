@@ -28,14 +28,15 @@
  */
 package com.vistatec.ocelot.its;
 
+import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.ContextMenu;
-import com.vistatec.ocelot.segment.LQISelectionListener;
+import com.vistatec.ocelot.events.LQIDeselectionEvent;
+import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JScrollPane;
@@ -57,15 +58,12 @@ public class LanguageQualityIssueTableView extends JScrollPane {
     protected LQITableModel lqiTableModel;
     private ListSelectionModel tableSelectionModel;
     private TableRowSorter<LQITableModel> sort;
-    private List<LQISelectionListener> selectionListeners = new ArrayList<LQISelectionListener>();
+    private EventBus eventBus;
     
-    public LanguageQualityIssueTableView(SegmentAttributeView sav) {
+    public LanguageQualityIssueTableView(EventBus eventBus, SegmentAttributeView sav) {
+        this.eventBus = eventBus;
         segAttrView = sav;
         addMouseListener(new LQIPopupMenuListener());
-    }
-
-    public void addSelectionListener(LQISelectionListener listener) {
-        selectionListeners.add(listener);
     }
     
     public void setSegment(Segment seg) {
@@ -101,9 +99,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         if (rowIndex >= 0) {
             ITSMetadata selected = lqiTableModel.getRow(rowIndex);
             segAttrView.setSelectedMetadata(selected);
-            for (LQISelectionListener listener : selectionListeners) {
-                listener.lqiSelected((LanguageQualityIssue)selected);
-            }
+            eventBus.post(new LQISelectionEvent((LanguageQualityIssue)selected));
         }
     }
 
@@ -111,9 +107,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         if (lqiTable != null) {
             lqiTable.clearSelection();
         }
-        for (LQISelectionListener listener : selectionListeners) {
-            listener.lqiSelectionCleared();
-        }
+        eventBus.post(new LQIDeselectionEvent());
     }
 
     public class LQITableModel extends AbstractTableModel {

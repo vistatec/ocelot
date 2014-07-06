@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
@@ -43,7 +44,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -63,10 +63,10 @@ public class SegmentController {
     private HTML5Parser html5Parser;
     private boolean openFile = false, isHTML, targetDiff = true;
     private ProvenanceConfig provConfig;
-    private List<SegmentSelectionListener> segmentSelectionListeners =
-            new ArrayList<SegmentSelectionListener>();
+    private EventBus eventBus;
 
-    public SegmentController(ProvenanceConfig provConfig) {
+    public SegmentController(EventBus eventBus, ProvenanceConfig provConfig) {
+        this.eventBus = eventBus;
         this.provConfig = provConfig;
         this.segmentModel = new SegmentTableModel(this);
     }
@@ -85,10 +85,6 @@ public class SegmentController {
 
     public boolean enabledTargetDiff() {
         return this.targetDiff;
-    }
-
-    public void addSegmentSelectionListener(SegmentSelectionListener listener) {
-        this.segmentSelectionListeners.add(listener);
     }
 
     public void setEnabledTargetDiff(boolean enableTargetDiff) {
@@ -138,16 +134,6 @@ public class SegmentController {
         return getSegmentTableModel().getColumnIndex(SegmentTableModel.COLSEGTGTORI);
     }
 
-    /**
-     * Signal that a segment has been selected.  Notify all listeners.
-     * @param segment
-     */
-    public void selectSegment(Segment segment) {
-        for (SegmentSelectionListener l : segmentSelectionListeners) {
-            l.segmentSelected(segment);
-        }
-    }
-    
     protected void fireTableDataChanged() {
         getSegmentTableModel().fireTableDataChanged();
         segmentView.updateRowHeights();

@@ -28,7 +28,10 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.AppConfig;
+import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.its.ITSMetadata;
@@ -96,11 +99,13 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
+    private EventBus eventBus;
 
-    public SegmentView(SegmentAttributeView attr, SegmentController segController,
+    public SegmentView(EventBus eventBus, SegmentAttributeView attr, SegmentController segController,
             AppConfig appConfig, RuleConfiguration ruleConfig,
             PluginManager pluginManager) throws IOException, 
                 InstantiationException, InstantiationException, IllegalAccessException {
+        this.eventBus = eventBus;
         attrView = attr;
         segmentController = segController;
         this.ruleConfig = ruleConfig;
@@ -271,7 +276,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 }
             }
         }
-        segmentController.selectSegment(seg);
+        eventBus.post(new SegmentSelectionEvent(seg));
     }
 
     public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
@@ -499,6 +504,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 this.seg.setTargetDiff(EditDistance.styleTextDifferences(this.seg.getTarget(),
                         this.seg.getOriginalTarget()));
                 segmentController.updateSegment(seg);
+                eventBus.post(new SegmentEditEvent(seg));
             }
             attrView.setSelectedSegment(seg);
             reloadTable();

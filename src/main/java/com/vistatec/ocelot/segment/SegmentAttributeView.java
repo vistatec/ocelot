@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.DetailView;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -37,7 +38,9 @@ import com.vistatec.ocelot.its.OtherITSTableView;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.ProvenanceTableView;
 import com.vistatec.ocelot.its.stats.ITSDocStatsTableView;
+
 import java.awt.Component;
+
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -56,13 +59,13 @@ public class SegmentAttributeView extends JTabbedPane {
 
     private Segment selectedSegment;
 
-    public SegmentAttributeView(DetailView detailView) {
+    public SegmentAttributeView(EventBus eventBus, DetailView detailView) {
         this.detailView = detailView;
 
         aggregateTableView = new ITSDocStatsTableView();
         addTab("Doc Stats", aggregateTableView);
 
-        lqiTableView = new LanguageQualityIssueTableView(this);
+        lqiTableView = new LanguageQualityIssueTableView(eventBus, this);
         addTab("LQI", lqiTableView);
 
         provTableView = new ProvenanceTableView(this);
@@ -104,10 +107,6 @@ public class SegmentAttributeView extends JTabbedPane {
         lqiTableView.clearSegment();
         provTableView.clearSegment();
         itsTableView.clearSegment();
-    }
-
-    public LanguageQualityIssueTableView getLQITableView() {
-        return lqiTableView;
     }
 
     public void deletedSegments() {
