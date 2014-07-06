@@ -499,6 +499,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         @Override
         public void editingStopped(ChangeEvent ce) {
+            int row = sourceTargetTable.getSelectedRow();
             pluginManager.notifySegmentTargetExit(seg);
             if (!this.seg.getTarget().getDisplayText().equals(codedText)) {
                 if (!this.seg.hasOriginalTarget()) {
@@ -511,6 +512,8 @@ public class SegmentView extends JScrollPane implements RuleListener {
             }
             postSegmentSelection(seg);
             reloadTable();
+            // Restore row selection
+            sourceTargetTable.setRowSelectionInterval(row, row);
         }
 
         @Override
