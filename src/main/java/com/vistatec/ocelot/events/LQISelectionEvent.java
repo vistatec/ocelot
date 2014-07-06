@@ -2,15 +2,12 @@ package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 
-public class LQISelectionEvent {
-    private LanguageQualityIssue lqi;
-
+public class LQISelectionEvent extends ITSSelectionEvent {
     public LQISelectionEvent(LanguageQualityIssue lqi) {
-        this.lqi = lqi;
+        super(lqi);
     }
 
     public LanguageQualityIssue getLQI() {
-        return lqi;
+        return (LanguageQualityIssue)super.getITSMetadata();
     }
-
 }

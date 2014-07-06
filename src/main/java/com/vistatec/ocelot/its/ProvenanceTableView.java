@@ -30,10 +30,10 @@ package com.vistatec.ocelot.its;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.ProvenanceSelectionEvent;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentAttributeView;
 
 import java.util.List;
 
@@ -51,15 +51,15 @@ import javax.swing.table.TableRowSorter;
 public class ProvenanceTableView extends JScrollPane {
     private static final long serialVersionUID = 1L;
 
-    private SegmentAttributeView segAttrView;
     protected JTable provTable;
     private ProvTableModel provTableModel;
     private ListSelectionModel tableSelectionModel;
     private TableRowSorter<ProvTableModel> sort;
+    private EventBus eventBus;
 
-    public ProvenanceTableView(EventBus eventBus, SegmentAttributeView sav) {
+    public ProvenanceTableView(EventBus eventBus) {
+        this.eventBus = eventBus;
         eventBus.register(this);
-        segAttrView = sav;
     }
 
     @Subscribe
@@ -95,7 +95,7 @@ public class ProvenanceTableView extends JScrollPane {
     public void selectedProv() {
         int rowIndex = provTable.getSelectedRow();
         if (rowIndex >= 0) {
-            segAttrView.setSelectedMetadata(provTableModel.rows.get(rowIndex));
+            eventBus.post(new ProvenanceSelectionEvent(provTableModel.rows.get(rowIndex)));
         }
     }
 

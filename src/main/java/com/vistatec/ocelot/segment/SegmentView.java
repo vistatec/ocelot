@@ -30,6 +30,8 @@ package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.AppConfig;
+import com.vistatec.ocelot.events.ITSSelectionEvent;
+import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
@@ -271,7 +273,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 int adjustedFlagIndex = colIndex - SegmentTableModel.NONFLAGCOLS;
                 ITSMetadata its = ruleConfig.getTopDataCategory(seg, adjustedFlagIndex);
                 if (its != null) {
-                    attrView.setSelectedMetadata(its);
+                    eventBus.post(new ITSSelectionEvent(its));
                 }
             }
         }
@@ -283,7 +285,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
-        attrView.setSelectedMetadata(lqi);
+        eventBus.post(new LQISelectionEvent(lqi));
         postSegmentSelection(seg);
         int selectedRow = sourceTargetTable.getSelectedRow();
         reloadTable();

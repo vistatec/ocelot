@@ -11,6 +11,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
@@ -42,7 +43,7 @@ public class SegmentMenu {
         });
         menuRemoveIssue.setEnabled(false);
         menu.add(menuRemoveIssue);
-        menuRestoreTarget = new JMenuItem("Restore Target");
+        menuRestoreTarget = new JMenuItem("Reset Target");
         menuRestoreTarget.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 selectedSegment.resetTarget();
@@ -63,8 +64,11 @@ public class SegmentMenu {
     }
 
     @Subscribe
-    public void segmentEdited(Segment segment) {
-        menuRestoreTarget.setEnabled(segment.hasOriginalTarget());
+    public void segmentEdited(SegmentEditEvent e) {
+        Segment seg = e.getSegment();
+        if (seg.equals(selectedSegment)) {
+            menuRestoreTarget.setEnabled(seg.hasOriginalTarget());
+        }
     }
 
     @Subscribe

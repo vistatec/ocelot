@@ -36,7 +36,6 @@ import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentAttributeView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -56,23 +55,22 @@ import javax.swing.table.TableRowSorter;
 public class LanguageQualityIssueTableView extends JScrollPane {
     private static final long serialVersionUID = 1L;
 
-    private SegmentAttributeView segAttrView;
     protected JTable lqiTable;
     protected LQITableModel lqiTableModel;
     private ListSelectionModel tableSelectionModel;
     private TableRowSorter<LQITableModel> sort;
     private EventBus eventBus;
+    private Segment selectedSegment;
     
-    public LanguageQualityIssueTableView(EventBus eventBus, SegmentAttributeView sav) {
+    public LanguageQualityIssueTableView(EventBus eventBus) {
         this.eventBus = eventBus;
-        segAttrView = sav;
         addMouseListener(new LQIPopupMenuListener());
         eventBus.register(this);
     }
     
     @Subscribe
     public void setSegment(SegmentSelectionEvent e) {
-        Segment seg = e.getSegment();
+        selectedSegment = e.getSegment();
         setViewportView(null);
         lqiTableModel = new LQITableModel();
         lqiTable = new JTable(lqiTableModel);
@@ -81,7 +79,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
 
-        List<LanguageQualityIssue> lqiData = seg.getLQI();
+        List<LanguageQualityIssue> lqiData = selectedSegment.getLQI();
         lqiTableModel.setRows(lqiData);
 
         sort = new TableRowSorter<LQITableModel>(lqiTableModel);
@@ -105,7 +103,6 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         int rowIndex = lqiTable.getSelectedRow();
         if (rowIndex >= 0) {
             ITSMetadata selected = lqiTableModel.getRow(rowIndex);
-            segAttrView.setSelectedMetadata(selected);
             eventBus.post(new LQISelectionEvent((LanguageQualityIssue)selected));
         }
     }
@@ -198,10 +195,10 @@ public class LanguageQualityIssueTableView extends JScrollPane {
                     selectedLQI = lqiTableModel.getRow(r);
                 }
             }
-            if (e.isPopupTrigger() && segAttrView.getSelectedSegment() != null) {
+            if (e.isPopupTrigger() && selectedSegment != null) {
                 ContextMenu menu = selectedLQI == null ?
-                        new ContextMenu(segAttrView.getSelectedSegment()) :
-                        new ContextMenu(segAttrView.getSelectedSegment(), selectedLQI);
+                        new ContextMenu(selectedSegment) :
+                        new ContextMenu(selectedSegment, selectedLQI);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }

@@ -32,12 +32,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.DetailView;
 import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
+import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.LanguageQualityIssueTableView;
-import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.OtherITSTableView;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.ProvenanceTableView;
@@ -51,6 +50,7 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Displays ITS metadata attached to the selected segment in the SegmentView.
+ * Container for the various metadata tabs (stats/LQI/Prov/Other).
  */
 public class SegmentAttributeView extends JTabbedPane {
     private static final long serialVersionUID = 1L;
@@ -70,10 +70,10 @@ public class SegmentAttributeView extends JTabbedPane {
         aggregateTableView = new ITSDocStatsTableView();
         addTab("Doc Stats", aggregateTableView);
 
-        lqiTableView = new LanguageQualityIssueTableView(eventBus, this);
+        lqiTableView = new LanguageQualityIssueTableView(eventBus);
         addTab("LQI", lqiTableView);
 
-        provTableView = new ProvenanceTableView(eventBus, this);
+        provTableView = new ProvenanceTableView(eventBus);
         addTab("Prov", provTableView);
 
         itsTableView = new OtherITSTableView(eventBus);
@@ -123,18 +123,20 @@ public class SegmentAttributeView extends JTabbedPane {
         aggregateTableView.addProvMetadata(prov);
     }
 
-    public void setSelectedMetadata(ITSMetadata its) {
-        if (getSelectedSegment() != null) {
-            detailView.setMetadata(getSelectedSegment(), its);
-            for (int i = 0; i < getTabCount(); i++) {
-                if (its instanceof LanguageQualityIssue
-                        && lqiTableView.equals(getComponentAt(i)) ||
-                    its instanceof Provenance
-                        && provTableView.equals(getComponentAt(i)) ||
-                    its instanceof OtherITSMetadata
-                        && itsTableView.equals(getComponentAt(i)) ) {
-                    setSelectedIndex(i);
-                }
+    @Subscribe
+    public void metadataSelected(ITSSelectionEvent e) {
+        if (e.getITSMetadata() instanceof LanguageQualityIssue) {
+            setTab(lqiTableView);
+        }
+        else if (e.getITSMetadata() instanceof Provenance) {
+            setTab(provTableView);
+        }
+    }
+
+    private void setTab(Component tab) {
+        for (int i = 0; i < getTabCount(); i++) {
+            if (tab.equals(getComponentAt(i))) {
+                setSelectedIndex(i);
             }
         }
     }

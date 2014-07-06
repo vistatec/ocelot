@@ -30,8 +30,8 @@ package com.vistatec.ocelot;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.Provenance;
@@ -54,6 +54,7 @@ public class DetailView extends JPanel {
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
     private EventBus eventBus;
+    private Segment selectedSegment;
 
     public DetailView(EventBus eventBus) {
         this.eventBus = eventBus;
@@ -74,30 +75,30 @@ public class DetailView extends JPanel {
         }
     }
 
-    public void setMetadata(Segment seg, ITSMetadata data) {
-        if (LanguageQualityIssue.class.equals(
-            data.getClass())) {
-            LanguageQualityIssue lqi = (LanguageQualityIssue) data;
+    @Subscribe
+    public void metadataSelected(ITSSelectionEvent e) {
+        if (e.getITSMetadata() instanceof LanguageQualityIssue) {
             removeSegmentDetailView();
             removeProvenanceDetailView();
             addLQIDetailView();
-            lqiDetailView.setMetadata(seg, lqi);
-        } else if (Provenance.class.equals(data.getClass())) {
+            lqiDetailView.setMetadata(selectedSegment, (LanguageQualityIssue)e.getITSMetadata());
+        }
+        else if (e.getITSMetadata() instanceof Provenance) {
             removeSegmentDetailView();
             removeLQIDetailView();
             addProvenanceDetailView();
-            provDetailView.setMetadata(seg, data);
+            provDetailView.setMetadata(selectedSegment, (Provenance)e.getITSMetadata());
         }
         revalidate();
     }
 
     @Subscribe
     public void setSegment(SegmentSelectionEvent e) {
-        Segment seg = e.getSegment();
+        selectedSegment = e.getSegment();
         removeProvenanceDetailView();
         removeLQIDetailView();
         addSegmentDetailView();
-        segDetailView.setSegment(seg);
+        segDetailView.setSegment(selectedSegment);
         revalidate();
     }
 

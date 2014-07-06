@@ -28,8 +28,12 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.google.common.eventbus.EventBus;
+import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
+
 import java.util.LinkedList;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
@@ -49,8 +53,10 @@ public class SegmentAttributeTreeView extends JScrollPane implements TreeSelecti
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode lqiRoot;
+    private EventBus eventBus;
 
-    public SegmentAttributeTreeView(SegmentAttributeView sav) {
+    public SegmentAttributeTreeView(EventBus eventBus, SegmentAttributeView sav) {
+        this.eventBus = eventBus;
         segAttrView = sav;
         root = new DefaultMutableTreeNode("Data Categories");
         treeModel = new DefaultTreeModel(root);
@@ -65,7 +71,7 @@ public class SegmentAttributeTreeView extends JScrollPane implements TreeSelecti
                 (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
         if (node != null && node.isLeaf() && node != root) {
             LanguageQualityIssue lqi = (LanguageQualityIssue) node.getUserObject();
-            segAttrView.setSelectedMetadata(lqi);
+            eventBus.post(new LQISelectionEvent(lqi));
         }
     }
 
