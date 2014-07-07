@@ -29,10 +29,13 @@
 package com.vistatec.ocelot;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
@@ -99,7 +102,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     JMenuBar menuBar;
     JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
-    JMenuItem menuOpenHTML, menuOpenXLIFF, menuSplit, menuExit, menuAbout,
+    JMenuItem menuOpenXLIFF, menuSplit, menuExit, menuAbout,
             menuRules, menuProv, menuSave, menuSaveAs;
     JMenuItem menuPlugins;
     JCheckBoxMenuItem menuTgtDiff;
@@ -110,14 +113,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     DetailView itsDetailView;
     SegmentView segmentView;
     SegmentController segmentController;
-    OpenHTMLView openHTMLView;
 
-    protected File openSrcFile, openTgtFile, saveSrcFile, saveTgtFile;
+    protected File openSrcFile;
     protected AppConfig appConfig;
     private String platformOS;
     private boolean useNativeUI = false;
     private ProvenanceConfig provConfig;
     private EventBus eventBus = new EventBus();
+    private boolean dirty = false;
 
     public Ocelot(AppConfig config, PluginManager pluginManager, 
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
@@ -153,9 +156,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         add(mainSplitPane);
 
-        openHTMLView = new OpenHTMLView(this, segmentController);
-
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+
+        eventBus.register(this);
     }
 
     public void setMainTitle(String sourceTitle) {
@@ -170,9 +173,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.menuAbout) {
             showAbout();
-
-        } else if (e.getSource() == this.menuOpenHTML) {
-            SwingUtilities.invokeLater(openHTMLView);
 
         } else if (e.getSource() == this.menuOpenXLIFF) {
             promptOpenXLIFFFile();
@@ -200,41 +200,29 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         } else if (e.getSource() == this.menuExit) {
             handleApplicationExit();
-        } else if (e.getSource() == this.menuSaveAs
-                || e.getSource() == this.menuSave) {
-            if (segmentController.isHTML()) {
-                if (openSrcFile != null
-                        && openTgtFile != null) {
-                    saveSrcFile = e.getSource() == this.menuSaveAs ?
-                            promptSaveAs() : openSrcFile;
-                    if (saveSrcFile != null) {
-                        saveTgtFile = e.getSource() == this.menuSaveAs ?
-                                promptSaveAs() : openTgtFile;
-                        if (saveTgtFile != null) {
-                            if (save() && e.getSource() == this.menuSaveAs) {
-                                openSrcFile = saveSrcFile;
-                                openTgtFile = saveTgtFile;
-                                setMainTitle(saveSrcFile.getName(),
-                                        saveTgtFile.getName());
-                            }
-                        }
-                    }
-                }
-            } else {
-                if (openSrcFile != null) {
-                    saveSrcFile = e.getSource() == this.menuSaveAs ?
-                            promptSaveAs() : openSrcFile;
-                    if (saveSrcFile != null) {
-                        if (save() && e.getSource() == this.menuSaveAs) {
-                            openSrcFile = saveSrcFile;
-                            setMainTitle(saveSrcFile.getName());
-                        }
-                    }
+        } else if (e.getSource() == this.menuSaveAs) {
+            if (openSrcFile != null) {
+                File saveFile = promptSaveAs();
+                if (save(saveFile)) {
+                    openSrcFile = saveFile;
+                    setMainTitle(saveFile.getName());
                 }
             }
+        } else if (e.getSource() == this.menuSave) {
+            save(openSrcFile);
         } else if (e.getSource() == this.menuTgtDiff) {
             this.segmentController.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
         }
+    }
+
+    @Subscribe
+    public void segmentEdited(SegmentEditEvent e) {
+        this.dirty = true;
+    }
+
+    @Subscribe
+    public void lqiModified(LQIModificationEvent e) {
+        this.dirty = true;
     }
 
     private void promptOpenXLIFFFile() {
@@ -281,22 +269,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 new File(fd.getDirectory(), fd.getFile());
     }
     
-    private boolean save() {
+    private boolean save(File saveFile) {
+        if (saveFile == null) {
+            return false;
+        }
         try {
-            String filename;
-            if (segmentController.isHTML()) {
-                filename = "Source file: '"+saveSrcFile.getName()
-                        +", Target file: '"+saveTgtFile+"'";
-                segmentController.save(saveSrcFile, saveTgtFile);
-            } else {
-                filename = saveSrcFile.getName();
-                segmentController.save(saveSrcFile);
-            }
+            String filename = saveFile.getName();
+            segmentController.save(saveFile);
             segmentView.getPluginManager().notifySaveFile(filename);
+            dirty = false;
             return true;
         } catch (UnsupportedEncodingException ex) {
-            LOG.error(ex);
-        } catch (FileNotFoundException ex) {
             LOG.error(ex);
         } catch (IOException ex) {
             LOG.error(ex);
@@ -324,6 +307,15 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
+        if (dirty) {
+            int rv = JOptionPane.showConfirmDialog(this,
+                    "You have unsaved changes. Would you like to save before exiting?",
+                    "Save Unsaved Changes",
+                    JOptionPane.YES_NO_OPTION);
+            if (rv == JOptionPane.YES_OPTION) {
+                save(openSrcFile);
+            }
+        }
         mainframe.dispose();
     }
 
@@ -344,12 +336,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuBar = new JMenuBar();
         menuFile = new JMenu("File");
         menuBar.add(menuFile);
-
-//        menuOpenHTML = new JMenuItem("Open HTML");
-//        menuOpenHTML.addActionListener(this);
-//        menuOpenHTML.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.CTRL_MASK));
-//        menuFile.add(menuOpenHTML);
 
         menuOpenXLIFF = new JMenuItem("Open XLIFF");
         menuOpenXLIFF.addActionListener(this);

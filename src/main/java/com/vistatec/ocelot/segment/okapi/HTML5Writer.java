@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Write out HTML5 files using Okapi's HTML5SkeletonWriter.
- * TODO: This class has not been kept up to date with the workbench.
+ * @deprecated This class has not been kept up to date with the workbench.
  */
 public class HTML5Writer extends OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(HTML5Writer.class);

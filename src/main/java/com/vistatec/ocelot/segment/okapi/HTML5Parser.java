@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
  * by Okapi when parsing the two files in parallel correspond to each other.
  * The Event list is used when writing out files through Okapi; updates to
  * the workbench segments must then be reflected(sync'd) in the proper Event.
+ * @deprecated
  */
 public class HTML5Parser {
     private Logger LOG = LoggerFactory.getLogger(HTML5Parser.class);

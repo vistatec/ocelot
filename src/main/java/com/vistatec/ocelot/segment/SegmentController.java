@@ -31,10 +31,10 @@ package com.vistatec.ocelot.segment;
 import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.okapi.HTML5Parser;
 import com.vistatec.ocelot.segment.okapi.HTML5Writer;
 import com.vistatec.ocelot.segment.okapi.OkapiSegmentWriter;
 import com.vistatec.ocelot.segment.okapi.XLIFFParser;
@@ -61,8 +61,7 @@ public class SegmentController {
     private SegmentView segmentView;
     private OkapiSegmentWriter segmentWriter;
     private XLIFFParser xliffParser;
-    private HTML5Parser html5Parser;
-    private boolean openFile = false, isHTML, targetDiff = true;
+    private boolean openFile = false, targetDiff = true;
     private ProvenanceConfig provConfig;
     private EventBus eventBus;
 
@@ -75,14 +74,6 @@ public class SegmentController {
 
     public void setSegmentView(SegmentView segView) {
         this.segmentView = segView;
-    }
-
-    public boolean isHTML() {
-        return isHTML;
-    }
-
-    public void setHTML(boolean isHTML) {
-        this.isHTML = isHTML;
     }
 
     public boolean enabledTargetDiff() {
@@ -147,6 +138,8 @@ public class SegmentController {
 
     public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         updateSegment(seg);
+        eventBus.post(new LQIModificationEvent(lqi, seg));
+        // TODO: convert this to an event handler
         segmentView.notifyModifiedLQI(lqi, seg);
     }
 
@@ -167,27 +160,7 @@ public class SegmentController {
         }
 
         setOpenFile(true);
-        setHTML(false);
         segmentWriter = new XLIFFWriter(xliffParser, provConfig.getUserProvenance());
-        segmentView.reloadTable();
-    }
-
-    public void parseHTML5Files(File srcHTMLFile, File tgtHTMLFile) throws FileNotFoundException {
-        HTML5Parser newParser = new HTML5Parser();
-        List<Segment> segments = newParser.parseHTML5Files(new FileInputStream(srcHTMLFile),
-                new FileInputStream(tgtHTMLFile));
-
-        segmentView.clearTable();
-        eventBus.post(new ClearAllSegmentsEvent());
-        html5Parser = newParser;
-        for (Segment seg : segments) {
-            seg.setSegmentListener(this);
-            addSegment(seg);
-        }
-
-        setOpenFile(true);
-        setHTML(true);
-        segmentWriter = new HTML5Writer(html5Parser, provConfig.getUserProvenance());
         segmentView.reloadTable();
     }
 
@@ -206,11 +179,11 @@ public class SegmentController {
     }
 
     public String getFileSourceLang() {
-        return isHTML() ? html5Parser.getSourceLang() : xliffParser.getSourceLang();
+        return xliffParser.getSourceLang();
     }
 
     public String getFileTargetLang() {
-        return isHTML() ? html5Parser.getTargetLang() : xliffParser.getTargetLang();
+        return xliffParser.getTargetLang();
     }
 
     /**
@@ -223,18 +196,5 @@ public class SegmentController {
     public void save(File file) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         XLIFFWriter okapiXLIFFWriter = (XLIFFWriter) segmentWriter;
         okapiXLIFFWriter.save(file);
-    }
-
-    /**
-     * Save the aligned HTML5 source and target files to the file system.
-     * @param source
-     * @param target
-     * @throws UnsupportedEncodingException
-     * @throws FileNotFoundException
-     * @throws IOException 
-     */
-    public void save(File source, File target) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        HTML5Writer okapiHTML5Writer = (HTML5Writer) segmentWriter;
-        okapiHTML5Writer.save(source, target);
     }
 }

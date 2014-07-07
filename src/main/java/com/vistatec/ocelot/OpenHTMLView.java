@@ -43,6 +43,7 @@ import javax.swing.border.EmptyBorder;
 
 /**
  * View for importing aligned files into the workbench.
+ * @deprecated This class is not maintained.
  */
 public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
     private static final long serialVersionUID = 1L;
@@ -122,6 +123,7 @@ public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
 
         @Override
         public void run() {
+            /*
             try {
                 segmentController.parseHTML5Files(sourceFile, targetFile);
                 rw.openSrcFile = sourceFile;
@@ -135,6 +137,7 @@ public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             }
+        */
         }
     }
 }
