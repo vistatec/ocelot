@@ -29,13 +29,14 @@
 package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.okapi.HTML5Writer;
 import com.vistatec.ocelot.segment.okapi.OkapiSegmentWriter;
 import com.vistatec.ocelot.segment.okapi.XLIFFParser;
 import com.vistatec.ocelot.segment.okapi.XLIFFWriter;
@@ -64,12 +65,14 @@ public class SegmentController {
     private boolean openFile = false, targetDiff = true;
     private ProvenanceConfig provConfig;
     private EventBus eventBus;
+    private boolean dirty = false;
 
     public SegmentController(EventBus eventBus, RuleConfiguration ruleConfig,
                              ProvenanceConfig provConfig) {
         this.eventBus = eventBus;
         this.provConfig = provConfig;
         this.segmentModel = new SegmentTableModel(eventBus, ruleConfig);
+        eventBus.register(this);
     }
 
     public void setSegmentView(SegmentView segView) {
@@ -132,18 +135,37 @@ public class SegmentController {
         segmentView.updateRowHeights();
     }
 
+    /**
+     * Returns whether there are unsaved changes in the segment data.
+     * This includes segment edits and changes to LQI and Provenance data.
+     * @return true if there are unsaved changes
+     */
+    public boolean isDirty() {
+        return dirty;
+    }
+
     public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
+        // TODO sort out event stuff here and convert to an 
+        // event handler
         segmentView.notifyAddedLQI(lqi, seg);
     }
 
     public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         updateSegment(seg);
         eventBus.post(new LQIModificationEvent(lqi, seg));
+        this.dirty = true;
         // TODO: convert this to an event handler
         segmentView.notifyModifiedLQI(lqi, seg);
     }
 
+    @Subscribe
+    public void segmentEdited(SegmentEditEvent e) {
+        this.dirty = true;
+    }
+
     public void notifyAddedProv(Provenance prov) {
+        dirty = true;
+        // TODO: convert to event
         segmentView.notifyAddedProv(prov);
     }
 
@@ -162,6 +184,7 @@ public class SegmentController {
         setOpenFile(true);
         segmentWriter = new XLIFFWriter(xliffParser, provConfig.getUserProvenance());
         segmentView.reloadTable();
+        dirty = false;
     }
 
     public void addSegment(Segment seg) {
@@ -196,5 +219,6 @@ public class SegmentController {
     public void save(File file) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         XLIFFWriter okapiXLIFFWriter = (XLIFFWriter) segmentWriter;
         okapiXLIFFWriter.save(file);
+        this.dirty = false;
     }
 }

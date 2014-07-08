@@ -29,13 +29,10 @@
 package com.vistatec.ocelot;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
@@ -120,7 +117,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private boolean useNativeUI = false;
     private ProvenanceConfig provConfig;
     private EventBus eventBus = new EventBus();
-    private boolean dirty = false;
 
     public Ocelot(AppConfig config, PluginManager pluginManager, 
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
@@ -215,16 +211,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         }
     }
 
-    @Subscribe
-    public void segmentEdited(SegmentEditEvent e) {
-        this.dirty = true;
-    }
-
-    @Subscribe
-    public void lqiModified(LQIModificationEvent e) {
-        this.dirty = true;
-    }
-
     private void promptOpenXLIFFFile() {
         FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
         fd.setFilenameFilter(new FilenameFilter() {
@@ -277,7 +263,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             String filename = saveFile.getName();
             segmentController.save(saveFile);
             segmentView.getPluginManager().notifySaveFile(filename);
-            dirty = false;
             return true;
         } catch (UnsupportedEncodingException ex) {
             LOG.error(ex);
@@ -307,7 +292,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
-        if (dirty) {
+        if (segmentController.isDirty()) {
             int rv = JOptionPane.showConfirmDialog(this,
                     "You have unsaved changes. Would you like to save before exiting?",
                     "Save Unsaved Changes",
@@ -491,7 +476,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 Segment seg = segmentView.getSelectedSegment();
                 QuickAdd qa = segmentView.getRuleConfig().getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
                 if (seg != null && qa != null && seg.isEditablePhase()) {
-                    seg.addNewLQI(qa.getLQIData());
+                    seg.addLQI(qa.getLQIData());
                 }
 
             } else if (isPlatformKeyDown(ke) && ke.isShiftDown()

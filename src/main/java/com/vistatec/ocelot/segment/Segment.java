@@ -49,9 +49,9 @@ public class Segment {
     private StateQualifier state_qualifier;
     private boolean addedProvenance = false, setOriginalTarget = false;
     private String lqiID, provID;
-    private LinkedList<LanguageQualityIssue> lqiList = new LinkedList<LanguageQualityIssue>();
-    private LinkedList<Provenance> provList = new LinkedList<Provenance>();
-    private LinkedList<OtherITSMetadata> otherITSList = new LinkedList<OtherITSMetadata>();
+    private List<LanguageQualityIssue> lqiList = new LinkedList<LanguageQualityIssue>();
+    private List<Provenance> provList = new LinkedList<Provenance>();
+    private List<OtherITSMetadata> otherITSList = new LinkedList<OtherITSMetadata>();
     private SegmentController segmentListener;
     private String fileOriginal, transUnitId;
     private SegmentVariant originalTarget;
@@ -179,8 +179,12 @@ public class Segment {
         this.provID = provId;
     }
 
-    public LinkedList<Provenance> getProv() {
+    public List<Provenance> getProv() {
         return provList;
+    }
+
+    public void setProv(List<Provenance> provList) {
+        this.provList = provList;
     }
 
     public void addProvenance(Provenance prov) {
@@ -210,19 +214,16 @@ public class Segment {
         return lqiList.size() > 0;
     }
 
-    public LinkedList<LanguageQualityIssue> getLQI() {
+    public List<LanguageQualityIssue> getLQI() {
         return lqiList;
+    }
+
+    public void setLQI(List<LanguageQualityIssue> lqi) {
+        this.lqiList = lqi;
     }
 
     public void addLQI(LanguageQualityIssue lqi) {
         lqiList.add(lqi);
-        if (segmentListener != null) {
-            segmentListener.notifyAddedLQI(lqi, this);
-        }
-    }
-
-    public void addNewLQI(LanguageQualityIssue lqi) {
-        addLQI(lqi);
         if (segmentListener != null) {
             segmentListener.notifyModifiedLQI(lqi, this);
         }
@@ -241,12 +242,12 @@ public class Segment {
         }
     }
 
-    public void addOtherITSMetadata(OtherITSMetadata mtConfidence) {
-        this.otherITSList.add(mtConfidence);
-    }
-
     public List<OtherITSMetadata> getOtherITSMetadata() {
         return this.otherITSList;
+    }
+
+    public void setOtherITSMetadata(List<OtherITSMetadata> otherList) {
+        this.otherITSList = otherList;
     }
 
     public List<ITSMetadata> getAllITSMetadata() {

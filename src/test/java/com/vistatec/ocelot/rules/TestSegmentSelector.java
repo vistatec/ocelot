@@ -61,21 +61,21 @@ public class TestSegmentSelector {
 
         // - 1 seg with no sq, filter A
         segA = new Segment();
-        segA.addLQI(lqi("omission", 85));
+        segA.setLQI(Collections.singletonList(lqi("omission", 85)));
 
         // - 1 seg with no sq, filter B
         segB = new Segment();
-        segB.addLQI(lqi("terminology", 85));
+        segB.setLQI(Collections.singletonList(lqi("terminology", 85)));
 
         // - 1 seg with [some] sq, filter A
         segSQ_A = new Segment();
         segSQ_A.setStateQualifier(StateQualifier.ID);
-        segSQ_A.addLQI(lqi("omission", 85));
+        segSQ_A.setLQI(Collections.singletonList(lqi("omission", 85)));
 
         // - 1 seg with [some] sq, filter B
         segSQ_B = new Segment();
         segSQ_B.setStateQualifier(StateQualifier.ID);
-        segSQ_B.addLQI(lqi("terminology", 85));
+        segSQ_B.setLQI(Collections.singletonList(lqi("terminology", 85)));
 
         testSegments.add(segPlain);
         testSegments.add(segSQ);

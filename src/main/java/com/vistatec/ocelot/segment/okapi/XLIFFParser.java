@@ -36,6 +36,7 @@ import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.Segment;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -205,27 +206,31 @@ public class XLIFFParser {
     
     public void attachITSDataToSegment(Segment seg, ITextUnit tu, TextContainer srcTu, TextContainer tgtTu) {
         ITSLQIAnnotations lqiAnns = retrieveITSLQIAnnotations(tu, srcTu, tgtTu);
-        List<GenericAnnotation> lqiList = lqiAnns.getAnnotations(GenericAnnotationType.LQI);
-        for (GenericAnnotation ga : lqiList) {
-            seg.addLQI(new LanguageQualityIssue(ga));
+        List<LanguageQualityIssue> lqiList = new ArrayList<LanguageQualityIssue>();
+        for (GenericAnnotation ga : lqiAnns.getAnnotations(GenericAnnotationType.LQI)) {
+            lqiList.add(new LanguageQualityIssue(ga));
             seg.setLQIID(lqiAnns.getData());
         }
+        seg.setLQI(lqiList);
 
         ITSProvenanceAnnotations provAnns = retrieveITSProvAnnotations(tu, srcTu, tgtTu);
-        List<GenericAnnotation> provList = provAnns.getAnnotations(GenericAnnotationType.PROV);
-        if (provList != null) {
-            for (GenericAnnotation ga : provList) {
-                seg.addProvenance(new OkapiProvenance(ga));
+        List<GenericAnnotation> provAnnList = provAnns.getAnnotations(GenericAnnotationType.PROV);
+        if (provAnnList != null) {
+            List<Provenance> provList = new ArrayList<Provenance>();
+            for (GenericAnnotation ga : provAnnList) {
+                provList.add(new OkapiProvenance(ga));
                 seg.setProvID(provAnns.getData());
             }
+            seg.setProv(provList);
         }
 
         if (tgtTu != null) {
-            List<GenericAnnotation> mtAnns = retrieveITSMTConfidenceAnnotations(tgtTu);
-            for (GenericAnnotation mtAnn : mtAnns) {
-                seg.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE,
+            List<OtherITSMetadata> otherList = new ArrayList<OtherITSMetadata>();
+            for (GenericAnnotation mtAnn : retrieveITSMTConfidenceAnnotations(tgtTu)) {
+                otherList.add(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE,
                         mtAnn.getDouble(GenericAnnotationType.MTCONFIDENCE_VALUE)));
             }
+            seg.setOtherITSMetadata(otherList);
         }
     }
 

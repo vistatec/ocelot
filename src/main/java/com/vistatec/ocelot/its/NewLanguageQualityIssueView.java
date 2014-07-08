@@ -374,14 +374,14 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
             lqi.setEnabled(enabled);
 
             if (selectedSeg.containsLQI()) {
-                lqi.setIssuesRef(selectedSeg.getLQI().getFirst().getIssuesRef());
+                lqi.setIssuesRef(selectedSeg.getLQI().get(0).getIssuesRef());
             } else {
                 // TODO: generate unique LQI issues ref
                 lqi.setIssuesRef(Calendar.getInstance().getTime().toString());
             }
 
             if (addingLQI()) {
-                selectedSeg.addNewLQI(lqi);
+                selectedSeg.addLQI(lqi);
                 frame.dispose();
             } else {
                 selectedSeg.editedLQI(lqi);

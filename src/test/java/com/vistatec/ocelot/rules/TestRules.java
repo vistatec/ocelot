@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.rules;
 
+import com.google.common.collect.Lists;
 import com.vistatec.ocelot.rules.Matchers;
 import com.vistatec.ocelot.rules.RuleMatcher;
 import com.vistatec.ocelot.rules.Rule;
@@ -35,6 +36,7 @@ import com.vistatec.ocelot.rules.DataCategoryField;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;
@@ -83,11 +85,13 @@ public class TestRules {
         Rule filter = new Rule(ruleMatchers);
         
         Segment segment = emptySegment();
-        segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50)));
+        segment.setOtherITSMetadata(Collections.singletonList(
+                new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50))));
         assertTrue(filter.matches(segment));
         
         segment = emptySegment();
-        segment.addOtherITSMetadata(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(80)));
+        segment.setOtherITSMetadata(Collections.singletonList(
+                new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(80))));
         assertFalse(filter.matches(segment));
     }
     
@@ -110,34 +114,30 @@ public class TestRules {
 		LanguageQualityIssue lqi3 = lqi("omission", 60);
 		
 		Segment segment = emptySegment();
-		segment.addLQI(lqi1);
-		segment.addLQI(lqi2);
-		segment.addLQI(lqi3);
+		segment.setLQI(Lists.newArrayList(lqi1, lqi2, lqi3));
 		assertTrue(filter.matches(segment));
 		
 		segment = emptySegment();
-		segment.addLQI(lqi1);
+		segment.setLQI(Collections.singletonList(lqi1));
 		assertTrue(filter.matches(segment));
 		
 		segment = emptySegment();
-		segment.addLQI(lqi2);
+		segment.setLQI(Collections.singletonList(lqi2));
 		assertFalse(filter.matches(segment));
 
 		segment = emptySegment();
-		segment.addLQI(lqi3);
+		segment.setLQI(Collections.singletonList(lqi3));
 		assertFalse(filter.matches(segment));
 		
 		segment = emptySegment();
-		segment.addLQI(lqi1);
-		segment.addLQI(lqi2);
+		segment.setLQI(Lists.newArrayList(lqi1, lqi2));
 		assertTrue(filter.matches(segment));
 
 		// Tricky!  Make sure we don't get a false positive
 		// because we have an omission AND a valid severity!
 		// (We do have each, but not on the same issue.)
 		segment = new Segment(6, 6, 6, emptyVariant(), emptyVariant(), emptyVariant());
-		segment.addLQI(lqi2);
-		segment.addLQI(lqi3);
+		segment.setLQI(Lists.newArrayList(lqi2, lqi3));
 		assertFalse(filter.matches(segment));
 	}
 
