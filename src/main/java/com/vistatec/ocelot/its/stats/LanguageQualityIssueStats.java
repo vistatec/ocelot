@@ -63,6 +63,7 @@ public class LanguageQualityIssueStats implements ITSStats {
     public void combine(ITSStats stats) {
         setRange(((LanguageQualityIssueStats)stats).minRange);
         setRange(((LanguageQualityIssueStats)stats).maxRange);
+        count += stats.getCount();
     }
 
     @Override

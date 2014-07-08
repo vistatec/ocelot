@@ -9,7 +9,6 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 import org.junit.*;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ProvenanceStats.Type;
 import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 
@@ -21,13 +20,15 @@ public class TestITSDocStats {
     public void testAddLQI() {
         ITSDocStats docStats = new ITSDocStats();
         docStats.addLQIStats(getLQI("omission", 50));
-        assertEquals(Collections.singletonList(getLQIStats("omission", 50)), docStats.getStats());
+        assertEquals(Collections.singletonList(getLQIStats(1, "omission", 50)), docStats.getStats());
+        assertEquals((Integer)1, docStats.getStats().get(0).getCount());
         docStats.addLQIStats(getLQI("omission", 70));
-        assertEquals(Collections.singletonList(getLQIStats("omission", 50, 70)), docStats.getStats());
+        assertEquals(Collections.singletonList(getLQIStats(2, "omission", 50, 70)), docStats.getStats());
+        assertEquals((Integer)2, docStats.getStats().get(0).getCount());
         docStats.addLQIStats(getLQI("omission", 30));
-        assertEquals(Collections.singletonList(getLQIStats("omission", 30, 70)), docStats.getStats());
+        assertEquals(Collections.singletonList(getLQIStats(3, "omission", 30, 70)), docStats.getStats());
         docStats.addLQIStats(getLQI("mistranslation", 80));
-        assertEquals(Arrays.asList(getLQIStats("omission", 30, 70), getLQIStats("mistranslation", 80)), docStats.getStats());
+        assertEquals(Arrays.asList(getLQIStats(3, "omission", 30, 70), getLQIStats(1, "mistranslation", 80)), docStats.getStats());
     }
 
     @Test
@@ -64,7 +65,7 @@ public class TestITSDocStats {
     public void testClearStats() {
         ITSDocStats docStats = new ITSDocStats();
         docStats.addLQIStats(getLQI("omission", 50));
-        assertEquals(Collections.singletonList(getLQIStats("omission", 50)), docStats.getStats());
+        assertEquals(Collections.singletonList(getLQIStats(1, "omission", 50)), docStats.getStats());
         docStats.clear();
         assertEquals(Collections.emptyList(), docStats.getStats());
     }
@@ -76,18 +77,20 @@ public class TestITSDocStats {
         return lqi;
     }
 
-    private LanguageQualityIssueStats getLQIStats(String type, double severity) {
+    private LanguageQualityIssueStats getLQIStats(int count, String type, double severity) {
         LanguageQualityIssueStats lqiStats = new LanguageQualityIssueStats();
         lqiStats.setType(type);
         lqiStats.setRange(severity);
+        lqiStats.setCount(count);
         return lqiStats;
     }
 
-    private LanguageQualityIssueStats getLQIStats(String type, double min, double max) {
+    private LanguageQualityIssueStats getLQIStats(int count, String type, double min, double max) {
         LanguageQualityIssueStats lqiStats = new LanguageQualityIssueStats();
         lqiStats.setType(type);
         lqiStats.setRange(min);
         lqiStats.setRange(max);
+        lqiStats.setCount(count);
         return lqiStats;
     }
 
