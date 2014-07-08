@@ -95,27 +95,29 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private static String APPNAME = "Ocelot";
     private static Image icon;
     private static Logger LOG = Logger.getLogger(Ocelot.class);
-    JFrame mainframe;
 
-    JMenuBar menuBar;
-    JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
-    JMenuItem menuOpenXLIFF, menuSplit, menuExit, menuAbout,
+    private JMenuBar menuBar;
+    private JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
+    private JMenuItem menuOpenXLIFF, menuExit, menuAbout,
             menuRules, menuProv, menuSave, menuSaveAs;
-    JMenuItem menuPlugins;
-    JCheckBoxMenuItem menuTgtDiff;
+    private JMenuItem menuPlugins;
+    private JCheckBoxMenuItem menuTgtDiff;
 
-    JSplitPane mainSplitPane;
-    JSplitPane segAttrSplitPane;
-    SegmentAttributeView segmentAttrView;
-    DetailView itsDetailView;
-    SegmentView segmentView;
-    SegmentController segmentController;
+    private JFrame mainframe;
+    private JSplitPane mainSplitPane;
+    private JSplitPane segAttrSplitPane;
+    private SegmentAttributeView segmentAttrView;
+    private DetailView itsDetailView;
+    private SegmentView segmentView;
+    private SegmentController segmentController;
 
     protected File openSrcFile;
     protected AppConfig appConfig;
     private String platformOS;
     private boolean useNativeUI = false;
     private ProvenanceConfig provConfig;
+    private RuleConfiguration ruleConfig;
+    private PluginManager pluginManager;
     private EventBus eventBus = new EventBus();
 
     public Ocelot(AppConfig config, PluginManager pluginManager, 
@@ -123,7 +125,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.appConfig = config;
+        this.pluginManager = pluginManager;
         this.provConfig = provConfig;
+        this.ruleConfig = ruleConfig;
 
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
@@ -174,11 +178,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             promptOpenXLIFFFile();
 
         } else if (e.getSource() == this.menuRules) {
-            FilterView rules = new FilterView(segmentView.getRuleConfig(), icon);
+            FilterView rules = new FilterView(ruleConfig, icon);
             SwingUtilities.invokeLater(rules);
 
         } else if (e.getSource() == this.menuPlugins) {
-            PluginManagerView plugins = new PluginManagerView(segmentView.getPluginManager(), segmentController, icon);
+            PluginManagerView plugins = new PluginManagerView(pluginManager, segmentController, icon);
             SwingUtilities.invokeLater(plugins);
 
         } else if (e.getSource() == this.menuProv) {
@@ -228,7 +232,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
 
-                this.segmentView.getPluginManager().notifyOpenFile(sourceFile.getName());
+                this.pluginManager.notifyOpenFile(sourceFile.getName());
 
                 this.menuSave.setEnabled(true);
                 this.menuSaveAs.setEnabled(true);
@@ -262,7 +266,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         try {
             String filename = saveFile.getName();
             segmentController.save(saveFile);
-            segmentView.getPluginManager().notifySaveFile(filename);
+            pluginManager.notifySaveFile(filename);
             return true;
         } catch (UnsupportedEncodingException ex) {
             LOG.error(ex);
@@ -456,13 +460,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             else {
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             }
-        } catch (UnsupportedLookAndFeelException e) {
-            System.err.println(e.getMessage());
-        } catch (ClassNotFoundException e) {
-            System.err.println(e.getMessage());
-        } catch (InstantiationException e) {
-            System.err.println(e.getMessage());
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
         SwingUtilities.invokeLater(ocelot);
@@ -474,7 +472,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             if (isPlatformKeyDown(ke) && (ke.getKeyCode() >= KeyEvent.VK_0
                     && ke.getKeyCode() <= KeyEvent.VK_9)) {
                 Segment seg = segmentView.getSelectedSegment();
-                QuickAdd qa = segmentView.getRuleConfig().getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
+                QuickAdd qa = ruleConfig.getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
                 if (seg != null && qa != null && seg.isEditablePhase()) {
                     seg.addLQI(qa.getLQIData());
                 }
