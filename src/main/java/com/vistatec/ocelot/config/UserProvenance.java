@@ -8,4 +8,10 @@ public class UserProvenance extends Provenance {
         setRevOrg(revOrg);
         setProvRef(extRef);
     }
+
+    public boolean isEmpty() {
+        return !(getRevPerson() != null ||
+                 getRevOrg() != null||
+                 getProvRef() != null);
+    }
 }
