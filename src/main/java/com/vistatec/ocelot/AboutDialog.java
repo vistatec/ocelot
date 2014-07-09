@@ -26,6 +26,7 @@ import javax.swing.event.HyperlinkListener;
 public class AboutDialog extends JPanel implements Runnable {
     private static final long serialVersionUID = 1L;
     private JDialog dialog;
+    private JButton ok;
 
     public AboutDialog(Image icon) {
         super(new GridBagLayout());
@@ -60,7 +61,7 @@ public class AboutDialog extends JPanel implements Runnable {
         p.setEditable(false);
         p.addHyperlinkListener(new AboutLinkOpener());
         add(p, c);
-        JButton ok = new JButton("OK");
+        ok = new JButton("OK");
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 2;
@@ -100,6 +101,7 @@ public class AboutDialog extends JPanel implements Runnable {
         dialog.setLocationRelativeTo(null);
         dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         dialog.setTitle("About Ocelot");
+        dialog.getRootPane().setDefaultButton(ok);
         dialog.setVisible(true);
     }    
 

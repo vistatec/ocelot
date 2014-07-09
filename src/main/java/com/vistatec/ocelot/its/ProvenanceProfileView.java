@@ -40,6 +40,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import org.slf4j.Logger;
@@ -109,11 +110,21 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
 
         save = new JButton("Save");
         save.addActionListener(this);
+
+        JButton cancel = new JButton("Cancel");
+        cancel.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent arg0) {
+                frame.dispose();
+            }
+        });
+
         JPanel actionPanel = new JPanel();
         actionPanel.add(save);
+        actionPanel.add(cancel);
         gridBag.gridx = 1;
         gridBag.gridy = 3;
         add(actionPanel, gridBag);
+
     }
 
     @Override
@@ -125,6 +136,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         frame.getContentPane().add(this);
         frame.pack();
         frame.setVisible(true);
+        frame.getRootPane().setDefaultButton(save);
     }
 
     @Override
