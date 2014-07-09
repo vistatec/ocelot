@@ -36,6 +36,12 @@ public class ProvenanceConfig {
         }
     }
 
+    public boolean isEmpty() {
+        return !(p.getProperty("revPerson") != null ||
+                 p.getProperty("revOrganization") != null||
+                 p.getProperty("externalReference") != null);
+    }
+
     public UserProvenance getUserProvenance() {
         return new UserProvenance(p.getProperty("revPerson"),
                                   p.getProperty("revOrganization"),
