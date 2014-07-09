@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.segment.okapi;
 
 import com.vistatec.ocelot.ObjectUtils;
+import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
@@ -71,13 +72,14 @@ public abstract class OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(OkapiSegmentWriter.class);
 
     public abstract void updateEvent(Segment seg, SegmentController segController);
-    private UserProvenance userProvenance;
+    private ProvenanceConfig provConfig;
 
-    public OkapiSegmentWriter(UserProvenance userProv) {
-        this.userProvenance = userProv;
+    public OkapiSegmentWriter(ProvenanceConfig provConfig) {
+        this.provConfig = provConfig;
     }
     
     public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
+        UserProvenance userProvenance = provConfig.getUserProvenance();
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
         for (Provenance prov : seg.getProv()) {
             String revPerson = prov.getRevPerson();
@@ -101,7 +103,7 @@ public abstract class OkapiSegmentWriter {
             }
         }
 
-        if (!seg.addedRWProvenance()) {
+        if (!seg.addedRWProvenance() && !userProvenance.isEmpty()) {
             GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
                     GenericAnnotationType.PROV_REVPERSON, userProvenance.getRevPerson(),
                     GenericAnnotationType.PROV_REVORG, userProvenance.getRevOrg(),

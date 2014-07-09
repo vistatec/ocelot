@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
-import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
@@ -60,8 +60,8 @@ public class HTML5Writer extends OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(HTML5Writer.class);
     private HTML5Parser parser;
 
-    public HTML5Writer(HTML5Parser parser, UserProvenance prov) {
-        super(prov);
+    public HTML5Writer(HTML5Parser parser, ProvenanceConfig config) {
+        super(config);
         this.parser = parser;
     }
 

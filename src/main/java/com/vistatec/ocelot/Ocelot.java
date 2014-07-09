@@ -450,9 +450,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             JOptionPane.showMessageDialog(ocelot,
                     "<html><body><p style='width: 200px;'>" +
                     "It looks like this may be your first time using Ocelot. " + 
-                    "Use File &gt; Profile to add information for provenance records " +
+                    "Use File &gt; Profile to configure the provenance information " +
                     "that Ocelot adds to segments you modify." +
-                    "</p></body></html>");
+                    "</p></body></html>",
+                    "Welcome to Ocelot", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

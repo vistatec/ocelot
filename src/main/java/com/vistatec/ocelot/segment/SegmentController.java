@@ -182,7 +182,7 @@ public class SegmentController {
         }
 
         setOpenFile(true);
-        segmentWriter = new XLIFFWriter(xliffParser, provConfig.getUserProvenance());
+        segmentWriter = new XLIFFWriter(xliffParser, provConfig);
         segmentView.reloadTable();
         dirty = false;
     }

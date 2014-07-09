@@ -17,6 +17,8 @@ public class ProvenanceConfig {
     private Configs configs;
     private Properties p;
 
+    protected ProvenanceConfig() { }
+    
     public ProvenanceConfig(Configs configs) {
         this.configs = configs;
         reload();
