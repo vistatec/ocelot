@@ -65,7 +65,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -77,7 +76,6 @@ import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 
@@ -186,17 +184,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             SwingUtilities.invokeLater(plugins);
 
         } else if (e.getSource() == this.menuProv) {
-            ProvenanceProfileView prov = null;
-            try {
-                prov = new ProvenanceProfileView(provConfig, icon);
-            } catch (IOException ex) {
-                System.err.println(ex.getMessage());
-            }
-            if (prov != null) {
-                SwingUtilities.invokeLater(prov);
-            } else {
-                System.err.println("Failed to instantiate provenance view");
-            }
+            ProvenanceProfileView prov = new ProvenanceProfileView(provConfig, icon);
+            SwingUtilities.invokeLater(prov);
 
         } else if (e.getSource() == this.menuExit) {
             handleApplicationExit();

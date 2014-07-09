@@ -62,7 +62,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
     private ProvenanceConfig config;
     private UserProvenance prov;
 
-    public ProvenanceProfileView(ProvenanceConfig config, Image icon) throws IOException {
+    public ProvenanceProfileView(ProvenanceConfig config, Image icon) {
         super(new GridBagLayout());
         this.config = config;
         this.icon = icon;
