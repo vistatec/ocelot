@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rootConfig>
+    <plugins>
+        <className>com.vistatec.ocelot.plugins.samples.itsplugin.SampleITSPlugin</className>
+        <enabled>false</enabled>
+    </plugins>
+    <plugins>
+        <className>com.vistatec.ocelot.plugins.samples.segmentplugin.SampleSegmentPlugin</className>
+        <enabled>true</enabled>
+    </plugins>
+</rootConfig>
