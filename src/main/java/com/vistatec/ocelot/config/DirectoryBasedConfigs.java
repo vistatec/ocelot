@@ -13,7 +13,7 @@ public class DirectoryBasedConfigs implements Configs {
 
     public static final String PROVENANCE_CONFIG = "provenance.properties";
     public static final String OCELOT_CONFIG = "ocelot_cfg.xml";
-    public static final String RULES_CONFIG = "rules.propertie";
+    public static final String RULES_CONFIG = "rules.properties";
 
     private File dir;
 
