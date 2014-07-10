@@ -228,9 +228,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             } catch (FileNotFoundException ex) {
                 LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
             } catch (Exception e) {
-                String errorMsg = "Failed opening XLIFF File '"+sourceFile.getName()+"'";
+                String errorMsg = "Could not open XLIFF File "+sourceFile.getName();
                 LOG.error(errorMsg, e);
-                alertUser("XLIFF Parsing Error", errorMsg+" - "+e.getMessage());
+                alertUser("XLIFF Parsing Error", errorMsg+":<br>"+e.getMessage());
             }
         }
     }
@@ -266,7 +266,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private void alertUser(String windowTitle, String message) {
-        JOptionPane.showMessageDialog(mainframe, message, windowTitle, JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(mainframe,
+                "<html><body><p style='width: 500px;'>" + message,
+                windowTitle, JOptionPane.ERROR_MESSAGE);
     }
 
     private void showAbout() {
