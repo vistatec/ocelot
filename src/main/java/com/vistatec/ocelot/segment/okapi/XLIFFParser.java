@@ -109,7 +109,7 @@ public class XLIFFParser {
         List<Segment> segments = new LinkedList<Segment>();
         documentSegmentNum = 1;
 
-        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, new LocaleId("??"));
+        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, LocaleId.EMPTY);
         this.filter = new XLIFFFilter();
         Parameters filterParams = new Parameters();
         filterParams.setAddAltTrans(true);

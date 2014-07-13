@@ -40,6 +40,10 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import net.sf.okapi.common.Event;
+import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.resource.ITextUnit;
+import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.Test;
 
@@ -47,8 +51,22 @@ import org.junit.Test;
  * Test Okapi XLIFF parser conversion to Ocelot Segments.
  */
 public class TestXLIFFParser {
+
     @Test
-    public void testXLIFFToSegment() throws IOException, InstantiationException, IllegalAccessException {
+    public void testTargetLocales() throws Exception {
+        XLIFFParser parser = new XLIFFParser();
+
+        LocaleId frFr = new LocaleId("fr-fr");
+        for (Segment seg : parser.parseXLIFFFile(getClass().getResourceAsStream("xliff_test.xlf"))) {
+            Event e = parser.getSegmentEvent(seg.getSourceEventNumber());
+            ITextUnit tu = e.getTextUnit();
+            TextContainer tc = ((TextContainerVariant)seg.getTarget()).getTextContainer();
+            assertEquals(tu.getTarget(frFr), tc);
+        }
+    }
+    
+    @Test
+    public void testXLIFFToSegment() throws Exception {
         XLIFFParser parser = new XLIFFParser();
         List<Segment> segments = parser.parseXLIFFFile(getClass().getResourceAsStream("xliff_test.xlf"));
 
