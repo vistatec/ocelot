@@ -133,7 +133,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         sourceTargetTable.setDefaultRenderer(Integer.class, new IntegerRenderer());
         sourceTargetTable.setDefaultRenderer(ITSMetadata.class,
                 new ITSMetadataRenderer());
-        sourceTargetTable.setDefaultRenderer(String.class,
+        sourceTargetTable.setDefaultRenderer(SegmentVariant.class,
                 new SegmentTextRenderer());
 
         tableColumnModel = sourceTargetTable.getColumnModel();
