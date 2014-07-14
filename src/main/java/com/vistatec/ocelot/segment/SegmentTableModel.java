@@ -137,7 +137,7 @@ public class SegmentTableModel extends AbstractTableModel {
     }
 
     @Subscribe
-    protected void clearAllSegments(ClearAllSegmentsEvent e) {
+    public void clearAllSegments(ClearAllSegmentsEvent e) {
         segments.clear();
     }
 }
