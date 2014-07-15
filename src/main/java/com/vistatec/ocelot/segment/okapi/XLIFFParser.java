@@ -35,7 +35,9 @@ import com.vistatec.ocelot.rules.DataCategoryField;
 import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.Segment;
 
-import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.okapi.common.Event;
+import net.sf.okapi.common.FileUtil;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.AltTranslation;
 import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
@@ -104,12 +107,20 @@ public class XLIFFParser {
         return this.events;
     }
 
-    public List<Segment> parseXLIFFFile(InputStream file) {
+    public List<Segment> parseXLIFFFile(File xliffFile) throws IOException {
         events = new LinkedList<Event>();
         List<Segment> segments = new LinkedList<Segment>();
         documentSegmentNum = 1;
 
-        RawDocument fileDoc = new RawDocument(file, "UTF-8", LocaleId.EMPTY, LocaleId.EMPTY);
+        List<String> locales = FileUtil.guessLanguages(xliffFile.getAbsolutePath());
+        LocaleId sourceLocale = null, targetLocale = null;
+        sourceLocale = (locales.size() >= 1) ?
+                LocaleId.fromString(locales.get(0)) : LocaleId.EMPTY;
+        targetLocale = (locales.size() >= 2) ?
+                LocaleId.fromString(locales.get(1)) : LocaleId.EMPTY;
+
+        FileInputStream is = new FileInputStream(xliffFile);
+        RawDocument fileDoc = new RawDocument(is, "UTF-8", sourceLocale, targetLocale);
         this.filter = new XLIFFFilter();
         Parameters filterParams = new Parameters();
         filterParams.setAddAltTrans(true);
@@ -156,6 +167,7 @@ public class XLIFFParser {
             }
             fileEventNum++;
         }
+        is.close();
         return segments;
     }
 

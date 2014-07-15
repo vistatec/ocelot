@@ -42,7 +42,6 @@ import com.vistatec.ocelot.segment.okapi.XLIFFParser;
 import com.vistatec.ocelot.segment.okapi.XLIFFWriter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -169,9 +168,9 @@ public class SegmentController {
         segmentView.notifyAddedProv(prov);
     }
 
-    public void parseXLIFFFile(File xliffFile) throws FileNotFoundException {
+    public void parseXLIFFFile(File xliffFile) throws IOException {
         XLIFFParser newParser = new XLIFFParser();
-        List<Segment> segments = newParser.parseXLIFFFile(new FileInputStream(xliffFile));
+        List<Segment> segments = newParser.parseXLIFFFile(xliffFile);
 
         segmentView.clearTable(); // XXX make this an event listener
         eventBus.post(new ClearAllSegmentsEvent());

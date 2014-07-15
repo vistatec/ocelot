@@ -36,7 +36,7 @@ import com.vistatec.ocelot.segment.SegmentVariant;
 
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -57,7 +57,7 @@ public class TestXLIFFParser {
         XLIFFParser parser = new XLIFFParser();
 
         LocaleId frFr = new LocaleId("fr-fr");
-        for (Segment seg : parser.parseXLIFFFile(getClass().getResourceAsStream("xliff_test.xlf"))) {
+        for (Segment seg : parser.parseXLIFFFile(new File(getClass().getResource("xliff_test.xlf").toURI()))) {
             Event e = parser.getSegmentEvent(seg.getSourceEventNumber());
             ITextUnit tu = e.getTextUnit();
             TextContainer tc = ((TextContainerVariant)seg.getTarget()).getTextContainer();
@@ -68,7 +68,7 @@ public class TestXLIFFParser {
     @Test
     public void testXLIFFToSegment() throws Exception {
         XLIFFParser parser = new XLIFFParser();
-        List<Segment> segments = parser.parseXLIFFFile(getClass().getResourceAsStream("xliff_test.xlf"));
+        List<Segment> segments = parser.parseXLIFFFile(new File(getClass().getResource("xliff_test.xlf").toURI()));
 
         testReadProvenance(segments.get(0));
         testReadMultipleProv(segments.get(1));
@@ -202,9 +202,10 @@ public class TestXLIFFParser {
     }
 
     @Test
-    public void testStateQualifiers() throws IOException, InstantiationException, IllegalAccessException {
+    public void testStateQualifiers() throws Exception {
         XLIFFParser parser = new XLIFFParser();
-        List<Segment> segments = parser.parseXLIFFFile(getClass().getResourceAsStream("state_qualifiers.xlf"));
+        List<Segment> segments = parser.parseXLIFFFile(
+                new File(getClass().getResource("state_qualifiers.xlf").toURI()));
         assertEquals(ID, segments.get(0).getStateQualifier());
         assertEquals(EXACT, segments.get(1).getStateQualifier());
         assertEquals(MT, segments.get(2).getStateQualifier());
