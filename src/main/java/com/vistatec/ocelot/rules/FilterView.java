@@ -59,7 +59,7 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
     private Image icon;
     RuleConfiguration filterRules;
     private String allString = "All Segments",
-            metadataString = "All w/metadata",
+            metadataString = "All with metadata",
             customString = "Selected Rules:";
     private JRadioButton all, allWithMetadata, custom,
             allStates, customStates;
