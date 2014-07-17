@@ -44,6 +44,7 @@ import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
 
 import java.awt.BorderLayout;
@@ -129,11 +130,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
-        
+
+        segmentController = new SegmentController(eventBus, ruleConfig, provConfig);
+
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView(eventBus);
         itsDetailView.setPreferredSize(segAttrSize);
-        segmentAttrView = new SegmentAttributeView(eventBus, itsDetailView);
+        segmentAttrView = new SegmentAttributeView(eventBus, segmentController.getStats(), itsDetailView);
         segmentAttrView.setMinimumSize(new Dimension(305, 280));
         segmentAttrView.setPreferredSize(segAttrSize);
         segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
@@ -141,12 +144,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         segAttrSplitPane.setOneTouchExpandable(true);
         
         Dimension segSize = new Dimension(500, 500);
-        segmentController = new SegmentController(eventBus, ruleConfig, provConfig);
 
-        segmentView = new SegmentView(eventBus, segmentAttrView, segmentController, config,
-                                      ruleConfig, pluginManager);
+        segmentView = new SegmentView(eventBus, new SegmentTableModel(segmentController, ruleConfig),
+                                      config, ruleConfig, pluginManager);
         segmentView.setMinimumSize(segSize);
-        segmentController.setSegmentView(segmentView);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 segAttrSplitPane, segmentView);
@@ -200,7 +201,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else if (e.getSource() == this.menuSave) {
             save(openSrcFile);
         } else if (e.getSource() == this.menuTgtDiff) {
-            this.segmentController.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
+            this.segmentView.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
         }
     }
 
@@ -220,6 +221,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 segmentController.parseXLIFFFile(sourceFile);
                 this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
+                segmentView.reloadTable();
 
                 this.pluginManager.notifyOpenFile(sourceFile.getName());
 

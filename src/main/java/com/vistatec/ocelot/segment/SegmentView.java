@@ -29,11 +29,15 @@
 package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.ProvenanceAddedEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.its.ITSMetadata;
@@ -92,23 +96,21 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     private static Logger LOG = Logger.getLogger(SegmentView.class);
 
-    protected SegmentController segmentController;
+    protected SegmentTableModel segmentTableModel;
     protected JTable sourceTargetTable;
-    private SegmentAttributeView attrView;
     private TableColumnModel tableColumnModel;
     protected TableRowSorter<SegmentTableModel> sort;
+    private boolean enabledTargetDiff;
 
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
     private EventBus eventBus;
 
-    public SegmentView(EventBus eventBus, SegmentAttributeView attr, SegmentController segController,
-            AppConfig appConfig, RuleConfiguration ruleConfig,
-            PluginManager pluginManager) throws IOException, 
+    public SegmentView(EventBus eventBus, SegmentTableModel segmentTableModel, AppConfig appConfig,
+            RuleConfiguration ruleConfig, PluginManager pluginManager) throws IOException, 
                 InstantiationException, InstantiationException, IllegalAccessException {
         this.eventBus = eventBus;
-        attrView = attr;
-        segmentController = segController;
+        this.segmentTableModel = segmentTableModel;
         this.ruleConfig = ruleConfig;
         this.ruleConfig.addRuleListener(this);
         this.pluginManager = pluginManager;
@@ -117,7 +119,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public final void initializeTable() {
-        sourceTargetTable = new JTable(segmentController.getSegmentTableModel());
+        sourceTargetTable = new JTable(segmentTableModel);
         sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
         ListSelectionListener selectSegmentHandler = new ListSelectionListener() {
@@ -143,7 +145,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         tableColumnModel.getColumn(0).setPreferredWidth(25);
         tableColumnModel.getColumn(0).setMaxWidth(50);
 
-        tableColumnModel.getColumn(segmentController.getSegmentTargetColumnIndex())
+        tableColumnModel.getColumn(segmentTableModel.getSegmentTargetColumnIndex())
                 .setCellEditor(new SegmentEditor());
         int flagMinWidth = 15, flagPrefWidth = 20, flagMaxWidth = 20;
         for (int i = SegmentTableModel.NONFLAGCOLS;
@@ -189,12 +191,12 @@ public class SegmentView extends JScrollPane implements RuleListener {
         clearTable();
         setViewportView(sourceTargetTable);
         addFilters();
-        segmentController.fireTableDataChanged();
+        segmentTableModel.fireTableDataChanged();
         // Adjust the segment number column width
         tableColumnModel.getColumn(
-                segmentController.getSegmentNumColumnIndex())
+                segmentTableModel.getSegmentNumColumnIndex())
                 .setPreferredWidth(this.getFontMetrics(this.getFont())
-                .stringWidth(" " + segmentController.getNumSegments()));
+                .stringWidth(" " + segmentTableModel.getRowCount()));
         updateRowHeights();
     }
 
@@ -203,7 +205,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     public void addFilters() {
-        sort = new TableRowSorter<SegmentTableModel>(segmentController.getSegmentTableModel());
+        sort = new TableRowSorter<SegmentTableModel>(segmentTableModel);
         sourceTargetTable.setRowSorter(sort);
         sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
             private SegmentSelector selector = new SegmentSelector(ruleConfig);
@@ -227,22 +229,22 @@ public class SegmentView extends JScrollPane implements RuleListener {
             for (int col = 1; col < 4; col++) {
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
-                    String text = segmentController.getSegment(modelRow).getSource().getDisplayText();
+                    String text = segmentTableModel.getSegment(modelRow).getSource().getDisplayText();
                     segmentCell.setText(text);
                 } else if (col == 2) {
-                    String text = segmentController.getSegment(modelRow).getTarget().getDisplayText();
+                    String text = segmentTableModel.getSegment(modelRow).getTarget().getDisplayText();
                     segmentCell.setText(text);
                 } else if (col == 3) {
                     String text;
-                    if (segmentController.enabledTargetDiff()) {
-                        ArrayList<String> textDiff = segmentController.getSegment(modelRow).getTargetDiff();
+                    if (enabledTargetDiff) {
+                        ArrayList<String> textDiff = segmentTableModel.getSegment(modelRow).getTargetDiff();
                         StringBuilder displayText = new StringBuilder();
                         for (int i = 0; i < textDiff.size(); i += 2) {
                             displayText.append(textDiff.get(i));
                         }
                         text = displayText.toString();
                     } else {
-                        text = segmentController.getSegment(modelRow).getOriginalTarget().getDisplayText();
+                        text = segmentTableModel.getSegment(modelRow).getOriginalTarget().getDisplayText();
                     }
                     segmentCell.setText(text.toString());
                 }
@@ -258,7 +260,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public Segment getSelectedSegment() {
         Segment selectedSeg = null;
         if (sourceTargetTable.getSelectedRow() >= 0) {
-            selectedSeg = segmentController.getSegment(sort.convertRowIndexToModel(
+            selectedSeg = segmentTableModel.getSegment(sort.convertRowIndexToModel(
                 sourceTargetTable.getSelectedRow()));
         }
         return selectedSeg;
@@ -279,30 +281,32 @@ public class SegmentView extends JScrollPane implements RuleListener {
         postSegmentSelection(seg);
     }
 
-    public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
-        attrView.addLQIMetadata(lqi);
+    public boolean getEnabledTargetDiff() {
+        return enabledTargetDiff;
     }
 
-    public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
-        eventBus.post(new LQISelectionEvent(lqi));
-        postSegmentSelection(seg);
+    public void setEnabledTargetDiff(boolean enabled) {
+        this.enabledTargetDiff = enabled;
+        reloadTable();
+    }
+
+    @Subscribe
+    public void notifyModifiedLQI(LQIModificationEvent event) {
+        eventBus.post(new LQISelectionEvent(event.getLQI()));
+        postSegmentSelection(event.getSegment());
         int selectedRow = sourceTargetTable.getSelectedRow();
         reloadTable();
         sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
         requestFocusTable();
     }
 
-    public void notifyAddedProv(Provenance prov) {
-        attrView.addProvMetadata(prov);
+    @Subscribe
+    public void notifySegmentTargetReset(SegmentTargetResetEvent event) {
+        // Should this just be calling reloadData()?
+        segmentTableModel.fireTableDataChanged();
+        updateRowHeights();
     }
-
-    /**
-     * Rule configuration methods.
-     */
-    public RuleConfiguration getRuleConfig() {
-        return this.ruleConfig;
-    }
-
+    
     @Override
     public void enabledRule(String ruleLabel, boolean enabled) {
         reloadTable();
@@ -337,15 +341,15 @@ public class SegmentView extends JScrollPane implements RuleListener {
         public Component getTableCellRendererComponent(JTable jtable, Object o,
             boolean isSelected, boolean hasFocus, int row, int col) {
             SegmentTextCell renderTextPane = new SegmentTextCell();
-            if (segmentController.getNumSegments() > row) {
-                Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
+            if (segmentTableModel.getRowCount() > row) {
+                Segment seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(row));
                 SegmentVariant v = null;
-                if (segmentController.getSegmentSourceColumnIndex() == col) {
+                if (segmentTableModel.getSegmentSourceColumnIndex() == col) {
                     v = seg.getSource();
-                } else if (segmentController.getSegmentTargetColumnIndex() == col) {
+                } else if (segmentTableModel.getSegmentTargetColumnIndex() == col) {
                     v = seg.getTarget();
-                } else if (segmentController.getSegmentTargetOriginalColumnIndex() == col) {
-                    if (!segmentController.enabledTargetDiff()) {
+                } else if (segmentTableModel.getSegmentTargetOriginalColumnIndex() == col) {
+                    if (!enabledTargetDiff) {
                         v = seg.getOriginalTarget();
                     }
                 }
@@ -409,7 +413,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
             Integer segNum = (Integer) obj;
-            Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
+            Segment seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(row));
 
             Color background = getSegmentColor(seg);
             background = background != null ? background :
@@ -447,7 +451,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object value,
             boolean isSelected, int row, int col) {
-            Segment seg = segmentController.getSegment(sort.convertRowIndexToModel(row));
+            Segment seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(row));
             editListener.setBeginEdit(seg, seg.getTarget().getDisplayText());
             editorComponent = new SegmentTextCell(seg.getTarget(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
@@ -506,7 +510,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 }
                 this.seg.setTargetDiff(EditDistance.styleTextDifferences(this.seg.getTarget(),
                         this.seg.getOriginalTarget()));
-                segmentController.updateSegment(seg);
                 eventBus.post(new SegmentEditEvent(seg));
             }
             postSegmentSelection(seg);
@@ -541,7 +544,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
             int r = sourceTargetTable.rowAtPoint(e.getPoint());
             if (r >= 0 && r < sourceTargetTable.getRowCount()) {
                 sourceTargetTable.setRowSelectionInterval(r, r);
-                seg = segmentController.getSegment(r);
+                seg = segmentTableModel.getSegment(r);
             }
 
             if (seg != null) {

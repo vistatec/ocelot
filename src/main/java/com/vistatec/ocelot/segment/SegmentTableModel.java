@@ -28,27 +28,22 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.rules.NullITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.table.AbstractTableModel;
 
 /**
- * Table model representing the aligned source/target segments and the flags
- * shown in the SegmentView.
+ * Table model that repackages SegmentController and rule data for use
+ * in a SegmentView.
  */
 public class SegmentTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
 
     private RuleConfiguration ruleConfig;
-    private ArrayList<Segment> segments = new ArrayList<Segment>(100);
     protected HashMap<String, Integer> colNameToIndex;
     protected HashMap<Integer, String> colIndexToName;
     public static final int NUMFLAGS = 5;
@@ -57,8 +52,11 @@ public class SegmentTableModel extends AbstractTableModel {
     public static final String COLSEGSRC = "Source";
     public static final String COLSEGTGT = "Target";
     public static final String COLSEGTGTORI = "Target Original";
+    private SegmentController segmentController;
 
-    public SegmentTableModel(EventBus eventBus, RuleConfiguration ruleConfig) {
+    public SegmentTableModel(SegmentController segmentController,
+                             RuleConfiguration ruleConfig) {
+        this.segmentController = segmentController;
         this.ruleConfig = ruleConfig;
         colNameToIndex = new HashMap<String, Integer>();
         colNameToIndex.put(COLSEGNUM, 0);
@@ -69,7 +67,6 @@ public class SegmentTableModel extends AbstractTableModel {
         for (String key : colNameToIndex.keySet()) {
             colIndexToName.put(colNameToIndex.get(key), key);
         }
-        eventBus.register(this);
     }
 
     @Override
@@ -81,6 +78,23 @@ public class SegmentTableModel extends AbstractTableModel {
         return colNameToIndex.get(col);
     }
 
+    int getSegmentNumColumnIndex() {
+        return getColumnIndex(SegmentTableModel.COLSEGNUM);
+    }
+
+    int getSegmentSourceColumnIndex() {
+        return getColumnIndex(SegmentTableModel.COLSEGSRC);
+    }
+
+    int getSegmentTargetColumnIndex() {
+        return getColumnIndex(SegmentTableModel.COLSEGTGT);
+    }
+
+    int getSegmentTargetOriginalColumnIndex() {
+        return getColumnIndex(SegmentTableModel.COLSEGTGTORI);
+    }
+
+    
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         if (columnIndex == getColumnIndex(COLSEGNUM)) {
@@ -96,7 +110,7 @@ public class SegmentTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return segments.size();
+        return segmentController.getNumSegments();
     }
 
     @Override
@@ -119,7 +133,7 @@ public class SegmentTableModel extends AbstractTableModel {
             return getSegment(row).getOriginalTarget();
         }
         Object ret = ruleConfig.getTopDataCategory(
-                segments.get(row), col-NONFLAGCOLS);
+                getSegment(row), col-NONFLAGCOLS);
         return ret != null ? ret : NullITSMetadata.getInstance();
     }
 
@@ -128,16 +142,7 @@ public class SegmentTableModel extends AbstractTableModel {
         return col == colNameToIndex.get(COLSEGTGT);
     }
 
-    public void addSegment(Segment seg) {
-        segments.add(seg);
-    }
-
-    public Segment getSegment(int row) {
-        return segments.get(row);
-    }
-
-    @Subscribe
-    public void clearAllSegments(ClearAllSegmentsEvent e) {
-        segments.clear();
+    Segment getSegment(int row) {
+        return segmentController.getSegment(row);
     }
 }

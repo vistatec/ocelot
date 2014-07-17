@@ -206,7 +206,7 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
         if (ae.getSource() == export) {
             pluginManager.exportData(segmentController.getFileSourceLang(),
                     segmentController.getFileTargetLang(),
-                    segmentController.getSegmentTableModel());
+                    segmentController);
         }
         else if (ae.getSource() == selectPluginDir) {
             JFileChooser fc = new JFileChooser();

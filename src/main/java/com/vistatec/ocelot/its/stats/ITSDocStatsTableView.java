@@ -28,8 +28,10 @@
  */
 package com.vistatec.ocelot.its.stats;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.ITSDocStatsChangedEvent;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -41,38 +43,36 @@ import javax.swing.table.TableRowSorter;
 public class ITSDocStatsTableView extends JScrollPane {
     private static final long serialVersionUID = 1L;
 
-    protected JTable docStatsTable;
     private DocumentStatsTableModel docStatsModel;
+    protected JTable docStatsTable;
     private TableRowSorter<DocumentStatsTableModel> sort;
 
-    public ITSDocStatsTableView() {
-        docStatsModel = new DocumentStatsTableModel();
+    public ITSDocStatsTableView(EventBus eventBus, ITSDocStats docStats) {
+        docStatsModel = new DocumentStatsTableModel(docStats);
         docStatsTable = new JTable(docStatsModel);
 
         sort = new TableRowSorter<DocumentStatsTableModel>(docStatsModel);
         docStatsTable.setRowSorter(sort);
 
         setViewportView(docStatsTable);
-    }
-    
-    public void addLQIMetadata(LanguageQualityIssue lqi) {
-        docStatsModel.updateLQIStats(lqi);
+        eventBus.register(this);
     }
 
-    public void addProvMetadata(Provenance prov) {
-        docStatsModel.updateProvStats(prov);
-    }
-
-    public void clearStats() {
-        docStatsModel.clearStats();
+    @Subscribe
+    public void docStatsChanged(ITSDocStatsChangedEvent event) {
+        docStatsModel.fireTableDataChanged();
     }
 
     private class DocumentStatsTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
 
+        DocumentStatsTableModel(ITSDocStats stats) {
+            this.stats = stats;
+        }
+        
         public static final int NUMCOLS = 4;
         public String[] colNames = {"Data Category", "Type", "Value", "Count"};
-        private ITSDocStats stats = new ITSDocStats();
+        private ITSDocStats stats;
 
         @Override
         public int getRowCount() {
@@ -122,20 +122,6 @@ public class ITSDocStatsTableView extends JScrollPane {
                     throw new IllegalArgumentException("Incorrect number of columns: "+col);
             }
             return tableCell;
-        }
-
-        private void clearStats() {
-            this.stats.clear();
-        }
-
-        private void updateLQIStats(LanguageQualityIssue lqi) {
-            stats.addLQIStats(lqi);
-            fireTableDataChanged();
-        }
-
-        private void updateProvStats(Provenance prov) {
-            stats.addProvenanceStats(prov);
-            fireTableDataChanged();
         }
     }
 }

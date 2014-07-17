@@ -119,7 +119,7 @@ public class Segment {
     public void resetTarget() {
         getTarget().setContent(getOriginalTarget());
         if (segmentListener != null) {
-            segmentListener.fireTableDataChanged();
+            segmentListener.notifyResetTarget(this);
         }
     }
 
