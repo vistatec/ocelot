@@ -32,6 +32,8 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.DetailView;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.ProvenanceAddedEvent;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -116,6 +118,11 @@ public class SegmentAttributeView extends JTabbedPane {
         else if (e.getITSMetadata() instanceof Provenance) {
             setTab(provTableView);
         }
+    }
+
+    @Subscribe
+    public void lqiModification(LQIModificationEvent e) {
+        setTab(lqiTableView);
     }
 
     private void setTab(Component tab) {

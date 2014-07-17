@@ -32,6 +32,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
@@ -86,6 +87,11 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         lqiTable.addMouseListener(new LQIPopupMenuListener());
 
         setViewportView(lqiTable);
+    }
+
+    @Subscribe
+    public void handleLQIUpdate(LQIModificationEvent e) {
+        lqiTableModel.fireTableDataChanged();
     }
 
     @Subscribe

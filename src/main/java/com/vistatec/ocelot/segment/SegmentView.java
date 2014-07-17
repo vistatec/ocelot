@@ -34,15 +34,11 @@ import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
-import com.vistatec.ocelot.events.ProvenanceAddedEvent;
-import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.its.ITSMetadata;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
@@ -50,8 +46,6 @@ import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
 import com.vistatec.ocelot.rules.StateQualifier;
-import com.vistatec.ocelot.segment.editdistance.EditDistance;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -100,7 +94,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
     protected JTable sourceTargetTable;
     private TableColumnModel tableColumnModel;
     protected TableRowSorter<SegmentTableModel> sort;
-    private boolean enabledTargetDiff;
+    private boolean enabledTargetDiff = true;
 
     protected RuleConfiguration ruleConfig;
     protected PluginManager pluginManager;
@@ -453,7 +447,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
             boolean isSelected, int row, int col) {
             Segment seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(row));
             editListener.setBeginEdit(seg, seg.getTarget().getDisplayText());
-            editorComponent = new SegmentTextCell(seg.getTarget(), false);
+            editorComponent = new SegmentTextCell(seg.getTarget().createCopy(), false);
             editorComponent.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
             editorComponent.getActionMap().put("finish", new AbstractAction() {
                 private static final long serialVersionUID = 1L;
@@ -488,30 +482,18 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     public class SegmentCellEditorListener implements CellEditorListener {
         private Segment seg;
-        private String codedText;
-        private SegmentVariant targetClone;
 
         public void setBeginEdit(Segment seg, String codedText) {
             this.seg = seg;
-            this.codedText = codedText;
-            if (!this.seg.hasOriginalTarget()) {
-                this.targetClone = seg.getTarget().createCopy();
-            }
             pluginManager.notifySegmentTargetEnter(seg);
         }
 
         @Override
         public void editingStopped(ChangeEvent ce) {
+            SegmentVariant updatedTarget = ((SegmentEditor)ce.getSource()).editorComponent.getVariant();
             int row = sourceTargetTable.getSelectedRow();
             pluginManager.notifySegmentTargetExit(seg);
-            if (!this.seg.getTarget().getDisplayText().equals(codedText)) {
-                if (!this.seg.hasOriginalTarget()) {
-                    this.seg.setOriginalTarget(this.targetClone);
-                }
-                this.seg.setTargetDiff(EditDistance.styleTextDifferences(this.seg.getTarget(),
-                        this.seg.getOriginalTarget()));
-                eventBus.post(new SegmentEditEvent(seg));
-            }
+            seg.updateTarget(updatedTarget);
             postSegmentSelection(seg);
             reloadTable();
             // Restore row selection
@@ -520,7 +502,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         @Override
         public void editingCanceled(ChangeEvent ce) {
-            // TODO: Cancel not supported.
+            // Cancel not supported.
         }
     }
 

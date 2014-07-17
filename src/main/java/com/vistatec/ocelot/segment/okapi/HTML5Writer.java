@@ -66,7 +66,7 @@ public class HTML5Writer extends OkapiSegmentWriter {
     }
 
     @Override
-    public void updateEvent(Segment seg, SegmentController segController) {
+    public void updateSegment(Segment seg, SegmentController segController) {
         Event srcEvent = parser.getSegmentSourceEvent(seg.getSourceEventNumber());
         Event tgtEvent = parser.getSegmentTargetEvent(seg.getTargetEventNumber());
         if (srcEvent == null) {

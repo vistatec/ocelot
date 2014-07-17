@@ -40,7 +40,7 @@ public class ProvenanceStats implements ITSStats {
     private String value;
     private Integer count = 1;
 
-    enum Type {
+    public enum Type {
         person,
         org,
         tool,

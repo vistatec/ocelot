@@ -54,10 +54,10 @@ public class TestXLIFFParser {
 
     @Test
     public void testTargetLocales() throws Exception {
-        XLIFFParser parser = new XLIFFParser();
+        OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
 
         LocaleId frFr = new LocaleId("fr-fr");
-        for (Segment seg : parser.parseXLIFFFile(new File(getClass().getResource("xliff_test.xlf").toURI()))) {
+        for (Segment seg : parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()))) {
             Event e = parser.getSegmentEvent(seg.getSourceEventNumber());
             ITextUnit tu = e.getTextUnit();
             TextContainer tc = ((TextContainerVariant)seg.getTarget()).getTextContainer();
@@ -67,8 +67,8 @@ public class TestXLIFFParser {
     
     @Test
     public void testXLIFFToSegment() throws Exception {
-        XLIFFParser parser = new XLIFFParser();
-        List<Segment> segments = parser.parseXLIFFFile(new File(getClass().getResource("xliff_test.xlf").toURI()));
+        OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
+        List<Segment> segments = parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()));
 
         testReadProvenance(segments.get(0));
         testReadMultipleProv(segments.get(1));
@@ -203,8 +203,8 @@ public class TestXLIFFParser {
 
     @Test
     public void testStateQualifiers() throws Exception {
-        XLIFFParser parser = new XLIFFParser();
-        List<Segment> segments = parser.parseXLIFFFile(
+        OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
+        List<Segment> segments = parser.parse(
                 new File(getClass().getResource("state_qualifiers.xlf").toURI()));
         assertEquals(ID, segments.get(0).getStateQualifier());
         assertEquals(EXACT, segments.get(1).getStateQualifier());

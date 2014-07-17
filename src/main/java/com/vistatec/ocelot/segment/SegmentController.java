@@ -29,9 +29,7 @@
 package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.events.ClearAllSegmentsEvent;
 import com.vistatec.ocelot.events.ITSDocStatsChangedEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.ProvenanceAddedEvent;
@@ -41,9 +39,6 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.okapi.OkapiSegmentWriter;
-import com.vistatec.ocelot.segment.okapi.XLIFFParser;
-import com.vistatec.ocelot.segment.okapi.XLIFFWriter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -56,30 +51,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class for handling events related to segments, such as parsing/updating the
- * data, writing out the segments, refreshing their table view, etc.
+ * Data model for a document.  This handles most manipulations of the 
+ * segment model and generates most segment-related events.
  */
 public class SegmentController {
     private Logger LOG = LoggerFactory.getLogger(SegmentController.class);
 
     private ArrayList<Segment> segments = new ArrayList<Segment>(100);
-    private OkapiSegmentWriter segmentWriter;
+    private XLIFFFactory xliffFactory;
+    private XLIFFWriter segmentWriter;
     private XLIFFParser xliffParser;
-    private boolean openFile = false, targetDiff = true;
+    private boolean openFile = false;
     private ProvenanceConfig provConfig;
     private EventBus eventBus;
     private boolean dirty = false;
     private ITSDocStats docStats = new ITSDocStats();
 
-    public SegmentController(EventBus eventBus, RuleConfiguration ruleConfig,
+    public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus, 
+                             RuleConfiguration ruleConfig,
                              ProvenanceConfig provConfig) {
+        this.xliffFactory = xliffFactory;;
         this.eventBus = eventBus;
         this.provConfig = provConfig;
         eventBus.register(this);
-    }
-
-    public boolean enabledTargetDiff() {
-        return this.targetDiff;
     }
 
     /**
@@ -126,64 +120,78 @@ public class SegmentController {
         return dirty;
     }
 
-    public void notifyAddedLQI(LanguageQualityIssue lqi, Segment seg) {
-        // TODO - rename this
-        docStats.addLQIStats(lqi);
+    private void recalculateDocStats() {
+        docStats.clear();
+        for (Segment seg : segments) {
+            for (LanguageQualityIssue lqi : seg.getLQI()) {
+                docStats.addLQIStats(lqi);
+            }
+            for (Provenance prov : seg.getProv()) {
+                docStats.addProvenanceStats(prov);
+            }
+        }
+        eventBus.post(new ITSDocStatsChangedEvent());
     }
 
-    public void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
+    void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         updateSegment(seg);
+        docStats.addLQIStats(lqi);
+        eventBus.post(new ITSDocStatsChangedEvent());
         eventBus.post(new LQIModificationEvent(lqi, seg));
     }
 
-    @Subscribe
-    public void clearAllSegments(ClearAllSegmentsEvent e) {
+    void notifyRemovedLQI(LanguageQualityIssue lqi, Segment seg) {
+        updateSegment(seg);
+        recalculateDocStats();
+        eventBus.post(new LQIModificationEvent(lqi, seg));
+    }
+
+    public void clearAllSegments() {
         segments.clear();
         docStats.clear();
         eventBus.post(new ITSDocStatsChangedEvent());
     }
 
-    @Subscribe
-    public void segmentEdited(SegmentEditEvent e) {
-        updateSegment(e.getSegment());
+    public void notifyUpdateSegment(Segment seg) {
+        updateSegment(seg);
+        eventBus.post(new SegmentEditEvent(seg));
     }
 
-    // XXX This is overloaded -- both used during xliff parse/load,
-    // but aslo when we add provenance during editing
-    public void notifyAddedProv(Provenance prov) {
+    // XXX Inconsistent naming - this is used when provenance is added
+    // at runtime (for LQI, this is called notifyModifiedProv)
+    void notifyAddedProv(Provenance prov) {
         dirty = true;
         eventBus.post(new ProvenanceAddedEvent(prov));
         docStats.addProvenanceStats(prov);
     }
 
     public void parseXLIFFFile(File xliffFile) throws IOException {
-        XLIFFParser newParser = new XLIFFParser();
-        List<Segment> segments = newParser.parseXLIFFFile(xliffFile);
+        XLIFFParser newParser = xliffFactory.newXLIFFParser();
+        List<Segment> segments = newParser.parse(xliffFile);
 
-        eventBus.post(new ClearAllSegmentsEvent());
+        clearAllSegments();
         xliffParser = newParser;
-        for (Segment seg : segments) {
-            seg.setSegmentListener(this);
-            addSegment(seg);
-        }
+        setSegments(segments);
 
         setOpenFile(true);
-        segmentWriter = new XLIFFWriter(xliffParser, provConfig);
+        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig);
         dirty = false;
     }
 
-    public void addSegment(Segment seg) {
+    void setSegments(List<Segment> segments) {
+        for (Segment seg : segments) {
+            addSegment(seg);
+        }
+        recalculateDocStats();
+    }
+
+    private void addSegment(Segment seg) {
+        seg.setSegmentListener(this);
         segments.add(seg);
-        for (LanguageQualityIssue lqi : seg.getLQI()) {
-            notifyAddedLQI(lqi, seg);
-        }
-        for (Provenance prov : seg.getProv()) {
-            notifyAddedProv(prov);
-        }
     }
 
     public void updateSegment(Segment seg) {
-        segmentWriter.updateEvent(seg, this);
+        segmentWriter.updateSegment(seg, this);
         dirty = true;
     }
 
@@ -203,8 +211,7 @@ public class SegmentController {
      * @throws IOException 
      */
     public void save(File file) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        XLIFFWriter okapiXLIFFWriter = (XLIFFWriter) segmentWriter;
-        okapiXLIFFWriter.save(file);
+        segmentWriter.save(file);
         this.dirty = false;
     }
 }

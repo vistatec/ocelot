@@ -34,6 +34,7 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField;
 import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.XLIFFParser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,14 +75,14 @@ import org.slf4j.LoggerFactory;
  * The Event list is used when writing out files through Okapi; updates to
  * the workbench segments must then be reflected(synchronized) in the proper Event.
  */
-public class XLIFFParser {
-    private static Logger LOG = LoggerFactory.getLogger(XLIFFParser.class);
+public class OkapiXLIFF12Parser implements XLIFFParser {
+    private static Logger LOG = LoggerFactory.getLogger(OkapiXLIFF12Parser.class);
     private LinkedList<Event> events;
     private XLIFFFilter filter;
     private int documentSegmentNum;
     private String sourceLang, targetLang, fileOriginal;
 
-    public XLIFFParser() {}
+    public OkapiXLIFF12Parser() {}
 
     public String getSourceLang() {
         return this.sourceLang;
@@ -107,7 +108,7 @@ public class XLIFFParser {
         return this.events;
     }
 
-    public List<Segment> parseXLIFFFile(File xliffFile) throws IOException {
+    public List<Segment> parse(File xliffFile) throws IOException {
         events = new LinkedList<Event>();
         List<Segment> segments = new LinkedList<Segment>();
         documentSegmentNum = 1;

@@ -79,13 +79,13 @@ public class TestOkapiSegmentWriter {
             return new UserProvenance(revPerson, revOrg, extRef);
         }
     }
-    
+
     class TestSegmentWriter extends OkapiSegmentWriter {
         TestSegmentWriter(ProvenanceConfig config) {
             super(config);
         }
         @Override
-        public void updateEvent(Segment seg, SegmentController segController) {
+        public void updateSegment(Segment seg, SegmentController segController) {
         }
     }
 }

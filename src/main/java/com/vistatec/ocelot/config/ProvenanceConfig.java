@@ -15,10 +15,10 @@ public class ProvenanceConfig {
     private Logger LOG = LoggerFactory.getLogger(ProvenanceConfig.class);
 
     private Configs configs;
-    private Properties p;
+    private Properties p = new Properties();
 
     protected ProvenanceConfig() { }
-    
+
     public ProvenanceConfig(Configs configs) {
         this.configs = configs;
         reload();

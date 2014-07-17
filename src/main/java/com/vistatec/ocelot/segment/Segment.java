@@ -106,7 +106,6 @@ public class Segment {
 
     public void setOriginalTarget(SegmentVariant oriTgt) {
         if (!this.setOriginalTarget) {
-            // XXX Unclear when this branch is ever taken since the ctor always sets a value 
             this.originalTarget = oriTgt;
         }
         this.setOriginalTarget = true;
@@ -116,6 +115,25 @@ public class Segment {
         return this.setOriginalTarget;
     }
 
+    /**
+     * Sets the new target for this segment.  Sets an original target value
+     * if none exists.  Updates target diff value.
+     * @param updatedTarget
+     */
+    public void updateTarget(SegmentVariant updatedTarget) {
+        if (!updatedTarget.getDisplayText().equals(target.getDisplayText())) {
+            if (!hasOriginalTarget()) {
+                setOriginalTarget(target);
+            }
+            target = updatedTarget;
+            setTargetDiff(EditDistance.styleTextDifferences(getTarget(),
+                          getOriginalTarget()));
+            if (segmentListener != null) {
+                segmentListener.notifyUpdateSegment(this);
+            }
+        }
+    }
+    
     public void resetTarget() {
         getTarget().setContent(getOriginalTarget());
         if (segmentListener != null) {
@@ -127,7 +145,7 @@ public class Segment {
         return this.targetDiff;
     }
 
-    public void setTargetDiff(ArrayList<String> targetDiff) {
+    private void setTargetDiff(ArrayList<String> targetDiff) {
         this.targetDiff = targetDiff;
     }
 
@@ -238,7 +256,7 @@ public class Segment {
     public void removeLQI(LanguageQualityIssue removeLQI) {
         lqiList.remove(removeLQI);
         if (segmentListener != null) {
-            segmentListener.notifyModifiedLQI(removeLQI, this);
+            segmentListener.notifyRemovedLQI(removeLQI, this);
         }
     }
 

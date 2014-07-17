@@ -33,6 +33,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.XLIFFWriter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -62,21 +63,21 @@ import org.slf4j.LoggerFactory;
  * Handles synchronization between workbench Segments and the Okapi Event list
  * retrieved from the XLIFFParser.
  */
-public class XLIFFWriter extends OkapiSegmentWriter {
-    private Logger LOG = LoggerFactory.getLogger(XLIFFWriter.class);
-    private XLIFFParser parser;
+public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWriter {
+    private Logger LOG = LoggerFactory.getLogger(OkapiXLIFF12Writer.class);
+    private OkapiXLIFF12Parser parser;
 
-    public XLIFFWriter(XLIFFParser xliffParser, ProvenanceConfig provConfig) {
+    public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser, ProvenanceConfig provConfig) {
         super(provConfig);
         this.parser = xliffParser;
     }
 
-    public XLIFFParser getParser() {
+    public OkapiXLIFF12Parser getParser() {
         return this.parser;
     }
 
     @Override
-    public void updateEvent(Segment seg, SegmentController segController) {
+    public void updateSegment(Segment seg, SegmentController segController) {
         Event event = getParser().getSegmentEvent(seg.getSourceEventNumber());
         if (event == null) {
             LOG.error("Failed to find Okapi Event associated with segment #"+seg.getSegmentNumber());
@@ -93,6 +94,8 @@ public class XLIFFWriter extends OkapiSegmentWriter {
             textUnit.setAnnotation(provAnns);
 
             if (seg.hasOriginalTarget()) {
+                // Make sure the Okapi Event is aware that the target has changed.
+                textUnit.setTarget(LocaleId.fromString(segController.getFileTargetLang()), unwrap(seg.getTarget()));
                 updateOriginalTarget(seg, segController);
             }
         } else {

@@ -46,6 +46,7 @@ import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
+import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
 
 import java.awt.BorderLayout;
 import java.awt.DefaultKeyboardFocusManager;
@@ -131,7 +132,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
 
-        segmentController = new SegmentController(eventBus, ruleConfig, provConfig);
+        segmentController = new SegmentController(new OkapiXLIFF12Factory(), eventBus, ruleConfig, provConfig);
 
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView(eventBus);
@@ -347,7 +348,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         menuTgtDiff = new JCheckBoxMenuItem("Show Target Differences");
         menuTgtDiff.addActionListener(this);
-        menuTgtDiff.setSelected(this.segmentController.enabledTargetDiff());
+        menuTgtDiff.setSelected(segmentView.getEnabledTargetDiff());
         menuView.add(menuTgtDiff);
 
         menuFilter = new JMenu("Filter");

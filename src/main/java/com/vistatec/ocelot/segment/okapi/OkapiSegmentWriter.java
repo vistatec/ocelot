@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
 public abstract class OkapiSegmentWriter {
     private Logger LOG = LoggerFactory.getLogger(OkapiSegmentWriter.class);
 
-    public abstract void updateEvent(Segment seg, SegmentController segController);
+    public abstract void updateSegment(Segment seg, SegmentController segController);
     private ProvenanceConfig provConfig;
 
     public OkapiSegmentWriter(ProvenanceConfig provConfig) {
