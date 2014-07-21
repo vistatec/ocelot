@@ -28,6 +28,9 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
@@ -38,11 +41,31 @@ import com.vistatec.ocelot.segment.XLIFFWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import net.sf.okapi.common.Event;
+import net.sf.okapi.common.ISkeleton;
 import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.Namespaces;
 import net.sf.okapi.common.annotation.AltTranslation;
 import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotation;
@@ -51,9 +74,13 @@ import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 import net.sf.okapi.common.annotation.XLIFFTool;
 import net.sf.okapi.common.query.MatchType;
+import net.sf.okapi.common.resource.DocumentPart;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.Property;
+import net.sf.okapi.common.resource.StartDocument;
+import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.TextContainer;
+import net.sf.okapi.common.skeleton.GenericSkeleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,5 +212,41 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
     public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         saveEvents(parser.getFilter(), parser.getSegmentEvents(),
                 source.getAbsolutePath(), LocaleId.fromString(parser.getTargetLang()));
+    }
+
+    // HACK fix for OC-21.  As of M23, the XLIFF Filter doesn't properly manage
+    // ITS namespace insertion for all cases, so we insert it into the <xliff> element
+    // if one isn't already present.
+    private boolean foundXliffElement = false;
+    private static final Pattern XLIFF_ELEMENT_PATTERN = Pattern.compile("(.*<xliff)([^>]*)(>.*)");
+    private static final Pattern ITS_NAMESPACE_PATTERN = Pattern.compile("xmlns(:[^=]+)?=\"" + Namespaces.ITS_NS_URI + "\"");
+
+    @Override
+    protected DocumentPart preprocessDocumentPart(DocumentPart dp) {
+        if (foundXliffElement) return dp;
+
+        String origSkel = dp.getSkeleton().toString();
+        Matcher m = XLIFF_ELEMENT_PATTERN.matcher(origSkel);
+        if (m.find()) {
+            foundXliffElement = true;
+            String xliffAttributes = m.group(2);
+            Matcher attrM = ITS_NAMESPACE_PATTERN.matcher(xliffAttributes);
+            // If we found the namespace, we don't need to change anything
+            if (attrM.find()) {
+                return dp;
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(m.group(1));
+            sb.append(m.group(2));
+            sb.append(" xmlns:")
+              .append(Namespaces.ITS_NS_PREFIX)
+              .append("=\"")
+              .append(Namespaces.ITS_NS_URI)
+              .append("\" ");
+            sb.append(m.group(3));
+            GenericSkeleton newSkel = new GenericSkeleton(sb.toString());
+            dp.setSkeleton(newSkel);
+        }
+        return dp;
     }
 }
