@@ -64,14 +64,6 @@ public interface SegmentVariant {
     void modifyChars(int offset, int charsToReplace, String newText);
 
     /**
-     * Checks to see if text can be inserted.  This is to prevent 
-     * codes being pasted in, for example.
-     * @param o
-     * @return
-     */
-    boolean textIsInsertable(String text);
-
-    /**
      * Checks to see if an offset into the variant text is an insertable
      * position.  (For example, insertion in the middle of codes may be
      * disallowed.)
@@ -80,12 +72,19 @@ public interface SegmentVariant {
      */
     boolean canInsertAt(int offset);
 
+    /**
+     * Replace a selection (specified by offsets) with a selection from
+     * another segment variant.  (This method is currently unused and is
+     * intended as support for copy/paste.)
+     *
+     * @param selectionStart start of the selection to be replaced
+     * @param selectionEnd end of the selection to be replaced
+     * @param rsv content with which to replace the current selection
+     */
+    public void replaceSelection(int selectionStart, int selectionEnd,
+            SegmentVariantSelection rsv);
+
     @Override
     boolean equals(Object o);
 
-
-    //
-    // Methods for SegmentTextCell.SegmentFilter
-    //
-    // More factoring needed here
 }

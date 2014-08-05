@@ -153,11 +153,6 @@ public class SegmentTextCell extends JTextPane {
         @Override
         public void replace(FilterBypass fb, int offset, int length, String str,
                 AttributeSet a) throws BadLocationException {
-            // Prevent copied codes from being pasted in, if the variant
-            // disallows this
-            if (!v.textIsInsertable(str)) {
-                return;
-            }
             if (length > 0) {
                 if (!v.containsTag(offset, length)) {
                     // Remove from cell editor
