@@ -110,6 +110,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         this.pluginManager = pluginManager;
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
+        eventBus.register(this);
     }
 
     public final void initializeTable() {
