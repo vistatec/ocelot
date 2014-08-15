@@ -53,7 +53,20 @@ public class LanguageQualityIssue extends ITSMetadata {
     public LanguageQualityIssue() {
         super();
     }
-    
+
+    public LanguageQualityIssue(LanguageQualityIssue lqi) {
+        this.type = lqi.type;
+        this.comment = lqi.comment;
+        this.issuesRef = lqi.issuesRef;
+        this.severity = lqi.severity;
+        this.profileReference = lqi.profileReference;
+        this.enabled = lqi.enabled;
+    }
+
+    /**
+     * XLIFF 1.2 binding.  This will need to move out of this class eventually.
+     * @deprecated
+     */
     public LanguageQualityIssue(GenericAnnotation ga) {
         if (ga.getString(GenericAnnotationType.LQI_ISSUESREF) != null) {
             this.issuesRef = ga.getString(GenericAnnotationType.LQI_ISSUESREF);

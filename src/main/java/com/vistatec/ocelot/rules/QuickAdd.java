@@ -26,7 +26,15 @@ public class QuickAdd {
         return name;
     }
 
-    public LanguageQualityIssue getLQIData() {
+    /**
+     * Create a new Language Quality Issue to add to a segment.
+     * @return new LQI
+     */
+    public LanguageQualityIssue createLQI() {
+        return new LanguageQualityIssue(lqiData);
+    }
+
+    LanguageQualityIssue getLQIData() {
         return lqiData;
     }
 

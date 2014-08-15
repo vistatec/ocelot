@@ -460,7 +460,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 Segment seg = segmentView.getSelectedSegment();
                 QuickAdd qa = ruleConfig.getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
                 if (seg != null && qa != null && seg.isEditablePhase()) {
-                    seg.addLQI(qa.getLQIData());
+                    seg.addLQI(qa.createLQI());
                 }
 
             } else if (isPlatformKeyDown(ke) && ke.isShiftDown()
