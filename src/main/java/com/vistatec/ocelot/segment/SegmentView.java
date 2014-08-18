@@ -195,6 +195,11 @@ public class SegmentView extends JScrollPane implements RuleListener {
         updateRowHeights();
     }
 
+    private void updateTableRow(int row) {
+        segmentTableModel.fireTableRowsUpdated(row, row);
+        updateRowHeights();
+    }
+
     public void requestFocusTable() {
         sourceTargetTable.requestFocus();
     }
@@ -287,17 +292,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     @Subscribe
     public void notifyModifiedLQI(LQIModificationEvent event) {
+        int selectedRow = sourceTargetTable.getSelectedRow();
+        updateTableRow(selectedRow);
+        sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
         eventBus.post(new LQISelectionEvent(event.getLQI()));
         postSegmentSelection(event.getSegment());
-        int selectedRow = sourceTargetTable.getSelectedRow();
-        reloadTable();
-        sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
         requestFocusTable();
     }
 
     @Subscribe
     public void notifySegmentTargetReset(SegmentTargetResetEvent event) {
-        // Should this just be calling reloadData()?
         segmentTableModel.fireTableDataChanged();
         updateRowHeights();
     }
@@ -496,7 +500,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
             pluginManager.notifySegmentTargetExit(seg);
             seg.updateTarget(updatedTarget);
             postSegmentSelection(seg);
-            reloadTable();
+            updateTableRow(row);
             // Restore row selection
             sourceTargetTable.setRowSelectionInterval(row, row);
         }
