@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:okp="okapi-framework:xliff-extensions" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" version="1.2" its:version="2.0">
+<file original="dataset_EN_ES.tmx" source-language="en" target-language="es" datatype="x-application/x-tmx+xml">
+<body>
+<trans-unit id="51" resname="random" its:locQualityIssuesRef="#RW51" its:provenanceRecordsRef="#RW51">
+<source xml:lang="en">Source segment.</source>
+
+<target xml:lang="es" its:mtConfidence="0.0" its:annotatorsRef="mt-confidence|Okapi-QuEst">Target segment.</target>
+<alt-trans match-quality="100" tool-id="Ocelot" origin="Ocelot" xmlns:okp="okapi-framework:xliff-extensions" okp:matchType="EXACT">
+<source xml:lang="en">Source segment.</source>
+<target xml:lang="es"></target>
+</alt-trans>
+</trans-unit>
+</body>
+</file>
+<its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="RW51">
+<its:locQualityIssue locQualityIssueComment="lqi1" locQualityIssueSeverity="50" locQualityIssueType="addition"/>
+<its:locQualityIssue locQualityIssueComment="lqi2" locQualityIssueSeverity="50" locQualityIssueType="register"/>
+<its:locQualityIssue locQualityIssueComment="lqi3" locQualityIssueSeverity="50" locQualityIssueType="register"/>
+<its:locQualityIssue locQualityIssueComment="lqi4" locQualityIssueSeverity="50" locQualityIssueType="omission"/>
+</its:locQualityIssues>
+</xliff>

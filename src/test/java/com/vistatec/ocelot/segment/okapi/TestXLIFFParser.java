@@ -37,11 +37,15 @@ import com.vistatec.ocelot.segment.SegmentVariant;
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.annotation.AltTranslation;
+import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
+import net.sf.okapi.common.annotation.XLIFFTool;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.TextContainer;
 
@@ -212,5 +216,15 @@ public class TestXLIFFParser {
         assertEquals(FUZZY, segments.get(3).getStateQualifier());
         assertEquals(null, segments.get(4).getStateQualifier());
         assertEquals(null, segments.get(5).getStateQualifier());
+    }
+
+    @Test
+    public void testEmptyAltTransTarget() throws Exception {
+        // OC-26. Workaround for an issue in the Okapi XLIFF reader
+        // (Okapi Issue 412).  If the alt-trans contains an empty
+        // target, don't crash. 
+        OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
+        List<Segment> segments = parser.parse(new File(getClass().getResource("/oc26.xlf").toURI()));
+        assertEquals(1, segments.size());
     }
 }

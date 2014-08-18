@@ -47,6 +47,7 @@ import java.util.Set;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.FileUtil;
+import net.sf.okapi.common.IResource;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.AltTranslation;
 import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
@@ -300,7 +301,14 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
                 // Check if alt-trans is Ocelot generated.
                 XLIFFTool altTool = altTran.getTool();
                 if (altTool != null && altTool.getName().equals("Ocelot")) {
-                    return altTran.getTarget();
+                    // We should be able to replace this with |return altTrans.getTarget;|
+                    // once an issue with the XLIFF reader is fixed (Okapi 412).
+                    ITextUnit tu = altTran.getEntry();
+                    for ( LocaleId trg : tu.getTargetLocales() ) {
+                        return altTran.getTarget(); // If there is a target return it
+                    }
+                    // No target: create one empty
+                    return tu.createTarget(LocaleId.fromString(getTargetLang()), true, IResource.CREATE_EMPTY);
                 }
             }
         }
