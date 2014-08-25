@@ -49,6 +49,7 @@ import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
@@ -65,7 +66,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -75,6 +75,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -119,6 +120,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private RuleConfiguration ruleConfig;
     private PluginManager pluginManager;
     private EventBus eventBus = new EventBus();
+    private Color optionPaneBackgroundColor;
 
     public Ocelot(AppConfig config, PluginManager pluginManager, 
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
@@ -133,6 +135,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
 
         segmentController = new SegmentController(new OkapiXLIFF12Factory(), eventBus, ruleConfig, provConfig);
+        optionPaneBackgroundColor = (Color)UIManager.get("OptionPane.background");
 
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = new DetailView(eventBus);
@@ -231,9 +234,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             } catch (FileNotFoundException ex) {
                 LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
             } catch (Exception e) {
-                String errorMsg = "Could not open XLIFF File "+sourceFile.getName();
+                String errorMsg = "Could not open " + sourceFile.getName();
                 LOG.error(errorMsg, e);
-                alertUser("XLIFF Parsing Error", errorMsg+":<br>"+e.getMessage());
+                alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
             }
         }
     }
@@ -255,22 +258,35 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         if (saveFile == null) {
             return false;
         }
+        String filename = saveFile.getName();
         try {
-            String filename = saveFile.getName();
+            if (!saveFile.canWrite()) {
+                alertUser("Unable to save",
+                        "The file " + filename + " can not be saved, because the file is not writeable.");
+                return false;
+            }
             segmentController.save(saveFile);
             pluginManager.notifySaveFile(filename);
             return true;
-        } catch (UnsupportedEncodingException ex) {
+        } catch (Exception ex) {
             LOG.error(ex);
-        } catch (IOException ex) {
-            LOG.error(ex);
+            alertUser("Unable to save",
+                    "An error occurred while saving the file " + filename + ": " + ex.getMessage());
         }
         return false;
     }
 
     private void alertUser(String windowTitle, String message) {
-        JOptionPane.showMessageDialog(mainframe,
-                "<html><body><p style='width: 500px;'>" + message,
+        JTextArea textArea = new JTextArea(message);
+        textArea.setColumns(30);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        // This is a hack for the mac, where textarea defaults to a white background
+        // but JOptionPane defaults to a non-white background.
+        textArea.setBackground(optionPaneBackgroundColor);
+        textArea.setSize(textArea.getPreferredSize().width, 1);
+        JOptionPane.showMessageDialog(mainframe, textArea,
                 windowTitle, JOptionPane.ERROR_MESSAGE);
     }
 
