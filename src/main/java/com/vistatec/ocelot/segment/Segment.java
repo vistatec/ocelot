@@ -135,9 +135,11 @@ public class Segment {
     }
     
     public void resetTarget() {
-        getTarget().setContent(getOriginalTarget());
-        if (segmentListener != null) {
-            segmentListener.notifyResetTarget(this);
+        if (setOriginalTarget) {
+            getTarget().setContent(getOriginalTarget());
+            if (segmentListener != null) {
+                segmentListener.notifyResetTarget(this);
+            }
         }
     }
 

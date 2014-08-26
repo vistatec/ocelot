@@ -25,6 +25,12 @@ public class TestSegment {
         assertEquals(originalTarget, seg.getOriginalTarget());
     }
 
+    @Test
+    public void testResetWithNoOriginalTarget() {
+        Segment seg = newSegment();
+        seg.resetTarget();
+        assertEquals("target", seg.getTarget().getDisplayText());
+    }
 
     private static int nextSegmentId = 1;
     public static Segment newSegment() {

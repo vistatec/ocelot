@@ -59,7 +59,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
 
         resetTarget = new JMenuItem("Reset Target");
         resetTarget.addActionListener(this);
-        resetTarget.setEnabled(true);
+        resetTarget.setEnabled(selectedSeg.hasOriginalTarget());
         add(resetTarget);
     }
 
