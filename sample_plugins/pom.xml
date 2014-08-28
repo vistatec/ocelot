@@ -4,7 +4,7 @@
 
   <groupId>com.vistatec.ocelot.plugins.samples</groupId>
   <artifactId>build-sample-plugins</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>pom</packaging>
 
   <name>Ocelot Sample Plugins</name>
