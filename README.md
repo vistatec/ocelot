@@ -8,6 +8,12 @@ page](https://bintray.com/okapi/Distribution/Ocelot).  Ocelot is distributed
 as a JAR file that will run on any platform that has Java 1.6 or later
 installed. There are also native executables for the Windows and Mac platforms.
 
+These files are also available on the [Releases page](https://github.com/vistatec/ocelot/releases).
+
+##Dcoumentation##
+Additional documentation is available on the 
+[Ocelot wiki](http://open.vistatec.com/ocelot).
+
 ##Reporting Issues##
 To report a bug or request an enhancement, please create an account 
 in the [Ocelot JIRA](https://ocelot.atlassian.net/browse/OC) and track all issues there.
