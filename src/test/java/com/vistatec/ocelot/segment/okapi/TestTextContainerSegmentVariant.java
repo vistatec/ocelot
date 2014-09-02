@@ -10,7 +10,12 @@ import net.sf.okapi.common.resource.TextFragment.TagType;
 
 import org.junit.*;
 
+import com.google.common.collect.Lists;
+import com.vistatec.ocelot.segment.CodeAtom;
+import com.vistatec.ocelot.segment.SegmentAtom;
 import com.vistatec.ocelot.segment.SegmentTextCell;
+import com.vistatec.ocelot.segment.SegmentVariantSelection;
+import com.vistatec.ocelot.segment.TextAtom;
 
 import static org.junit.Assert.*;
 
@@ -33,6 +38,43 @@ public class TestTextContainerSegmentVariant {
         return new TextContainerVariant(tc);
     }
 
+    @Test
+    public void testGetAtoms() {
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom(0, "<b>", "<b id=\"1\">"),
+                                        new TextAtom("B"), new CodeAtom(1, "</b>", "</b>")),
+                tcv.getAtoms());
+    }
+
+    @Test
+    public void testSetAtoms() {
+        List<SegmentAtom> atoms = tcv.getAtoms();
+        atoms.add(new TextAtom("X"));
+        tcv.setAtoms(atoms);
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom(0, "<b>", "<b id=\"1\">"),
+                new TextAtom("B"), new CodeAtom(1, "</b>", "</b>"), new TextAtom("X")),
+                tcv.getAtoms());
+    }
+
+    @Test
+    public void testReplaceSelection() {
+        // A<b>B</b>
+        // replace <b>B with B<b>
+        TextContainer tc = new TextContainer();
+        TextFragment tf = tc.getFirstContent();
+        tf.append("AB");
+        tf.append(new Code(TagType.OPENING, "b", "<b id=\"1\">"));
+        tf.append(new Code(TagType.CLOSING, "b", "</b>"));
+        TextContainerVariant replacement = new TextContainerVariant(tc);
+
+        // A < b > B < / b >
+        // 0 1 2 3 4 5 6 7 8
+        //      - - - 
+        // A B < b > < / b >
+        // 0 1 2 3 4 5 6 7 8
+        tcv.replaceSelection(1, 5, new SegmentVariantSelection(0, replacement, 1, 5));
+        assertEquals("AB<b></b>", tcv.getDisplayText());
+    }
+    
     @Test
     public void testGetDisplayText() {
         assertEquals("A<b>B</b>", tcv.getDisplayText());
@@ -124,5 +166,14 @@ public class TestTextContainerSegmentVariant {
         tcv = sampleText();
         tcv.modifyChars(9, 0, "X");
         assertEquals("A<b>B</b>X", tcv.getDisplayText());
+
+        // TODO: test case where I insert at the start of a segment that starts with a code
+    }
+
+    @Test
+    public void testDoesThisCrash() {
+        List<String> l = Lists.newArrayList("A", "B", "C");
+        assertEquals(Lists.newArrayList("C"), l.subList(2, 3));
+        assertEquals(Lists.newArrayList(), l.subList(3, 3));
     }
 }

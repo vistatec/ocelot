@@ -1,22 +1,22 @@
 package com.vistatec.ocelot.segment.okapi;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
-import net.sf.okapi.common.resource.TextPart;
-
-import com.vistatec.ocelot.segment.SegmentTextCell;
+import com.google.common.collect.Lists;
+import com.vistatec.ocelot.segment.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.CodeAtom;
+import com.vistatec.ocelot.segment.SegmentAtom;
 import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.TextAtom;
 
 /**
  * XLIFF 1.2 segment variant, implemented using Okapi
  * TextContainers.
  */
-public class TextContainerVariant implements SegmentVariant {
+public class TextContainerVariant extends BaseSegmentVariant {
     private TextContainer tc;
 
     public TextContainerVariant(TextContainer tc) {
@@ -41,45 +41,55 @@ public class TextContainerVariant implements SegmentVariant {
         return tc;
     }
 
+    // XXX problem - in paired tags, they both have the same IDs.
+    // IDs aren't unique!
     @Override
-    public String getDisplayText() {
-        List<String> rendered = getStyleData(false);
+    protected List<SegmentAtom> getAtoms() {
+        List<SegmentAtom> atoms = Lists.newArrayList();
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < rendered.size(); i+= 2) {
-            sb.append(rendered.get(i));
+        TextFragment tf = tc.getUnSegmentedContentCopy();
+        for (int i = 0; i < tf.length(); i++) {
+            char tfChar = tf.charAt(i);
+            if (TextFragment.isMarker(tfChar)) {
+                if (sb.length() > 0) {
+                    // Flush as text
+                    atoms.add(new TextAtom(sb.toString()));
+                    sb.setLength(0);
+                }
+                char codeMarker = tf.charAt(++i);
+                int codeIndex = TextFragment.toIndex(codeMarker);
+                Code code = tf.getCode(codeIndex);
+                atoms.add(new CodeAtom(codeIndex, getCodeText(code, false),
+                                       getCodeText(code, true)));
+            }
+            else {
+                sb.append(tfChar);
+            }
         }
-        return sb.toString();
+        // Flush trailing markup
+        if (sb.length() > 0) {
+            atoms.add(new TextAtom(sb.toString()));
+        }
+
+        return atoms;
     }
 
     @Override
-    public List<String> getStyleData(boolean verbose) {
-        ArrayList<String> textToStyle = new ArrayList<String>();
-        Iterator<TextPart> textParts = tc.iterator();
-        while (textParts.hasNext()) {
-            TextFragment tf = textParts.next().text;
-            StringBuilder text = new StringBuilder();
-            for (int i = 0; i < tf.length(); i++) {
-                char tfChar = tf.charAt(i);
-                if (TextFragment.isMarker(tfChar)) {
-                    textToStyle.add(text.toString());
-                    textToStyle.add(SegmentTextCell.regularStyle);
-                    text = new StringBuilder();
-
-                    char codeMarker = tf.charAt(++i);
-                    int index = TextFragment.toIndex(codeMarker);
-                    String tag = getCodeText(tf.getCode(index), verbose);
-                    textToStyle.add(tag);
-                    textToStyle.add(SegmentTextCell.tagStyle);
-                } else {
-                    text.append(tfChar);
-                }
+    protected void setAtoms(List<SegmentAtom> atoms) {
+        // Unfortunately, TextContainer's can't view all of the codes
+        // they contain.
+        List<Code> tcCodes = tc.getUnSegmentedContentCopy().getCodes();
+        TextFragment frag = new TextFragment();
+        for (SegmentAtom atom : atoms) {
+            if (atom instanceof CodeAtom) {
+                Code c = tcCodes.get(((CodeAtom)atom).getId());
+                frag.append(c);
             }
-            if (text.length() > 0) {
-                textToStyle.add(text.toString());
-                textToStyle.add(SegmentTextCell.regularStyle);
+            else {
+                frag.append(atom.getData());
             }
         }
-        return textToStyle;
+        tc.setContent(frag);
     }
 
     private String getCodeText(Code code, boolean verbose) {
@@ -95,99 +105,6 @@ public class TextContainerVariant implements SegmentVariant {
             return "<" + code.getType() + "/>";
         }
         throw new IllegalStateException();
-    }
-    
-    @Override
-    public boolean containsTag(int offset, int length) {
-        return checkForCode(offset, length);
-    }
-    
-    @Override
-    public boolean textIsInsertable(String text) {
-        return true;
-    }
-
-    @Override
-    public boolean canInsertAt(int offset) {
-        return !checkForCode(offset, 0);
-    }
-
-    private boolean checkForCode(int offset, int length) {
-        Iterator<TextPart> textParts = tc.iterator();
-        int offsetEnd = offset + length;
-        int index = 0;
-        while (textParts.hasNext()) {
-            TextFragment tf = textParts.next().text;
-            for (int i = 0; i < tf.length(); i++) {
-                char tfChar = tf.charAt(i);
-                if (TextFragment.isMarker(tfChar)) {
-                    char codeMarker = tf.charAt(++i);
-                    int codeIndex = TextFragment.toIndex(codeMarker);
-                    String tag = getCodeText(tf.getCode(codeIndex), false);
-                    int codeEnd = index + tag.length();
-                    if (offsetEnd > index && offset < codeEnd) {
-                        return true; 
-                    }
-                    index += tag.length();
-                }
-                else if (index > offset + length) {
-                    // We've drifted out of the danger zone
-                    return false;
-                }
-                else {
-                    index++;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void modifyChars(int offset, int charsToReplace, String newText) {
-        Iterator<TextPart> textParts = tc.iterator();
-        int index = 0;
-        boolean isReplacing = false;
-        if (newText == null) newText = "";
-        while (textParts.hasNext()) {
-            TextPart tp = textParts.next();
-            TextFragment tf = tp.text;
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < tf.length(); i++) {
-                char tfChar = tf.charAt(i);
-                // Is it time to replace?
-                if (index == offset) {
-                    // Time to start replacing
-                    isReplacing = true;
-                    sb.append(newText);
-                    index += newText.length(); // not really necessary any more
-                }
-                if (isReplacing && charsToReplace-- <= 0) {
-                    isReplacing = false;
-                }
-                if (TextFragment.isMarker(tfChar)) {
-                    char codeMarker = tf.charAt(++i);
-                    int codeIndex = TextFragment.toIndex(codeMarker);
-                    String tag = getCodeText(tf.getCode(codeIndex), false);
-                    index += tag.length();
-                    // We should never be replacing the tag tex, just count it. 
-                    sb.append(tfChar).append(codeMarker);
-                }
-                else {
-                    if (!isReplacing) {
-                        sb.append(tfChar);
-                        index++;
-                    }
-                }
-            }
-            // Check for append
-            if (index == offset) {
-                sb.append(newText);
-            }
-            tf.setCodedText(sb.toString());
-            if (index > offset) {
-                return; // don't need to process further
-            }
-        }
     }
 
     @Override
