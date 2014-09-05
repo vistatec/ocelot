@@ -2,10 +2,12 @@ package com.vistatec.ocelot.segment;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 public abstract class BaseSegmentVariant implements SegmentVariant {
 
@@ -142,49 +144,89 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
         setAtoms(cleanedAtoms);
     }
 
+    /**
+     * Modify the text contents of the segment; Assumes checks for attempting to change
+     * parts of the segment's unmodifiable text (such as protected codes) was already made.
+     * @param insertCharacterOffset - Character position indexed from the beginning of the segment to start inserting text
+     * @param charsToReplace - Number of characters to delete in the original segment text starting from the {@code insertionOffset}
+     * @param newText - String to insert at the {@code insertionOffset}; Swing sets to {@code null} if no text to insert
+     */
     @Override
-    public void modifyChars(int offset, int charsToReplace, String newText) {
-        int index = 0;
-        // The contract of this method is such that it never replaces a code,
-        // so the entire modification will always happen within a single text atom.
+    public void modifyChars(int insertCharacterOffset, int charsToReplace, String newText) {
+        int caretPosition = 0;
         List<SegmentAtom> atoms = getAtoms();
         List<SegmentAtom> newAtoms = Lists.newArrayList();
         boolean done = false;
-        for (int i = 0; i < atoms.size(); i++) {
-            SegmentAtom atom = atoms.get(i);
-            if (atom instanceof TextAtom) {
-                if (index >= offset && !done) {
-                    // Do the text replacement
-                    String origText = atom.getData();
-                    int atomOffset = Math.max(offset - index, 0);
-                    newAtoms.add(new TextAtom(origText.substring(0, atomOffset)));
-                    if (newText != null) { // handle delete case
+        boolean insertingText = newText != null;
+
+        for (SegmentAtom atom : atoms) {
+            Range<Integer> atomCharacterRange = Range.closedOpen(caretPosition,
+                    caretPosition+atom.getLength());
+            if (atomCharacterRange.contains(insertCharacterOffset) && !done) {
+                if (atom instanceof CodeAtom) {
+                    // Assume inserting at the start of a CodeAtom;
+                    // append handled by next atom (after for-loop if last atom)
+                    if (insertingText) {
+                        // Ignore incrementing caret for newText; delete/replace based off of original text.
                         newAtoms.add(new TextAtom(newText));
                     }
-                    newAtoms.add(new TextAtom(origText.substring(atomOffset + charsToReplace)));
-                    done = true;
-                }
-                else {
                     newAtoms.add(atom);
-                }
-            }
-            else if (atom instanceof CodeAtom) {
-                // I need to handle this separately because I might
-                // be inserting at the start of a segment that opens with a code.
-                // If it was just the text/code boundaries, I could handle them above.
-                if (index >= offset && !done) {
-                    newAtoms.add(new TextAtom(newText));
                     done = true;
+
+                } else if (atom instanceof TextAtom) {
+                    String origAtomText = atom.getData();
+
+                    int atomCharInsertionIndex = Math.max(insertCharacterOffset - caretPosition, 0);
+                    newAtoms.add(new TextAtom(origAtomText.substring(0, atomCharInsertionIndex)));
+
+                    if (insertingText) {
+                        // Ignore incrementing caret for newText; delete/replace based off of original text.
+                        newAtoms.add(new TextAtom(newText));
+                    }
+
+                    // Ignore decreasing caret for removing text; delete/replace based off of original text.
+                    newAtoms.add(new TextAtom(origAtomText.substring(atomCharInsertionIndex + charsToReplace)));
+                    if (atomCharInsertionIndex + charsToReplace > atom.getLength()) {
+                        insertCharacterOffset = atomCharacterRange.upperEndpoint();
+                        charsToReplace -= (atom.getLength()-atomCharInsertionIndex);
+                    } else {
+                        done = true;
+                    }
                 }
+
+            } else {
                 newAtoms.add(atom);
             }
-            index += atom.getLength();
+
+            caretPosition += atom.getLength();
         }
-        // Check for append
-        if (index == offset) {
+        // Check for appending text to the end of the segment (no delete or replace)
+        if (caretPosition == insertCharacterOffset) {
             newAtoms.add(new TextAtom(newText));
         }
-        setAtoms(newAtoms);
+
+        setAtoms(mergeNeighboringTextAtoms(newAtoms));
+    }
+
+    /**
+     * Prevent unnecessary SegmentAtom text fragmentation.
+     */
+    private List<SegmentAtom> mergeNeighboringTextAtoms(List<SegmentAtom> segmentAtoms) {
+        LinkedList<SegmentAtom> defraggedAtoms = new LinkedList<SegmentAtom>();
+        for (SegmentAtom atom : segmentAtoms) {
+            if (atom instanceof TextAtom && !defraggedAtoms.isEmpty() &&
+                    defraggedAtoms.getLast() instanceof TextAtom) {
+                TextAtom mergedTextAtom = new TextAtom(
+                        defraggedAtoms.getLast().getData()+atom.getData());
+
+                defraggedAtoms.removeLast();
+                defraggedAtoms.add(mergedTextAtom);
+
+            } else {
+                defraggedAtoms.add(atom);
+            }
+        }
+        return defraggedAtoms;
     }
 
     private List<CodeAtom> findCodes(List<SegmentAtom> atoms) {

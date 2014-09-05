@@ -20,11 +20,13 @@ import com.vistatec.ocelot.segment.TextAtom;
 import static org.junit.Assert.*;
 
 public class TestTextContainerSegmentVariant {
-    private TextContainerVariant tcv;
+    private TextContainerVariant tcv, plainTextTCV, plainCodeTCV;
 
     @Before
     public void beforeTest() {
         tcv = sampleText();
+        plainTextTCV = plainText();
+        plainCodeTCV = plainCode();
     }
 
     private TextContainerVariant sampleText() {
@@ -35,6 +37,21 @@ public class TestTextContainerSegmentVariant {
         tf.append("B");
         tf.append(new Code(TagType.CLOSING, "b", "</b>"));
         
+        return new TextContainerVariant(tc);
+    }
+
+    private TextContainerVariant plainText() {
+        TextContainer tc = new TextContainer();
+        TextFragment tf = tc.getFirstContent();
+        tf.append("Plain text");
+        return new TextContainerVariant(tc);
+    }
+
+    private TextContainerVariant plainCode() {
+        TextContainer tc = new TextContainer();
+        TextFragment tf = tc.getFirstContent();
+        tf.append(new Code(TagType.OPENING, "b", "<b id=\"1\">"));
+        tf.append(new Code(TagType.CLOSING, "b", "</b>"));
         return new TextContainerVariant(tc);
     }
 
@@ -151,6 +168,8 @@ public class TestTextContainerSegmentVariant {
         tcv = sampleText();
         tcv.modifyChars(4, 0, "X");
         assertEquals("A<b>XB</b>", tcv.getDisplayText());
+        tcv.modifyChars(5, 0, "N");
+        assertEquals("A<b>XNB</b>", tcv.getDisplayText());
         tcv = sampleText();
         tcv.modifyChars(5, 0, "X");
         assertEquals("A<b>BX</b>", tcv.getDisplayText());
@@ -166,8 +185,57 @@ public class TestTextContainerSegmentVariant {
         tcv = sampleText();
         tcv.modifyChars(9, 0, "X");
         assertEquals("A<b>B</b>X", tcv.getDisplayText());
+    }
 
-        // TODO: test case where I insert at the start of a segment that starts with a code
+    @Test
+    public void testInsertPlainCode() {
+        plainCodeTCV.modifyChars(0, 0, "ABC");
+        assertEquals("ABC<b></b>", plainCodeTCV.getDisplayText());
+
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(7, 0, "ABC");
+        assertEquals("<b></b>ABC", plainCodeTCV.getDisplayText());
+
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(3, 0, "ABC");
+        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+
+        // These test calls should never be called in real usage, as modifyChars
+        // should not be called unless it has already been verified that you are
+        // not modifying within a CodeAtom.
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(1, 0, "ABC");
+        assertEquals("ABC<b></b>", plainCodeTCV.getDisplayText());
+
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(2, 0, "ABC");
+        assertEquals("ABC<b></b>", plainCodeTCV.getDisplayText());
+
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(4, 0, "ABC");
+        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(5, 0, "ABC");
+        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+
+        plainCodeTCV = plainCode();
+        plainCodeTCV.modifyChars(6, 0, "ABC");
+        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+    }
+
+    @Test
+    public void testRemoveCharsFromPlainText() {
+        plainTextTCV.modifyChars(5, 5, null);
+        assertEquals("Plain", plainTextTCV.getDisplayText());
+
+        plainTextTCV = plainText();
+        plainTextTCV.modifyChars(5, 1, null);
+        assertEquals("Plaintext", plainTextTCV.getDisplayText());
+
+        plainTextTCV = plainText();
+        plainTextTCV.modifyChars(0, 6, null);
+        assertEquals("text", plainTextTCV.getDisplayText());
     }
 
     @Test
