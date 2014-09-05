@@ -23,7 +23,7 @@ public class SimpleXLIFFFactory implements XLIFFFactory {
     }
 
     @Override
-    public XLIFFParser newXLIFFParser() {
+    public XLIFFParser newXLIFFParser(File detectVersion) {
 
         return new XLIFFParser() {
             @Override

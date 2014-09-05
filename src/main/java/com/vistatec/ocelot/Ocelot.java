@@ -33,10 +33,10 @@ import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
+import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.QuickAddView;
@@ -47,7 +47,7 @@ import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
-import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
+import com.vistatec.ocelot.segment.okapi.OkapiXLIFFFactory;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
@@ -140,7 +140,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
 
-        segmentController = new SegmentController(new OkapiXLIFF12Factory(), eventBus, ruleConfig, provConfig);
+        segmentController = new SegmentController(new OkapiXLIFFFactory(), eventBus, ruleConfig, provConfig);
         optionPaneBackgroundColor = (Color)UIManager.get("OptionPane.background");
 
         Dimension segAttrSize = new Dimension(385, 280);
@@ -219,11 +219,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
         fd.setFilenameFilter(new XliffFileFilter());
         fd.setVisible(true);
+        File detectVersion = getSelectedFile(fd);
         File sourceFile = getSelectedFile(fd);
         fd.dispose();
+
         if (sourceFile != null) {
             try {
-                segmentController.parseXLIFFFile(sourceFile);
+                segmentController.parseXLIFFFile(sourceFile, detectVersion);
                 this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();

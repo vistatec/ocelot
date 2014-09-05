@@ -26,7 +26,7 @@ import com.vistatec.ocelot.its.stats.LanguageQualityIssueStats;
 import com.vistatec.ocelot.its.stats.ProvenanceStats;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
+import com.vistatec.ocelot.segment.okapi.OkapiXLIFFFactory;
 
 import static org.junit.Assert.*;
 
@@ -49,10 +49,11 @@ public class TestSegmentController {
         return controller;
     }
     private SegmentController loadResourceAsController(String resource) throws Exception {
-        SegmentController controller = new SegmentController(new OkapiXLIFF12Factory(),
+        SegmentController controller = new SegmentController(new OkapiXLIFFFactory(),
                 eventBus, new RuleConfiguration(),
                 new ProvenanceConfig(new ConfigsForProvTesting("", null)));
-        controller.parseXLIFFFile(new File(getClass().getResource(resource).toURI()));
+        controller.parseXLIFFFile(new File(getClass().getResource(resource).toURI()),
+                new File(getClass().getResource(resource).toURI()));
         return controller;
     }
 
@@ -103,7 +104,7 @@ public class TestSegmentController {
         SegmentController controller = emptyController();
         // XXX HACK - I need to "parse" a file to create the internal 
         // SegmentWriter and avoid a crash.  This is bad.
-        controller.parseXLIFFFile(null);
+        controller.parseXLIFFFile(null, null);
         ITSDocStats stats = controller.getStats();
         ModifyLQIListener lqiListener = new ModifyLQIListener();
         DocStatsUpdateListener statsListener = new DocStatsUpdateListener();
@@ -134,7 +135,7 @@ public class TestSegmentController {
     @Test
     public void testDocStatsWhenAddingProvOnLiveSegment() throws Exception {
         SegmentController controller = emptyController();
-        controller.parseXLIFFFile(null); // XXX see above
+        controller.parseXLIFFFile(null, null); // XXX see above
         ITSDocStats stats = controller.getStats();
         ProvenanceAddedListener listener = new ProvenanceAddedListener();
         eventBus.register(listener);
@@ -154,7 +155,7 @@ public class TestSegmentController {
     @Test
     public void testResetTarget() throws Exception {
         SegmentController controller = emptyController();
-        controller.parseXLIFFFile(null); // XXX see above
+        controller.parseXLIFFFile(null, null); // XXX see above
         controller.setSegments(Collections.singletonList(TestSegment.newSegment()));
         Segment seg = controller.getSegment(0);
         ResetTargetListener resetListener = new ResetTargetListener();

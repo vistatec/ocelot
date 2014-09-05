@@ -47,6 +47,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Data model for a document.  This handles most manipulations of the 
  * segment model and generates most segment-related events.
@@ -65,7 +70,7 @@ public class SegmentController implements SegmentModel {
     public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus, 
                              RuleConfiguration ruleConfig,
                              ProvenanceConfig provConfig) {
-        this.xliffFactory = xliffFactory;;
+        this.xliffFactory = xliffFactory;
         this.eventBus = eventBus;
         this.provConfig = provConfig;
         eventBus.register(this);
@@ -162,13 +167,13 @@ public class SegmentController implements SegmentModel {
         docStats.addProvenanceStats(prov);
     }
 
-    public void parseXLIFFFile(File xliffFile) throws IOException {
-        XLIFFParser newParser = xliffFactory.newXLIFFParser();
-        List<Segment> segments = newParser.parse(xliffFile);
+    public void parseXLIFFFile(File xliffFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
+        XLIFFParser newParser = xliffFactory.newXLIFFParser(detectVersion);
+        List<Segment> xliffSegments = newParser.parse(xliffFile);
 
         clearAllSegments();
         xliffParser = newParser;
-        setSegments(segments);
+        setSegments(xliffSegments);
 
         setOpenFile(true);
         segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig);

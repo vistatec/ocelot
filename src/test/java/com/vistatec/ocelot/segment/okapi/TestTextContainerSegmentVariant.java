@@ -57,8 +57,8 @@ public class TestTextContainerSegmentVariant {
 
     @Test
     public void testGetAtoms() {
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom(0, "<b>", "<b id=\"1\">"),
-                                        new TextAtom("B"), new CodeAtom(1, "</b>", "</b>")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("0", "<b>", "<b id=\"1\">"),
+                                        new TextAtom("B"), new CodeAtom("1", "</b>", "</b>")),
                 tcv.getAtoms());
     }
 
@@ -67,8 +67,8 @@ public class TestTextContainerSegmentVariant {
         List<SegmentAtom> atoms = tcv.getAtoms();
         atoms.add(new TextAtom("X"));
         tcv.setAtoms(atoms);
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom(0, "<b>", "<b id=\"1\">"),
-                new TextAtom("B"), new CodeAtom(1, "</b>", "</b>"), new TextAtom("X")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("0", "<b>", "<b id=\"1\">"),
+                new TextAtom("B"), new CodeAtom("1", "</b>", "</b>"), new TextAtom("X")),
                 tcv.getAtoms());
     }
 

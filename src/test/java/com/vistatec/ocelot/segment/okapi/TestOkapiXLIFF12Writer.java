@@ -40,10 +40,11 @@ public class TestOkapiXLIFF12Writer {
     @Test
     public void testWriteITSNamespaceMultipleTimes() throws Exception {
         File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
+        File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
 
-        SegmentController controller = new SegmentController(new OkapiXLIFF12Factory(), new EventBus(), new RuleConfiguration(),
+        SegmentController controller = new SegmentController(new OkapiXLIFFFactory(), new EventBus(), new RuleConfiguration(),
                 new ProvenanceConfig(new ConfigsForProvTesting("revPerson=q", null)));
-        controller.parseXLIFFFile(temp);
+        controller.parseXLIFFFile(temp, detectVersion);
         temp.delete();
 
         // Remove that LQI we just added
@@ -62,9 +63,10 @@ public class TestOkapiXLIFF12Writer {
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
         // Note that we need non-null provenance to be added, so we supply
         // a dummy revPerson value
-        SegmentController controller = new SegmentController(new OkapiXLIFF12Factory(), new EventBus(), new RuleConfiguration(),
+        SegmentController controller = new SegmentController(new OkapiXLIFFFactory(), new EventBus(), new RuleConfiguration(),
                 new ProvenanceConfig(new ConfigsForProvTesting("revPerson=q", null)));
-        controller.parseXLIFFFile(new File(getClass().getResource(resourceName).toURI()));
+        controller.parseXLIFFFile(new File(getClass().getResource(resourceName).toURI()),
+                new File(getClass().getResource(resourceName).toURI()));
         // Trigger an update
         controller.getSegment(0).addLQI(RulesTestHelpers.lqi("omission", 90));
 

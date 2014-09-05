@@ -135,12 +135,12 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
         newAtoms.addAll(getAtomsForRange(selectionEnd, getLength()));
 
         // Clean up codes that may be duplicates
-        Set<Integer> codeIds = new HashSet<Integer>();
+        Set<String> codeIds = new HashSet<String>();
         List<SegmentAtom> cleanedAtoms = Lists.newArrayList();
         // Strip any atoms that exist twice
         for (SegmentAtom atom : newAtoms) {
             if (atom instanceof CodeAtom) {
-                int id = ((CodeAtom)atom).getId();
+                String id = ((CodeAtom)atom).getId();
                 if (!codeIds.contains(id)) {
                     codeIds.add(id);
                     cleanedAtoms.add(atom);

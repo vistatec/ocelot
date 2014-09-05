@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013, 2014, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -187,6 +187,7 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
         }
     }
 
+    @Override
     public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         saveEvents(parser.getFilter(), parser.getSegmentEvents(),
                 source.getAbsolutePath(), LocaleId.fromString(parser.getTargetLang()));
