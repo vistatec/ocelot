@@ -260,10 +260,18 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         }
         String filename = saveFile.getName();
         try {
-            if (!saveFile.canWrite()) {
-                alertUser("Unable to save",
-                        "The file " + filename + " can not be saved, because the file is not writeable.");
-                return false;
+            if (saveFile.exists()) {
+                if (!saveFile.canWrite()) {
+                    alertUser("Unable to save",
+                            "The file " + filename + " can not be saved, because the file is not writeable.");
+                    return false;
+                }
+            } else {
+                if (!saveFile.createNewFile()) {
+                    alertUser("Unable to save",
+                            "The file " + filename + " can not be saved, because the directory is not writeable.");
+                    return false;
+                }
             }
             segmentController.save(saveFile);
             pluginManager.notifySaveFile(filename);
