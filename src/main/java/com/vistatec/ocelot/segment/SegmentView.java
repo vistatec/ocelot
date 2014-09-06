@@ -46,6 +46,7 @@ import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
 import com.vistatec.ocelot.rules.StateQualifier;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -60,7 +61,11 @@ import java.util.EventObject;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -133,6 +138,27 @@ public class SegmentView extends JScrollPane implements RuleListener {
         sourceTargetTable.setDefaultRenderer(SegmentVariant.class,
                 new SegmentTextRenderer());
 
+        // Install our custom edit behavior: hitting 'enter' anywhere inside the
+        // row will open the target cell for editing.  Double-clicking will also
+        // work, but this is handled separately (see SegmentEditor.isCellEditable()).
+        InputMap inputMap = sourceTargetTable.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap actionMap = sourceTargetTable.getActionMap();
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "myStartEditing");
+        final Action startEditAction = actionMap.get("startEditing");
+        actionMap.put("myStartEditing", new AbstractAction() {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sourceTargetTable.changeSelection(sourceTargetTable.getSelectedRow(),
+                        segmentTableModel.getSegmentTargetColumnIndex(), false, false);
+                startEditAction.actionPerformed(e);
+                // Ensure the editor is focused.  XXX It's wrapped in a scrollpane, so we need
+                // to drill down to get the SegmentTextCell instance.
+                JScrollPane scrollPane = (JScrollPane)sourceTargetTable.getEditorComponent();
+                scrollPane.getViewport().getView().requestFocus();
+            }
+        });
+        
         tableColumnModel = sourceTargetTable.getColumnModel();
         tableColumnModel.getSelectionModel().addListSelectionListener(
                 selectSegmentHandler);
@@ -479,9 +505,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
         @Override
         public boolean isCellEditable(EventObject anEvent) {
             if (anEvent instanceof MouseEvent) {
+                // Override normal behavior and only allow double-click to edit the
+                // cell
                 return ((MouseEvent)anEvent).getClickCount() >= 2;
             }
-            return true;
+            if (anEvent instanceof ActionEvent) {
+                // I could further restrict this to "startEditing" event,
+                // but I don't think it's necessary
+                return true;
+            }
+            return false;
         }
     }
 
