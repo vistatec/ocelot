@@ -133,10 +133,10 @@ public class Segment {
             }
         }
     }
-    
+
     public void resetTarget() {
         if (setOriginalTarget) {
-            getTarget().setContent(getOriginalTarget());
+            updateTarget(getOriginalTarget());
             if (segmentListener != null) {
                 segmentListener.notifyResetTarget(this);
             }
