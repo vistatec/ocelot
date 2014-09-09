@@ -38,10 +38,13 @@ public class SimpleSegmentVariant extends BaseSegmentVariant {
 
     @Override
     public void setContent(SegmentVariant variant) {
+        atoms.clear();
+        atoms.addAll(((SimpleSegmentVariant)variant).getAtoms());
     }
 
     @Override
     public void modifyChars(int offset, int charsToReplace, String newText) {
+        throw new UnsupportedOperationException("Test code doesn't implement modifyChars");
     }
 
     @Override

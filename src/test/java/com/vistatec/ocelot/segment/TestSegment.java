@@ -1,8 +1,14 @@
 package com.vistatec.ocelot.segment;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Collections;
 
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 /**
  * Other tests in SegmentController are also relevant to Segment
@@ -23,6 +29,24 @@ public class TestSegment {
         assertEquals(newTarget2, seg.getTarget());
         // Original target is still the -original- target.
         assertEquals(originalTarget, seg.getOriginalTarget());
+    }
+
+    @Test
+    public void testResetTarget() {
+        Segment seg = newSegment();
+        seg.updateTarget(new SimpleSegmentVariant("update"));
+        assertTrue(seg.hasOriginalTarget());
+        assertEquals("update", seg.getTarget().getDisplayText());
+        assertNotNull(seg.getOriginalTarget());
+        assertEquals("target", seg.getOriginalTarget().getDisplayText());
+        seg.resetTarget();
+        assertEquals("target", seg.getTarget().getDisplayText());
+        assertTrue(seg.hasOriginalTarget());
+        assertNotNull(seg.getOriginalTarget());
+        assertEquals("target", seg.getTarget().getDisplayText());
+        // Make sure the target diff got reset. XXX This has an ugly
+        // dependency on the diff language.
+        assertEquals(Lists.newArrayList("target", "regular"), seg.getTargetDiff());
     }
 
     @Test
