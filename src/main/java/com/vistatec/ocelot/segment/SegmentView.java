@@ -38,6 +38,7 @@ import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
@@ -169,11 +170,13 @@ public class SegmentView extends JScrollPane implements RuleListener {
         tableColumnModel.getColumn(segmentTableModel.getSegmentTargetColumnIndex())
                 .setCellEditor(new SegmentEditor());
         int flagMinWidth = 15, flagPrefWidth = 20, flagMaxWidth = 20;
-        for (int i = SegmentTableModel.NONFLAGCOLS;
-             i < SegmentTableModel.NONFLAGCOLS+SegmentTableModel.NUMFLAGS; i++) {
-            tableColumnModel.getColumn(i).setMinWidth(flagMinWidth);
-            tableColumnModel.getColumn(i).setPreferredWidth(flagPrefWidth);
-            tableColumnModel.getColumn(i).setMaxWidth(flagMaxWidth);
+        for (SegmentViewColumn col : SegmentViewColumn.values()) {
+            if (col.isFlagColumn()) {
+                int i = col.ordinal();
+                tableColumnModel.getColumn(i).setMinWidth(flagMinWidth);
+                tableColumnModel.getColumn(i).setPreferredWidth(flagPrefWidth);
+                tableColumnModel.getColumn(i).setMaxWidth(flagMaxWidth);
+            }
         }
 
         tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
@@ -296,9 +299,9 @@ public class SegmentView extends JScrollPane implements RuleListener {
         Segment seg = getSelectedSegment();
         if (seg != null) {
             int colIndex = sourceTargetTable.getSelectedColumn();
-            if (colIndex >= SegmentTableModel.NONFLAGCOLS) {
-                int adjustedFlagIndex = colIndex - SegmentTableModel.NONFLAGCOLS;
-                ITSMetadata its = ruleConfig.getTopDataCategory(seg, adjustedFlagIndex);
+            SegmentViewColumn col = segmentTableModel.getColumn(colIndex);
+            if (col.isFlagColumn()) {
+                ITSMetadata its = ruleConfig.getTopDataCategory(seg, col.getFlagIndex());
                 if (its != null) {
                     eventBus.post(new ITSSelectionEvent(its));
                 }
