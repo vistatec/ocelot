@@ -48,9 +48,9 @@ public class SegmentTableModel extends AbstractTableModel {
     private RuleConfiguration ruleConfig;
     protected EnumMap<SegmentViewColumn, Boolean> enabledColumns =
             new EnumMap<SegmentViewColumn, Boolean>(SegmentViewColumn.class);
-    private SegmentController segmentController;
+    private SegmentModel segmentController;
 
-    public SegmentTableModel(SegmentController segmentController,
+    public SegmentTableModel(SegmentModel segmentController,
                              RuleConfiguration ruleConfig) {
         this.segmentController = segmentController;
         this.ruleConfig = ruleConfig;

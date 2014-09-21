@@ -2,14 +2,9 @@ package com.vistatec.ocelot.segment;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-
 import org.junit.*;
 
-import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.SegmentViewColumn;
-import com.vistatec.ocelot.config.ConfigsForProvTesting;
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
@@ -17,12 +12,9 @@ import static com.vistatec.ocelot.SegmentViewColumn.*;
 
 public class TestSegmentTableModel {
     private SegmentTableModel model;
-    private EventBus eventBus;
-
 
     @Before
     public void setup() throws Exception {
-        eventBus = new EventBus();
         model = new SegmentTableModel(emptyController(), new RuleConfiguration());
     }
 
@@ -68,10 +60,17 @@ public class TestSegmentTableModel {
     }
 
     // XXX Duplicated with TestSegmentController
-    private SegmentController emptyController() throws Exception {
-        SegmentController controller = new SegmentController(new SimpleXLIFFFactory("en", "fr", new ArrayList<Segment>()),
-                eventBus, new RuleConfiguration(),
-                new ProvenanceConfig(new ConfigsForProvTesting("", null)));
-        return controller;
+    private SegmentModel emptyController() {
+        return new SegmentModel() {
+            @Override
+            public Segment getSegment(int row) {
+                return null;
+            }
+            
+            @Override
+            public int getNumSegments() {
+                return 0;
+            }
+        };
     }
 }

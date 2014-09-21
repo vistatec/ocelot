@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * Data model for a document.  This handles most manipulations of the 
  * segment model and generates most segment-related events.
  */
-public class SegmentController {
+public class SegmentController implements SegmentModel {
     private Logger LOG = LoggerFactory.getLogger(SegmentController.class);
 
     private ArrayList<Segment> segments = new ArrayList<Segment>(100);
@@ -87,10 +87,12 @@ public class SegmentController {
         this.openFile = openFile;
     }
 
+    @Override
     public Segment getSegment(int row) {
         return segments.get(row);
     }
 
+    @Override
     public int getNumSegments() {
         return segments.size();
     }

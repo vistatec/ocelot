@@ -4,24 +4,27 @@ import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.segment.SegmentVariant;
 
 public enum SegmentViewColumn {
-    SegNum("#", true, Integer.class, false, -1),
-    Source("Source", true, SegmentVariant.class, false, -1),
-    Target("Target", true, SegmentVariant.class, false, -1),
-    Original("Target Original", true, SegmentVariant.class, false, -1),
-    Flag1("", true, ITSMetadata.class, true, 0),
-    Flag2("", true, ITSMetadata.class, true, 1),
-    Flag3("", true, ITSMetadata.class, true, 2),
-    Flag4("", true, ITSMetadata.class, true, 3),
-    Flag5("", true, ITSMetadata.class, true, 4);
+    SegNum("#", "Segment Number", true, Integer.class, false, -1),
+    Source("Source", "Source", true, SegmentVariant.class, false, -1),
+    Target("Target", "Target", true, SegmentVariant.class, false, -1),
+    Original("Original Target", "Original Target", true, SegmentVariant.class, false, -1),
+    EditDistance("Distance", "Edit Distance", false, Integer.class, false, -1),
+    Flag1("", "Flag #1", true, ITSMetadata.class, true, 0),
+    Flag2("", "Flag #2", true, ITSMetadata.class, true, 1),
+    Flag3("", "Flag #3", true, ITSMetadata.class, true, 2),
+    Flag4("", "Flag #4", true, ITSMetadata.class, true, 3),
+    Flag5("", "Flag #5", true, ITSMetadata.class, true, 4);
 
-    private String displayName;
+    private String displayName, fullName;
     private boolean visibleByDefault, flagColumn;
     // XXX Hacky, this value is not applicable for non-flag columns
     private int flagIndex;
     private Class<?> datatype;
 
-    SegmentViewColumn(String displayName, boolean visibleByDefault, Class<?> datatype, boolean flagColumn, int flagIndex) {
+    SegmentViewColumn(String displayName, String fullName, boolean visibleByDefault,
+                      Class<?> datatype, boolean flagColumn, int flagIndex) {
         this.displayName = displayName;
+        this.fullName = fullName;
         this.visibleByDefault = visibleByDefault;
         this.flagColumn = flagColumn;
         this.flagIndex = flagIndex;
@@ -30,6 +33,10 @@ public enum SegmentViewColumn {
 
     public String getName() {
         return displayName;
+    }
+
+    public String getFullName() {
+        return fullName;
     }
 
     public boolean isVisibleByDefaut() {
