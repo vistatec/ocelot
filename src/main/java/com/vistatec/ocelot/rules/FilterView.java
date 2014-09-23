@@ -31,13 +31,11 @@ package com.vistatec.ocelot.rules;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -52,11 +50,9 @@ import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 /**
  * Window for selecting which filter rules to apply to the segment table.
  */
-public class FilterView extends JPanel implements Runnable, ActionListener {
+public class FilterView extends JPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
 
-    private JFrame frame;
-    private Image icon;
     RuleConfiguration filterRules;
     private String allString = "All Segments",
             metadataString = "All with metadata",
@@ -66,10 +62,9 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
     private RulesTable rulesTable;
     private StateQualifierTable statesTable;
 
-    public FilterView(RuleConfiguration filterRules, Image icon) {
+    public FilterView(RuleConfiguration filterRules) {
         super(new GridBagLayout());
         this.filterRules = filterRules;
-        this.icon = icon;
         setBorder(new EmptyBorder(10,10,10,10));
 
         GridBagConstraints gridBag = new GridBagConstraints();
@@ -174,18 +169,6 @@ public class FilterView extends JPanel implements Runnable, ActionListener {
         scrollPane.setPreferredSize(dim);
         statesTable.getTable().setFillsViewportHeight(true);
         add(scrollPane, gridBag);
-    }
-
-    @Override
-    public void run() {
-        frame = new JFrame("Filters");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setIconImage(icon);
-
-        frame.getContentPane().add(this);
-        frame.pack();
-        frame.setResizable(false);
-        frame.setVisible(true);
     }
 
     @Override

@@ -68,6 +68,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -181,9 +182,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             promptOpenXLIFFFile();
 
         } else if (e.getSource() == this.menuRules) {
-            FilterView rules = new FilterView(ruleConfig, icon);
-            SwingUtilities.invokeLater(rules);
-
+            showModelessDialog(new FilterView(ruleConfig), "Filters");
         } else if (e.getSource() == this.menuPlugins) {
             PluginManagerView plugins = new PluginManagerView(pluginManager, segmentController, icon);
             SwingUtilities.invokeLater(plugins);
@@ -443,6 +442,15 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setVisible(true);
     }
 
+    void showModelessDialog(JPanel panel, String title) {
+        JDialog dialog = new JDialog(mainframe, title);
+        dialog.setIconImage(icon);
+        dialog.add(panel);
+        dialog.pack();
+        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dialog.setVisible(true);
+    }
+    
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(Ocelot.class.getResourceAsStream("/log4j.properties"));
