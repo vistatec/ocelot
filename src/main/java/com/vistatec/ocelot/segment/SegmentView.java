@@ -214,6 +214,11 @@ public class SegmentView extends JScrollPane implements RuleListener {
         case Target:
             tableColumnModel.getColumn(index).setCellEditor(new SegmentEditor());
             break;
+        case EditDistance:
+            tableColumnModel.getColumn(index).setMinWidth(25);
+            tableColumnModel.getColumn(index).setPreferredWidth(25);
+            tableColumnModel.getColumn(index).setMaxWidth(40);
+            break;
         case Flag1:
         case Flag2:
         case Flag3:

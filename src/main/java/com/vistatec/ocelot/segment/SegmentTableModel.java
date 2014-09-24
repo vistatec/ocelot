@@ -171,6 +171,8 @@ public class SegmentTableModel extends AbstractTableModel {
             return getSegment(row).getTarget();
         case Original:
             return getSegment(row).getOriginalTarget();
+        case EditDistance:
+            return getSegment(row).getEditDistance();
         default: // flag cases
             Object ret = ruleConfig.getTopDataCategory(
                     getSegment(row), column.getFlagIndex());
