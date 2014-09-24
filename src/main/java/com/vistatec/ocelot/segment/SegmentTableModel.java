@@ -28,7 +28,9 @@
  */
 package com.vistatec.ocelot.segment;
 
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Map;
 
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.rules.NullITSMetadata;
@@ -67,6 +69,10 @@ public class SegmentTableModel extends AbstractTableModel {
         enabledColumns.put(column, enabled);
     }
 
+    public Map<SegmentViewColumn, Boolean> getColumnEnabledStates() {
+        return Collections.unmodifiableMap(enabledColumns);
+    }
+    
     @Override
     public String getColumnName(int col) {
         return getColumn(col).getName();
@@ -130,6 +136,28 @@ public class SegmentTableModel extends AbstractTableModel {
         return null;
     }
 
+    /**
+     * Return the display index of this column, or -1 if the column
+     * is currently hidden.
+     * @param column
+     * @return column index, or -1 if the column is hidden
+     */
+    public int getIndexForColumn(SegmentViewColumn column) {
+        int index = 0;
+        if (!enabledColumns.get(column)) {
+            return -1;
+        }
+        for (SegmentViewColumn col : SegmentViewColumn.values()) {
+            if (col.equals(column)) {
+                return index;
+            }
+            if (enabledColumns.get(col)) {
+                index++;
+            }
+        }
+        return -1; // should never happen
+    }
+    
     @Override
     public Object getValueAt(int row, int col) {
         SegmentViewColumn column = getColumn(col);

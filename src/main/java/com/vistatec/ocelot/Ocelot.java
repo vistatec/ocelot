@@ -104,6 +104,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             menuRules, menuProv, menuSave, menuSaveAs;
     private JMenuItem menuPlugins;
     private JCheckBoxMenuItem menuTgtDiff;
+    private JMenuItem menuColumns;
 
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
@@ -182,7 +183,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             promptOpenXLIFFFile();
 
         } else if (e.getSource() == this.menuRules) {
-            showModelessDialog(new FilterView(ruleConfig), "Filters");
+            showModelessDialog(new JDialog(mainframe, "Filters"), new FilterView(ruleConfig));
         } else if (e.getSource() == this.menuPlugins) {
             PluginManagerView plugins = new PluginManagerView(pluginManager, segmentController, icon);
             SwingUtilities.invokeLater(plugins);
@@ -205,6 +206,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             save(openSrcFile);
         } else if (e.getSource() == this.menuTgtDiff) {
             this.segmentView.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
+        }
+        else if (e.getSource() == this.menuColumns) {
+            JDialog dialog = new JDialog(mainframe, "Configure Columns");
+            showModelessDialog(dialog, new ColumnSelector(dialog, segmentView.getTableModel()));
         }
     }
 
@@ -373,6 +378,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuTgtDiff.addActionListener(this);
         menuTgtDiff.setSelected(segmentView.getEnabledTargetDiff());
         menuView.add(menuTgtDiff);
+        menuColumns = new JMenuItem("Configure Columns");
+        menuColumns.addActionListener(this);
+        menuView.add(menuColumns);
 
         menuFilter = new JMenu("Filter");
         menuBar.add(menuFilter);
@@ -442,8 +450,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setVisible(true);
     }
 
-    void showModelessDialog(JPanel panel, String title) {
-        JDialog dialog = new JDialog(mainframe, title);
+    void showModelessDialog(JDialog dialog, JPanel panel) {
         dialog.setIconImage(icon);
         dialog.add(panel);
         dialog.pack();

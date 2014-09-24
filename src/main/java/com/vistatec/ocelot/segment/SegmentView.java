@@ -39,6 +39,7 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
+import static com.vistatec.ocelot.SegmentViewColumn.*;
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
@@ -159,30 +160,19 @@ public class SegmentView extends JScrollPane implements RuleListener {
                 scrollPane.getViewport().getView().requestFocus();
             }
         });
-        
+
         tableColumnModel = sourceTargetTable.getColumnModel();
+        configureColumns();
         tableColumnModel.getSelectionModel().addListSelectionListener(
                 selectSegmentHandler);
-        tableColumnModel.getColumn(0).setMinWidth(20);
-        tableColumnModel.getColumn(0).setPreferredWidth(25);
-        tableColumnModel.getColumn(0).setMaxWidth(50);
-
-        tableColumnModel.getColumn(segmentTableModel.getSegmentTargetColumnIndex())
-                .setCellEditor(new SegmentEditor());
-        int flagMinWidth = 15, flagPrefWidth = 20, flagMaxWidth = 20;
-        for (SegmentViewColumn col : SegmentViewColumn.values()) {
-            if (col.isFlagColumn()) {
-                int i = col.ordinal();
-                tableColumnModel.getColumn(i).setMinWidth(flagMinWidth);
-                tableColumnModel.getColumn(i).setPreferredWidth(flagPrefWidth);
-                tableColumnModel.getColumn(i).setMaxWidth(flagMaxWidth);
-            }
-        }
-
         tableColumnModel.addColumnModelListener(new TableColumnModelListener() {
-
             @Override
-            public void columnAdded(TableColumnModelEvent tcme) {}
+            public void columnAdded(TableColumnModelEvent tcme) {
+                // Set the preferred column width when we add a column back
+                // (eg, when we're changing column setup)
+                int index = tcme.getToIndex();
+                configureColumn(segmentTableModel.getColumn(index), index);
+            }
 
             @Override
             public void columnRemoved(TableColumnModelEvent tcme) {}
@@ -203,6 +193,43 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         sourceTargetTable.addMouseListener(new SegmentPopupMenuListener());
         setViewportView(sourceTargetTable);
+    }
+
+    private void configureColumns() {
+        for (SegmentViewColumn col : SegmentViewColumn.values()) {
+            configureColumn(col, segmentTableModel.getIndexForColumn(col));
+        }
+    }
+
+    private void configureColumn(SegmentViewColumn col, int index) {
+        if (!segmentTableModel.isColumnEnabled(col)) {
+            return;
+        }
+        switch (col) {
+        case SegNum:
+            tableColumnModel.getColumn(index).setMinWidth(20);
+            tableColumnModel.getColumn(index).setPreferredWidth(25);
+            tableColumnModel.getColumn(index).setMaxWidth(50);
+            break;
+        case Target:
+            tableColumnModel.getColumn(index).setCellEditor(new SegmentEditor());
+            break;
+        case Flag1:
+        case Flag2:
+        case Flag3:
+        case Flag4:
+        case Flag5:
+            tableColumnModel.getColumn(index).setMinWidth(15);
+            tableColumnModel.getColumn(index).setPreferredWidth(20);
+            tableColumnModel.getColumn(index).setMaxWidth(20);
+            break;
+        default:
+            break;
+        }
+    }
+    
+    public SegmentTableModel getTableModel() {
+        return segmentTableModel;
     }
 
     public void clearTable() {
@@ -247,45 +274,55 @@ public class SegmentView extends JScrollPane implements RuleListener {
     }
 
     protected void updateRowHeights() {
+        if (sourceTargetTable.getColumnModel().getColumnCount() != segmentTableModel.getColumnCount()) {
+            // We haven't finished building the column model, so there's no point in calculating
+            // the row height yet.
+            return;
+        }
         setViewportView(null);
-
-        SegmentTextCell segmentCell = new SegmentTextCell();
-        segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
         for (int viewRow = 0; viewRow < sort.getViewRowCount(); viewRow++) {
             int modelRow = sort.convertRowIndexToModel(viewRow);
             FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
             int rowHeight = font.getHeight();
-            for (int col = 1; col < 4; col++) {
-                int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
-                if (col == 1) {
-                    String text = segmentTableModel.getSegment(modelRow).getSource().getDisplayText();
-                    segmentCell.setText(text);
-                } else if (col == 2) {
-                    String text = segmentTableModel.getSegment(modelRow).getTarget().getDisplayText();
-                    segmentCell.setText(text);
-                } else if (col == 3) {
-                    String text;
-                    if (enabledTargetDiff) {
-                        ArrayList<String> textDiff = segmentTableModel.getSegment(modelRow).getTargetDiff();
-                        StringBuilder displayText = new StringBuilder();
-                        for (int i = 0; i < textDiff.size(); i += 2) {
-                            displayText.append(textDiff.get(i));
-                        }
-                        text = displayText.toString();
-                    } else {
-                        text = segmentTableModel.getSegment(modelRow).getOriginalTarget().getDisplayText();
-                    }
-                    segmentCell.setText(text.toString());
-                }
-                // Need to set width to force text area to calculate a pref height
-                segmentCell.setSize(new Dimension(width, sourceTargetTable.getRowHeight(viewRow)));
-                rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
-            }
+            rowHeight = getColumnHeight(SegNum, viewRow, "1", rowHeight);
+            rowHeight = getColumnHeight(Source, viewRow,
+                    segmentTableModel.getSegment(modelRow).getSource().getDisplayText(), rowHeight);
+            rowHeight = getColumnHeight(Target, viewRow,
+                    segmentTableModel.getSegment(modelRow).getTarget().getDisplayText(), rowHeight);
+            rowHeight = getColumnHeight(Original, viewRow, getOriginalTargetText(modelRow), rowHeight);
             sourceTargetTable.setRowHeight(viewRow, rowHeight);
         }
         setViewportView(sourceTargetTable);
     }
 
+    // TODO: move elsewhere
+    private String getOriginalTargetText(int modelRow) {
+        if (enabledTargetDiff) {
+            ArrayList<String> textDiff = segmentTableModel.getSegment(modelRow).getTargetDiff();
+            StringBuilder displayText = new StringBuilder();
+            for (int i = 0; i < textDiff.size(); i += 2) {
+                displayText.append(textDiff.get(i));
+            }
+            return displayText.toString();
+        } else {
+            return segmentTableModel.getSegment(modelRow).getOriginalTarget().getDisplayText();
+        }
+    }
+    
+    private int getColumnHeight(SegmentViewColumn colData, int viewRow, String text, int previousHeight) {
+        if (!segmentTableModel.isColumnEnabled(colData)) {
+            return previousHeight;
+        }
+        SegmentTextCell segmentCell = new SegmentTextCell();
+        segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+        int col = segmentTableModel.getIndexForColumn(colData);
+        int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
+        segmentCell.setText(text);
+        // Need to set width to force text area to calculate a pref height
+        segmentCell.setSize(new Dimension(width, sourceTargetTable.getRowHeight(viewRow)));
+        return Math.max(previousHeight, segmentCell.getPreferredSize().height);
+    }
+    
     public Segment getSelectedSegment() {
         Segment selectedSeg = null;
         if (sourceTargetTable.getSelectedRow() >= 0) {
