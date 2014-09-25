@@ -3,7 +3,6 @@ package com.vistatec.ocelot;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -12,9 +11,7 @@ import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
@@ -22,24 +19,21 @@ import javax.swing.table.TableColumnModel;
 
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentModel;
 import com.vistatec.ocelot.segment.SegmentTableModel;
+import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OTable;
 
-public class ColumnSelector extends JPanel implements ActionListener {
+public class ColumnSelector extends ODialogPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
 
     private SegmentTableModel model;
     private ColumnTable table;
     protected EnumMap<SegmentViewColumn, Boolean> enabledColumns =
             new EnumMap<SegmentViewColumn, Boolean>(SegmentViewColumn.class);
-    private Window parent;
+    private JButton ok;
     
-    public ColumnSelector(Window window, SegmentTableModel tableModel) {
+    public ColumnSelector(SegmentTableModel tableModel) {
         super(new GridBagLayout());
-        this.parent = window;
         this.model = tableModel;
         enabledColumns.putAll(model.getColumnEnabledStates());
 
@@ -73,26 +67,28 @@ public class ColumnSelector extends JPanel implements ActionListener {
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                parent.dispose();
+                getDialog().dispose();
             }
         });
         add(cancel, gridBag);
 
-        JButton ok = new JButton("OK");
+        ok = new JButton("OK");
         gridBag.gridx = 1;
         ok.addActionListener(this);
         add(ok, gridBag);
-
     }
-    
-    // when I close this, I need to call tableModel.fireTableStructureChanged() 
+
+    public JButton getDefaultButton() {
+        return ok;
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         // Sync table data back to the model
         for (Map.Entry<SegmentViewColumn, Boolean> e : enabledColumns.entrySet()) {
             model.setColumnEnabled(e.getKey(), e.getValue());
         }
-        parent.dispose();
+        getDialog().dispose();
         model.fireTableStructureChanged();
     }
 
@@ -188,33 +184,5 @@ public class ColumnSelector extends JPanel implements ActionListener {
             
             return table;
         }
-    }
-
-    
-    public static void main(String[] args) {
-        try {
-            JFrame frame = new JFrame();
-            ColumnSelector selector = new ColumnSelector(frame, createModel());
-            frame.add(selector);
-            frame.pack();
-            frame.setVisible(true);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static SegmentTableModel createModel() throws Exception {
-        return new SegmentTableModel(new SegmentModel() {
-            @Override
-            public Segment getSegment(int row) {
-                return null;
-            }
-            
-            @Override
-            public int getNumSegments() {
-                return 0;
-            }
-        }, new RuleConfiguration());
     }
 }

@@ -47,6 +47,7 @@ import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -67,6 +68,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -181,16 +183,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         } else if (e.getSource() == this.menuOpenXLIFF) {
             promptOpenXLIFFFile();
-
         } else if (e.getSource() == this.menuRules) {
-            showModelessDialog(new JDialog(mainframe, "Filters"), new FilterView(ruleConfig));
+            showModelessDialog(new FilterView(ruleConfig), "Filters");
         } else if (e.getSource() == this.menuPlugins) {
-            PluginManagerView plugins = new PluginManagerView(pluginManager, segmentController, icon);
-            SwingUtilities.invokeLater(plugins);
+            showModelessDialog(new PluginManagerView(pluginManager, segmentController), "Plugin Manager");
 
         } else if (e.getSource() == this.menuProv) {
-            ProvenanceProfileView prov = new ProvenanceProfileView(provConfig, icon);
-            SwingUtilities.invokeLater(prov);
+            showModelessDialog(new ProvenanceProfileView(provConfig), "Credentials");
 
         } else if (e.getSource() == this.menuExit) {
             handleApplicationExit();
@@ -208,8 +207,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             this.segmentView.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
         }
         else if (e.getSource() == this.menuColumns) {
-            JDialog dialog = new JDialog(mainframe, "Configure Columns");
-            showModelessDialog(dialog, new ColumnSelector(dialog, segmentView.getTableModel()));
+            showModelessDialog(new ColumnSelector(segmentView.getTableModel()), "Configure Columns");
         }
     }
 
@@ -303,7 +301,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private void showAbout() {
-        SwingUtilities.invokeLater(new AboutDialog(icon));
+        showModelessDialog(new AboutDialog(icon), "About Ocelot");
     }
 
     /**
@@ -450,11 +448,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setVisible(true);
     }
 
-    void showModelessDialog(JDialog dialog, JPanel panel) {
-        dialog.setIconImage(icon);
-        dialog.add(panel);
-        dialog.pack();
+    void showModelessDialog(ODialogPanel panel, String title) {
+        JDialog dialog = new JDialog(mainframe, title);
+        panel.setDialog(dialog);
+        JButton defaultButton = panel.getDefaultButton();
+        if (defaultButton != null) {
+            dialog.getRootPane().setDefaultButton(defaultButton);
+        }
         dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setIconImage(icon);
+        panel.postInit();
         dialog.setVisible(true);
     }
     

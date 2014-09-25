@@ -6,7 +6,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -14,18 +13,16 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-public class AboutDialog extends JPanel implements Runnable {
+import com.vistatec.ocelot.ui.ODialogPanel;
+
+public class AboutDialog extends ODialogPanel {
     private static final long serialVersionUID = 1L;
-    private JDialog dialog;
     private JButton ok;
 
     public AboutDialog(Image icon) {
@@ -71,10 +68,20 @@ public class AboutDialog extends JPanel implements Runnable {
         ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dialog.dispose();
+                getDialog().dispose();
             }
         });
         add(ok, c);
+    }
+
+    @Override
+    public JButton getDefaultButton() {
+        return ok;
+    }
+
+    @Override
+    public void postInit() {
+        getDialog().setLocationRelativeTo(null);
     }
 
     class AboutLinkOpener implements HyperlinkListener {
@@ -92,29 +99,4 @@ public class AboutDialog extends JPanel implements Runnable {
             }
         }
     }
-
-    @Override
-    public void run() {
-        dialog = new JDialog();
-        dialog.add(this);
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        dialog.setTitle("About Ocelot");
-        dialog.getRootPane().setDefaultButton(ok);
-        dialog.setVisible(true);
-    }    
-
-    public static void main(String[] args) {
-        try {
-            Toolkit kit = Toolkit.getDefaultToolkit();
-            Image icon = kit.createImage(Ocelot.class.getResource("logo64.png"));
-            AboutDialog dialog = new AboutDialog(icon);
-            SwingUtilities.invokeLater(dialog);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }

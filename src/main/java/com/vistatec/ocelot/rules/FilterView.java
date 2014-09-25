@@ -37,7 +37,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -46,11 +45,12 @@ import javax.swing.border.EmptyBorder;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 /**
  * Window for selecting which filter rules to apply to the segment table.
  */
-public class FilterView extends JPanel implements ActionListener {
+public class FilterView extends ODialogPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
 
     RuleConfiguration filterRules;

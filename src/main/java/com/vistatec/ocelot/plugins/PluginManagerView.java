@@ -29,11 +29,11 @@
 package com.vistatec.ocelot.plugins;
 
 import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,10 +46,8 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import org.slf4j.Logger;
@@ -58,12 +56,10 @@ import org.slf4j.LoggerFactory;
 /**
  * View for managing active plugins.
  */
-public class PluginManagerView extends JPanel implements Runnable, ActionListener, ItemListener {
+public class PluginManagerView extends ODialogPanel implements ActionListener, ItemListener {
     private static final long serialVersionUID = 1L;
 
     private static Logger LOG = LoggerFactory.getLogger(PluginManagerView.class);
-    protected JFrame frame;
-    private Image icon;
     protected JButton selectPluginDir;
     protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
@@ -71,15 +67,14 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
     private JButton export;
     private GridBagConstraints gridBag;
     
-    public PluginManagerView(PluginManager pluginManager, SegmentController segController, Image icon) {
-        this(pluginManager, pluginManager.getPlugins(), segController, icon);
+    public PluginManagerView(PluginManager pluginManager, SegmentController segController) {
+        this(pluginManager, pluginManager.getPlugins(), segController);
     }
 
-    public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController, Image icon) {
+    public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController) {
         super(new GridBagLayout());
         this.pluginManager = pluginManager;
         this.segmentController = segController;
-        this.icon = icon;
         checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -219,21 +214,9 @@ public class PluginManagerView extends JPanel implements Runnable, ActionListene
                     revalidate();
                 } catch (IOException ex) {
                     LOG.warn("Plugin directory IOException", ex);
-                    JOptionPane.showMessageDialog(frame, "Error reading specified plugin directory.");
+                    JOptionPane.showMessageDialog(getDialog(), "Error reading specified plugin directory.");
                 }
             }
         }
-    }
-
-    @Override
-    public void run() {
-        frame = new JFrame("Plugin Manager");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setIconImage(icon);
-
-        frame.getContentPane().add(this);
-
-        frame.pack();
-        frame.setVisible(true);
     }
 }
