@@ -1,5 +1,6 @@
 package com.vistatec.ocelot;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -22,6 +24,7 @@ import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OTable;
+import com.vistatec.ocelot.ui.TableRowToggleMouseAdapter;
 
 public class ColumnSelector extends ODialogPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
@@ -94,6 +97,7 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
 
     public class ColumnTable {
         private JTable table;
+        private TableModel tableModel;
 
         public ColumnTable() {
             this.table = createTable();
@@ -103,7 +107,6 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
             return table;
         }
 
-        
         class TableModel extends AbstractTableModel {
             private static final long serialVersionUID = 1L;
 
@@ -111,7 +114,7 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
             public int getRowCount() {
                 return SegmentViewColumn.values().length;
             }
-
+            
             @Override
             public Object getValueAt(int row, int column) {
                 SegmentViewColumn col = getColumnForRow(row);
@@ -160,7 +163,7 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
         }
 
         protected JTable createTable() {
-            TableModel tableModel = new TableModel();
+            tableModel = new TableModel();
             JTable table = new OTable(tableModel);
             table.setTableHeader(null);
             table.setCellSelectionEnabled(false);
@@ -181,7 +184,15 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
             columnModel.getColumn(1).setMinWidth(100);
             columnModel.getColumn(1).setPreferredWidth(150);
             columnModel.getColumn(1).setMaxWidth(150);
-            
+
+            table.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            table.addMouseListener(new TableRowToggleMouseAdapter() {
+                @Override
+                protected boolean acceptEvent(int row, int column) {
+                    return (column > 0);
+                }
+            });
+
             return table;
         }
     }
