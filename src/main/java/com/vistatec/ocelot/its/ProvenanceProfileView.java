@@ -107,11 +107,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         save.addActionListener(this);
 
         JButton cancel = new JButton("Cancel");
-        cancel.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent arg0) {
-                getDialog().dispose();
-            }
-        });
+        cancel.addActionListener(new DisposeDialogListener());
 
         JPanel actionPanel = new JPanel();
         actionPanel.add(save);

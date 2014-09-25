@@ -50,12 +50,7 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
         JButton cancel = new JButton("Cancel");
-        cancel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getDialog().dispose();
-            }
-        });
+        cancel.addActionListener(new DisposeDialogListener());
         buttonPanel.add(cancel);
 
         ok = new JButton("OK");

@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,6 +19,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import com.vistatec.ocelot.ui.ODialogPanel;
+import com.vistatec.ocelot.ui.ODialogPanel.DisposeDialogListener;
 
 public class AboutDialog extends ODialogPanel {
     private static final long serialVersionUID = 1L;
@@ -65,12 +65,7 @@ public class AboutDialog extends ODialogPanel {
         c.gridwidth = 2;
         c.insets = new Insets(10, 0, 0, 0);
         ok.setDefaultCapable(true);
-        ok.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getDialog().dispose();
-            }
-        });
+        ok.addActionListener(new DisposeDialogListener());
         add(ok, c);
     }
 
