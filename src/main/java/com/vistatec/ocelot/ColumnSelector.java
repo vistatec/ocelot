@@ -1,9 +1,8 @@
 package com.vistatec.ocelot;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -14,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
@@ -36,49 +36,32 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
     private JButton ok;
     
     public ColumnSelector(SegmentTableModel tableModel) {
-        super(new GridBagLayout());
+        super(new BorderLayout(10, 10));
         this.model = tableModel;
         enabledColumns.putAll(model.getColumnEnabledStates());
 
         setBorder(new EmptyBorder(10,10,10,10));
 
-        GridBagConstraints gridBag = new GridBagConstraints();
-        gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
-        gridBag.gridwidth = 2;
-        int gridy = 0;
-
         JLabel title = new JLabel("Select columns to display:");
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
-        gridBag.insets = new Insets(10, 0, 10, 0);
-        gridBag.fill = GridBagConstraints.HORIZONTAL;
-        add(title, gridBag);
+        add(title, BorderLayout.PAGE_START);
 
         this.table = new ColumnTable();
-        gridBag = new GridBagConstraints();
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
-        gridBag.gridwidth = GridBagConstraints.REMAINDER;
-        gridBag.fill = GridBagConstraints.HORIZONTAL;
-        gridBag.insets = new Insets(5, 5, 5, 5);
-        add(table.getTable(), gridBag);
+        add(table.getTable(), BorderLayout.CENTER);
 
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
         JButton cancel = new JButton("Cancel");
-        gridBag = new GridBagConstraints();
-        gridBag.gridx = 0;
-        gridBag.gridy = gridy++;
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getDialog().dispose();
             }
         });
-        add(cancel, gridBag);
+        buttonPanel.add(cancel);
 
         ok = new JButton("OK");
-        gridBag.gridx = 1;
         ok.addActionListener(this);
-        add(ok, gridBag);
+        buttonPanel.add(ok);
+        add(buttonPanel, BorderLayout.PAGE_END);
     }
 
     public JButton getDefaultButton() {
