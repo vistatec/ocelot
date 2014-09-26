@@ -28,11 +28,15 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.its.ITSMetadata;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
+
+import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.rules.NullITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
-import java.util.HashMap;
+import static com.vistatec.ocelot.SegmentViewColumn.*;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -44,68 +48,55 @@ public class SegmentTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
 
     private RuleConfiguration ruleConfig;
-    protected HashMap<String, Integer> colNameToIndex;
-    protected HashMap<Integer, String> colIndexToName;
-    public static final int NUMFLAGS = 5;
-    public static final int NONFLAGCOLS = 4;
-    public static final String COLSEGNUM = "#";
-    public static final String COLSEGSRC = "Source";
-    public static final String COLSEGTGT = "Target";
-    public static final String COLSEGTGTORI = "Target Original";
-    private SegmentController segmentController;
+    protected EnumMap<SegmentViewColumn, Boolean> enabledColumns =
+            new EnumMap<SegmentViewColumn, Boolean>(SegmentViewColumn.class);
+    private SegmentModel segmentController;
 
-    public SegmentTableModel(SegmentController segmentController,
+    public SegmentTableModel(SegmentModel segmentController,
                              RuleConfiguration ruleConfig) {
         this.segmentController = segmentController;
         this.ruleConfig = ruleConfig;
-        colNameToIndex = new HashMap<String, Integer>();
-        colNameToIndex.put(COLSEGNUM, 0);
-        colNameToIndex.put(COLSEGSRC, 1);
-        colNameToIndex.put(COLSEGTGT, 2);
-        colNameToIndex.put(COLSEGTGTORI, 3);
-        colIndexToName = new HashMap<Integer, String>();
-        for (String key : colNameToIndex.keySet()) {
-            colIndexToName.put(colNameToIndex.get(key), key);
+        for (SegmentViewColumn c : SegmentViewColumn.values()) {
+            enabledColumns.put(c, c.isVisibleByDefaut());
         }
     }
 
-    @Override
-    public String getColumnName(int col) {
-        return col < NONFLAGCOLS ? colIndexToName.get(col) : "";
+    public boolean isColumnEnabled(SegmentViewColumn column) {
+        return enabledColumns.get(column);
     }
 
-    public int getColumnIndex(String col) {
-        return colNameToIndex.get(col);
+    public void setColumnEnabled(SegmentViewColumn column, boolean enabled) {
+        enabledColumns.put(column, enabled);
+    }
+
+    public Map<SegmentViewColumn, Boolean> getColumnEnabledStates() {
+        return Collections.unmodifiableMap(enabledColumns);
+    }
+    
+    @Override
+    public String getColumnName(int col) {
+        return getColumn(col).getName();
     }
 
     int getSegmentNumColumnIndex() {
-        return getColumnIndex(SegmentTableModel.COLSEGNUM);
+        return SegNum.ordinal();
     }
 
     int getSegmentSourceColumnIndex() {
-        return getColumnIndex(SegmentTableModel.COLSEGSRC);
+        return Source.ordinal();
     }
 
     int getSegmentTargetColumnIndex() {
-        return getColumnIndex(SegmentTableModel.COLSEGTGT);
+        return Target.ordinal();
     }
 
     int getSegmentTargetOriginalColumnIndex() {
-        return getColumnIndex(SegmentTableModel.COLSEGTGTORI);
+        return Original.ordinal();
     }
 
-    
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        if (columnIndex == getColumnIndex(COLSEGNUM)) {
-            return Integer.class;
-        }
-        if (columnIndex == getColumnIndex(COLSEGSRC)
-                || columnIndex == getColumnIndex(COLSEGTGT)
-                || columnIndex == getColumnIndex(COLSEGTGTORI)) {
-            return SegmentVariant.class;
-        }
-        return ITSMetadata.class;
+        return getColumn(columnIndex).getDatatype();
     }
 
     @Override
@@ -113,33 +104,85 @@ public class SegmentTableModel extends AbstractTableModel {
         return segmentController.getNumSegments();
     }
 
+    /**
+     * Return the number of visible columns.
+     */
     @Override
     public int getColumnCount() {
-        return NONFLAGCOLS + NUMFLAGS;
+        int count = 0;
+        for (boolean b : enabledColumns.values()) {
+            if (b) {
+                count++;
+            }
+        }
+        return count;
     }
 
+    /**
+     * Return the column in a given column index.
+     * @param index
+     * @return
+     */
+    public SegmentViewColumn getColumn(int index) {
+        int count = 0;
+        for (SegmentViewColumn column : SegmentViewColumn.values()) {
+            if (enabledColumns.get(column)) {
+                if (count == index) {
+                    return column;
+                }
+                count++;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the display index of this column, or -1 if the column
+     * is currently hidden.
+     * @param column
+     * @return column index, or -1 if the column is hidden
+     */
+    public int getIndexForColumn(SegmentViewColumn column) {
+        int index = 0;
+        if (!enabledColumns.get(column)) {
+            return -1;
+        }
+        for (SegmentViewColumn col : SegmentViewColumn.values()) {
+            if (col.equals(column)) {
+                return index;
+            }
+            if (enabledColumns.get(col)) {
+                index++;
+            }
+        }
+        return -1; // should never happen
+    }
+    
     @Override
     public Object getValueAt(int row, int col) {
-        if (col == getColumnIndex(COLSEGNUM)) {
+        SegmentViewColumn column = getColumn(col);
+
+        switch (column) {
+        case SegNum:
             return getSegment(row).getSegmentNumber();
-        }
-        if (col == getColumnIndex(COLSEGSRC)) {
+        case Source:
             return getSegment(row).getSource();
-        }
-        if (col == getColumnIndex(COLSEGTGT)) {
+        case Target:
             return getSegment(row).getTarget();
-        }
-        if (col == getColumnIndex(COLSEGTGTORI)) {
+        case Original:
             return getSegment(row).getOriginalTarget();
+        case EditDistance:
+            return getSegment(row).getEditDistance();
+        default: // flag cases
+            Object ret = ruleConfig.getTopDataCategory(
+                    getSegment(row), column.getFlagIndex());
+            return ret != null ? ret : NullITSMetadata.getInstance();
         }
-        Object ret = ruleConfig.getTopDataCategory(
-                getSegment(row), col-NONFLAGCOLS);
-        return ret != null ? ret : NullITSMetadata.getInstance();
     }
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == colNameToIndex.get(COLSEGTGT);
+        return col == getSegmentTargetColumnIndex();
     }
 
     Segment getSegment(int row) {

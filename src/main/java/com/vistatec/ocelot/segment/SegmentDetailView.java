@@ -181,8 +181,7 @@ public class SegmentDetailView extends JScrollPane {
                             if (col == 0) {
                                 return rowName[row];
                             }
-                            return segment.hasOriginalTarget() ? EditDistance.calcEditDistance(segment.getTarget(), segment.getOriginalTarget()) : 0;
-
+                            return segment.getEditDistance();
                         default:
                             LOG.warn("Invalid row for SegmentDetailView '"+row+"'");
                             break;

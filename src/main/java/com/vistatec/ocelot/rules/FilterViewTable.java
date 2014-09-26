@@ -10,6 +10,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import com.vistatec.ocelot.ui.OTable;
+import com.vistatec.ocelot.ui.TableRowToggleMouseAdapter;
 
 /**
  * Class that wraps a {@link JTable} that contains rule information
@@ -65,7 +66,13 @@ public abstract class FilterViewTable {
         columnModel.getColumn(2).setMinWidth(25);
         columnModel.getColumn(2).setPreferredWidth(25);
         columnModel.getColumn(2).setMaxWidth(25);
-        
+
+        table.addMouseListener(new TableRowToggleMouseAdapter() {
+            @Override
+            protected boolean acceptEvent(int row, int column) {
+                return (allowSelection && column > 0);
+            }
+        });
         return table;
     }
 

@@ -56,6 +56,17 @@ public class TestSegment {
         assertEquals("target", seg.getTarget().getDisplayText());
     }
 
+    @Test
+    public void testTargetChangesAffectEditDistance() {
+        Segment seg = newSegment();
+        seg.updateTarget(new SimpleSegmentVariant("targetA"));
+        assertEquals(1, seg.getEditDistance());
+        seg.updateTarget(new SimpleSegmentVariant("targetAB"));
+        assertEquals(2, seg.getEditDistance());
+        seg.resetTarget();
+        assertEquals(0, seg.getEditDistance());
+    }
+
     private static int nextSegmentId = 1;
     public static Segment newSegment() {
         int id = nextSegmentId++;

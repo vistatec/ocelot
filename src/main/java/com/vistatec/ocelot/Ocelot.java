@@ -47,6 +47,7 @@ import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -67,7 +68,9 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -103,6 +106,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             menuRules, menuProv, menuSave, menuSaveAs;
     private JMenuItem menuPlugins;
     private JCheckBoxMenuItem menuTgtDiff;
+    private JMenuItem menuColumns;
 
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
@@ -179,18 +183,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         } else if (e.getSource() == this.menuOpenXLIFF) {
             promptOpenXLIFFFile();
-
         } else if (e.getSource() == this.menuRules) {
-            FilterView rules = new FilterView(ruleConfig, icon);
-            SwingUtilities.invokeLater(rules);
-
+            showModelessDialog(new FilterView(ruleConfig), "Filters");
         } else if (e.getSource() == this.menuPlugins) {
-            PluginManagerView plugins = new PluginManagerView(pluginManager, segmentController, icon);
-            SwingUtilities.invokeLater(plugins);
+            showModelessDialog(new PluginManagerView(pluginManager, segmentController), "Plugin Manager");
 
         } else if (e.getSource() == this.menuProv) {
-            ProvenanceProfileView prov = new ProvenanceProfileView(provConfig, icon);
-            SwingUtilities.invokeLater(prov);
+            showModelessDialog(new ProvenanceProfileView(provConfig), "Credentials");
 
         } else if (e.getSource() == this.menuExit) {
             handleApplicationExit();
@@ -206,6 +205,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             save(openSrcFile);
         } else if (e.getSource() == this.menuTgtDiff) {
             this.segmentView.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
+        }
+        else if (e.getSource() == this.menuColumns) {
+            showModelessDialog(new ColumnSelector(segmentView.getTableModel()), "Configure Columns");
         }
     }
 
@@ -299,7 +301,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     }
 
     private void showAbout() {
-        SwingUtilities.invokeLater(new AboutDialog(icon));
+        showModelessDialog(new AboutDialog(icon), "About Ocelot");
     }
 
     /**
@@ -374,6 +376,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuTgtDiff.addActionListener(this);
         menuTgtDiff.setSelected(segmentView.getEnabledTargetDiff());
         menuView.add(menuTgtDiff);
+        menuColumns = new JMenuItem("Configure Columns");
+        menuColumns.addActionListener(this);
+        menuView.add(menuColumns);
 
         menuFilter = new JMenu("Filter");
         menuBar.add(menuFilter);
@@ -443,6 +448,20 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setVisible(true);
     }
 
+    void showModelessDialog(ODialogPanel panel, String title) {
+        JDialog dialog = new JDialog(mainframe, title);
+        panel.setDialog(dialog);
+        JButton defaultButton = panel.getDefaultButton();
+        if (defaultButton != null) {
+            dialog.getRootPane().setDefaultButton(defaultButton);
+        }
+        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setIconImage(icon);
+        panel.postInit();
+        dialog.setVisible(true);
+    }
+    
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(Ocelot.class.getResourceAsStream("/log4j.properties"));

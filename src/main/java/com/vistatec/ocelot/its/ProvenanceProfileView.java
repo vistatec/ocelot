@@ -30,17 +30,14 @@ package com.vistatec.ocelot.its;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import org.slf4j.Logger;
@@ -48,25 +45,23 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 /**
  * Provenance configuration view.
  */
-public class ProvenanceProfileView extends JPanel implements Runnable, ActionListener {
+public class ProvenanceProfileView extends ODialogPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
     private Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
-    private JFrame frame;
-    private Image icon;
     private JTextField inputRevPerson, inputRevOrg, inputExtRef;
     private JButton save;
     private ProvenanceConfig config;
     private UserProvenance prov;
 
-    public ProvenanceProfileView(ProvenanceConfig config, Image icon) {
+    public ProvenanceProfileView(ProvenanceConfig config) {
         super(new GridBagLayout());
         this.config = config;
-        this.icon = icon;
         setBorder(new EmptyBorder(10,10,10,10));
 
         GridBagConstraints gridBag = new GridBagConstraints();
@@ -112,11 +107,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
         save.addActionListener(this);
 
         JButton cancel = new JButton("Cancel");
-        cancel.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent arg0) {
-                frame.dispose();
-            }
-        });
+        cancel.addActionListener(new DisposeDialogListener());
 
         JPanel actionPanel = new JPanel();
         actionPanel.add(save);
@@ -128,15 +119,8 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
     }
 
     @Override
-    public void run() {
-        frame = new JFrame("Credentials");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setIconImage(icon);
-
-        frame.getContentPane().add(this);
-        frame.pack();
-        frame.setVisible(true);
-        frame.getRootPane().setDefaultButton(save);
+    public JButton getDefaultButton() {
+        return save;
     }
 
     @Override
@@ -150,7 +134,7 @@ public class ProvenanceProfileView extends JPanel implements Runnable, ActionLis
             } catch (IOException ex) {
                 LOG.warn("Unable to save changes to user provenance", ex);
             }
-            frame.dispose();
+            getDialog().dispose();
         }
     }
 }

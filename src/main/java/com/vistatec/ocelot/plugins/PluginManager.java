@@ -32,7 +32,7 @@ import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.segment.SegmentModel;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -70,7 +70,7 @@ public class PluginManager {
         private List<String> segPluginClassNames = new ArrayList<String>();
         private HashMap<ITSPlugin, Boolean> itsPlugins;
         private HashMap<SegmentPlugin, Boolean> segPlugins;
-	private ClassLoader classLoader;
+        private ClassLoader classLoader;
         private File pluginDir;
         protected AppConfig appConfig;
 	
@@ -157,7 +157,7 @@ public class PluginManager {
          * @param segments
          */
         public void exportData(String sourceLang, String targetLang,
-                SegmentController segments) {
+                SegmentModel segments) {
             for (int row = 0; row < segments.getNumSegments(); row++) {
                 Segment seg = segments.getSegment(row);
                 List<LanguageQualityIssue> lqi = seg.getLQI();

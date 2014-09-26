@@ -126,6 +126,7 @@ public class Segment {
                 setOriginalTarget(target);
             }
             target = updatedTarget;
+            editDistance = NO_EDIT_DISTANCE;
             setTargetDiff(EditDistance.styleTextDifferences(getTarget(),
                           getOriginalTarget()));
             if (segmentListener != null) {
@@ -276,5 +277,14 @@ public class Segment {
         its.addAll(provList);
         its.addAll(otherITSList);
         return its;
+    }
+
+    private static final int NO_EDIT_DISTANCE = -1;
+    private int editDistance = NO_EDIT_DISTANCE;
+    public int getEditDistance() {
+        if (NO_EDIT_DISTANCE == editDistance) {
+            editDistance = hasOriginalTarget() ? EditDistance.calcEditDistance(getTarget(), getOriginalTarget()) : 0;
+        }
+        return editDistance;
     }
 }
