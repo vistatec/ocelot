@@ -52,20 +52,13 @@ import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 import net.sf.okapi.common.encoder.EncoderManager;
 import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.resource.DocumentPart;
-import net.sf.okapi.common.resource.StartDocument;
-import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Superclass for using Okapi's ISkeletonWriter interface to write out the
  * workbench segments as different file formats.
  */
 public abstract class OkapiSegmentWriter {
-    private Logger LOG = LoggerFactory.getLogger(OkapiSegmentWriter.class);
-
     public abstract void updateSegment(Segment seg, SegmentController segController);
     private ProvenanceConfig provConfig;
 

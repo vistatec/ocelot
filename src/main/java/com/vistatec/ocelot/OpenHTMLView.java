@@ -28,12 +28,10 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.segment.SegmentController;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -49,16 +47,12 @@ public class OpenHTMLView extends JPanel implements Runnable, ActionListener {
     private static final long serialVersionUID = 1L;
 
     private JFrame frame;
-    private Ocelot rw;
-    private SegmentController segmentController;
     private JButton selectSource, selectTarget, importFiles, close;
     File sourceFile, targetFile;
     JFileChooser fileChooser;
 
-    public OpenHTMLView(Ocelot rw, SegmentController segmentController) {
+    public OpenHTMLView() {
         super(new GridLayout(0,2));
-        this.rw = rw;
-        this.segmentController = segmentController;
         fileChooser = new JFileChooser();
         setBorder(new EmptyBorder(10,10,10,10));
 

@@ -40,8 +40,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 /**
  * Collection of RuleFilters used to determine whether to filter out a segment
  * from the SegmentView.

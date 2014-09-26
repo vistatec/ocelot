@@ -47,16 +47,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Data model for a document.  This handles most manipulations of the 
  * segment model and generates most segment-related events.
  */
 public class SegmentController implements SegmentModel {
-    private Logger LOG = LoggerFactory.getLogger(SegmentController.class);
-
     private ArrayList<Segment> segments = new ArrayList<Segment>(100);
     private XLIFFFactory xliffFactory;
     private XLIFFWriter segmentWriter;

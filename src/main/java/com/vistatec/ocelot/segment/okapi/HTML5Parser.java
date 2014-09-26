@@ -42,7 +42,6 @@ import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.GenericAnnotations;
-import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.RawDocument;

@@ -6,9 +6,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -19,7 +16,6 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import com.vistatec.ocelot.ui.ODialogPanel;
-import com.vistatec.ocelot.ui.ODialogPanel.DisposeDialogListener;
 
 public class AboutDialog extends ODialogPanel {
     private static final long serialVersionUID = 1L;

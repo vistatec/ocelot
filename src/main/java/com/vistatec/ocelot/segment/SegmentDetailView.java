@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.segment.editdistance.EditDistance;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
