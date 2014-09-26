@@ -53,7 +53,7 @@ public class SegmentTextCell extends JTextPane {
     private static final long serialVersionUID = 1L;
 
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
-    public static String tagStyle = "tag", regularStyle = "regular",
+    public static final String tagStyle = "tag", regularStyle = "regular",
             insertStyle = "insert", deleteStyle = "delete";
     private SegmentVariant v;
 

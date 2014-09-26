@@ -104,7 +104,7 @@ public class ProvenanceTableView extends JScrollPane {
         }
     }
 
-    public class ProvTableModel extends AbstractTableModel {
+    static class ProvTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
 
         public static final int NUMCOLS = 6;

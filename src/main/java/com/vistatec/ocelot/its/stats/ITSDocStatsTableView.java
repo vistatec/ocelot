@@ -63,7 +63,7 @@ public class ITSDocStatsTableView extends JScrollPane {
         docStatsModel.fireTableDataChanged();
     }
 
-    private class DocumentStatsTableModel extends AbstractTableModel {
+    static class DocumentStatsTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
 
         DocumentStatsTableModel(ITSDocStats stats) {

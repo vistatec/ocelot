@@ -445,7 +445,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         }
     }
 
-    public class ITSMetadataRenderer extends DataCategoryFlagRenderer {
+    static class ITSMetadataRenderer extends DataCategoryFlagRenderer {
         private static final long serialVersionUID = 1L;
 
         public ITSMetadataRenderer() {

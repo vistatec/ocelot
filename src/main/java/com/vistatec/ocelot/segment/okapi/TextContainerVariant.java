@@ -119,6 +119,11 @@ public class TextContainerVariant extends BaseSegmentVariant {
     }
 
     @Override
+    public int hashCode() {
+        return tc.hashCode();
+    }
+
+    @Override
     public String toString() {
         return getDisplayText();
     }

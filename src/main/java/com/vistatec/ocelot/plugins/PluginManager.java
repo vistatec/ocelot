@@ -386,7 +386,7 @@ public class PluginManager {
 		return s.replace('/', '.');
 	}
 	
-	class JarFilenameFilter implements FilenameFilter {
+	static class JarFilenameFilter implements FilenameFilter {
 		@Override
 		public boolean accept(File dir, String filename) {
 			if (filename == null || filename.equals("")) {

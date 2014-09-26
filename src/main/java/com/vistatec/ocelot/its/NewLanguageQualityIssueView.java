@@ -85,7 +85,7 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
     private URL prevProfile;
     private boolean prevEnabled;
 
-    public static String[] LQI_TYPE = {"terminology", "mistranslation", "omission",
+    public static final String[] LQI_TYPE = {"terminology", "mistranslation", "omission",
         "untranslated", "addition", "duplication", "inconsistency",
         "grammar", "legal", "register", "locale-specific-content",
         "locale-violation", "style", "characters", "misspelling",

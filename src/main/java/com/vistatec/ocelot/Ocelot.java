@@ -65,7 +65,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -97,7 +96,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
     private static String APPNAME = "Ocelot";
-    private static Image icon;
+    private Image icon;
     private static Logger LOG = Logger.getLogger(Ocelot.class);
 
     private JMenuBar menuBar;

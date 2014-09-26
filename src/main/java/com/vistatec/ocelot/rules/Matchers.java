@@ -166,7 +166,7 @@ public class Matchers {
 			return v;
 		}
 		
-		class Values {
+		static class Values {
 			double min;
 			double max;
 		}

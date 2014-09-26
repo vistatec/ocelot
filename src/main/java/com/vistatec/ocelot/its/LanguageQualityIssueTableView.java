@@ -119,7 +119,7 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         eventBus.post(new LQIDeselectionEvent());
     }
 
-    public class LQITableModel extends AbstractTableModel {
+    static class LQITableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
 
         public static final int NUMCOLS = 3;
