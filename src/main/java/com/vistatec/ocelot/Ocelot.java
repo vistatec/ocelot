@@ -213,12 +213,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     private void promptOpenXLIFFFile() {
         FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
-        fd.setFilenameFilter(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".xlf");
-            }
-        });
+        fd.setFilenameFilter(new XliffFileFilter());
         fd.setVisible(true);
         File sourceFile = getSelectedFile(fd);
         fd.dispose();
