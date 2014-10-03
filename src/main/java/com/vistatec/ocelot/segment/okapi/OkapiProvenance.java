@@ -33,4 +33,29 @@ public class OkapiProvenance extends Provenance {
             setProvRef(ga.getString(GenericAnnotationType.PROV_PROVREF));
         }
     }
+
+    public OkapiProvenance(net.sf.okapi.lib.xliff2.its.Provenance p) {
+        super();
+        if (p.getPerson() != null) {
+            setPerson(p.getPerson());
+        }
+        if (p.getOrg() != null) {
+            setOrg(p.getOrg());
+        }
+        if (p.getTool() != null) {
+            setTool(p.getTool());
+        }
+        if (p.getRevPerson() != null) {
+            setRevPerson(p.getRevPerson());
+        }
+        if (p.getRevOrg() != null) {
+            setRevOrg(p.getRevOrg());
+        }
+        if (p.getRevTool() != null) {
+            setRevTool(p.getRevTool());
+        }
+        if (p.getProvRef() != null) {
+            setProvRef(p.getProvRef());
+        }
+    }
 }

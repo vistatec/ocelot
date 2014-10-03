@@ -28,24 +28,20 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vistatec.ocelot.segment.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.CodeAtom;
 import com.vistatec.ocelot.segment.SegmentAtom;
 import com.vistatec.ocelot.segment.SegmentVariant;
 import com.vistatec.ocelot.segment.TextAtom;
-
-import net.sf.okapi.lib.xliff2.core.CTag;
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.okapi.lib.xliff2.core.Fragment;
-import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.PCont;
 import net.sf.okapi.lib.xliff2.core.Tag;
-import net.sf.okapi.lib.xliff2.its.TermTag;
+import net.sf.okapi.lib.xliff2.renderer.IFragmentObject;
+import net.sf.okapi.lib.xliff2.renderer.XLIFFFragmentRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * XLIFF 2.0 segment variant, implemented using the Okapi XLIFF 2.0 library Fragment.
@@ -53,6 +49,7 @@ import net.sf.okapi.lib.xliff2.its.TermTag;
 public class FragmentVariant extends BaseSegmentVariant {
     private final Logger LOG = LoggerFactory.getLogger(FragmentVariant.class);
     private List<SegmentAtom> segmentAtoms;
+    private int protectedContentId = 0;
 
     public FragmentVariant(Fragment fragment) {
         segmentAtoms = parseSegmentAtoms(fragment);
@@ -64,29 +61,19 @@ public class FragmentVariant extends BaseSegmentVariant {
 
     private List<SegmentAtom> parseSegmentAtoms(Fragment frag) {
         List<SegmentAtom> parsedSegmentAtoms = new ArrayList<SegmentAtom>();
-        for (Object textObject : frag) {
+        XLIFFFragmentRenderer fragmentRenderer = new XLIFFFragmentRenderer(frag, null);
+        for (IFragmentObject fragPart : fragmentRenderer) {
+            Object textObject = fragPart.getObject();
             if (textObject instanceof String) {
-                parsedSegmentAtoms.add(new TextAtom((String) textObject));
+                parsedSegmentAtoms.add(new TextAtom(fragPart.render()));
 
             } else if (textObject instanceof Tag) {
-                if (textObject instanceof MTag) {
-                    MTag mtag = (MTag) textObject;
-                    //TODO:
-
-                } else if (textObject instanceof CTag) {
-                    CTag ctag = (CTag) textObject;
-                    // TODO: verbose data? Check identifier.
-                    parsedSegmentAtoms.add(new CodeAtom(ctag.getId(),
-                            ctag.getData(), ctag.getData()));
-
-                } else if (textObject instanceof TermTag) {
-                    //TODO:
-                }
+                Tag tag = (Tag) textObject;
+                parsedSegmentAtoms.add(convertToCodeAtom(fragPart, tag.getId()));
 
             } else if (textObject instanceof PCont) {
-                //TODO: Verify usage, there's no ID?
-//                PCont pcont = (PCont) textObject;
-//                segmentAtoms.add(new CodeAtom(, pcont.getCodedText(), null));
+                //TODO: Verify usage
+                parsedSegmentAtoms.add(convertToCodeAtom(fragPart, "PC"+protectedContentId++));
 
             } else {
                 // TODO: More descriptive error
@@ -95,6 +82,27 @@ public class FragmentVariant extends BaseSegmentVariant {
             }
         }
         return parsedSegmentAtoms;
+    }
+
+    private CodeAtom convertToCodeAtom(IFragmentObject fragPart, String codeAtomId) {
+        String detailedTag = fragPart.render();
+        String basicTag = getBasicTag(detailedTag);
+        return new CodeAtom(codeAtomId, basicTag, detailedTag);
+    }
+
+    private String getBasicTag(String detailedTag) {
+        int tagEndCaratPos = detailedTag.indexOf(">");
+        if (tagEndCaratPos < 0) {
+            // TODO: Handle this case
+            LOG.warn("Could not find tag end character '>' in '"+detailedTag+"'");
+            System.exit(1);
+        }
+        if (detailedTag.charAt(tagEndCaratPos-1) == '/') {
+            tagEndCaratPos--;
+        }
+        int beginTagAttrPos = detailedTag.indexOf(" ");
+        return "<"+detailedTag.substring(1, beginTagAttrPos >= 0 ? beginTagAttrPos : tagEndCaratPos)
+                +detailedTag.substring(tagEndCaratPos, detailedTag.length());
     }
 
     @Override
