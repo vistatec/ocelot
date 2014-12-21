@@ -174,24 +174,6 @@
           </executions>
       </plugin>
       <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>osxappbundle-maven-plugin</artifactId>
-          <version>1.0-alpha-2</version>
-          <configuration>
-              <mainClass>com.vistatec.ocelot.Ocelot</mainClass>
-              <iconFile>src/main/resources/com/vistatec/ocelot/mac.icns</iconFile>
-              <javaApplicationStub>src/main/resources/build/JavaApplicationStub</javaApplicationStub>
-          </configuration>
-          <executions>
-              <execution>
-                  <phase>package</phase>
-                  <goals>
-                      <goal>bundle</goal>
-                  </goals>
-              </execution>
-          </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.7.0.201403182114</version>
