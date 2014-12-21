@@ -167,7 +167,7 @@
                       <errTitle>Application Error</errTitle>
                       <icon>src/main/resources/com/vistatec/ocelot/logo.ico</icon>
                       <jre>
-                          <minVersion>1.6.0</minVersion>
+                          <minVersion>1.7.0</minVersion>
                       </jre>
                   </configuration>
               </execution>
