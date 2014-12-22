@@ -197,6 +197,32 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <taskdef name="bundleapp"
+                  classname="com.oracle.appbundler.AppBundlerTask"
+                  classpath="src/main/resources/build/appbundler-1.0.jar" />
+                <bundleapp outputdirectory="target"
+                  name="Ocelot"
+                  displayname="Ocelot"
+                  identifier="com.vistatec.ocelot.Ocelot"
+                  mainclassname="com.vistatec.ocelot.Ocelot">
+                  <classpath file="target/${project.artifactId}-${project.version}.jar" />
+                </bundleapp>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
 
     <pluginManagement>
