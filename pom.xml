@@ -210,11 +210,12 @@
               <target>
                 <taskdef name="bundleapp"
                   classname="com.oracle.appbundler.AppBundlerTask"
-                  classpath="src/main/resources/build/appbundler-1.0.jar" />
+                  classpath="src/main/resources/build/appbundler-1.0ea.jar" />
                 <bundleapp outputdirectory="target"
                   name="Ocelot"
                   displayname="Ocelot"
                   identifier="com.vistatec.ocelot.Ocelot"
+                  icon="src/main/resources/com/vistatec/ocelot/mac.icns"
                   mainclassname="com.vistatec.ocelot.Ocelot">
                   <classpath file="target/${project.artifactId}-${project.version}.jar" />
                 </bundleapp>
