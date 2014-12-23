@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 
 import java.awt.Color;
@@ -191,6 +192,21 @@ public class RuleConfiguration {
             quickAdds.put(label, qa);
         }
         return qa;
+    }
+
+    /**
+     * Find the first flag for the specified metadata flag.
+     * @param its
+     * @return
+     */
+    public DataCategoryFlag getFlagForMetadata(ITSMetadata its) {
+        for (int pos = ruleOrdering.size() - 1; pos >= 0; pos--) {
+            Rule r = ruleOrdering.get(pos);
+            if (r.matches(its)) {
+                return r.getFlag();
+            }
+        }
+        return null;
     }
 
     /**

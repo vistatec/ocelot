@@ -1,5 +1,6 @@
 package com.vistatec.ocelot.rules;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import org.junit.*;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 
+import static com.vistatec.ocelot.rules.RulesTestHelpers.*;
 import static org.junit.Assert.*;
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
@@ -101,7 +103,26 @@ public class TestRuleConfiguration {
         config.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
         assertEquals(StateQualifierMode.SELECTED_STATES, listener.stateQualifierMode);
     }
-    
+
+    @Test
+    public void testGetFlagForMetadata() {
+        RuleConfiguration config = new RuleConfiguration(new TestRuleListener());
+        DataCategoryFlag flag1 = new DataCategoryFlag();
+        DataCategoryFlag flag2 = new DataCategoryFlag();
+        config.addRule(createRule(new RuleMatcher(DataCategoryField.LQI_SEVERITY, Matchers.numeric(80, 100)), flag1));
+        config.addRule(createRule(new RuleMatcher(DataCategoryField.LQI_SEVERITY, Matchers.numeric(90, 100)), flag2));
+        assertEquals(flag1, config.getFlagForMetadata(lqi("omission", 85)));
+        assertEquals(flag2, config.getFlagForMetadata(lqi("omission", 95)));
+        assertEquals(null, config.getFlagForMetadata(lqi("omission", 50)));
+    }
+
+    private Rule createRule(RuleMatcher matcher, DataCategoryFlag flag) {
+        Rule r = new Rule();
+        r.addRuleMatcher(matcher);
+        r.setFlag(flag);
+        return r;
+    }
+
     class TestRuleListener implements RuleListener {
         Map<String, Boolean> enabledRules = new HashMap<String, Boolean>();
         RuleConfiguration.FilterMode filterMode;
