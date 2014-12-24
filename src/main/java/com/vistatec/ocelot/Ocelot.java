@@ -40,7 +40,6 @@ import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.rules.QuickAddViewTable;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.segment.Segment;
@@ -187,7 +186,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else if (e.getSource() == this.menuRules) {
             showModelessDialog(new FilterView(ruleConfig), "Filters");
         } else if (e.getSource() == this.menuQuickAdd) {
-            showModelessDialog(new QuickAddView(ruleConfig), "QuickAdd Rules");
+            showModelessDialog(new QuickAddView(ruleConfig, eventBus), "QuickAdd Rules");
         } else if (e.getSource() == this.menuPlugins) {
             showModelessDialog(new PluginManagerView(pluginManager, segmentController), "Plugin Manager");
 
@@ -387,7 +386,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 KeyStroke.getKeyStroke(KeyEvent.VK_R, getPlatformKeyMask()));
         menuFilter.add(menuRules);
 
-        menuQuickAdd = new JMenuItem("QuickAdd Rules");
+        menuQuickAdd = new JMenuItem("QuickAdd");
         menuQuickAdd.addActionListener(this);
         menuFilter.add(menuQuickAdd);
 

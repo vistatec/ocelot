@@ -1,12 +1,20 @@
 package com.vistatec.ocelot.rules;
 
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
+import com.google.common.eventbus.EventBus;
+import com.vistatec.ocelot.events.QuickAddEvent;
 import com.vistatec.ocelot.rules.NullITSMetadata.NullDataCategoryFlag;
 import com.vistatec.ocelot.ui.OTable;
 
@@ -15,9 +23,11 @@ public class QuickAddViewTable {
     private QuickAddTableModel tableModel;
     private RuleConfiguration ruleConfig;
     private String acceleratorGlyph;
+    private EventBus eventBus;
 
-    public QuickAddViewTable(RuleConfiguration ruleConfig) {
+    public QuickAddViewTable(RuleConfiguration ruleConfig, EventBus eventBus) {
         this.ruleConfig = ruleConfig;
+        this.eventBus = eventBus;
         tableModel = new QuickAddTableModel();
         table = createTable(tableModel);
         acceleratorGlyph = getAcceleratorGlyph();
@@ -37,14 +47,14 @@ public class QuickAddViewTable {
             case KeyEvent.META_MASK:
                 return "\u2318";
             case KeyEvent.CTRL_MASK:
-                return "C";
+                return "Ctrl";
             default:
                 return "?";
         }
     }
 
     protected JTable createTable(QuickAddTableModel tableModel) {
-        JTable table = new OTable(tableModel);
+        final JTable table = new OTable(tableModel);
         table.setTableHeader(null);
         table.setCellSelectionEnabled(false);
         table.setShowGrid(false);
@@ -63,6 +73,22 @@ public class QuickAddViewTable {
         columnModel.getColumn(2).setPreferredWidth(25);
         columnModel.getColumn(2).setMaxWidth(25);
 
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer( centerRenderer );
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    QuickAdd qa = getConfig().getQuickAddLQI(table.getSelectedRow());
+                    if (qa != null) {
+                        eventBus.post(new QuickAddEvent(qa));
+                    }
+                }
+            }
+        });
+        table.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         return table;
     }
 

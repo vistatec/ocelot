@@ -34,16 +34,21 @@ import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.QuickAddEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
+
 import static com.vistatec.ocelot.SegmentViewColumn.*;
+
 import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
+import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
@@ -359,6 +364,16 @@ public class SegmentView extends JScrollPane implements RuleListener {
     public void setEnabledTargetDiff(boolean enabled) {
         this.enabledTargetDiff = enabled;
         reloadTable();
+    }
+
+    @Subscribe
+    public void addQuickAdd(QuickAddEvent event) {
+        Segment seg = getSelectedSegment();
+        if (seg != null && seg.isEditablePhase()) {
+            LanguageQualityIssue lqi = event.getQuickAdd().createLQI();
+            seg.addLQI(lqi);
+            notifyModifiedLQI(new LQIModificationEvent(lqi, seg));
+        }
     }
 
     @Subscribe
