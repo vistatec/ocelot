@@ -61,6 +61,8 @@ import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -390,7 +392,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuQuickAdd.addActionListener(this);
         menuFilter.add(menuQuickAdd);
 
-        SegmentMenu segmentMenu = new SegmentMenu(eventBus);
+        SegmentMenu segmentMenu = new SegmentMenu(eventBus, getPlatformKeyMask());
         menuBar.add(segmentMenu.getMenu());
         
         menuExtensions = new JMenu("Extensions");
@@ -515,12 +517,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     && ke.getKeyCode() == KeyEvent.VK_TAB) {
                 segmentView.requestFocusTable();
 
-            } else if (isPlatformKeyDown(ke) && ke.getKeyCode() == KeyEvent.VK_EQUALS) {
-                if (segmentView.getSelectedSegment() != null) {
-                    NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView();
-                    addLQIView.setSegment(segmentAttrView.getSelectedSegment());
-                    SwingUtilities.invokeLater(addLQIView);
-                }
             }
         }
         return false;

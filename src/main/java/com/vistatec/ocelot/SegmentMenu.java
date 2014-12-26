@@ -2,9 +2,13 @@ package com.vistatec.ocelot;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import com.google.common.eventbus.EventBus;
@@ -23,14 +27,28 @@ public class SegmentMenu {
     private Segment selectedSegment;
     private LanguageQualityIssue selectedLQI;
 
-    public SegmentMenu(EventBus eventBus) {
+    private NewLanguageQualityIssueView addLQIView = null;
+
+    public SegmentMenu(EventBus eventBus, int platformKeyMask) {
         menu = new JMenu("Segment");
         menuAddIssue = new JMenuItem("Add Issue");
+        menuAddIssue.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, platformKeyMask));
         menuAddIssue.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView();
-                addLQIView.setSegment(selectedSegment);
-                SwingUtilities.invokeLater(addLQIView);
+                /**
+                 * This is a gross workaround for a bizarre bug in the 1.7 Mac
+                 * JRE, which results in the VK_EQUALS key event being sent
+                 * 3 separate times. In order to prevent 3 separate dialogs
+                 * from opening, we trap the extraneous events.
+                 * This seems to be fixed in the 1.8 runtime.  See OC-41 for more.
+                 */
+                if (addLQIView == null) {
+                    addLQIView = new NewLanguageQualityIssueView();
+                    addLQIView.setWindowListener(new AddLQIViewWindowListener());
+                    addLQIView.setSegment(selectedSegment);
+                    SwingUtilities.invokeLater(addLQIView);
+                }
             }
         });
         menuAddIssue.setEnabled(false);
@@ -53,6 +71,13 @@ public class SegmentMenu {
         menuRestoreTarget.setEnabled(false);
         menu.add(menuRestoreTarget);
         eventBus.register(this);
+    }
+
+    class AddLQIViewWindowListener extends WindowAdapter {
+        @Override
+        public void windowClosed(WindowEvent e) {
+            addLQIView = null;
+        }
     }
 
     @Subscribe

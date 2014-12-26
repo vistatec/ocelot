@@ -29,15 +29,19 @@
 package com.vistatec.ocelot.its;
 
 import com.vistatec.ocelot.segment.Segment;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -52,6 +56,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +89,7 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
     private double prevSeverity;
     private URL prevProfile;
     private boolean prevEnabled;
+    private WindowListener windowListener;
 
     public static final String[] LQI_TYPE = {"terminology", "mistranslation", "omission",
         "untranslated", "addition", "duplication", "inconsistency",
@@ -398,13 +404,19 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
         return frame != null && this.selectedLQI == null;
     }
 
+    public void setWindowListener(WindowListener windowListener) {
+        this.windowListener = windowListener;
+    }
+
     @Override
     public void run() {
         frame = new JFrame("Add Language Quality Issue");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         frame.getContentPane().add(this);
-
+        if (windowListener != null) {
+            frame.addWindowListener(windowListener);
+        }
         frame.pack();
         frame.setVisible(true);
     }
