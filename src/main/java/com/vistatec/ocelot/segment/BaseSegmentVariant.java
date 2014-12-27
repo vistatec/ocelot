@@ -78,6 +78,22 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
     }
 
     @Override
+    public int findSelectionStart(int selectionStart) {
+        while (containsTag(selectionStart, 0)) {
+            selectionStart--;
+        }
+        return selectionStart;
+    }
+
+    @Override
+    public int findSelectionEnd(int selectionEnd) {
+        while (containsTag(selectionEnd, 0)) {
+            selectionEnd++;
+        }
+        return selectionEnd;
+    }
+
+    @Override
     public boolean canInsertAt(int offset) {
         return checkForCode(offset, 0).size() == 0;
     }

@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTextPane;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -60,11 +62,37 @@ public class SegmentTextCell extends JTextPane {
     public SegmentTextCell() {
         setEditController();
         setDisplayCategories();
+        addCaretListener(new TagSelectingCaretListener());
     }
 
     public SegmentTextCell(SegmentVariant v, boolean raw) {
         this();
         setVariant(v, raw);
+    }
+
+    /**
+     * A caret listener that detects selections that encompass
+     * only part of tags and automatically expand the selection
+     * to include full tags.  This produces cascading CaretUpdate
+     * events, but the cycle should stop after a single additional
+     * update.
+     */
+    class TagSelectingCaretListener implements CaretListener {
+        @Override
+        public void caretUpdate(CaretEvent e) {
+            if (e.getDot() != e.getMark()) {
+                int origStart = Math.min(e.getDot(), e.getMark());
+                int origEnd = Math.max(e.getDot(), e.getMark());
+                int start = v.findSelectionStart(origStart);
+                int end = v.findSelectionEnd(origEnd);
+                if (start != origStart) {
+                    setSelectionStart(start);
+                }
+                if (end != origEnd) {
+                    setSelectionEnd(end);
+                }
+            }
+        }
     }
 
     public final void setEditController() {

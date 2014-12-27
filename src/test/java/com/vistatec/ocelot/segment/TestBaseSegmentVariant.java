@@ -68,4 +68,34 @@ public class TestBaseSegmentVariant {
         assertEquals(Lists.newArrayList(new CodeAtom(1, "<b>", "<b>"), new TextAtom("DE")),
                 complexSv.getAtomsForRange(3, 5));
     }
+
+    @Test
+    public void testFindSelectionStart() {
+        // A < b > B < / B >
+        // 0 1 2 3 4 5 6 7 8
+        assertEquals(0, simpleSv.findSelectionStart(0)); // unchanged
+        assertEquals(1, simpleSv.findSelectionStart(1)); // unchanged
+        assertEquals(1, simpleSv.findSelectionStart(2));
+        assertEquals(1, simpleSv.findSelectionStart(3));
+        assertEquals(4, simpleSv.findSelectionStart(4)); // unchanged
+        assertEquals(5, simpleSv.findSelectionStart(5)); // unchanged
+        assertEquals(5, simpleSv.findSelectionStart(6));
+        assertEquals(5, simpleSv.findSelectionStart(7));
+        assertEquals(5, simpleSv.findSelectionStart(8));
+    }
+
+    @Test
+    public void testFindSelectionEnd() {
+        // A < b > B < / B >
+        // 0 1 2 3 4 5 6 7 8
+        assertEquals(0, simpleSv.findSelectionEnd(0)); // unchanged
+        assertEquals(1, simpleSv.findSelectionEnd(1));
+        assertEquals(4, simpleSv.findSelectionEnd(2));
+        assertEquals(4, simpleSv.findSelectionEnd(3));
+        assertEquals(4, simpleSv.findSelectionEnd(4));
+        assertEquals(5, simpleSv.findSelectionEnd(5));
+        assertEquals(9, simpleSv.findSelectionEnd(6));
+        assertEquals(9, simpleSv.findSelectionEnd(7));
+        assertEquals(9, simpleSv.findSelectionEnd(8));
+    }
 }

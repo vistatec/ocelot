@@ -54,6 +54,22 @@ public interface SegmentVariant {
     boolean containsTag(int offset, int length);
 
     /**
+     * Find a valid selection start mark, possibly by backing up the
+     * provided index to the beginning of the previous tag.
+     * @param selectionStart provisional selection start
+     * @return updated selection start index
+     */
+    int findSelectionStart(int selectionStart);
+
+    /**
+     * Find a valid selection end mark, possibly by moving the
+     * provided index to the beginning of the next tag.
+     * @param selectionStart provisional selection end
+     * @return updated selection end index
+     */
+    int findSelectionEnd(int selectionEnd);
+
+    /**
      * Replace a character range. 
      * @param offset
      * @param charsToReplace Number of chars to remove. May be zero, in which
