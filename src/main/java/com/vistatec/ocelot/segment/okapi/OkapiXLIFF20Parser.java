@@ -60,6 +60,7 @@ import net.sf.okapi.lib.xliff2.reader.XLIFFReader;
  */
 public class OkapiXLIFF20Parser implements XLIFFParser {
     private List<Event> events;
+    private List<Part> segmentUnitParts;
     private Map<Integer, Integer> segmentEventMapping;
     private int documentSegmentNum;
     private String sourceLang, targetLang;
@@ -72,13 +73,18 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
         return this.events.get(segmentEventMapping.get(segEventNumber));
     }
 
+    public Part getSegmentUnitPart(int segmentUnitPartIndex) {
+        return this.segmentUnitParts.get(segmentUnitPartIndex);
+    }
+
     @Override
     public List<Segment> parse(File xliffFile) throws IOException {
         List<Segment> segments = new LinkedList<Segment>();
         segmentEventMapping = new HashMap<Integer, Integer>();
         events = new LinkedList<Event>();
+        segmentUnitParts = new LinkedList<Part>();
         this.documentSegmentNum = 1;
-        int okapiXliffEventIndex = 0;
+        int segmentUnitPartIndex = 0;
 
         XLIFFReader reader = new XLIFFReader();
         reader.open(xliffFile);
@@ -98,12 +104,12 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                 Unit unit = event.getUnit();
                 for (Part unitPart : unit) {
                     if (unitPart.isSegment()) {
-                        segments.add(convertPartToSegment(unitPart, okapiXliffEventIndex));
+                        segments.add(convertPartToSegment(unitPart, segmentUnitPartIndex++));
+                        this.segmentUnitParts.add(unitPart);
                     }
                 }
             }
 
-            okapiXliffEventIndex++;
         }
         return segments;
     }
@@ -111,13 +117,13 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
     /**
      * Converts Okapi XLIFF 2.0 Unit Parts to the Ocelot Segment format.
      * @param unitPart &lt;segment> or &lt;ignorable> element. See {@link Part} for more details.
-     * @param okapiXliffEventIndex - Index of the associated original Okapi XLIFF 2.0 Event from which the Segment was derived.
+     * @param segmentUnitPartIndex - Index of the associated original Okapi XLIFF 2.0 Event from which the Segment was derived.
      * @return Segment - Ocelot Segment
      * @throws MalformedURLException
      */
-    private Segment convertPartToSegment(Part unitPart, int okapiXliffEventIndex) throws MalformedURLException {
+    private Segment convertPartToSegment(Part unitPart, int segmentUnitPartIndex) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
-        Segment seg = new Segment(this.documentSegmentNum++, okapiXliffEventIndex, okapiXliffEventIndex,
+        Segment seg = new Segment(this.documentSegmentNum++, segmentUnitPartIndex, segmentUnitPartIndex,
                 new FragmentVariant(unitPart.getSource()),
                 new FragmentVariant(unitPart.getTarget(Part.GetTarget.CREATE_EMPTY)),
                 null); //TODO: load original target from file
