@@ -44,13 +44,13 @@ public class TestSegmentController {
 
     private SegmentController emptyController() throws Exception {
         SegmentController controller = new SegmentController(new SimpleXLIFFFactory("en", "fr", new ArrayList<Segment>()),
-                eventBus, new RuleConfiguration(),
+                eventBus, new ITSDocStats(),
                 new ProvenanceConfig(new ConfigsForProvTesting("", null)));
         return controller;
     }
     private SegmentController loadResourceAsController(String resource) throws Exception {
         SegmentController controller = new SegmentController(new OkapiXLIFFFactory(),
-                eventBus, new RuleConfiguration(),
+                eventBus, new ITSDocStats(),
                 new ProvenanceConfig(new ConfigsForProvTesting("", null)));
         controller.parseXLIFFFile(new File(getClass().getResource(resource).toURI()),
                 new File(getClass().getResource(resource).toURI()));

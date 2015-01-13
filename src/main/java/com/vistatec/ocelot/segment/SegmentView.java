@@ -36,8 +36,9 @@ import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.QuickAddEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
+import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
-import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
 
@@ -109,17 +110,15 @@ public class SegmentView extends JScrollPane implements RuleListener {
     private boolean enabledTargetDiff = true;
 
     protected RuleConfiguration ruleConfig;
-    protected PluginManager pluginManager;
     private EventBus eventBus;
 
     public SegmentView(EventBus eventBus, SegmentTableModel segmentTableModel, AppConfig appConfig,
-            RuleConfiguration ruleConfig, PluginManager pluginManager) throws IOException, 
-                InstantiationException, InstantiationException, IllegalAccessException {
+            RuleConfiguration ruleConfig) throws IOException, InstantiationException,
+            InstantiationException, IllegalAccessException {
         this.eventBus = eventBus;
         this.segmentTableModel = segmentTableModel;
         this.ruleConfig = ruleConfig;
         this.ruleConfig.addRuleListener(this);
-        this.pluginManager = pluginManager;
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         eventBus.register(this);
@@ -407,10 +406,6 @@ public class SegmentView extends JScrollPane implements RuleListener {
         reloadTable();
     }
 
-    public PluginManager getPluginManager() {
-        return this.pluginManager;
-    }
-
     private void postSegmentSelection(Segment seg) {
         if (seg != null) {
             eventBus.post(new SegmentSelectionEvent(seg));
@@ -583,14 +578,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         public void setBeginEdit(Segment seg, String codedText) {
             this.seg = seg;
-            pluginManager.notifySegmentTargetEnter(seg);
+            eventBus.post(new SegmentTargetEnterEvent(seg));
         }
 
         @Override
         public void editingStopped(ChangeEvent ce) {
             SegmentVariant updatedTarget = ((SegmentEditor)ce.getSource()).editorComponent.getVariant();
             int row = sourceTargetTable.getSelectedRow();
-            pluginManager.notifySegmentTargetExit(seg);
+            eventBus.post(new SegmentTargetExitEvent(seg));
             seg.updateTarget(updatedTarget);
             postSegmentSelection(seg);
             updateTableRow(row);

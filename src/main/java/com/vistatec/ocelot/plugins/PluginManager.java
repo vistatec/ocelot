@@ -28,7 +28,10 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.AppConfig;
+import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
+import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
@@ -178,9 +181,11 @@ public class PluginManager {
 
         /**
          * SegmentPlugin handler for beginning a target segment edit.
-         * @param seg
+         * @param event
          */
-        public void notifySegmentTargetEnter(Segment seg) {
+        @Subscribe
+        public void notifySegmentTargetEnter(SegmentTargetEnterEvent event) {
+            Segment seg = event.getSegment();
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
                     try {
@@ -195,9 +200,11 @@ public class PluginManager {
 
         /**
          * SegmentPlugin handler for finishing a target segment edit.
-         * @param seg
+         * @param event
          */
-        public void notifySegmentTargetExit(Segment seg) {
+        @Subscribe
+        public void notifySegmentTargetExit(SegmentTargetExitEvent event) {
+            Segment seg = event.getSegment();
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
                     try {

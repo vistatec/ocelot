@@ -29,12 +29,15 @@
 package com.vistatec.ocelot;
 
 import com.google.common.eventbus.EventBus;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
+import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
+import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
@@ -52,6 +55,7 @@ import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
@@ -61,8 +65,6 @@ import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -125,10 +127,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private ProvenanceConfig provConfig;
     private RuleConfiguration ruleConfig;
     private PluginManager pluginManager;
-    private EventBus eventBus = new EventBus();
+    private final EventBus eventBus;
     private Color optionPaneBackgroundColor;
 
-    public Ocelot(AppConfig config, PluginManager pluginManager, 
+    public Ocelot(AppConfig config, PluginManager pluginManager,
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
@@ -139,35 +141,57 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
-
-        segmentController = new SegmentController(new OkapiXLIFFFactory(), eventBus, ruleConfig, provConfig);
         optionPaneBackgroundColor = (Color)UIManager.get("OptionPane.background");
 
-        Dimension segAttrSize = new Dimension(385, 280);
-        itsDetailView = new DetailView(eventBus);
-        itsDetailView.setPreferredSize(segAttrSize);
-        segmentAttrView = new SegmentAttributeView(eventBus, segmentController.getStats(), itsDetailView);
-        segmentAttrView.setMinimumSize(new Dimension(305, 280));
-        segmentAttrView.setPreferredSize(segAttrSize);
-        segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                segmentAttrView, itsDetailView);
-        segAttrSplitPane.setOneTouchExpandable(true);
-        
+        Injector ocelotScope = Guice.createInjector(new OcelotModule());
+        this.eventBus = ocelotScope.getInstance(EventBus.class);
+        this.eventBus.register(pluginManager);
+
+        segmentController = setupSegmentController(ocelotScope, provConfig);
+
+        add(setupMainPane(ocelotScope, config, ruleConfig, segmentController));
+        DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+    }
+
+    private SegmentController setupSegmentController(Injector ocelotScope,
+            ProvenanceConfig provConfig) {
+        return new SegmentController(new OkapiXLIFFFactory(),
+                ocelotScope.getInstance(EventBus.class),
+                ocelotScope.getInstance(ITSDocStats.class),
+                provConfig);
+    }
+
+    private Component setupMainPane(Injector ocelotScope, AppConfig config,
+            RuleConfiguration ruleConfig, SegmentController segmentController) throws IOException, InstantiationException, IllegalAccessException {
         Dimension segSize = new Dimension(500, 500);
 
-        segmentView = new SegmentView(eventBus, new SegmentTableModel(segmentController, ruleConfig),
-                                      config, ruleConfig, pluginManager);
+        segmentView = new SegmentView(ocelotScope.getInstance(EventBus.class),
+                new SegmentTableModel(segmentController, ruleConfig),
+                config, ruleConfig);
         segmentView.setMinimumSize(segSize);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                segAttrSplitPane, segmentView);
+                setupSegAttrDetailPanes(ocelotScope), segmentView);
         mainSplitPane.setOneTouchExpandable(true);
 
-        add(mainSplitPane);
+        return mainSplitPane;
+    }
 
-        DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+    private Component setupSegAttrDetailPanes(Injector ocelotScope) {
+        Dimension segAttrSize = new Dimension(385, 280);
+        itsDetailView = ocelotScope.getInstance(DetailView.class);
+        itsDetailView.setPreferredSize(segAttrSize);
 
-        eventBus.register(this);
+        segmentAttrView = ocelotScope.getInstance(SegmentAttributeView.class);
+        ocelotScope.getInstance(EventBus.class).register(segmentAttrView);
+        segmentAttrView.setMinimumSize(new Dimension(305, 280));
+        segmentAttrView.setPreferredSize(segAttrSize);
+
+        segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                segmentAttrView, itsDetailView);
+        segAttrSplitPane.setOneTouchExpandable(true);
+
+        return segAttrSplitPane;
     }
 
     public void setMainTitle(String sourceTitle) {
@@ -478,10 +502,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         // aren't known by the running application itself, only main.
         File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
         ocelotDir.mkdirs();
+
         Configs configs = new DirectoryBasedConfigs(ocelotDir);
+
         AppConfig appConfig = new AppConfig(configs);
         ProvenanceConfig provConfig = new ProvenanceConfig(configs);
         RuleConfiguration ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
+
         PluginManager pluginManager = new PluginManager(appConfig, new File(ocelotDir, "plugins"));
         pluginManager.discover();
 

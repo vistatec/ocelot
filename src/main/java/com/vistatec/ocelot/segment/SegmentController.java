@@ -38,7 +38,6 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
-import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,22 +57,24 @@ import org.slf4j.LoggerFactory;
  */
 public class SegmentController implements SegmentModel {
     private ArrayList<Segment> segments = new ArrayList<Segment>(100);
+
     private XLIFFFactory xliffFactory;
     private XLIFFWriter segmentWriter;
     private XLIFFParser xliffParser;
-    private boolean openFile = false;
-    private ProvenanceConfig provConfig;
-    private EventBus eventBus;
-    private boolean dirty = false;
-    private ITSDocStats docStats = new ITSDocStats();
 
-    public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus, 
-                             RuleConfiguration ruleConfig,
-                             ProvenanceConfig provConfig) {
+    private EventBus eventBus;
+    private ITSDocStats docStats;
+    private ProvenanceConfig provConfig;
+
+    private boolean openFile = false;
+    private boolean dirty = false;
+
+    public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus,
+            ITSDocStats docStats, ProvenanceConfig provConfig) {
         this.xliffFactory = xliffFactory;
         this.eventBus = eventBus;
         this.provConfig = provConfig;
-        eventBus.register(this);
+        this.docStats = docStats;
     }
 
     /**
