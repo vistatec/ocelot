@@ -49,6 +49,7 @@ import net.sf.okapi.lib.xliff2.core.StartXliffData;
 import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.TagType;
 import net.sf.okapi.lib.xliff2.core.Unit;
+import net.sf.okapi.lib.xliff2.its.IITSItem;
 import net.sf.okapi.lib.xliff2.its.LocQualityIssue;
 import net.sf.okapi.lib.xliff2.its.LocQualityIssues;
 import net.sf.okapi.lib.xliff2.its.Provenances;
@@ -60,7 +61,7 @@ import net.sf.okapi.lib.xliff2.reader.XLIFFReader;
  */
 public class OkapiXLIFF20Parser implements XLIFFParser {
     private List<Event> events;
-    private List<Part> segmentUnitParts;
+    private List<net.sf.okapi.lib.xliff2.core.Segment> segmentUnitParts;
     private Map<Integer, Integer> segmentEventMapping;
     private int documentSegmentNum;
     private String sourceLang, targetLang;
@@ -73,7 +74,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
         return this.events.get(segmentEventMapping.get(segEventNumber));
     }
 
-    public Part getSegmentUnitPart(int segmentUnitPartIndex) {
+    public net.sf.okapi.lib.xliff2.core.Segment getSegmentUnitPart(int segmentUnitPartIndex) {
         return this.segmentUnitParts.get(segmentUnitPartIndex);
     }
 
@@ -82,7 +83,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
         List<Segment> segments = new LinkedList<Segment>();
         segmentEventMapping = new HashMap<Integer, Integer>();
         events = new LinkedList<Event>();
-        segmentUnitParts = new LinkedList<Part>();
+        segmentUnitParts = new LinkedList<>();
         this.documentSegmentNum = 1;
         int segmentUnitPartIndex = 0;
 
@@ -104,8 +105,10 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                 Unit unit = event.getUnit();
                 for (Part unitPart : unit) {
                     if (unitPart.isSegment()) {
-                        segments.add(convertPartToSegment(unitPart, segmentUnitPartIndex++));
-                        this.segmentUnitParts.add(unitPart);
+                        net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
+                                (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
+                        segments.add(convertPartToSegment(okapiSegment, segmentUnitPartIndex++));
+                        this.segmentUnitParts.add(okapiSegment);
                     }
                 }
             }
@@ -121,11 +124,11 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
      * @return Segment - Ocelot Segment
      * @throws MalformedURLException
      */
-    private Segment convertPartToSegment(Part unitPart, int segmentUnitPartIndex) throws MalformedURLException {
+    private Segment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
         Segment seg = new Segment(this.documentSegmentNum++, segmentUnitPartIndex, segmentUnitPartIndex,
-                new FragmentVariant(unitPart.getSource()),
-                new FragmentVariant(unitPart.getTarget(Part.GetTarget.CREATE_EMPTY)),
+                new FragmentVariant(unitPart, false),
+                new FragmentVariant(unitPart, true),
                 null); //TODO: load original target from file
         seg.setLQI(parseLqiData(unitPart));
         seg.setProv(parseProvData(unitPart));
@@ -156,10 +159,16 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                 // Same Tag object is generated twice for paired elements; only take the opening LQI
                 if (mtag.hasITSItem() && (mtag.getTagType() == TagType.OPENING
                         || mtag.getTagType() == TagType.STANDALONE)) {
-                    LocQualityIssues lqiIssues = (LocQualityIssues) mtag.getITSItems().get(LocQualityIssue.class);
-                    if (lqiIssues != null) {
-                        for (LocQualityIssue lqiIssue : lqiIssues.getList()) {
-                            ocelotLqiList.add(convertOkapiToOcelotLqi(lqiIssue));
+                    IITSItem itsLqiItem = mtag.getITSItems().get(LocQualityIssue.class);
+                    if (itsLqiItem != null) {
+                        if (itsLqiItem.isGroup()) {
+                            LocQualityIssues lqiGroup = (LocQualityIssues) itsLqiItem;
+                            for (LocQualityIssue lqi : lqiGroup.getList()) {
+                                ocelotLqiList.add(convertOkapiToOcelotLqi(lqi));
+                            }
+                        } else {
+                            LocQualityIssue lqi = (LocQualityIssue) itsLqiItem;
+                            ocelotLqiList.add(convertOkapiToOcelotLqi(lqi));
                         }
                     }
                 }
@@ -208,11 +217,17 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                 MTag mtag = (MTag) tag;
                 if (mtag.hasITSItem() && (mtag.getTagType() == TagType.OPENING
                         || mtag.getTagType() == TagType.STANDALONE)) {
-                    Provenances provMetadata = (Provenances) mtag.getITSItems()
+                    IITSItem itsProvItem = mtag.getITSItems()
                             .get(net.sf.okapi.lib.xliff2.its.Provenance.class);
-                    if (provMetadata != null) {
-                        for (net.sf.okapi.lib.xliff2.its.Provenance p : provMetadata.getList()) {
-                            ocelotProvList.add(new OkapiProvenance(p));
+                    if (itsProvItem != null) {
+                        if (itsProvItem.isGroup()) {
+                            Provenances provMetadata = (Provenances) itsProvItem;
+                            for (net.sf.okapi.lib.xliff2.its.Provenance p : provMetadata.getList()) {
+                                ocelotProvList.add(new OkapiProvenance(p));
+                            }
+                        } else {
+                            ocelotProvList.add(new OkapiProvenance(
+                                    (net.sf.okapi.lib.xliff2.its.Provenance) itsProvItem));
                         }
                     }
                 }

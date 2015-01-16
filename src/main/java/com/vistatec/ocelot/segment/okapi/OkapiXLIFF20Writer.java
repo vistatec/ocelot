@@ -46,13 +46,13 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.XLIFFWriter;
-import java.util.ArrayList;
 import java.util.List;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Part;
 import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.TagType;
+import net.sf.okapi.lib.xliff2.its.IITSItem;
 
 import net.sf.okapi.lib.xliff2.its.ITSItems;
 import net.sf.okapi.lib.xliff2.its.ITSWriter;
@@ -76,17 +76,29 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
 
     @Override
     public void updateSegment(Segment seg, SegmentController controller) {
-        Part unitPart = this.parser.getSegmentUnitPart(seg.getSourceEventNumber());
+        net.sf.okapi.lib.xliff2.core.Segment unitPart = this.parser.getSegmentUnitPart(seg.getSourceEventNumber());
         if (unitPart == null) {
             LOG.error("Failed to find Okapi Unit Part associated with segment #"+seg.getSegmentNumber());
 
         } else if (unitPart.isSegment()) {
             //TODO: set ori target
+            if (seg.hasOriginalTarget()) {
+                FragmentVariant targetFrag = (FragmentVariant) seg.getTarget();
+                Fragment updatedOkapiFragment = targetFrag.getUpdatedOkapiFragment(unitPart.getTarget());
+                unitPart.setTarget(updatedOkapiFragment);
+            }
+
             updateITSLQIAnnotations(unitPart, seg);
 
             if (!haveAddedOcelotProvAnnotation(unitPart, seg)) {
                 updateITSProvAnnotations(unitPart, seg);
             }
+
+            FragmentVariant source = (FragmentVariant) seg.getSource();
+            source.updateSegmentAtoms(unitPart);
+
+            FragmentVariant target = (FragmentVariant) seg.getTarget();
+            target.updateSegmentAtoms(unitPart);
 
         } else {
             LOG.error("Unit part associated with Segment was not an Okapi Segment!");
@@ -187,15 +199,13 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
                 MTag mtag = (MTag) tag;
                 if (mtag.hasITSItem()) {
                     ITSItems items = mtag.getITSItems();
-
-                    LocQualityIssues lqiIssues = (LocQualityIssues)
-                            mtag.getITSItems().get(LocQualityIssue.class);
-                    if (lqiIssues != null) {
+                    IITSItem itsLqiItem = items.get(LocQualityIssue.class);
+                    if (itsLqiItem != null) {
                         // Don't delete the LQI issues for opening tags so we
                         // can find the corresponding closing tag and delete it as well
                         if (mtag.getTagType() == TagType.CLOSING ||
                                 mtag.getTagType() == TagType.STANDALONE) {
-                            items.remove(lqiIssues);
+                            items.remove(itsLqiItem);
                         }
                         // TODO: Assumes MTag is only used for ITS metadata
                         if (items.size() <= 1) {
@@ -204,7 +214,6 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
                             frag.remove(mtag);
                         }
                     }
-
                 }
             }
         }
