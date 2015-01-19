@@ -30,6 +30,7 @@ package com.vistatec.ocelot;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -56,6 +57,7 @@ public class DetailView extends JPanel {
     private EventBus eventBus;
     private Segment selectedSegment;
 
+    @Inject
     public DetailView(EventBus eventBus) {
         this.eventBus = eventBus;
         setLayout(new BorderLayout());

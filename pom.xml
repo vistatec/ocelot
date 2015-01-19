@@ -31,6 +31,11 @@
       <name>Okapi Snapshot</name>
       <url>http://repository-okapi.forge.cloudbees.com/snapshot/</url>
     </repository>
+    <repository>
+        <id>okapi-xliff</id>
+        <name>okapi-xliff-repository</name>
+        <url>http://repository-okapi-xliff.forge.cloudbees.com/snapshot/</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -81,6 +86,19 @@
         <artifactId>okapi-filter-xliff</artifactId>
         <version>${okapi.version}</version>
     </dependency>
+
+    <dependency>
+        <groupId>net.sf.okapi.lib</groupId>
+        <artifactId>okapi-lib-xliff2</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+        <groupId>commons-io</groupId>
+	<artifactId>commons-io</artifactId>
+	<version>2.4</version>
+    </dependency>
+
     <dependency>
         <groupId>diff_match_patch</groupId>
         <artifactId>diff_match_patch</artifactId>
@@ -92,10 +110,16 @@
         <artifactId>jaxb-api</artifactId>
         <version>2.2.11</version>
     </dependency>
+
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>17.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
     </dependency>
   </dependencies>
 

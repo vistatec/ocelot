@@ -30,7 +30,7 @@ package com.vistatec.ocelot.segment;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.DetailView;
+import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
@@ -60,12 +60,10 @@ public class SegmentAttributeView extends JTabbedPane {
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
-    private DetailView detailView;
     private Segment selectedSegment;
 
-    public SegmentAttributeView(EventBus eventBus, ITSDocStats docStats, DetailView detailView) {
-        this.detailView = detailView;
-
+    @Inject
+    public SegmentAttributeView(EventBus eventBus, ITSDocStats docStats) {
         aggregateTableView = new ITSDocStatsTableView(eventBus, docStats);
         addTab("Doc Stats", aggregateTableView);
 
@@ -130,10 +128,6 @@ public class SegmentAttributeView extends JTabbedPane {
                 setSelectedIndex(i);
             }
         }
-    }
-    
-    public void deselectMetadata() {
-        detailView.clearDisplay();
     }
 
     public void focusNextTab() {

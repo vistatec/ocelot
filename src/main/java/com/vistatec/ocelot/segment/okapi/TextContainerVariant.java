@@ -59,7 +59,7 @@ public class TextContainerVariant extends BaseSegmentVariant {
                 char codeMarker = tf.charAt(++i);
                 int codeIndex = TextFragment.toIndex(codeMarker);
                 Code code = tf.getCode(codeIndex);
-                atoms.add(new CodeAtom(codeIndex, getCodeText(code, false),
+                atoms.add(new CodeAtom(codeIndex+"", getCodeText(code, false),
                                        getCodeText(code, true)));
             }
             else {
@@ -82,7 +82,8 @@ public class TextContainerVariant extends BaseSegmentVariant {
         TextFragment frag = new TextFragment();
         for (SegmentAtom atom : atoms) {
             if (atom instanceof CodeAtom) {
-                Code c = tcCodes.get(((CodeAtom)atom).getId());
+                CodeAtom codeAtom = (CodeAtom) atom;
+                Code c = tcCodes.get( Integer.parseInt(codeAtom.getId()) );
                 frag.append(c);
             }
             else {

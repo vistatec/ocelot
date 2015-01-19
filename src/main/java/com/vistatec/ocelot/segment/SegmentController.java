@@ -38,7 +38,6 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
-import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,28 +46,35 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Data model for a document.  This handles most manipulations of the 
  * segment model and generates most segment-related events.
  */
 public class SegmentController implements SegmentModel {
     private ArrayList<Segment> segments = new ArrayList<Segment>(100);
+
     private XLIFFFactory xliffFactory;
     private XLIFFWriter segmentWriter;
     private XLIFFParser xliffParser;
-    private boolean openFile = false;
-    private ProvenanceConfig provConfig;
-    private EventBus eventBus;
-    private boolean dirty = false;
-    private ITSDocStats docStats = new ITSDocStats();
 
-    public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus, 
-                             RuleConfiguration ruleConfig,
-                             ProvenanceConfig provConfig) {
-        this.xliffFactory = xliffFactory;;
+    private EventBus eventBus;
+    private ITSDocStats docStats;
+    private ProvenanceConfig provConfig;
+
+    private boolean openFile = false;
+    private boolean dirty = false;
+
+    public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus,
+            ITSDocStats docStats, ProvenanceConfig provConfig) {
+        this.xliffFactory = xliffFactory;
         this.eventBus = eventBus;
         this.provConfig = provConfig;
-        eventBus.register(this);
+        this.docStats = docStats;
     }
 
     /**
@@ -162,13 +168,13 @@ public class SegmentController implements SegmentModel {
         docStats.addProvenanceStats(prov);
     }
 
-    public void parseXLIFFFile(File xliffFile) throws IOException {
-        XLIFFParser newParser = xliffFactory.newXLIFFParser();
-        List<Segment> segments = newParser.parse(xliffFile);
+    public void parseXLIFFFile(File xliffFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
+        XLIFFParser newParser = xliffFactory.newXLIFFParser(detectVersion);
+        List<Segment> xliffSegments = newParser.parse(xliffFile);
 
         clearAllSegments();
         xliffParser = newParser;
-        setSegments(segments);
+        setSegments(xliffSegments);
 
         setOpenFile(true);
         segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig);

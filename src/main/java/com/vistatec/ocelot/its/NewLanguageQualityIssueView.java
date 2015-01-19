@@ -307,7 +307,7 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
     public boolean setType(String metadataType) {
         for (int i = 0; i < LQI_TYPE.length; i++) {
             String value = LQI_TYPE[i];
-            if (metadataType.equals(value)) {
+            if (value.equals(metadataType)) {
                 typeList.setSelectedIndex(i);
                 return true;
             }

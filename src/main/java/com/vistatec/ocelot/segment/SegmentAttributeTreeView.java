@@ -104,6 +104,5 @@ public class SegmentAttributeTreeView extends JScrollPane implements TreeSelecti
         root.removeAllChildren();
         lqiRoot = null;
         treeModel.reload();
-        segAttrView.deselectMetadata();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013, 2014, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -85,6 +85,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 
     public OkapiXLIFF12Parser() {}
 
+    @Override
     public String getSourceLang() {
         return this.sourceLang;
     }
@@ -93,6 +94,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
         this.sourceLang = sourceLang;
     }
 
+    @Override
     public String getTargetLang() {
         return this.targetLang;
     }
@@ -109,6 +111,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
         return this.events;
     }
 
+    @Override
     public List<Segment> parse(File xliffFile) throws IOException {
         events = new LinkedList<Event>();
         List<Segment> segments = new LinkedList<Segment>();
