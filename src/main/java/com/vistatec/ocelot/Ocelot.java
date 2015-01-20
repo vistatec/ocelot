@@ -52,6 +52,7 @@ import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.segment.okapi.OkapiXLIFFFactory;
+import com.vistatec.ocelot.services.ProvenanceService;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
@@ -131,6 +132,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private final EventBus eventBus;
     private Color optionPaneBackgroundColor;
 
+    private ProvenanceService provService;
+
     public Ocelot(AppConfig config, PluginManager pluginManager,
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
             throws IOException, InstantiationException, IllegalAccessException {
@@ -147,6 +150,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         Injector ocelotScope = Guice.createInjector(new OcelotModule());
         this.eventBus = ocelotScope.getInstance(EventBus.class);
         this.eventBus.register(pluginManager);
+
+        this.provService = new ProvenanceService(eventBus, provConfig);
+        this.eventBus.register(provService);
 
         segmentController = setupSegmentController(ocelotScope, provConfig);
 
@@ -218,7 +224,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             showModelessDialog(new PluginManagerView(pluginManager, segmentController), "Plugin Manager");
 
         } else if (e.getSource() == this.menuProv) {
-            showModelessDialog(new ProvenanceProfileView(provConfig), "Credentials");
+            ProvenanceProfileView userProfileView = new ProvenanceProfileView(
+                    eventBus, provConfig.getUserProvenance());
+            this.eventBus.register(userProfileView);
+            showModelessDialog(userProfileView, "Credentials");
 
         } else if (e.getSource() == this.menuExit) {
             handleApplicationExit();
@@ -254,7 +263,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();
-                eventBus.post(new OpenFileEvent(sourceFile.getName()));
                 this.pluginManager.notifyOpenFile(sourceFile.getName());
 
                 this.menuSave.setEnabled(true);

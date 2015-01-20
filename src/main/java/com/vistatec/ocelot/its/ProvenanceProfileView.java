@@ -28,11 +28,12 @@
  */
 package com.vistatec.ocelot.its;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -43,32 +44,31 @@ import javax.swing.border.EmptyBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.events.UserProfileSaveEvent;
 import com.vistatec.ocelot.ui.ODialogPanel;
+import javax.swing.JOptionPane;
 
 /**
  * Provenance configuration view.
  */
 public class ProvenanceProfileView extends ODialogPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
-    private Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
+    private final Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
-    private JTextField inputRevPerson, inputRevOrg, inputExtRef;
-    private JButton save;
-    private ProvenanceConfig config;
-    private UserProvenance prov;
+    private final JTextField inputRevPerson, inputRevOrg, inputExtRef;
+    private final JButton save;
 
-    public ProvenanceProfileView(ProvenanceConfig config) {
+    private EventBus eventBus;
+
+    public ProvenanceProfileView(EventBus eventBus, UserProvenance profile) {
         super(new GridBagLayout());
-        this.config = config;
         setBorder(new EmptyBorder(10,10,10,10));
+        this.eventBus = eventBus;
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 1;
-
-        prov = config.getUserProvenance();
 
         JLabel revPersonLabel = new JLabel("Reviewer: ");
         gridBag.gridx = 0;
@@ -76,7 +76,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         add(revPersonLabel, gridBag);
 
         inputRevPerson = new JTextField(15);
-        inputRevPerson.setText(prov.getRevPerson());
+        inputRevPerson.setText(profile.getRevPerson());
         gridBag.gridx = 1;
         gridBag.gridy = 0;
         add(inputRevPerson, gridBag);
@@ -87,7 +87,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         add(revOrgLabel, gridBag);
 
         inputRevOrg = new JTextField(15);
-        inputRevOrg.setText(prov.getRevOrg());
+        inputRevOrg.setText(profile.getRevOrg());
         gridBag.gridx = 1;
         gridBag.gridy = 1;
         add(inputRevOrg, gridBag);
@@ -98,7 +98,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         add(extRefLabel, gridBag);
 
         inputExtRef = new JTextField(15);
-        inputExtRef.setText(prov.getProvRef());
+        inputExtRef.setText(profile.getProvRef());
         gridBag.gridx = 1;
         gridBag.gridy = 2;
         add(inputExtRef, gridBag);
@@ -126,15 +126,23 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == save) {
-            prov.setRevPerson(inputRevPerson.getText());
-            prov.setRevOrg(inputRevOrg.getText());
-            prov.setProvRef(inputExtRef.getText());
-            try {
-                config.save(prov);
-            } catch (IOException ex) {
-                LOG.warn("Unable to save changes to user provenance", ex);
-            }
-            getDialog().dispose();
+            UserProvenance userProvData = new UserProvenance(
+                    inputRevPerson.getText(), inputRevOrg.getText(),
+                    inputExtRef.getText());
+            eventBus.post(new UserProfileSaveEvent(userProvData));
         }
+    }
+
+    @Subscribe
+    public void saveUserProvSuccess(UserProfileSaveEvent.Success success) {
+        this.eventBus.unregister(this);
+        getDialog().dispose();
+    }
+
+    @Subscribe
+    public void saveUserProvFailure(UserProfileSaveEvent.Failure failure) {
+        LOG.error(failure.failureMsg, failure.ex);
+        JOptionPane.showMessageDialog(null, failure.failureMsg,
+                "Failed to save user provenance!", JOptionPane.ERROR_MESSAGE);
     }
 }
