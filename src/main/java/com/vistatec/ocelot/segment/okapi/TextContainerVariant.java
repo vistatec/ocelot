@@ -23,7 +23,7 @@ public class TextContainerVariant extends BaseSegmentVariant {
         this.tc = tc;
     }
 
-    public TextContainerVariant createEmpty() {
+    public TextContainerVariant createEmptyTarget() {
         return new TextContainerVariant(new TextContainer());
     }
 

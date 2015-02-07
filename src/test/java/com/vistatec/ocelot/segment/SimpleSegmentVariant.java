@@ -27,7 +27,7 @@ public class SimpleSegmentVariant extends BaseSegmentVariant {
     }
 
     @Override
-    public SegmentVariant createEmpty() {
+    public SegmentVariant createEmptyTarget() {
         return new SimpleSegmentVariant();
     }
 

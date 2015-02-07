@@ -12,7 +12,7 @@ public interface SegmentVariant {
      * Create a new (empty) variant of this type.
      * @return
      */
-    SegmentVariant createEmpty();
+    SegmentVariant createEmptyTarget();
 
     /**
      * Create a new variant containing the same content as

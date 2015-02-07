@@ -72,7 +72,7 @@ public class Segment {
 
             this.targetDiff = EditDistance.styleTextDifferences(target, originalTarget);
         } else {
-            this.originalTarget = target.createEmpty();
+            this.originalTarget = target.createEmptyTarget();
         }
     }
 

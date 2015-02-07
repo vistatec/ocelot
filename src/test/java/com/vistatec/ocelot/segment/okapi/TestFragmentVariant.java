@@ -48,9 +48,10 @@ public class TestFragmentVariant {
     }
 
     @Test
-    public void testCreateEmpty() {
-        FragmentVariant fv = plainCodeFV.createEmpty();
+    public void testCreateEmptyTarget() {
+        FragmentVariant fv = plainCodeFV.createEmptyTarget();
         assertEquals(Collections.emptyList(), fv.getAtoms());
+        assertEquals(true, fv.isTarget());
     }
 
     @Test
