@@ -18,13 +18,15 @@ import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.ProvenanceAddedEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
+import com.vistatec.ocelot.events.api.EventBusWrapper;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.its.stats.ITSStats;
 import com.vistatec.ocelot.its.stats.LanguageQualityIssueStats;
 import com.vistatec.ocelot.its.stats.ProvenanceStats;
-import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
 import com.vistatec.ocelot.segment.okapi.OkapiXLIFFFactory;
 
@@ -35,11 +37,11 @@ import static org.junit.Assert.*;
  */
 public class TestSegmentController {
 
-    private EventBus eventBus;
+    private OcelotEventQueue eventBus;
 
     @Before
     public void before() {
-        eventBus = new EventBus();
+        eventBus = new EventBusWrapper(new EventBus());
     }
 
     private SegmentController emptyController() throws Exception {
@@ -108,8 +110,8 @@ public class TestSegmentController {
         ITSDocStats stats = controller.getStats();
         ModifyLQIListener lqiListener = new ModifyLQIListener();
         DocStatsUpdateListener statsListener = new DocStatsUpdateListener();
-        eventBus.register(lqiListener);
-        eventBus.register(statsListener);
+        eventBus.registerListener(lqiListener);
+        eventBus.registerListener(statsListener);
         Segment seg = TestSegment.newSegment();
         controller.setSegments(Collections.singletonList(seg));
         // Stats changed when we set segments
@@ -138,7 +140,7 @@ public class TestSegmentController {
         controller.parseXLIFFFile(null, null); // XXX see above
         ITSDocStats stats = controller.getStats();
         ProvenanceAddedListener listener = new ProvenanceAddedListener();
-        eventBus.register(listener);
+        eventBus.registerListener(listener);
         Segment seg = TestSegment.newSegment();
         controller.setSegments(Collections.singletonList(seg));
         assertEquals(Collections.emptyList(), stats.getStats());
@@ -160,43 +162,43 @@ public class TestSegmentController {
         Segment seg = controller.getSegment(0);
         ResetTargetListener resetListener = new ResetTargetListener();
         SegmentUpdateListener updateListener = new SegmentUpdateListener();
-        eventBus.register(resetListener);
-        eventBus.register(updateListener);
+        eventBus.registerListener(resetListener);
+        eventBus.registerListener(updateListener);
         seg.updateTarget(new SimpleSegmentVariant("newtarget"));
         assertEquals(1, updateListener.callbackCount);
         seg.resetTarget();
         assertTrue(resetListener.called);
     }
 
-    class ProvenanceAddedListener {
+    class ProvenanceAddedListener implements OcelotEventQueueListener {
         boolean called = false;
         @Subscribe
         public void callback(ProvenanceAddedEvent e) {
             called = true;
         }
     }
-    class ResetTargetListener {
+    class ResetTargetListener implements OcelotEventQueueListener {
         boolean called = false;
         @Subscribe
         public void callback(SegmentTargetResetEvent e) {
             called = true;
         }
     }
-    class ModifyLQIListener {
+    class ModifyLQIListener implements OcelotEventQueueListener {
         int callbackCount = 0;
         @Subscribe
         public void callback(LQIModificationEvent e) {
             callbackCount++;
         }
     }
-    class SegmentUpdateListener {
+    class SegmentUpdateListener implements OcelotEventQueueListener {
         int callbackCount = 0;
         @Subscribe
         public void callback(SegmentEditEvent e) {
             callbackCount++;
         }
     }
-    class DocStatsUpdateListener {
+    class DocStatsUpdateListener implements OcelotEventQueueListener {
         int callbackCount = 0;
         @Subscribe
         public void callback(ITSDocStatsChangedEvent e) {

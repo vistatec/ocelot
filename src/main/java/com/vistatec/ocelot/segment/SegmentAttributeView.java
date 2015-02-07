@@ -28,13 +28,14 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import com.vistatec.ocelot.events.ITSSelectionEvent;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.LanguageQualityIssueTableView;
 import com.vistatec.ocelot.its.OtherITSTableView;
@@ -53,7 +54,7 @@ import javax.swing.event.ChangeListener;
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  * Container for the various metadata tabs (stats/LQI/Prov/Other).
  */
-public class SegmentAttributeView extends JTabbedPane {
+public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
     protected ITSDocStatsTableView aggregateTableView;
@@ -62,18 +63,23 @@ public class SegmentAttributeView extends JTabbedPane {
     protected OtherITSTableView itsTableView;
 
     @Inject
-    public SegmentAttributeView(EventBus eventBus, ITSDocStats docStats) {
-        aggregateTableView = new ITSDocStatsTableView(eventBus, docStats);
+    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStats docStats) {
+        aggregateTableView = new ITSDocStatsTableView(docStats);
         addTab("Doc Stats", aggregateTableView);
+        eventQueue.registerListener(aggregateTableView);
 
-        lqiTableView = new LanguageQualityIssueTableView(eventBus);
+        lqiTableView = new LanguageQualityIssueTableView(eventQueue);
         addTab("LQI", lqiTableView);
+        eventQueue.registerListener(lqiTableView);
 
-        provTableView = new ProvenanceTableView(eventBus);
+        provTableView = new ProvenanceTableView(eventQueue);
         addTab("Prov", provTableView);
+        eventQueue.registerListener(provTableView);
 
-        itsTableView = new OtherITSTableView(eventBus);
+        itsTableView = new OtherITSTableView();
+        eventQueue.registerListener(itsTableView);
         addTab("Other ITS", itsTableView);
+        eventQueue.registerListener(itsTableView);
 
         // Deselect metadata to allow reselection for detail view after switching tabs.
         addChangeListener(new ChangeListener() {
@@ -86,11 +92,10 @@ public class SegmentAttributeView extends JTabbedPane {
                 previousComponent = getSelectedComponent();
             }
         });
-        eventBus.register(this);
     }
 
     @Subscribe
-    public void metadataSelected(ITSSelectionEvent e) {
+    public void metadataSelected(ItsSelectionEvent e) {
         if (e.getITSMetadata() instanceof LanguageQualityIssue) {
             setTab(lqiTableView);
         }

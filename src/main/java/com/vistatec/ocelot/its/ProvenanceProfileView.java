@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.its;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -46,25 +45,27 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.UserProfileSaveEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import javax.swing.JOptionPane;
 
 /**
  * Provenance configuration view.
  */
-public class ProvenanceProfileView extends ODialogPanel implements ActionListener {
+public class ProvenanceProfileView extends ODialogPanel implements ActionListener, OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
     private final Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
     private final JTextField inputRevPerson, inputRevOrg, inputExtRef;
     private final JButton save;
 
-    private EventBus eventBus;
+    private OcelotEventQueue eventQueue;
 
-    public ProvenanceProfileView(EventBus eventBus, UserProvenance profile) {
+    public ProvenanceProfileView(OcelotEventQueue eventQueue, UserProvenance profile) {
         super(new GridBagLayout());
         setBorder(new EmptyBorder(10,10,10,10));
-        this.eventBus = eventBus;
+        this.eventQueue = eventQueue;
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
@@ -129,13 +130,13 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
             UserProvenance userProvData = new UserProvenance(
                     inputRevPerson.getText(), inputRevOrg.getText(),
                     inputExtRef.getText());
-            eventBus.post(new UserProfileSaveEvent(userProvData));
+            eventQueue.post(new UserProfileSaveEvent(userProvData));
         }
     }
 
     @Subscribe
     public void saveUserProvSuccess(UserProfileSaveEvent.Success success) {
-        this.eventBus.unregister(this);
+        this.eventQueue.unregisterListener(this);
         getDialog().dispose();
     }
 

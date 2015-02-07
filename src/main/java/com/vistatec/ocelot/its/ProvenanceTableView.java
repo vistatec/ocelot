@@ -28,8 +28,9 @@
  */
 package com.vistatec.ocelot.its;
 
-import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.events.ProvenanceSelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
@@ -45,12 +46,13 @@ import javax.swing.table.AbstractTableModel;
 /**
  * Table View for displaying segment ITS Provenance metadata.
  */
-public class ProvenanceTableView extends
-        SegmentAttributeTablePane<ProvenanceTableView.ProvTableModel> {
+public class ProvenanceTableView extends SegmentAttributeTablePane<ProvenanceTableView.ProvTableModel> implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
-    public ProvenanceTableView(EventBus eventBus) {
-        super(eventBus);
+    private final OcelotEventQueue eventQueue;
+
+    public ProvenanceTableView(OcelotEventQueue eventQueue) {
+        this.eventQueue = eventQueue;
     }
 
     @Override
@@ -76,8 +78,7 @@ public class ProvenanceTableView extends
     private void selectedProv() {
         int rowIndex = getTable().getSelectedRow();
         if (rowIndex >= 0) {
-            getEventBus().post(new ProvenanceSelectionEvent(
-                    getTableModel().rows.get(rowIndex)));
+            eventQueue.post(new ProvenanceSelectionEvent(getTableModel().rows.get(rowIndex)));
         }
     }
 

@@ -28,10 +28,9 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.AppConfig;
-import com.vistatec.ocelot.events.ITSSelectionEvent;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.QuickAddEvent;
@@ -43,13 +42,14 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
 
 import static com.vistatec.ocelot.SegmentViewColumn.*;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
-import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RuleListener;
@@ -98,7 +98,7 @@ import org.apache.log4j.Logger;
  * Table view containing the source and target segments extracted from the
  * opened file. Indicates attached LTS metadata as flags.
  */
-public class SegmentView extends JScrollPane implements RuleListener {
+public class SegmentView extends JScrollPane implements RuleListener, OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
     private static Logger LOG = Logger.getLogger(SegmentView.class);
@@ -110,18 +110,17 @@ public class SegmentView extends JScrollPane implements RuleListener {
     private boolean enabledTargetDiff = true;
 
     protected RuleConfiguration ruleConfig;
-    private EventBus eventBus;
+    private final OcelotEventQueue eventQueue;
 
-    public SegmentView(EventBus eventBus, SegmentTableModel segmentTableModel, AppConfig appConfig,
+    public SegmentView(OcelotEventQueue eventQueue, SegmentTableModel segmentTableModel, AppConfig appConfig,
             RuleConfiguration ruleConfig) throws IOException, InstantiationException,
             InstantiationException, IllegalAccessException {
-        this.eventBus = eventBus;
+        this.eventQueue = eventQueue;
         this.segmentTableModel = segmentTableModel;
         this.ruleConfig = ruleConfig;
         this.ruleConfig.addRuleListener(this);
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
-        eventBus.register(this);
     }
 
     public final void initializeTable() {
@@ -349,7 +348,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
             if (col.isFlagColumn()) {
                 ITSMetadata its = ruleConfig.getTopDataCategory(seg, col.getFlagIndex());
                 if (its != null) {
-                    eventBus.post(new ITSSelectionEvent(its));
+                    eventQueue.post(new ItsSelectionEvent(its));
                 }
             }
         }
@@ -380,7 +379,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         int selectedRow = sourceTargetTable.getSelectedRow();
         updateTableRow(selectedRow);
         sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
-        eventBus.post(new LQISelectionEvent(event.getLQI()));
+        eventQueue.post(new LQISelectionEvent(event.getLQI()));
         postSegmentSelection(event.getSegment());
         requestFocusTable();
     }
@@ -408,7 +407,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
     private void postSegmentSelection(Segment seg) {
         if (seg != null) {
-            eventBus.post(new SegmentSelectionEvent(seg));
+            eventQueue.post(new SegmentSelectionEvent(seg));
         }
     }
 
@@ -578,14 +577,14 @@ public class SegmentView extends JScrollPane implements RuleListener {
 
         public void setBeginEdit(Segment seg, String codedText) {
             this.seg = seg;
-            eventBus.post(new SegmentTargetEnterEvent(seg));
+            eventQueue.post(new SegmentTargetEnterEvent(seg));
         }
 
         @Override
         public void editingStopped(ChangeEvent ce) {
             SegmentVariant updatedTarget = ((SegmentEditor)ce.getSource()).editorComponent.getVariant();
             int row = sourceTargetTable.getSelectedRow();
-            eventBus.post(new SegmentTargetExitEvent(seg));
+            eventQueue.post(new SegmentTargetExitEvent(seg));
             seg.updateTarget(updatedTarget);
             postSegmentSelection(seg);
             updateTableRow(row);

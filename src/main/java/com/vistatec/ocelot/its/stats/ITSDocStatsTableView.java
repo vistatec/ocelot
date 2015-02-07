@@ -28,9 +28,9 @@
  */
 package com.vistatec.ocelot.its.stats;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ITSDocStatsChangedEvent;
+import com.vistatec.ocelot.events.ItsDocStatsChangedEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -40,14 +40,14 @@ import javax.swing.table.TableRowSorter;
 /**
  * Table View for displaying segment ITS metadata.
  */
-public class ITSDocStatsTableView extends JScrollPane {
+public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
     private DocumentStatsTableModel docStatsModel;
     protected JTable docStatsTable;
     private TableRowSorter<DocumentStatsTableModel> sort;
 
-    public ITSDocStatsTableView(EventBus eventBus, ITSDocStats docStats) {
+    public ITSDocStatsTableView(ITSDocStats docStats) {
         docStatsModel = new DocumentStatsTableModel(docStats);
         docStatsTable = new JTable(docStatsModel);
 
@@ -55,11 +55,10 @@ public class ITSDocStatsTableView extends JScrollPane {
         docStatsTable.setRowSorter(sort);
 
         setViewportView(docStatsTable);
-        eventBus.register(this);
     }
 
     @Subscribe
-    public void docStatsChanged(ITSDocStatsChangedEvent event) {
+    public void docStatsChanged(ItsDocStatsChangedEvent event) {
         docStatsModel.fireTableDataChanged();
     }
 

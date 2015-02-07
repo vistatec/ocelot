@@ -1,8 +1,9 @@
 package com.vistatec.ocelot.events;
 
+import com.vistatec.ocelot.events.api.OcelotEvent;
 import com.vistatec.ocelot.its.Provenance;
 
-public class ProvenanceSelectionEvent extends ITSSelectionEvent {
+public class ProvenanceSelectionEvent extends ItsSelectionEvent implements OcelotEvent {
     public ProvenanceSelectionEvent(Provenance prov) {
         super(prov);
     }

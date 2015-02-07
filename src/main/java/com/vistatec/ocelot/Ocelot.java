@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.google.common.eventbus.EventBus;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.config.AppConfig;
@@ -37,6 +36,7 @@ import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.OpenFileEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.plugins.PluginManager;
@@ -129,7 +129,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private ProvenanceConfig provConfig;
     private RuleConfiguration ruleConfig;
     private PluginManager pluginManager;
-    private final EventBus eventBus;
+    private final OcelotEventQueue eventQueue;
     private Color optionPaneBackgroundColor;
 
     private ProvenanceService provService;
@@ -148,11 +148,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         optionPaneBackgroundColor = (Color)UIManager.get("OptionPane.background");
 
         Injector ocelotScope = Guice.createInjector(new OcelotModule());
-        this.eventBus = ocelotScope.getInstance(EventBus.class);
-        this.eventBus.register(pluginManager);
+        this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
+        this.eventQueue.registerListener(pluginManager);
 
-        this.provService = new ProvenanceService(eventBus, provConfig);
-        this.eventBus.register(provService);
+        this.provService = new ProvenanceService(eventQueue, provConfig);
+        this.eventQueue.registerListener(provService);
 
         segmentController = setupSegmentController(ocelotScope, provConfig);
 
@@ -163,7 +163,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private SegmentController setupSegmentController(Injector ocelotScope,
             ProvenanceConfig provConfig) {
         return new SegmentController(new OkapiXLIFFFactory(),
-                ocelotScope.getInstance(EventBus.class),
+                ocelotScope.getInstance(OcelotEventQueue.class),
                 ocelotScope.getInstance(ITSDocStats.class),
                 provConfig);
     }
@@ -172,10 +172,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             RuleConfiguration ruleConfig, SegmentController segmentController) throws IOException, InstantiationException, IllegalAccessException {
         Dimension segSize = new Dimension(500, 500);
 
-        segmentView = new SegmentView(ocelotScope.getInstance(EventBus.class),
+        segmentView = new SegmentView(ocelotScope.getInstance(OcelotEventQueue.class),
                 new SegmentTableModel(segmentController, ruleConfig),
                 config, ruleConfig);
         segmentView.setMinimumSize(segSize);
+        this.eventQueue.registerListener(segmentView);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 setupSegAttrDetailPanes(ocelotScope), segmentView);
@@ -188,11 +189,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         Dimension segAttrSize = new Dimension(385, 280);
         itsDetailView = ocelotScope.getInstance(DetailView.class);
         itsDetailView.setPreferredSize(segAttrSize);
+        this.eventQueue.registerListener(itsDetailView);
 
         segmentAttrView = ocelotScope.getInstance(SegmentAttributeView.class);
-        ocelotScope.getInstance(EventBus.class).register(segmentAttrView);
         segmentAttrView.setMinimumSize(new Dimension(305, 280));
         segmentAttrView.setPreferredSize(segAttrSize);
+        this.eventQueue.registerListener(segmentAttrView);
 
         segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 segmentAttrView, itsDetailView);
@@ -219,14 +221,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else if (e.getSource() == this.menuRules) {
             showModelessDialog(new FilterView(ruleConfig), "Filters");
         } else if (e.getSource() == this.menuQuickAdd) {
-            showModelessDialog(new QuickAddView(ruleConfig, eventBus), "QuickAdd Rules");
+            showModelessDialog(new QuickAddView(this.ruleConfig, this.eventQueue), "QuickAdd Rules");
         } else if (e.getSource() == this.menuPlugins) {
             showModelessDialog(new PluginManagerView(pluginManager, segmentController), "Plugin Manager");
 
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView userProfileView = new ProvenanceProfileView(
-                    eventBus, provConfig.getUserProvenance());
-            this.eventBus.register(userProfileView);
+                    this.eventQueue, this.provConfig.getUserProvenance());
+            this.eventQueue.registerListener(userProfileView);
             showModelessDialog(userProfileView, "Credentials");
 
         } else if (e.getSource() == this.menuExit) {
@@ -427,8 +429,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuQuickAdd.addActionListener(this);
         menuFilter.add(menuQuickAdd);
 
-        SegmentMenu segmentMenu = new SegmentMenu(eventBus, getPlatformKeyMask());
+        SegmentMenu segmentMenu = new SegmentMenu(getPlatformKeyMask());
         menuBar.add(segmentMenu.getMenu());
+        this.eventQueue.registerListener(segmentMenu);
         
         menuExtensions = new JMenu("Extensions");
         menuBar.add(menuExtensions);

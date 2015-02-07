@@ -5,22 +5,19 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
-public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> extends JScrollPane {
+public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> extends JScrollPane implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
     private JTable table;
     private T tableModel;
     private Segment selectedSegment;
-    private EventBus eventBus;
 
-    protected SegmentAttributeTablePane(EventBus eventBus) {
+    protected SegmentAttributeTablePane() {
         initializeTable();
-        this.eventBus = eventBus;
-        eventBus.register(this);
     }
 
     private void initializeTable() {
@@ -42,10 +39,6 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
 
     protected JTable getTable() {
         return table;
-    }
-
-    protected EventBus getEventBus() {
-        return eventBus;
     }
 
     protected Segment getSelectedSegment() {

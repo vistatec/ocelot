@@ -1,11 +1,12 @@
 package com.vistatec.ocelot.events;
 
+import com.vistatec.ocelot.events.api.OcelotEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 
-public class LQIModificationEvent {
-    private LanguageQualityIssue lqi;
-    private Segment segment;
+public class LQIModificationEvent implements OcelotEvent {
+    private final LanguageQualityIssue lqi;
+    private final Segment segment;
 
     public LQIModificationEvent(LanguageQualityIssue lqi, Segment segment) {
         this.lqi = lqi;

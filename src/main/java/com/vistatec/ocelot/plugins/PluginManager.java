@@ -32,6 +32,7 @@ import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
@@ -67,7 +68,7 @@ import org.slf4j.LoggerFactory;
  * The plugins themselves are instantiated immediately and are treated
  * like stateful singletons.
  */
-public class PluginManager {
+public class PluginManager implements OcelotEventQueueListener {
         private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
         private List<String> itsPluginClassNames = new ArrayList<String>();
         private List<String> segPluginClassNames = new ArrayList<String>();

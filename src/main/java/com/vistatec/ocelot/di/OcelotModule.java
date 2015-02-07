@@ -1,8 +1,9 @@
 package com.vistatec.ocelot.di;
 
-import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.vistatec.ocelot.events.api.EventBusWrapper;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 
 /**
@@ -12,7 +13,7 @@ public class OcelotModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(EventBus.class).in(Scopes.SINGLETON);
+        bind(OcelotEventQueue.class).to(EventBusWrapper.class).in(Scopes.SINGLETON);
         bind(ITSDocStats.class).in(Scopes.SINGLETON);
     }
 

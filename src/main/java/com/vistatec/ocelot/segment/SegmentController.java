@@ -28,13 +28,13 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.ITSDocStatsChangedEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.ProvenanceAddedEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
@@ -48,9 +48,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Data model for a document.  This handles most manipulations of the 
  * segment model and generates most segment-related events.
@@ -62,17 +59,17 @@ public class SegmentController implements SegmentModel {
     private XLIFFWriter segmentWriter;
     private XLIFFParser xliffParser;
 
-    private EventBus eventBus;
+    private OcelotEventQueue eventQueue;
     private ITSDocStats docStats;
     private ProvenanceConfig provConfig;
 
     private boolean openFile = false;
     private boolean dirty = false;
 
-    public SegmentController(XLIFFFactory xliffFactory, EventBus eventBus,
+    public SegmentController(XLIFFFactory xliffFactory, OcelotEventQueue eventQueue,
             ITSDocStats docStats, ProvenanceConfig provConfig) {
         this.xliffFactory = xliffFactory;
-        this.eventBus = eventBus;
+        this.eventQueue = eventQueue;
         this.provConfig = provConfig;
         this.docStats = docStats;
     }
@@ -111,7 +108,7 @@ public class SegmentController implements SegmentModel {
     }
     
     protected void notifyResetTarget(Segment seg) {
-        eventBus.post(new SegmentTargetResetEvent(seg));
+        eventQueue.post(new SegmentTargetResetEvent(seg));
     }
 
     /**
@@ -133,38 +130,38 @@ public class SegmentController implements SegmentModel {
                 docStats.addProvenanceStats(prov);
             }
         }
-        eventBus.post(new ITSDocStatsChangedEvent());
+        eventQueue.post(new ITSDocStatsChangedEvent());
     }
 
     void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
         updateSegment(seg);
         docStats.addLQIStats(lqi);
-        eventBus.post(new ITSDocStatsChangedEvent());
-        eventBus.post(new LQIModificationEvent(lqi, seg));
+        eventQueue.post(new ITSDocStatsChangedEvent());
+        eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
 
     void notifyRemovedLQI(LanguageQualityIssue lqi, Segment seg) {
         updateSegment(seg);
         recalculateDocStats();
-        eventBus.post(new LQIModificationEvent(lqi, seg));
+        eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
 
     public void clearAllSegments() {
         segments.clear();
         docStats.clear();
-        eventBus.post(new ITSDocStatsChangedEvent());
+        eventQueue.post(new ITSDocStatsChangedEvent());
     }
 
     public void notifyUpdateSegment(Segment seg) {
         updateSegment(seg);
-        eventBus.post(new SegmentEditEvent(seg));
+        eventQueue.post(new SegmentEditEvent(seg));
     }
 
     // XXX Inconsistent naming - this is used when provenance is added
     // at runtime (for LQI, this is called notifyModifiedProv)
     void notifyAddedProv(Provenance prov) {
         dirty = true;
-        eventBus.post(new ProvenanceAddedEvent(prov));
+        eventQueue.post(new ProvenanceAddedEvent(prov));
         docStats.addProvenanceStats(prov);
     }
 

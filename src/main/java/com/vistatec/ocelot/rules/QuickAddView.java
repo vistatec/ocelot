@@ -7,14 +7,14 @@ import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.border.EmptyBorder;
 
-import com.google.common.eventbus.EventBus;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 public class QuickAddView extends ODialogPanel {
     private static final long serialVersionUID = 1L;
     private QuickAddViewTable quickAddTable;
 
-    public QuickAddView(RuleConfiguration ruleConfig, EventBus eventBus) {
+    public QuickAddView(RuleConfiguration ruleConfig, OcelotEventQueue eventQueue) {
         super(new GridBagLayout());
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -28,7 +28,7 @@ public class QuickAddView extends ODialogPanel {
         gridBag.gridy = gridy++;
         add(title, gridBag);
 
-        quickAddTable = new QuickAddViewTable(ruleConfig, eventBus);
+        quickAddTable = new QuickAddViewTable(ruleConfig, eventQueue);
         gridBag = new GridBagConstraints();
         gridBag.gridx = 0;
         gridBag.gridy = gridy++;

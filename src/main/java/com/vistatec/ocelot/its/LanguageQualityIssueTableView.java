@@ -28,12 +28,13 @@
  */
 package com.vistatec.ocelot.its;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
@@ -51,12 +52,13 @@ import javax.swing.table.AbstractTableModel;
 /**
  * Table View for displaying segment ITS metadata.
  */
-public class LanguageQualityIssueTableView extends
-            SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> {
+public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
-    public LanguageQualityIssueTableView(EventBus eventBus) {
-        super(eventBus);
+    private OcelotEventQueue eventQueue;
+
+    public LanguageQualityIssueTableView(OcelotEventQueue eventQueue) {
+        this.eventQueue = eventQueue;
         addMouseListener(new LQIPopupMenuListener());
     }
 
@@ -80,11 +82,11 @@ public class LanguageQualityIssueTableView extends
         getTableModel().fireTableDataChanged();
     }
 
-    private void selectedLQI() {
+    public void selectedLQI() {
         int rowIndex = getTable().getSelectedRow();
         if (rowIndex >= 0) {
             ITSMetadata selected = getTableModel().getRow(rowIndex);
-            getEventBus().post(new LQISelectionEvent((LanguageQualityIssue)selected));
+            eventQueue.post(new LQISelectionEvent((LanguageQualityIssue)selected));
         }
     }
 
@@ -97,7 +99,7 @@ public class LanguageQualityIssueTableView extends
     @Override
     public void clearSelection() {
         super.clearSelection();
-        getEventBus().post(new LQIDeselectionEvent());
+        eventQueue.post(new LQIDeselectionEvent());
     }
 
     static class LQITableModel extends AbstractTableModel {

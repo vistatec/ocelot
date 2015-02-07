@@ -1,8 +1,9 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.events.api.OcelotEvent;
 
-public class UserProfileSaveEvent {
+public class UserProfileSaveEvent implements OcelotEvent {
     private final UserProvenance profile;
 
     public UserProfileSaveEvent(UserProvenance profile) {
@@ -13,8 +14,8 @@ public class UserProfileSaveEvent {
         return this.profile;
     }
 
-    public class Success {}
-    public class Failure {
+    public class Success implements OcelotEvent {}
+    public class Failure implements OcelotEvent {
         public final String failureMsg;
         public final Exception ex;
 

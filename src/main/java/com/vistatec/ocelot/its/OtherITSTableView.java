@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.its;
 
-import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
@@ -43,14 +42,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Table view for displaying simple key-value pair ITS metadata on a segment.
  */
-public class OtherITSTableView extends
-        SegmentAttributeTablePane<OtherITSTableView.OtherITSTableModel> {
+public class OtherITSTableView extends SegmentAttributeTablePane<OtherITSTableView.OtherITSTableModel> {
     private static final long serialVersionUID = 1L;
 
     private Logger LOG = LoggerFactory.getLogger(OtherITSTableView.class);
 
-    public OtherITSTableView(EventBus eventBus) {
-        super(eventBus);
+    public OtherITSTableView() {
     }
 
     @Override

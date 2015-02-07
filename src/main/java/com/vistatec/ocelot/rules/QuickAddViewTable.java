@@ -13,8 +13,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
-import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.events.QuickAddEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.rules.NullITSMetadata.NullDataCategoryFlag;
 import com.vistatec.ocelot.ui.OTable;
 
@@ -23,11 +23,11 @@ public class QuickAddViewTable {
     private QuickAddTableModel tableModel;
     private RuleConfiguration ruleConfig;
     private String acceleratorGlyph;
-    private EventBus eventBus;
+    private OcelotEventQueue eventQueue;
 
-    public QuickAddViewTable(RuleConfiguration ruleConfig, EventBus eventBus) {
+    public QuickAddViewTable(RuleConfiguration ruleConfig, OcelotEventQueue eventBus) {
         this.ruleConfig = ruleConfig;
-        this.eventBus = eventBus;
+        this.eventQueue = eventBus;
         tableModel = new QuickAddTableModel();
         table = createTable(tableModel);
         acceleratorGlyph = getAcceleratorGlyph();
@@ -83,7 +83,7 @@ public class QuickAddViewTable {
                 if (e.getClickCount() == 2) {
                     QuickAdd qa = getConfig().getQuickAddLQI(table.getSelectedRow());
                     if (qa != null) {
-                        eventBus.post(new QuickAddEvent(qa));
+                        eventQueue.post(new QuickAddEvent(qa));
                     }
                 }
             }

@@ -11,17 +11,17 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.Segment;
 
-public class SegmentMenu {
+public class SegmentMenu implements OcelotEventQueueListener {
     private JMenu menu;
     private JMenuItem menuAddIssue, menuRemoveIssue, menuRestoreTarget;
     private Segment selectedSegment;
@@ -29,7 +29,7 @@ public class SegmentMenu {
 
     private NewLanguageQualityIssueView addLQIView = null;
 
-    public SegmentMenu(EventBus eventBus, int platformKeyMask) {
+    public SegmentMenu(int platformKeyMask) {
         menu = new JMenu("Segment");
         menuAddIssue = new JMenuItem("Add Issue");
         menuAddIssue.setAccelerator(
@@ -70,7 +70,6 @@ public class SegmentMenu {
         });
         menuRestoreTarget.setEnabled(false);
         menu.add(menuRestoreTarget);
-        eventBus.register(this);
     }
 
     class AddLQIViewWindowListener extends WindowAdapter {
