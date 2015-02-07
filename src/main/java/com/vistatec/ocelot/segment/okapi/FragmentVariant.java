@@ -188,12 +188,12 @@ public class FragmentVariant extends BaseSegmentVariant {
     }
 
     @Override
-    public SegmentVariant createEmpty() {
+    public FragmentVariant createEmpty() {
         return new FragmentVariant(new ArrayList<SegmentAtom>(), isTarget);
     }
 
     @Override
-    public SegmentVariant createCopy() {
+    public FragmentVariant createCopy() {
         return new FragmentVariant(copyAtoms(), isTarget);
     }
 
