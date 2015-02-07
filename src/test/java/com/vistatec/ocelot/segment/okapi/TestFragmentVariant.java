@@ -23,7 +23,7 @@ public class TestFragmentVariant {
 
     @Before
     public void beforeTest() {
-        sampleFV = sampleText();
+        sampleFV = sampleText(false);
         plainTextFV = plainText();
         plainCodeFV = plainCode();
     }
@@ -44,7 +44,14 @@ public class TestFragmentVariant {
     public void testGetAtoms() {
         assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),
                                         new TextAtom("B"), new CodeAtom("id1", "</pc>", "</pc>")),
-                sampleFV.getAtoms());
+            sampleFV.getAtoms());
+    }
+
+    @Test
+    public void testGetAtomsForTarget() {
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),
+                                        new TextAtom("B"), new CodeAtom("id1", "</pc>", "</pc>")),
+            sampleText(true).getAtoms());
     }
 
     @Test
@@ -62,16 +69,21 @@ public class TestFragmentVariant {
                 copy.getAtoms());
     }
 
-    private FragmentVariant sampleText() {
+    private FragmentVariant sampleText(boolean isTarget) {
         Store store = new Store(new DummyWithStore());
         Segment segment = new Segment(store);
-        Fragment fragment = new Fragment(store, false);
+        Fragment fragment = new Fragment(store, isTarget);
         fragment.append("A");
         fragment.append(TagType.OPENING, "id1", "<b>", false);
         fragment.append("B");
         fragment.append(TagType.CLOSING, "id1", "</b>", false);
-        segment.setSource(fragment);
-        return new FragmentVariant(segment, false);
+        if (isTarget) {
+            segment.setTarget(fragment);
+        }
+        else {
+            segment.setSource(fragment);
+        }
+        return new FragmentVariant(segment, fragment.isTarget());
     }
 
     private FragmentVariant plainText() {
