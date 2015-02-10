@@ -42,7 +42,6 @@ import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
-import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
@@ -123,7 +122,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private SegmentController segmentController;
 
     protected File openSrcFile;
-    protected AppConfig appConfig;
     private String platformOS;
     private boolean useNativeUI = false;
     private ProvenanceConfig provConfig;
@@ -134,11 +132,15 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     private ProvenanceService provService;
 
-    public Ocelot(AppConfig config, PluginManager pluginManager,
-                  RuleConfiguration ruleConfig, ProvenanceConfig provConfig)
+    private OcelotApp ocelotApp;
+
+    public Ocelot(OcelotApp ocelotApp, PluginManager pluginManager,
+                  RuleConfiguration ruleConfig, ProvenanceConfig provConfig,
+                  OcelotEventQueue eventQueue, ProvenanceService provService,
+                  ITSDocStats docStats)
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
-        this.appConfig = config;
+        this.ocelotApp = ocelotApp;
         this.pluginManager = pluginManager;
         this.provConfig = provConfig;
         this.ruleConfig = ruleConfig;
@@ -147,51 +149,35 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
         optionPaneBackgroundColor = (Color)UIManager.get("OptionPane.background");
 
-        Injector ocelotScope = Guice.createInjector(new OcelotModule());
-        this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
-        this.eventQueue.registerListener(pluginManager);
+        this.eventQueue = eventQueue;
+        this.provService = provService;
 
-        this.provService = new ProvenanceService(eventQueue, provConfig);
-        this.eventQueue.registerListener(provService);
-
-        segmentController = setupSegmentController(ocelotScope, provConfig);
-
-        add(setupMainPane(ocelotScope, config, ruleConfig, segmentController));
-        DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+        add(setupMainPane(eventQueue, ruleConfig, segmentController, docStats));
     }
 
-    private SegmentController setupSegmentController(Injector ocelotScope,
-            ProvenanceConfig provConfig) {
-        return new SegmentController(new OkapiXLIFFFactory(),
-                ocelotScope.getInstance(OcelotEventQueue.class),
-                ocelotScope.getInstance(ITSDocStats.class),
-                provConfig);
-    }
-
-    private Component setupMainPane(Injector ocelotScope, AppConfig config,
-            RuleConfiguration ruleConfig, SegmentController segmentController) throws IOException, InstantiationException, IllegalAccessException {
+    private Component setupMainPane(OcelotEventQueue eventQueue, RuleConfiguration ruleConfig,
+            SegmentController segmentController, ITSDocStats docStats) throws IOException, InstantiationException, IllegalAccessException {
         Dimension segSize = new Dimension(500, 500);
 
-        segmentView = new SegmentView(ocelotScope.getInstance(OcelotEventQueue.class),
-                new SegmentTableModel(segmentController, ruleConfig),
-                config, ruleConfig);
+        segmentView = new SegmentView(eventQueue,
+                new SegmentTableModel(segmentController, ruleConfig), ruleConfig);
         segmentView.setMinimumSize(segSize);
         this.eventQueue.registerListener(segmentView);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                setupSegAttrDetailPanes(ocelotScope), segmentView);
+                setupSegAttrDetailPanes(eventQueue, docStats), segmentView);
         mainSplitPane.setOneTouchExpandable(true);
 
         return mainSplitPane;
     }
 
-    private Component setupSegAttrDetailPanes(Injector ocelotScope) {
+    private Component setupSegAttrDetailPanes(OcelotEventQueue eventQueue, ITSDocStats docStats) {
         Dimension segAttrSize = new Dimension(385, 280);
-        itsDetailView = ocelotScope.getInstance(DetailView.class);
+        itsDetailView = new DetailView();
         itsDetailView.setPreferredSize(segAttrSize);
         this.eventQueue.registerListener(itsDetailView);
 
-        segmentAttrView = ocelotScope.getInstance(SegmentAttributeView.class);
+        segmentAttrView = new SegmentAttributeView(eventQueue, docStats);
         segmentAttrView.setMinimumSize(new Dimension(305, 280));
         segmentAttrView.setPreferredSize(segAttrSize);
         this.eventQueue.registerListener(segmentAttrView);
@@ -261,11 +247,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         if (sourceFile != null) {
             try {
-                segmentController.parseXLIFFFile(sourceFile, detectVersion);
+                ocelotApp.openFile(sourceFile, detectVersion);
+                eventQueue.post(new OpenFileEvent(sourceFile.getName()));
                 this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();
-                this.pluginManager.notifyOpenFile(sourceFile.getName());
 
                 this.menuSave.setEnabled(true);
                 this.menuSaveAs.setEnabled(true);
@@ -291,35 +277,20 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         return (fd.getFile() == null) ? null :
                 new File(fd.getDirectory(), fd.getFile());
     }
-    
+
     private boolean save(File saveFile) {
-        if (saveFile == null) {
+        try {
+            ocelotApp.saveFile(saveFile);
+
+        } catch (OcelotApp.ErrorAlertException ex) {
+            alertUser(ex.title, ex.body);
+            return false;
+
+        } catch (Exception e) {
+            LOG.error("Failed to save file: '"+saveFile.getName()+"'", e);
             return false;
         }
-        String filename = saveFile.getName();
-        try {
-            if (saveFile.exists()) {
-                if (!saveFile.canWrite()) {
-                    alertUser("Unable to save",
-                            "The file " + filename + " can not be saved, because the file is not writeable.");
-                    return false;
-                }
-            } else {
-                if (!saveFile.createNewFile()) {
-                    alertUser("Unable to save",
-                            "The file " + filename + " can not be saved, because the directory is not writeable.");
-                    return false;
-                }
-            }
-            segmentController.save(saveFile);
-            pluginManager.notifySaveFile(filename);
-            return true;
-        } catch (Exception ex) {
-            LOG.error(ex);
-            alertUser("Unable to save",
-                    "An error occurred while saving the file " + filename + ": " + ex.getMessage());
-        }
-        return false;
+        return true;
     }
 
     private void alertUser(String windowTitle, String message) {
@@ -502,7 +473,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         panel.postInit();
         dialog.setVisible(true);
     }
-    
+
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(Ocelot.class.getResourceAsStream("/log4j.properties"));
@@ -524,7 +495,22 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         PluginManager pluginManager = new PluginManager(appConfig, new File(ocelotDir, "plugins"));
         pluginManager.discover();
 
-        Ocelot ocelot = new Ocelot(appConfig, pluginManager, ruleConfig, provConfig);
+        Injector ocelotScope = Guice.createInjector(new OcelotModule());
+        OcelotEventQueue eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
+        eventQueue.registerListener(pluginManager);
+        ITSDocStats docStats = ocelotScope.getInstance(ITSDocStats.class);
+
+        SegmentController segmentController = new SegmentController(
+                new OkapiXLIFFFactory(), eventQueue, docStats, provConfig);
+
+        ProvenanceService provService = new ProvenanceService(eventQueue, provConfig);
+        eventQueue.registerListener(provService);
+
+        OcelotApp ocelotApp = new OcelotApp(appConfig, pluginManager,
+                ruleConfig, segmentController);
+        Ocelot ocelot = new Ocelot(ocelotApp, pluginManager, ruleConfig, provConfig,
+                eventQueue, provService, docStats);
+        DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelot);
 
         try {
             if (ocelot.useNativeUI) {
@@ -545,10 +531,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             if (isPlatformKeyDown(ke) && (ke.getKeyCode() >= KeyEvent.VK_0
                     && ke.getKeyCode() <= KeyEvent.VK_9)) {
                 Segment seg = segmentView.getSelectedSegment();
-                QuickAdd qa = ruleConfig.getQuickAddLQI(ke.getKeyCode() - KeyEvent.VK_0);
-                if (seg != null && qa != null && seg.isEditablePhase()) {
-                    seg.addLQI(qa.createLQI());
-                }
+                int hotkey = ke.getKeyCode() - KeyEvent.VK_0;
+                ocelotApp.quickAddLQI(seg, hotkey);
 
             } else if (isPlatformKeyDown(ke) && ke.isShiftDown()
                     && ke.getKeyCode() == KeyEvent.VK_TAB) {
