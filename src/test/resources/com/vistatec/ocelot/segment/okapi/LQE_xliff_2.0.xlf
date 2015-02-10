@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/">
+ <file id="f1">
+  <unit id="1">
+   <its:locQualityIssues xml:id="lq1">
+     <its:locQualityIssue locQualityIssueComment="comment1"/>
+     <its:locQualityIssue locQualityIssueComment="comment2"/>
+   </its:locQualityIssues>
+   <its:provenanceRecords xml:id="p1">
+     <its:provenanceRecord person="person"/>
+     <its:provenanceReocrd orgRef="orgRef"/>
+   </its:provenanceRecords>
+   <originalData>
+     <data id="d1">\b</data>
+     <data id="d2">\i</data>
+     <data id="d3">\b0</data>
+     <data id="d4">\i0</data>
+   </originalData>
+
+   <segment id="s1">
+	   <source>Sentence 1.<mrk id="1" type="its:its" its:locQualityIssuesRef="#its=lq1" translate="no">LQI</mrk> Sentence 2.</source>
+	   <target>Sentence 1.<mrk id="2" type="its:any" its:provenanceRecordsRef="#its=p1" translate="no">Prov</mrk> Sentence 2.</target>
+   </segment>
+
+   <segment id="s2">
+     <source>Sentence with A. Sentence with <cp hex="0001"/>. </source>
+     <target>Sentence with A. Sentence with <cp hex="0001"/>. </target>
+   </segment>
+
+   <segment id="s3">
+     <source>Ph element <ph id="ph1"/> #1.</source>
+     <target>Ph element <ph id="ph1"/> #1.</target>
+   </segment>
+
+   <segment id="s4">
+     <source>Pc element <pc id="pc1">Important</pc> #1.</source>
+     <target>Pc element <pc id="pc1">Important</pc> #1.</target>
+   </segment>
+
+   <segment id="s5">
+     <source>Text in <sc id="sc1" dataRef="d1"/>bold <sc id="sc2" dataRef="d2"/>
+     and<ec startRef="sc1" dataRef="d3"/> italics<ec startRef="sc2" dataRef="d4"/>.
+     </source>
+     <target>Text in <sc id="sc1" dataRef="d1"/>bold <sc id="sc2" dataRef="d2"/>
+     and<ec startRef="sc1" dataRef="d3"/> italics<ec startRef="sc2" dataRef="d4"/>.
+     </target>
+   </segment>
+
+   <segment id="s6">
+     <source>Mrk element <mrk id="mrk1" translate="yes">Important</mrk> #1.</source>
+     <target>Mrk element <mrk id="mrk1" translate="yes">Important</mrk> #1.</target>
+   </segment>
+
+   <segment id="s7">
+     <source>Sm split element <sm id="sm1" translate="no"/> #1.</source>
+     <target>Sm split element <sm id="sm1" translate="no"/> #1.</target>
+   </segment>
+
+   <segment id="s8">
+     <source>Em split element <em startRef="sm1"/> #1.</source>
+     <target>Em split element <em startRef="sm1"/> #1.</target>
+   </segment>
+  </unit>
+ </file>
+</xliff>
