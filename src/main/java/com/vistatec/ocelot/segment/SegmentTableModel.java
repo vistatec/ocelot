@@ -37,6 +37,7 @@ import com.vistatec.ocelot.rules.NullITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import static com.vistatec.ocelot.SegmentViewColumn.*;
+import com.vistatec.ocelot.services.SegmentService;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -50,11 +51,12 @@ public class SegmentTableModel extends AbstractTableModel {
     private RuleConfiguration ruleConfig;
     protected EnumMap<SegmentViewColumn, Boolean> enabledColumns =
             new EnumMap<SegmentViewColumn, Boolean>(SegmentViewColumn.class);
-    private SegmentModel segmentController;
 
-    public SegmentTableModel(SegmentModel segmentController,
+    private final SegmentService segmentService;
+
+    public SegmentTableModel(SegmentService segmentService,
                              RuleConfiguration ruleConfig) {
-        this.segmentController = segmentController;
+        this.segmentService = segmentService;
         this.ruleConfig = ruleConfig;
         for (SegmentViewColumn c : SegmentViewColumn.values()) {
             enabledColumns.put(c, c.isVisibleByDefaut());
@@ -101,7 +103,7 @@ public class SegmentTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return segmentController.getNumSegments();
+        return segmentService.getNumSegments();
     }
 
     /**
@@ -186,6 +188,6 @@ public class SegmentTableModel extends AbstractTableModel {
     }
 
     Segment getSegment(int row) {
-        return segmentController.getSegment(row);
+        return segmentService.getSegment(row);
     }
 }

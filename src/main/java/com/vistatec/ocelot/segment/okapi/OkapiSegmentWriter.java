@@ -59,7 +59,7 @@ import net.sf.okapi.common.skeleton.ISkeletonWriter;
  * workbench segments as different file formats.
  */
 public abstract class OkapiSegmentWriter {
-    public abstract void updateSegment(Segment seg, SegmentController segController);
+    public abstract void updateSegment(Segment seg);
     private ProvenanceConfig provConfig;
 
     public OkapiSegmentWriter(ProvenanceConfig provConfig) {

@@ -47,11 +47,13 @@ import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
-import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
-import com.vistatec.ocelot.segment.okapi.OkapiXLIFFFactory;
+import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.ProvenanceService;
+import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.services.SegmentServiceImpl;
+import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
@@ -119,7 +121,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private SegmentAttributeView segmentAttrView;
     private DetailView itsDetailView;
     private SegmentView segmentView;
-    private SegmentController segmentController;
 
     protected File openSrcFile;
     private String platformOS;
@@ -131,13 +132,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private Color optionPaneBackgroundColor;
 
     private ProvenanceService provService;
+    private SegmentService segmentService;
 
     private OcelotApp ocelotApp;
 
     public Ocelot(OcelotApp ocelotApp, PluginManager pluginManager,
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig,
                   OcelotEventQueue eventQueue, ProvenanceService provService,
-                  ITSDocStats docStats)
+                  SegmentService segmentService, ITSDocStats docStats)
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.ocelotApp = ocelotApp;
@@ -151,16 +153,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         this.eventQueue = eventQueue;
         this.provService = provService;
+        this.segmentService = segmentService;
 
-        add(setupMainPane(eventQueue, ruleConfig, segmentController, docStats));
+        add(setupMainPane(eventQueue, ruleConfig, segmentService, docStats));
     }
 
     private Component setupMainPane(OcelotEventQueue eventQueue, RuleConfiguration ruleConfig,
-            SegmentController segmentController, ITSDocStats docStats) throws IOException, InstantiationException, IllegalAccessException {
+            SegmentService segmentService, ITSDocStats docStats) throws IOException, InstantiationException, IllegalAccessException {
         Dimension segSize = new Dimension(500, 500);
 
         segmentView = new SegmentView(eventQueue,
-                new SegmentTableModel(segmentController, ruleConfig), ruleConfig);
+                new SegmentTableModel(segmentService, ruleConfig), ruleConfig);
         segmentView.setMinimumSize(segSize);
         this.eventQueue.registerListener(segmentView);
 
@@ -209,7 +212,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else if (e.getSource() == this.menuQuickAdd) {
             showModelessDialog(new QuickAddView(this.ruleConfig, this.eventQueue), "QuickAdd Rules");
         } else if (e.getSource() == this.menuPlugins) {
-            showModelessDialog(new PluginManagerView(pluginManager, segmentController), "Plugin Manager");
+            showModelessDialog(new PluginManagerView(pluginManager, ocelotApp,
+                    segmentService), "Plugin Manager");
 
         } else if (e.getSource() == this.menuProv) {
             ProvenanceProfileView userProfileView = new ProvenanceProfileView(
@@ -315,7 +319,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
-        if (segmentController.isDirty()) {
+        if (ocelotApp.isFileDirty()) {
             int rv = JOptionPane.showConfirmDialog(this,
                     "You have unsaved changes. Would you like to save before exiting?",
                     "Save Unsaved Changes",
@@ -500,16 +504,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         eventQueue.registerListener(pluginManager);
         ITSDocStats docStats = ocelotScope.getInstance(ITSDocStats.class);
 
-        SegmentController segmentController = new SegmentController(
-                new OkapiXLIFFFactory(), eventQueue, docStats, provConfig);
-
         ProvenanceService provService = new ProvenanceService(eventQueue, provConfig);
         eventQueue.registerListener(provService);
 
+        SegmentService segmentService = new SegmentServiceImpl();
+        XliffService xliffService = new OkapiXliffService(provConfig);
+
         OcelotApp ocelotApp = new OcelotApp(appConfig, pluginManager,
-                ruleConfig, segmentController);
+                ruleConfig, segmentService, xliffService);
         Ocelot ocelot = new Ocelot(ocelotApp, pluginManager, ruleConfig, provConfig,
-                eventQueue, provService, docStats);
+                eventQueue, provService, segmentService, docStats);
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelot);
 
         try {

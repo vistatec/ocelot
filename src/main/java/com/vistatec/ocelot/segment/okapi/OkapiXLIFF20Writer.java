@@ -44,7 +44,6 @@ import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.XLIFFWriter;
 import java.util.List;
 import net.sf.okapi.lib.xliff2.core.Fragment;
@@ -75,7 +74,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     }
 
     @Override
-    public void updateSegment(Segment seg, SegmentController controller) {
+    public void updateSegment(Segment seg) {
         net.sf.okapi.lib.xliff2.core.Segment unitPart = this.parser.getSegmentUnitPart(seg.getSourceEventNumber());
         if (unitPart == null) {
             LOG.error("Failed to find Okapi Unit Part associated with segment #"+seg.getSegmentNumber());

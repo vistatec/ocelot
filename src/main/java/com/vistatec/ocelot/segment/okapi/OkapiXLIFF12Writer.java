@@ -82,7 +82,7 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
     }
 
     @Override
-    public void updateSegment(Segment seg, SegmentController segController) {
+    public void updateSegment(Segment seg) {
         Event event = getParser().getSegmentEvent(seg.getSourceEventNumber());
         if (event == null) {
             LOG.error("Failed to find Okapi Event associated with segment #"+seg.getSegmentNumber());
@@ -100,8 +100,8 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
 
             if (seg.hasOriginalTarget()) {
                 // Make sure the Okapi Event is aware that the target has changed.
-                textUnit.setTarget(LocaleId.fromString(segController.getFileTargetLang()), unwrap(seg.getTarget()));
-                updateOriginalTarget(seg, segController);
+                textUnit.setTarget(LocaleId.fromString(parser.getTargetLang()), unwrap(seg.getTarget()));
+                updateOriginalTarget(seg);
             }
         } else {
             LOG.error("Event associated with Segment was not an Okapi TextUnit!");
@@ -166,16 +166,15 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
      * Add an alt-trans containing the original target if one from this tool
      * doesn't exist already.
      * @param seg - Segment edited
-     * @param segController
      */
-    public void updateOriginalTarget(Segment seg, SegmentController segController) {
+    public void updateOriginalTarget(Segment seg) {
         TextContainer segTarget = unwrap(seg.getTarget());
         TextContainer segSource = unwrap(seg.getSource());
         TextContainer segOriTarget = unwrap(seg.getOriginalTarget());
         TextContainer oriTarget = getParser().retrieveOriginalTarget(segTarget);
         if (oriTarget == null) {
-            AltTranslation rwbAltTrans = new AltTranslation(LocaleId.fromString(segController.getFileSourceLang()),
-                    LocaleId.fromString(segController.getFileTargetLang()), null,
+            AltTranslation rwbAltTrans = new AltTranslation(LocaleId.fromString(parser.getSourceLang()),
+                    LocaleId.fromString(parser.getTargetLang()), null,
                     segSource.getUnSegmentedContentCopy(), segOriTarget.getUnSegmentedContentCopy(),
                     MatchType.EXACT, 100, "Ocelot");
             XLIFFTool rwbAltTool = new XLIFFTool("Ocelot", "Ocelot");

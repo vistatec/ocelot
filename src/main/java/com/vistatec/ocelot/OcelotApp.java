@@ -33,10 +33,12 @@ import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.services.XliffService;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,19 +53,45 @@ public class OcelotApp {
     private PluginManager pluginManager;
     private RuleConfiguration ruleConfig;
 
-    private SegmentController segmentController;
+    private SegmentService segmentService;
+    private XliffService xliffService;
+    private boolean fileDirty = false, hasOpenFile;
 
     public OcelotApp(AppConfig config, PluginManager pluginManager,
-            RuleConfiguration ruleConfig, SegmentController segmentController) {
+            RuleConfiguration ruleConfig, SegmentService segmentService,
+            XliffService xliffService) {
         this.appConfig = config;
         this.pluginManager = pluginManager;
         this.ruleConfig = ruleConfig;
-        this.segmentController = segmentController;
+        this.segmentService = segmentService;
+        this.xliffService = xliffService;
+    }
+
+    /**
+     * Check if a file has been opened by the workbench.
+     * @return
+     */
+    public boolean hasOpenFile() {
+        return hasOpenFile;
+    }
+
+    /**
+     * Returns whether there are unsaved changes in the segment data.
+     * This includes segment edits and changes to LQI and Provenance data.
+     * @return true if there are unsaved changes
+     */
+    public boolean isFileDirty() {
+        return fileDirty;
     }
 
     public void openFile(File openFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
-        segmentController.parseXLIFFFile(openFile, detectVersion);
+        List<Segment> segments = xliffService.parse(openFile, detectVersion);
+        segmentService.clearAllSegments();
+        segmentService.setSegments(segments);
+
         this.pluginManager.notifyOpenFile(openFile.getName());
+        hasOpenFile = true;
+        fileDirty = false;
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {
@@ -83,7 +111,7 @@ public class OcelotApp {
                         "The file " + filename + " can not be saved, because the directory is not writeable.");
             }
         }
-        segmentController.save(saveFile);
+        xliffService.save(saveFile);
         pluginManager.notifySaveFile(filename);
     }
 
@@ -92,6 +120,14 @@ public class OcelotApp {
         if (seg != null && qa != null && seg.isEditablePhase()) {
             seg.addLQI(qa.createLQI());
         }
+    }
+
+    public String getFileSourceLang() {
+        return xliffService.getSourceLang();
+    }
+
+    public String getFileTargetLang() {
+        return xliffService.getTargetLang();
     }
 
     public class ErrorAlertException extends Exception {

@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.segment;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.ITSDocStatsChangedEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.ProvenanceAddedEvent;
@@ -39,60 +38,20 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
 /**
  * Data model for a document.  This handles most manipulations of the 
  * segment model and generates most segment-related events.
  */
-public class SegmentController implements SegmentModel {
-    private ArrayList<Segment> segments = new ArrayList<Segment>(100);
-
-    private XLIFFFactory xliffFactory;
+public class SegmentController {
     private XLIFFWriter segmentWriter;
-    private XLIFFParser xliffParser;
 
     private OcelotEventQueue eventQueue;
     private ITSDocStats docStats;
-    private ProvenanceConfig provConfig;
 
-    private boolean openFile = false;
-    private boolean dirty = false;
-
-    public SegmentController(XLIFFFactory xliffFactory, OcelotEventQueue eventQueue,
-            ITSDocStats docStats, ProvenanceConfig provConfig) {
-        this.xliffFactory = xliffFactory;
+    public SegmentController(OcelotEventQueue eventQueue,
+            ITSDocStats docStats) {
         this.eventQueue = eventQueue;
-        this.provConfig = provConfig;
         this.docStats = docStats;
-    }
-
-    /**
-     * Check if a file has been opened by the workbench.
-     */
-    public boolean openFile() {
-        return this.openFile;
-    }
-
-    public void setOpenFile(boolean openFile) {
-        this.openFile = openFile;
-    }
-
-    @Override
-    public Segment getSegment(int row) {
-        return segments.get(row);
-    }
-
-    @Override
-    public int getNumSegments() {
-        return segments.size();
     }
 
     /**
@@ -106,31 +65,22 @@ public class SegmentController implements SegmentModel {
     public ITSDocStats getStats() {
         return docStats;
     }
-    
+
     protected void notifyResetTarget(Segment seg) {
         eventQueue.post(new SegmentTargetResetEvent(seg));
     }
 
-    /**
-     * Returns whether there are unsaved changes in the segment data.
-     * This includes segment edits and changes to LQI and Provenance data.
-     * @return true if there are unsaved changes
-     */
-    public boolean isDirty() {
-        return dirty;
-    }
-
     private void recalculateDocStats() {
-        docStats.clear();
-        for (Segment seg : segments) {
-            for (LanguageQualityIssue lqi : seg.getLQI()) {
-                docStats.addLQIStats(lqi);
-            }
-            for (Provenance prov : seg.getProv()) {
-                docStats.addProvenanceStats(prov);
-            }
-        }
-        eventQueue.post(new ITSDocStatsChangedEvent());
+//        docStats.clear();
+//        for (Segment seg : segments) {
+//            for (LanguageQualityIssue lqi : seg.getLQI()) {
+//                docStats.addLQIStats(lqi);
+//            }
+//            for (Provenance prov : seg.getProv()) {
+//                docStats.addProvenanceStats(prov);
+//            }
+//        }
+//        eventQueue.post(new ITSDocStatsChangedEvent());
     }
 
     void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
@@ -147,7 +97,7 @@ public class SegmentController implements SegmentModel {
     }
 
     public void clearAllSegments() {
-        segments.clear();
+//        segments.clear();
         docStats.clear();
         eventQueue.post(new ITSDocStatsChangedEvent());
     }
@@ -160,58 +110,18 @@ public class SegmentController implements SegmentModel {
     // XXX Inconsistent naming - this is used when provenance is added
     // at runtime (for LQI, this is called notifyModifiedProv)
     void notifyAddedProv(Provenance prov) {
-        dirty = true;
+//        dirty = true;
         eventQueue.post(new ProvenanceAddedEvent(prov));
         docStats.addProvenanceStats(prov);
     }
 
-    public void parseXLIFFFile(File xliffFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
-        XLIFFParser newParser = xliffFactory.newXLIFFParser(detectVersion);
-        List<Segment> xliffSegments = newParser.parse(xliffFile);
-
-        clearAllSegments();
-        xliffParser = newParser;
-        setSegments(xliffSegments);
-
-        setOpenFile(true);
-        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig);
-        dirty = false;
-    }
-
-    void setSegments(List<Segment> segments) {
-        for (Segment seg : segments) {
-            addSegment(seg);
-        }
-        recalculateDocStats();
-    }
-
     private void addSegment(Segment seg) {
         seg.setSegmentListener(this);
-        segments.add(seg);
+//        segments.add(seg);
     }
 
     public void updateSegment(Segment seg) {
         segmentWriter.updateSegment(seg, this);
-        dirty = true;
-    }
-
-    public String getFileSourceLang() {
-        return xliffParser.getSourceLang();
-    }
-
-    public String getFileTargetLang() {
-        return xliffParser.getTargetLang();
-    }
-
-    /**
-     * Save the XLIFF file to the file system.
-     * @param file
-     * @throws UnsupportedEncodingException
-     * @throws FileNotFoundException
-     * @throws IOException 
-     */
-    public void save(File file) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        segmentWriter.save(file);
-        this.dirty = false;
+//        dirty = true;
     }
 }

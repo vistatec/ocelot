@@ -37,6 +37,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentModel;
+import com.vistatec.ocelot.services.SegmentService;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -158,12 +159,12 @@ public class PluginManager implements OcelotEventQueueListener {
          * ITSPlugin handler for exporting LQI/Provenance metadata of segments.
          * @param sourceLang
          * @param targetLang
-         * @param segments
+         * @param segmentService
          */
         public void exportData(String sourceLang, String targetLang,
-                SegmentModel segments) {
-            for (int row = 0; row < segments.getNumSegments(); row++) {
-                Segment seg = segments.getSegment(row);
+                SegmentService segmentService) {
+            for (int row = 0; row < segmentService.getNumSegments(); row++) {
+                Segment seg = segmentService.getSegment(row);
                 List<LanguageQualityIssue> lqi = seg.getLQI();
                 List<Provenance> prov = seg.getProv();
                 for (ITSPlugin plugin : getEnabledITSPlugins()) {

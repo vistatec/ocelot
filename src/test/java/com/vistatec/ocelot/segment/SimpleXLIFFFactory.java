@@ -48,7 +48,7 @@ public class SimpleXLIFFFactory implements XLIFFFactory {
             ProvenanceConfig config) {
         return new XLIFFWriter() {
             @Override
-            public void updateSegment(Segment seg, SegmentController controller) {
+            public void updateSegment(Segment seg) {
             }
 
             @Override

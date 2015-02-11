@@ -28,7 +28,8 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.OcelotApp;
+import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.Font;
@@ -63,18 +64,19 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
     protected JButton selectPluginDir;
     protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
-    protected SegmentController segmentController;
     private JButton export;
     private GridBagConstraints gridBag;
-    
-    public PluginManagerView(PluginManager pluginManager, SegmentController segController) {
-        this(pluginManager, pluginManager.getPlugins(), segController);
-    }
 
-    public PluginManagerView(PluginManager pluginManager, Set<? extends Plugin> plugins, SegmentController segController) {
+    private OcelotApp ocelotApp;
+    private SegmentService segmentService;
+
+    public PluginManagerView(PluginManager pluginManager, OcelotApp ocelotApp,
+            SegmentService segmentService) {
         super(new GridBagLayout());
         this.pluginManager = pluginManager;
-        this.segmentController = segController;
+        this.ocelotApp = ocelotApp;
+        this.segmentService = segmentService;
+
         checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -120,7 +122,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         gridBag.gridwidth = 1;
         add(title3, gridBag);
 
-        initPlugins(plugins);
+        initPlugins(pluginManager.getPlugins());
     }
 
     /**
@@ -130,7 +132,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
      * @param segController
      */
     private void setExportEnabledState() {
-        export.setEnabled(segmentController.openFile() && 
+        export.setEnabled(ocelotApp.hasOpenFile() &&
                           !pluginManager.getEnabledITSPlugins().isEmpty());
     }
 
@@ -199,9 +201,9 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
     @Override
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == export) {
-            pluginManager.exportData(segmentController.getFileSourceLang(),
-                    segmentController.getFileTargetLang(),
-                    segmentController);
+            pluginManager.exportData(ocelotApp.getFileSourceLang(),
+                    ocelotApp.getFileTargetLang(),
+                    segmentService);
         }
         else if (ae.getSource() == selectPluginDir) {
             JFileChooser fc = new JFileChooser();
