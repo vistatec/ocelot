@@ -96,6 +96,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
 
+import com.vistatec.ocelot.services.ITSDocStatsService;
+
 /**
  * Main UI Thread class. Handles menu and file operations
  *
@@ -511,6 +513,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         eventQueue.registerListener(segmentService);
         XliffService xliffService = new OkapiXliffService(provConfig);
         eventQueue.registerListener(xliffService);
+
+        ITSDocStatsService docStatsService = new ITSDocStatsService(eventQueue);
+        eventQueue.registerListener(docStatsService);
 
         OcelotApp ocelotApp = new OcelotApp(appConfig, pluginManager,
                 ruleConfig, segmentService, xliffService, docStatsService);

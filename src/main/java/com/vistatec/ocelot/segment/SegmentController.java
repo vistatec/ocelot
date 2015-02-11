@@ -82,13 +82,6 @@ public class SegmentController {
 //        eventQueue.post(new ITSDocStatsChangedEvent());
     }
 
-    void notifyModifiedLQI(LanguageQualityIssue lqi, Segment seg) {
-        updateSegment(seg);
-        docStats.addLQIStats(lqi);
-        eventQueue.post(new ITSDocStatsChangedEvent());
-        eventQueue.post(new LQIModificationEvent(lqi, seg));
-    }
-
     void notifyRemovedLQI(LanguageQualityIssue lqi, Segment seg) {
         updateSegment(seg);
         recalculateDocStats();

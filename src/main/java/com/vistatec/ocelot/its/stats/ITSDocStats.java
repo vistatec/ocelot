@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ProvenanceStats.Type;
 
@@ -15,7 +14,7 @@ import com.vistatec.ocelot.its.stats.ProvenanceStats.Type;
 public class ITSDocStats {
     private List<ITSStats> stats = new ArrayList<ITSStats>();
     private Map<String, ITSStats> statsMap = new HashMap<String, ITSStats>();
-    
+
     public List<ITSStats> getStats() {
         return stats;
     }
@@ -28,10 +27,6 @@ public class ITSDocStats {
     private void add(ITSStats stat) {
         stats.add(stat);
         statsMap.put(stat.getKey(), stat);
-    }
-
-    public void addLQIStats(LanguageQualityIssue lqi) {
-        updateStats(new LanguageQualityIssueStats(lqi));
     }
 
     public void addProvenanceStats(Provenance prov) {
@@ -49,7 +44,7 @@ public class ITSDocStats {
         }
     }
 
-    private void updateStats(ITSStats stats) {
+    public void updateStats(ITSStats stats) {
         ITSStats oldStats = statsMap.get(stats.getKey());
         if (oldStats != null) {
             oldStats.combine(stats);

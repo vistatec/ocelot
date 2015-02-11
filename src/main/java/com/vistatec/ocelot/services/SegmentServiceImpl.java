@@ -34,9 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.ItsDocStatsAddedLqiEvent;
+import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.LQIEditEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.SegmentVariant;
 
 /**
@@ -79,6 +84,24 @@ public class SegmentServiceImpl implements SegmentService {
         }
     }
 
+    @Subscribe
+    public void addLQI(LQIAdditionEvent e) {
+        Segment seg = e.getSegment();
+        LanguageQualityIssue lqi = e.getLQI();
+        seg.addLQI(lqi);
+        eventQueue.post(new ItsDocStatsAddedLqiEvent(lqi));
+        eventQueue.post(new SegmentEditEvent(seg));
+        eventQueue.post(new LQIModificationEvent(lqi, seg));
+    }
+
+    @Subscribe
+    public void editLQI(LQIEditEvent e) {
+        Segment seg = e.getSegment();
+        LanguageQualityIssue lqi = e.getLQI();
+        eventQueue.post(new ItsDocStatsAddedLqiEvent(lqi));
+        eventQueue.post(new SegmentEditEvent(seg));
+        eventQueue.post(new LQIModificationEvent(lqi, seg));
+    }
     private void recalculateDocStats() {
         // TODO:
     }

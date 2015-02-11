@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.services.ITSDocStatsService;
 
 /**
  * Main Ocelot application context.
@@ -62,16 +63,18 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private SegmentService segmentService;
     private XliffService xliffService;
+    private final ITSDocStatsService itsDocStatsService;
     private boolean fileDirty = false, hasOpenFile;
 
     public OcelotApp(AppConfig config, PluginManager pluginManager,
             RuleConfiguration ruleConfig, SegmentService segmentService,
-            XliffService xliffService) {
+            XliffService xliffService, ITSDocStatsService itsDocStatsService) {
         this.appConfig = config;
         this.pluginManager = pluginManager;
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
+        this.itsDocStatsService = itsDocStatsService;
     }
 
     /**

@@ -60,6 +60,10 @@ import javax.swing.border.EmptyBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.LQIEditEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+
 /**
  * ITS 2.0 Language Quality Issue Data Category creation form.
  * Follows: http://www.w3.org/International/multilingualweb/lt/drafts/its20/its20.html#lqissue
@@ -91,6 +95,8 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
     private boolean prevEnabled;
     private WindowListener windowListener;
 
+    private final OcelotEventQueue eventQueue;
+
     public static final String[] LQI_TYPE = {"terminology", "mistranslation", "omission",
         "untranslated", "addition", "duplication", "inconsistency",
         "grammar", "legal", "register", "locale-specific-content",
@@ -99,7 +105,9 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
         "markup", "pattern-problem", "whitespace", "internationalization",
         "length", "non-conformance", "uncategorized", "other"};
 
-    public NewLanguageQualityIssueView() {
+    public NewLanguageQualityIssueView(OcelotEventQueue eventQueue) {
+        this.eventQueue = eventQueue;
+
         setLayout(new GridBagLayout());
         setBorder(new EmptyBorder(10,10,10,10));
 
@@ -387,10 +395,10 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
             }
 
             if (addingLQI()) {
-                selectedSeg.addLQI(lqi);
+                eventQueue.post(new LQIAdditionEvent(lqi, selectedSeg));
                 frame.dispose();
             } else {
-                selectedSeg.editedLQI(lqi);
+                eventQueue.post(new LQIEditEvent(lqi, selectedSeg));
             }
 
         } else if (e.getSource() == enabledTrue) {
