@@ -507,11 +507,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         ProvenanceService provService = new ProvenanceService(eventQueue, provConfig);
         eventQueue.registerListener(provService);
 
-        SegmentService segmentService = new SegmentServiceImpl();
+        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+        eventQueue.registerListener(segmentService);
         XliffService xliffService = new OkapiXliffService(provConfig);
+        eventQueue.registerListener(xliffService);
 
         OcelotApp ocelotApp = new OcelotApp(appConfig, pluginManager,
-                ruleConfig, segmentService, xliffService);
+                ruleConfig, segmentService, xliffService, docStatsService);
+        eventQueue.registerListener(ocelotApp);
         Ocelot ocelot = new Ocelot(ocelotApp, pluginManager, ruleConfig, provConfig,
                 eventQueue, provService, segmentService, docStats);
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelot);

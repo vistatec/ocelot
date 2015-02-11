@@ -119,8 +119,9 @@ public class Segment {
      * Sets the new target for this segment.  Sets an original target value
      * if none exists.  Updates target diff value.
      * @param updatedTarget
+     * @return Whether the target needed to be updated or not.
      */
-    public void updateTarget(SegmentVariant updatedTarget) {
+    public boolean updateTarget(SegmentVariant updatedTarget) {
         if (!updatedTarget.getDisplayText().equals(target.getDisplayText())) {
             if (!hasOriginalTarget()) {
                 setOriginalTarget(target);
@@ -129,9 +130,9 @@ public class Segment {
             editDistance = NO_EDIT_DISTANCE;
             setTargetDiff(EditDistance.styleTextDifferences(getTarget(),
                           getOriginalTarget()));
-            if (segmentListener != null) {
-                segmentListener.notifyUpdateSegment(this);
-            }
+            return true;
+        } else {
+            return false;
         }
     }
 

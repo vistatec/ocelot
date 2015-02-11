@@ -35,18 +35,25 @@ import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
 /**
  * Main Ocelot application context.
  */
-public class OcelotApp {
+public class OcelotApp implements OcelotEventQueueListener {
     private Logger LOG = LoggerFactory.getLogger(OcelotApp.class);
 
     protected AppConfig appConfig;
@@ -112,6 +119,7 @@ public class OcelotApp {
             }
         }
         xliffService.save(saveFile);
+        this.fileDirty = false;
         pluginManager.notifySaveFile(filename);
     }
 
@@ -128,6 +136,11 @@ public class OcelotApp {
 
     public String getFileTargetLang() {
         return xliffService.getTargetLang();
+    }
+
+    @Subscribe
+    public void segmentEdit(SegmentEditEvent e) {
+        this.fileDirty = true;
     }
 
     public class ErrorAlertException extends Exception {

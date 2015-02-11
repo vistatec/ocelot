@@ -41,6 +41,7 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
 
 import static com.vistatec.ocelot.SegmentViewColumn.*;
+
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
@@ -92,6 +93,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.log4j.Logger;
+
+import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -584,7 +587,7 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
             SegmentVariant updatedTarget = ((SegmentEditor)ce.getSource()).editorComponent.getVariant();
             int row = sourceTargetTable.getSelectedRow();
             eventQueue.post(new SegmentTargetExitEvent(seg));
-            seg.updateTarget(updatedTarget);
+            eventQueue.post(new SegmentTargetUpdateEvent(seg, updatedTarget));
             postSegmentSelection(seg);
             updateTableRow(row);
             // Restore row selection

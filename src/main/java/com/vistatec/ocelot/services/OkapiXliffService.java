@@ -5,11 +5,16 @@ import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.XLIFFFactory;
 import com.vistatec.ocelot.segment.XLIFFParser;
 import com.vistatec.ocelot.segment.XLIFFWriter;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
+
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.SegmentEditEvent;
 
 /**
  * Service for performing Okapi XLIFF operations.
@@ -24,6 +29,11 @@ public class OkapiXliffService implements XliffService {
 
     public OkapiXliffService(ProvenanceConfig provConfig) {
         this.provConfig = provConfig;
+    }
+
+    @Subscribe
+    public void updateSegment(SegmentEditEvent e) {
+        segmentWriter.updateSegment(e.getSegment());
     }
 
     @Override

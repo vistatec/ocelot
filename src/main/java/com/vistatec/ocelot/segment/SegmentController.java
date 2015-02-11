@@ -31,7 +31,6 @@ package com.vistatec.ocelot.segment;
 import com.vistatec.ocelot.events.ITSDocStatsChangedEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.ProvenanceAddedEvent;
-import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -100,11 +99,6 @@ public class SegmentController {
 //        segments.clear();
         docStats.clear();
         eventQueue.post(new ITSDocStatsChangedEvent());
-    }
-
-    public void notifyUpdateSegment(Segment seg) {
-        updateSegment(seg);
-        eventQueue.post(new SegmentEditEvent(seg));
     }
 
     // XXX Inconsistent naming - this is used when provenance is added

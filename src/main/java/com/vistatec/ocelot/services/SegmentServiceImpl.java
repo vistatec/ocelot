@@ -29,8 +29,15 @@
 package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.segment.Segment;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.SegmentVariant;
 
 /**
  * Service for performing segment related operations.
@@ -39,6 +46,11 @@ import java.util.List;
 public class SegmentServiceImpl implements SegmentService {
     // TODO: remove segments (data) from service implementation
     private List<Segment> segments = new ArrayList<>(100);
+    private final OcelotEventQueue eventQueue;
+
+    public SegmentServiceImpl(OcelotEventQueue eventQueue) {
+        this.eventQueue = eventQueue;
+    }
 
     @Override
     public Segment getSegment(int row) {
@@ -54,6 +66,17 @@ public class SegmentServiceImpl implements SegmentService {
     public void setSegments(List<Segment> segments) {
         this.segments = segments;
         recalculateDocStats();
+    }
+
+    @Subscribe
+    @Override
+    public void updateSegmentTarget(SegmentTargetUpdateEvent e) {
+        Segment seg = e.getSegment();
+        SegmentVariant updatedTarget = e.getUpdatedTarget();
+        boolean updatedSeg = seg.updateTarget(updatedTarget);
+        if (updatedSeg) {
+            eventQueue.post(new SegmentEditEvent(seg));
+        }
     }
 
     private void recalculateDocStats() {
