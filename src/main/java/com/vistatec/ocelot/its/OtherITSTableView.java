@@ -78,6 +78,7 @@ public class OtherITSTableView extends JScrollPane {
         setViewportView(this.itsTable);
     }
 
+    @Subscribe
     public void clearSegment(SegmentDeselectionEvent e) {
         clearTableSelection();
         deleteTableValues();
