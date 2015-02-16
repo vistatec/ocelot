@@ -15,20 +15,24 @@ import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.okapi.OkapiXLIFFFactory;
 
 /**
  * Service for performing Okapi XLIFF operations.
  */
 public class OkapiXliffService implements XliffService {
 
-    private XLIFFFactory xliffFactory;
+    private XLIFFFactory xliffFactory = new OkapiXLIFFFactory();
     private XLIFFParser xliffParser;
     private XLIFFWriter segmentWriter;
 
-    private ProvenanceConfig provConfig;
+    private final ProvenanceConfig provConfig;
+    private final OcelotEventQueue eventQueue;
 
-    public OkapiXliffService(ProvenanceConfig provConfig) {
+    public OkapiXliffService(ProvenanceConfig provConfig, OcelotEventQueue eventQueue) {
         this.provConfig = provConfig;
+        this.eventQueue = eventQueue;
     }
 
     @Subscribe
@@ -42,7 +46,7 @@ public class OkapiXliffService implements XliffService {
         List<Segment> xliffSegments = newParser.parse(xliffFile);
 
         xliffParser = newParser;
-        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig);
+        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig, eventQueue);
         return xliffSegments;
     }
 

@@ -14,20 +14,33 @@ import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 
 import static org.junit.Assert.*;
 
+import com.google.common.eventbus.EventBus;
+import com.vistatec.ocelot.events.ItsDocStatsUpdateLqiEvent;
+import com.vistatec.ocelot.events.api.EventBusWrapper;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.services.ITSDocStatsService;
+
 public class TestITSDocStats {
 
     @Test
     public void testAddLQI() {
         ITSDocStats docStats = new ITSDocStats();
-        docStats.addLQIStats(getLQI("omission", 50));
+        OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+        ITSDocStatsService itsDocStatsService = new ITSDocStatsService(
+                docStats, eventQueue);
+        itsDocStatsService.updateLQIStats(new ItsDocStatsUpdateLqiEvent(getLQI("omission", 50)));
+
         assertEquals(Collections.singletonList(getLQIStats(1, "omission", 50)), docStats.getStats());
         assertEquals((Integer)1, docStats.getStats().get(0).getCount());
-        docStats.addLQIStats(getLQI("omission", 70));
+
+        itsDocStatsService.updateLQIStats(new ItsDocStatsUpdateLqiEvent(getLQI("omission", 70)));
         assertEquals(Collections.singletonList(getLQIStats(2, "omission", 50, 70)), docStats.getStats());
         assertEquals((Integer)2, docStats.getStats().get(0).getCount());
-        docStats.addLQIStats(getLQI("omission", 30));
+
+        itsDocStatsService.updateLQIStats(new ItsDocStatsUpdateLqiEvent(getLQI("omission", 30)));
         assertEquals(Collections.singletonList(getLQIStats(3, "omission", 30, 70)), docStats.getStats());
-        docStats.addLQIStats(getLQI("mistranslation", 80));
+
+        itsDocStatsService.updateLQIStats(new ItsDocStatsUpdateLqiEvent(getLQI("mistranslation", 80)));
         assertEquals(Arrays.asList(getLQIStats(3, "omission", 30, 70), getLQIStats(1, "mistranslation", 80)), docStats.getStats());
     }
 
@@ -64,7 +77,10 @@ public class TestITSDocStats {
     @Test
     public void testClearStats() {
         ITSDocStats docStats = new ITSDocStats();
-        docStats.addLQIStats(getLQI("omission", 50));
+        OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+        ITSDocStatsService itsDocStatsService = new ITSDocStatsService(
+                docStats, eventQueue);
+        itsDocStatsService.updateLQIStats(new ItsDocStatsUpdateLqiEvent(getLQI("omission", 50)));
         assertEquals(Collections.singletonList(getLQIStats(1, "omission", 50)), docStats.getStats());
         docStats.clear();
         assertEquals(Collections.emptyList(), docStats.getStats());

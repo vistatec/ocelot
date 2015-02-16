@@ -31,11 +31,17 @@ package com.vistatec.ocelot;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.Segment;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+
+import com.vistatec.ocelot.events.LQIRemoveEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 /**
  * ITS Metadata context menu.
@@ -49,8 +55,11 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     private Segment selectedSeg;
     private LanguageQualityIssue selectedLQI;
 
-    public ContextMenu(Segment selectedSeg) {
+    private OcelotEventQueue eventQueue;
+
+    public ContextMenu(Segment selectedSeg, OcelotEventQueue eventQueue) {
         this.selectedSeg = selectedSeg;
+        this.eventQueue = eventQueue;
 
         addLQI = new JMenuItem("Add Issue");
         addLQI.addActionListener(this);
@@ -63,8 +72,8 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         add(resetTarget);
     }
 
-    public ContextMenu(Segment selectedSeg, LanguageQualityIssue selectedLQI) {
-        this(selectedSeg);
+    public ContextMenu(Segment selectedSeg, LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue) {
+        this(selectedSeg, eventQueue);
         this.selectedLQI = selectedLQI;
 
         removeLQI = new JMenuItem("Remove Issue");
@@ -75,13 +84,13 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addLQI) {
-            NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView();
+            NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView(eventQueue);
             addLQIView.setSegment(selectedSeg);
             SwingUtilities.invokeLater(addLQIView);
         } else if (e.getSource() == removeLQI) {
-            selectedSeg.removeLQI(selectedLQI);
+            eventQueue.post(new LQIRemoveEvent(selectedLQI, selectedSeg));
         } else if (e.getSource() == resetTarget) {
-            selectedSeg.resetTarget();
+            eventQueue.post(new SegmentTargetResetEvent(selectedSeg));
         }
     }
 }

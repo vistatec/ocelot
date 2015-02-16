@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 /**
  * Dummy XLIFF factory for testing.  Parser returns canned data;
@@ -45,7 +46,7 @@ public class SimpleXLIFFFactory implements XLIFFFactory {
 
     @Override
     public XLIFFWriter newXLIFFWriter(XLIFFParser parser,
-            ProvenanceConfig config) {
+            ProvenanceConfig config, OcelotEventQueue eventQueue) {
         return new XLIFFWriter() {
             @Override
             public void updateSegment(Segment seg) {

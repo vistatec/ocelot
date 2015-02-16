@@ -45,7 +45,13 @@ import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.XLIFFWriter;
+
 import java.util.List;
+
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.Provenance;
+
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Part;
@@ -67,10 +73,13 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     private final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
     private final OkapiXLIFF20Parser parser;
     private final ProvenanceConfig provConfig;
+    private final OcelotEventQueue eventQueue;
 
-    public OkapiXLIFF20Writer(OkapiXLIFF20Parser parser, ProvenanceConfig provConfig) {
+    public OkapiXLIFF20Writer(OkapiXLIFF20Parser parser, ProvenanceConfig provConfig,
+            OcelotEventQueue eventQueue) {
         this.parser = parser;
         this.provConfig = provConfig;
+        this.eventQueue = eventQueue;
     }
 
     @Override
@@ -116,8 +125,8 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
         if (okapiOcelotProv != null) {
             ITSWriter.annotate(unitPart.getTarget(), 0, -1, okapiOcelotProv);
 
-            seg.addProvenance(new OkapiProvenance(okapiOcelotProv.getList().get(0)));
-            seg.setAddedRWProvenance(true);
+            Provenance ocelotProv = new OkapiProvenance(okapiOcelotProv.getList().get(0));
+            eventQueue.post(new ProvenanceAddEvent(ocelotProv, seg, true));
         }
     }
 

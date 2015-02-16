@@ -36,7 +36,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -372,8 +371,7 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
             }
 
         } else if (e.getSource() == save) {
-            LanguageQualityIssue lqi = addingLQI() ?
-                    new LanguageQualityIssue() : this.selectedLQI;
+            LanguageQualityIssue lqi = new LanguageQualityIssue();
             lqi.setType(typeList.getSelectedItem().toString());
             lqi.setComment(commentContent.getText());
             lqi.setSeverity(new Double(severityRating.getValue().toString()));
@@ -398,7 +396,7 @@ public class NewLanguageQualityIssueView extends JPanel implements Runnable, Act
                 eventQueue.post(new LQIAdditionEvent(lqi, selectedSeg));
                 frame.dispose();
             } else {
-                eventQueue.post(new LQIEditEvent(lqi, selectedSeg));
+                eventQueue.post(new LQIEditEvent(lqi, selectedSeg, this.selectedLQI));
             }
 
         } else if (e.getSource() == enabledTrue) {

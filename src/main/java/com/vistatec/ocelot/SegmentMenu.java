@@ -16,6 +16,8 @@ import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
@@ -29,7 +31,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
 
     private NewLanguageQualityIssueView addLQIView = null;
 
-    public SegmentMenu(int platformKeyMask) {
+    public SegmentMenu(final OcelotEventQueue eventQueue, int platformKeyMask) {
         menu = new JMenu("Segment");
         menuAddIssue = new JMenuItem("Add Issue");
         menuAddIssue.setAccelerator(
@@ -44,7 +46,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
                  * This seems to be fixed in the 1.8 runtime.  See OC-41 for more.
                  */
                 if (addLQIView == null) {
-                    addLQIView = new NewLanguageQualityIssueView();
+                    addLQIView = new NewLanguageQualityIssueView(eventQueue);
                     addLQIView.setWindowListener(new AddLQIViewWindowListener());
                     addLQIView.setSegment(selectedSegment);
                     SwingUtilities.invokeLater(addLQIView);
@@ -64,8 +66,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
         menuRestoreTarget = new JMenuItem("Reset Target");
         menuRestoreTarget.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                selectedSegment.resetTarget();
-                menuRestoreTarget.setEnabled(false);
+                eventQueue.post(new SegmentTargetResetEvent(selectedSegment));
             }
         });
         menuRestoreTarget.setEnabled(false);
@@ -91,7 +92,9 @@ public class SegmentMenu implements OcelotEventQueueListener {
     public void segmentEdited(SegmentEditEvent e) {
         Segment seg = e.getSegment();
         if (seg.equals(selectedSegment)) {
-            menuRestoreTarget.setEnabled(seg.hasOriginalTarget());
+            menuRestoreTarget.setEnabled(seg.hasOriginalTarget() &&
+                    seg.getTarget().getDisplayText().equals(
+                            seg.getOriginalTarget().getDisplayText()));
         }
     }
 

@@ -31,7 +31,6 @@ package com.vistatec.ocelot.segment.okapi;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentVariant;
 import com.vistatec.ocelot.segment.XLIFFWriter;
 
@@ -63,6 +62,8 @@ import net.sf.okapi.common.skeleton.GenericSkeleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.
  * Handles synchronization between workbench Segments and the Okapi Event list
@@ -72,8 +73,9 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
     private Logger LOG = LoggerFactory.getLogger(OkapiXLIFF12Writer.class);
     private OkapiXLIFF12Parser parser;
 
-    public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser, ProvenanceConfig provConfig) {
-        super(provConfig);
+    public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser,
+            ProvenanceConfig provConfig, OcelotEventQueue eventQueue) {
+        super(provConfig, eventQueue);
         this.parser = xliffParser;
     }
 

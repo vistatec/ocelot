@@ -50,6 +50,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.vistatec.ocelot.services.ITSDocStatsService;
+
 /**
  * Displays ITS metadata attached to the selected segment in the SegmentView.
  * Container for the various metadata tabs (stats/LQI/Prov/Other).
@@ -63,8 +65,8 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
     protected OtherITSTableView itsTableView;
 
     @Inject
-    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStats docStats) {
-        aggregateTableView = new ITSDocStatsTableView(docStats);
+    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsService docStatsService) {
+        aggregateTableView = new ITSDocStatsTableView(docStatsService);
         addTab("Doc Stats", aggregateTableView);
         eventQueue.registerListener(aggregateTableView);
 

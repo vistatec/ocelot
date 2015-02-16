@@ -37,6 +37,8 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.vistatec.ocelot.services.ITSDocStatsService;
+
 /**
  * Table View for displaying segment ITS metadata.
  */
@@ -47,8 +49,8 @@ public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueu
     protected JTable docStatsTable;
     private TableRowSorter<DocumentStatsTableModel> sort;
 
-    public ITSDocStatsTableView(ITSDocStats docStats) {
-        docStatsModel = new DocumentStatsTableModel(docStats);
+    public ITSDocStatsTableView(ITSDocStatsService docStatsService) {
+        docStatsModel = new DocumentStatsTableModel(docStatsService);
         docStatsTable = new JTable(docStatsModel);
 
         sort = new TableRowSorter<DocumentStatsTableModel>(docStatsModel);
@@ -65,17 +67,17 @@ public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueu
     static class DocumentStatsTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
 
-        DocumentStatsTableModel(ITSDocStats stats) {
-            this.stats = stats;
+        DocumentStatsTableModel(ITSDocStatsService docStatsService) {
+            this.docStatsService = docStatsService;
         }
-        
+
         public static final int NUMCOLS = 4;
         public String[] colNames = {"Data Category", "Type", "Value", "Count"};
-        private ITSDocStats stats;
+        private final ITSDocStatsService docStatsService;
 
         @Override
         public int getRowCount() {
-            return stats.getStats().size();
+            return this.docStatsService.getNumStats();
         }
 
         @Override
@@ -102,25 +104,29 @@ public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueu
             Object tableCell;
             switch (col) {
                 case 0:
-                    tableCell = stats.getStats().get(row).getDataCategory();
+                    tableCell = getItsStatistic(row).getDataCategory();
                     break;
 
                 case 1:
-                    tableCell = stats.getStats().get(row).getType();
+                    tableCell = getItsStatistic(row).getType();
                     break;
 
                 case 2:
-                    tableCell = stats.getStats().get(row).getValue();
+                    tableCell = getItsStatistic(row).getValue();
                     break;
 
                 case 3:
-                    tableCell = stats.getStats().get(row).getCount();
+                    tableCell = getItsStatistic(row).getCount();
                     break;
 
                 default:
                     throw new IllegalArgumentException("Incorrect number of columns: "+col);
             }
             return tableCell;
+        }
+
+        private ITSStats getItsStatistic(int row) {
+            return this.docStatsService.getItsStatistic(row);
         }
     }
 }

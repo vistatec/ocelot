@@ -32,7 +32,6 @@ import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentController;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -43,6 +42,9 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Objects;
+
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
@@ -61,9 +63,11 @@ import net.sf.okapi.common.skeleton.ISkeletonWriter;
 public abstract class OkapiSegmentWriter {
     public abstract void updateSegment(Segment seg);
     private ProvenanceConfig provConfig;
+    private final OcelotEventQueue eventQueue;
 
-    public OkapiSegmentWriter(ProvenanceConfig provConfig) {
+    public OkapiSegmentWriter(ProvenanceConfig provConfig, OcelotEventQueue eventQueue) {
         this.provConfig = provConfig;
+        this.eventQueue = eventQueue;
     }
     
     public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
@@ -97,8 +101,8 @@ public abstract class OkapiSegmentWriter {
                     GenericAnnotationType.PROV_REVORG, userProvenance.getRevOrg(),
                     GenericAnnotationType.PROV_PROVREF, userProvenance.getProvRef());
             provAnns.add(provGA);
-            seg.addProvenance(new OkapiProvenance(provGA));
-            seg.setAddedRWProvenance(true);
+            Provenance ocelotProv = new OkapiProvenance(provGA);
+            eventQueue.post(new ProvenanceAddEvent(ocelotProv, seg, true));
         }
 
         return provAnns;

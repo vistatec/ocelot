@@ -7,10 +7,12 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 public interface XLIFFFactory {
 
     public XLIFFParser newXLIFFParser(File detectVersion) throws FileNotFoundException, IOException, XMLStreamException;
 
-    public XLIFFWriter newXLIFFWriter(XLIFFParser parser, ProvenanceConfig config);
+    public XLIFFWriter newXLIFFWriter(XLIFFParser parser,
+            ProvenanceConfig config, OcelotEventQueue eventQueue);
 }

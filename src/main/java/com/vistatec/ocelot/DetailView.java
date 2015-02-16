@@ -44,6 +44,8 @@ import java.awt.Dimension;
 
 import javax.swing.JPanel;
 
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+
 /**
  * Detail pane displaying data related to a selected segment in the SegmentView.
  */
@@ -55,7 +57,10 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     private SegmentDetailView segDetailView;
     private Segment selectedSegment;
 
-    public DetailView() {
+    private final OcelotEventQueue eventQueue;
+
+    public DetailView(OcelotEventQueue eventQueue) {
+        this.eventQueue = eventQueue;
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(500, 250));
     }
@@ -115,7 +120,7 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     public void addLQIDetailView() {
         if (lqiDetailView == null) {
-            lqiDetailView = new NewLanguageQualityIssueView();
+            lqiDetailView = new NewLanguageQualityIssueView(eventQueue);
             add(lqiDetailView);
         }
     }

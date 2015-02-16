@@ -3,14 +3,14 @@ package com.vistatec.ocelot.events;
 import com.vistatec.ocelot.events.api.OcelotEvent;
 import com.vistatec.ocelot.its.Provenance;
 
-public class ProvenanceAddedEvent implements OcelotEvent {
-    private Provenance prov;
+public class ItsDocStatsAddedProvEvent implements OcelotEvent {
+    private final Provenance prov;
 
-    public ProvenanceAddedEvent(Provenance prov) {
+    public ItsDocStatsAddedProvEvent(Provenance prov) {
         this.prov = prov;
     }
 
-    public Provenance getProvenance() {
+    public Provenance getProv() {
         return prov;
     }
 }

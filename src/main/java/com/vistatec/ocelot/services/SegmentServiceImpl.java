@@ -34,14 +34,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ItsDocStatsAddedLqiEvent;
+import com.vistatec.ocelot.events.ItsDocStatsUpdateLqiEvent;
+import com.vistatec.ocelot.events.ItsDocStatsAddedProvEvent;
+import com.vistatec.ocelot.events.ItsDocStatsClearEvent;
+import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
+import com.vistatec.ocelot.events.ItsDocStatsRemovedLqiEvent;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.LQIRemoveEvent;
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.SegmentVariant;
 
 /**
@@ -70,7 +78,7 @@ public class SegmentServiceImpl implements SegmentService {
     @Override
     public void setSegments(List<Segment> segments) {
         this.segments = segments;
-        recalculateDocStats();
+        eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
     }
 
     @Subscribe
@@ -85,30 +93,68 @@ public class SegmentServiceImpl implements SegmentService {
     }
 
     @Subscribe
+    @Override
+    public void resetSegmentTarget(SegmentTargetResetEvent e) {
+        Segment seg = e.getSegment();
+        if (seg.resetTarget()) {
+            eventQueue.post(new SegmentEditEvent(seg));
+        }
+    }
+
+    @Subscribe
+    @Override
     public void addLQI(LQIAdditionEvent e) {
         Segment seg = e.getSegment();
         LanguageQualityIssue lqi = e.getLQI();
         seg.addLQI(lqi);
-        eventQueue.post(new ItsDocStatsAddedLqiEvent(lqi));
+        eventQueue.post(new ItsDocStatsUpdateLqiEvent(lqi));
         eventQueue.post(new SegmentEditEvent(seg));
         eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
 
     @Subscribe
+    @Override
     public void editLQI(LQIEditEvent e) {
+        LanguageQualityIssue editedLQI = e.getLQI();
+
+        Segment seg = e.getSegment();
+        LanguageQualityIssue segmentLQI = e.getSegmentLQI();
+        segmentLQI.setType(editedLQI.getType());
+        segmentLQI.setComment(editedLQI.getComment());
+        segmentLQI.setSeverity(editedLQI.getSeverity());
+        segmentLQI.setProfileReference(editedLQI.getProfileReference());
+        segmentLQI.setEnabled(editedLQI.isEnabled());
+
+        eventQueue.post(new ItsDocStatsUpdateLqiEvent(segmentLQI));
+        eventQueue.post(new SegmentEditEvent(seg));
+        eventQueue.post(new LQIModificationEvent(segmentLQI, seg));
+    }
+
+    @Subscribe
+    @Override
+    public void removeLQI(LQIRemoveEvent e) {
         Segment seg = e.getSegment();
         LanguageQualityIssue lqi = e.getLQI();
-        eventQueue.post(new ItsDocStatsAddedLqiEvent(lqi));
+        seg.removeLQI(lqi);
+        eventQueue.post(new ItsDocStatsRemovedLqiEvent(segments));
         eventQueue.post(new SegmentEditEvent(seg));
         eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
-    private void recalculateDocStats() {
-        // TODO:
+
+    @Subscribe
+    public void addProvenance(ProvenanceAddEvent e) {
+        Provenance prov = e.getProvenance();
+        Segment seg = e.getSegment();
+        seg.addProvenance(prov);
+        if (e.isOcelotProv) {
+            seg.setAddedRWProvenance(true);
+        }
+        eventQueue.post(new ItsDocStatsAddedProvEvent(prov));
     }
 
     @Override
     public void clearAllSegments() {
         this.segments.clear();
-        // TODO:
+        eventQueue.post(new ItsDocStatsClearEvent());
     }
 }

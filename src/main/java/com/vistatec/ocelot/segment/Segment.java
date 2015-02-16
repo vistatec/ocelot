@@ -52,7 +52,6 @@ public class Segment {
     private List<LanguageQualityIssue> lqiList = new LinkedList<LanguageQualityIssue>();
     private List<Provenance> provList = new LinkedList<Provenance>();
     private List<OtherITSMetadata> otherITSList = new LinkedList<OtherITSMetadata>();
-    private SegmentController segmentListener;
     private String fileOriginal, transUnitId;
     private SegmentVariant originalTarget;
     private ArrayList<String> targetDiff = new ArrayList<String>();
@@ -74,10 +73,6 @@ public class Segment {
         } else {
             this.originalTarget = target.createEmptyTarget();
         }
-    }
-
-    public void setSegmentListener(SegmentController segController) {
-        this.segmentListener = segController;
     }
 
     public int getSegmentNumber() {
@@ -136,12 +131,12 @@ public class Segment {
         }
     }
 
-    public void resetTarget() {
+    public boolean resetTarget() {
         if (setOriginalTarget) {
             updateTarget(getOriginalTarget());
-            if (segmentListener != null) {
-                segmentListener.notifyResetTarget(this);
-            }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -211,9 +206,6 @@ public class Segment {
 
     public void addProvenance(Provenance prov) {
         provList.add(prov);
-        if (segmentListener != null) {
-            segmentListener.notifyAddedProv(prov);
-        }
     }
 
     public boolean addedRWProvenance() {
@@ -250,9 +242,6 @@ public class Segment {
 
     public void removeLQI(LanguageQualityIssue removeLQI) {
         lqiList.remove(removeLQI);
-        if (segmentListener != null) {
-            segmentListener.notifyRemovedLQI(removeLQI, this);
-        }
     }
 
     public List<OtherITSMetadata> getOtherITSMetadata() {

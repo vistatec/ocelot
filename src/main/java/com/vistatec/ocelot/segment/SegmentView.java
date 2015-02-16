@@ -624,7 +624,7 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
             }
 
             if (seg != null) {
-                ContextMenu menu = new ContextMenu(seg);
+                ContextMenu menu = new ContextMenu(seg, eventQueue);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }

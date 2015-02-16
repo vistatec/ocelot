@@ -141,7 +141,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     public Ocelot(OcelotApp ocelotApp, PluginManager pluginManager,
                   RuleConfiguration ruleConfig, ProvenanceConfig provConfig,
                   OcelotEventQueue eventQueue, ProvenanceService provService,
-                  SegmentService segmentService, ITSDocStats docStats)
+                  SegmentService segmentService, ITSDocStatsService docStatsService)
             throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.ocelotApp = ocelotApp;
@@ -157,11 +157,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.provService = provService;
         this.segmentService = segmentService;
 
-        add(setupMainPane(eventQueue, ruleConfig, segmentService, docStats));
+        add(setupMainPane(eventQueue, ruleConfig, segmentService, docStatsService));
     }
 
     private Component setupMainPane(OcelotEventQueue eventQueue, RuleConfiguration ruleConfig,
-            SegmentService segmentService, ITSDocStats docStats) throws IOException, InstantiationException, IllegalAccessException {
+            SegmentService segmentService, ITSDocStatsService docStatsService) throws IOException, InstantiationException, IllegalAccessException {
         Dimension segSize = new Dimension(500, 500);
 
         segmentView = new SegmentView(eventQueue,
@@ -170,19 +170,20 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.eventQueue.registerListener(segmentView);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                setupSegAttrDetailPanes(eventQueue, docStats), segmentView);
+                setupSegAttrDetailPanes(eventQueue, docStatsService), segmentView);
         mainSplitPane.setOneTouchExpandable(true);
 
         return mainSplitPane;
     }
 
-    private Component setupSegAttrDetailPanes(OcelotEventQueue eventQueue, ITSDocStats docStats) {
+    private Component setupSegAttrDetailPanes(OcelotEventQueue eventQueue,
+            ITSDocStatsService docStatsService) {
         Dimension segAttrSize = new Dimension(385, 280);
-        itsDetailView = new DetailView();
+        itsDetailView = new DetailView(eventQueue);
         itsDetailView.setPreferredSize(segAttrSize);
         this.eventQueue.registerListener(itsDetailView);
 
-        segmentAttrView = new SegmentAttributeView(eventQueue, docStats);
+        segmentAttrView = new SegmentAttributeView(eventQueue, docStatsService);
         segmentAttrView.setMinimumSize(new Dimension(305, 280));
         segmentAttrView.setPreferredSize(segAttrSize);
         this.eventQueue.registerListener(segmentAttrView);
@@ -406,7 +407,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuQuickAdd.addActionListener(this);
         menuFilter.add(menuQuickAdd);
 
-        SegmentMenu segmentMenu = new SegmentMenu(getPlatformKeyMask());
+        SegmentMenu segmentMenu = new SegmentMenu(eventQueue, getPlatformKeyMask());
         menuBar.add(segmentMenu.getMenu());
         this.eventQueue.registerListener(segmentMenu);
         
@@ -511,17 +512,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
-        XliffService xliffService = new OkapiXliffService(provConfig);
+        XliffService xliffService = new OkapiXliffService(provConfig, eventQueue);
         eventQueue.registerListener(xliffService);
 
-        ITSDocStatsService docStatsService = new ITSDocStatsService(eventQueue);
+        ITSDocStatsService docStatsService = new ITSDocStatsService(docStats, eventQueue);
         eventQueue.registerListener(docStatsService);
 
         OcelotApp ocelotApp = new OcelotApp(appConfig, pluginManager,
-                ruleConfig, segmentService, xliffService, docStatsService);
+                ruleConfig, segmentService, xliffService);
         eventQueue.registerListener(ocelotApp);
         Ocelot ocelot = new Ocelot(ocelotApp, pluginManager, ruleConfig, provConfig,
-                eventQueue, provService, segmentService, docStats);
+                eventQueue, provService, segmentService, docStatsService);
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelot);
 
         try {

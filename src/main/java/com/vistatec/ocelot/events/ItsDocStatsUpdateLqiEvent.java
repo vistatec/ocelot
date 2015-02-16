@@ -3,10 +3,10 @@ package com.vistatec.ocelot.events;
 import com.vistatec.ocelot.events.api.OcelotEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 
-public class ItsDocStatsAddedLqiEvent implements OcelotEvent {
+public class ItsDocStatsUpdateLqiEvent implements OcelotEvent {
     private final LanguageQualityIssue lqi;
 
-    public ItsDocStatsAddedLqiEvent(LanguageQualityIssue lqi) {
+    public ItsDocStatsUpdateLqiEvent(LanguageQualityIssue lqi) {
         this.lqi = lqi;
     }
 

@@ -186,8 +186,8 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
             }
             if (e.isPopupTrigger() && getSelectedSegment() != null) {
                 ContextMenu menu = selectedLQI == null ?
-                        new ContextMenu(getSelectedSegment()) :
-                        new ContextMenu(getSelectedSegment(), selectedLQI);
+                        new ContextMenu(getSelectedSegment(), eventQueue) :
+                        new ContextMenu(getSelectedSegment(), selectedLQI, eventQueue);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }

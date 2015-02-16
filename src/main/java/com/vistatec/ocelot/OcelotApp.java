@@ -47,9 +47,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.services.ITSDocStatsService;
 
 /**
  * Main Ocelot application context.
@@ -63,18 +64,16 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private SegmentService segmentService;
     private XliffService xliffService;
-    private final ITSDocStatsService itsDocStatsService;
-    private boolean fileDirty = false, hasOpenFile;
+    private boolean fileDirty = false, hasOpenFile = false;
 
     public OcelotApp(AppConfig config, PluginManager pluginManager,
             RuleConfiguration ruleConfig, SegmentService segmentService,
-            XliffService xliffService, ITSDocStatsService itsDocStatsService) {
+            XliffService xliffService) {
         this.appConfig = config;
         this.pluginManager = pluginManager;
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
-        this.itsDocStatsService = itsDocStatsService;
     }
 
     /**
@@ -129,7 +128,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     public void quickAddLQI(Segment seg, int hotkey) {
         QuickAdd qa = ruleConfig.getQuickAddLQI(hotkey);
         if (seg != null && qa != null && seg.isEditablePhase()) {
-            seg.addLQI(qa.createLQI());
+            segmentService.addLQI(new LQIAdditionEvent(qa.createLQI(), seg));
         }
     }
 
@@ -143,6 +142,11 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     @Subscribe
     public void segmentEdit(SegmentEditEvent e) {
+        this.fileDirty = true;
+    }
+
+    @Subscribe
+    public void provenanceAdded(ProvenanceAddEvent e) {
         this.fileDirty = true;
     }
 
