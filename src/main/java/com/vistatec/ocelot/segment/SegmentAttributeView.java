@@ -33,7 +33,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ITSSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.SegmentDeselectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.LanguageQualityIssueTableView;
@@ -60,7 +60,6 @@ public class SegmentAttributeView extends JTabbedPane {
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
-    private Segment selectedSegment;
 
     @Inject
     public SegmentAttributeView(EventBus eventBus, ITSDocStats docStats) {
@@ -82,26 +81,12 @@ public class SegmentAttributeView extends JTabbedPane {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (previousComponent != null && (previousComponent instanceof SegmentAttributeTablePane)) {
-                    ((SegmentAttributeTablePane)previousComponent).clearSelection();
+                    ((SegmentAttributeTablePane<?>)previousComponent).clearSelection();
                 }
                 previousComponent = getSelectedComponent();
             }
         });
         eventBus.register(this);
-    }
-
-    public Segment getSelectedSegment() {
-        return this.selectedSegment;
-    }
-
-    @Subscribe
-    public void setSelectedSegment(SegmentSelectionEvent e) {
-        this.selectedSegment = e.getSegment();
-    }
-
-    @Subscribe
-    public void clearSegment(SegmentDeselectionEvent e) {
-        this.selectedSegment = null;
     }
 
     @Subscribe

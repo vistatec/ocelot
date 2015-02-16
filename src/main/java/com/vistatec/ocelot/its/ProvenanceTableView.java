@@ -41,7 +41,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS Provenance metadata.
@@ -65,7 +64,6 @@ public class ProvenanceTableView extends
         ListSelectionModel tableSelectionModel = table.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new ProvSelectionHandler());
-        table.setRowSorter(new TableRowSorter<ProvTableModel>(model));
         return table;
     }
 

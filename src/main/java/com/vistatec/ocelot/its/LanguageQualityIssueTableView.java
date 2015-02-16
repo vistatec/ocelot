@@ -47,12 +47,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS metadata.
  */
-public class LanguageQualityIssueTableView extends 
+public class LanguageQualityIssueTableView extends
             SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> {
     private static final long serialVersionUID = 1L;
 
@@ -72,7 +71,6 @@ public class LanguageQualityIssueTableView extends
         ListSelectionModel tableSelectionModel = table.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
-        table.setRowSorter(new TableRowSorter<LQITableModel>(model));
         table.addMouseListener(new LQIPopupMenuListener());
         return table;
     }

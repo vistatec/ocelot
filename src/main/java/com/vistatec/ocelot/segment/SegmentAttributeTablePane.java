@@ -3,10 +3,11 @@ package com.vistatec.ocelot.segment;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableRowSorter;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.SegmentDeselectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 
 public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> extends JScrollPane {
@@ -17,10 +18,15 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
     private EventBus eventBus;
 
     protected SegmentAttributeTablePane(EventBus eventBus) {
-        this.tableModel = createTableModel();
-        this.table = new JTable(tableModel);
+        initializeTable();
         this.eventBus = eventBus;
         eventBus.register(this);
+    }
+
+    private void initializeTable() {
+        tableModel = createTableModel();
+        table = buildTable(tableModel);
+        table.setRowSorter(new TableRowSorter<T>(tableModel));
         setViewportView(table);
     }
 
@@ -59,16 +65,8 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
     protected void segmentSelected(Segment seg) {
     }
 
-    // XXX The main time this fires is when a new file is opened
-    // What is the right behavior?
-    // Probably this should be a different event
     @Subscribe
-    public void segmentDeselected(SegmentDeselectionEvent e) {
-        clearSelection();
-        // TODO
-        //tableModel.deleteRows();
-        //table.setRowSorter(null);
-        //setViewportView(null);
+    public void fileOpened(OpenFileEvent e) {
+        initializeTable();
     }
-
 }

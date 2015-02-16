@@ -36,7 +36,7 @@ import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.di.OcelotModule;
-import com.vistatec.ocelot.events.SegmentDeselectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.plugins.PluginManager;
@@ -254,7 +254,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();
-                eventBus.post(new SegmentDeselectionEvent());
+                eventBus.post(new OpenFileEvent(sourceFile.getName()));
                 this.pluginManager.notifyOpenFile(sourceFile.getName());
 
                 this.menuSave.setEnabled(true);
