@@ -29,78 +29,57 @@
 package com.vistatec.ocelot.its;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.ProvenanceSelectionEvent;
-import com.vistatec.ocelot.events.SegmentDeselectionEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.util.List;
 
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS Provenance metadata.
  */
-public class ProvenanceTableView extends JScrollPane {
+public class ProvenanceTableView extends SegmentAttributeTablePane {
     private static final long serialVersionUID = 1L;
 
-    protected JTable provTable;
-    private ProvTableModel provTableModel;
-    private TableRowSorter<ProvTableModel> sort;
-    private EventBus eventBus;
-
     public ProvenanceTableView(EventBus eventBus) {
-        this.eventBus = eventBus;
-        eventBus.register(this);
+        super(eventBus);
     }
 
-    @Subscribe
-    public void setSegment(SegmentSelectionEvent e) {
-        Segment seg = e.getSegment();
-        setViewportView(null);
-        provTableModel = new ProvTableModel();
-        provTable = new JTable(provTableModel);
+    @Override
+    protected AbstractTableModel buildTableModelForSegment(Segment segment) {
+        ProvTableModel model = new ProvTableModel();
+        if (segment != null) {
+            model.setRows(segment.getProv());
+        }
+        return model;
+    }
 
-        ListSelectionModel tableSelectionModel = provTable.getSelectionModel();
+    @Override
+    protected JTable buildTable(TableModel model) {
+        JTable table = super.buildTable(model);
+        ListSelectionModel tableSelectionModel = table.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new ProvSelectionHandler());
-
-        List<Provenance> provData = seg.getProv();
-        provTableModel.setRows(provData);
-
-        sort = new TableRowSorter<ProvTableModel>(provTableModel);
-        provTable.setRowSorter(sort);
-
-        setViewportView(provTable);
+        TableRowSorter<ProvTableModel> sort =
+                new TableRowSorter<ProvTableModel>((ProvTableModel)model);
+        table.setRowSorter(sort);
+        return table;
     }
 
-    @Subscribe
-    public void clearSegment(SegmentDeselectionEvent e) {
-        if (provTable != null) {
-            provTable.clearSelection();
-            provTableModel.deleteRows();
-            provTable.setRowSorter(null);
-        }
-        setViewportView(null);
-    }
-
-    public void selectedProv() {
-        int rowIndex = provTable.getSelectedRow();
+    
+    private void selectedProv() {
+        int rowIndex = getTable().getSelectedRow();
         if (rowIndex >= 0) {
-            eventBus.post(new ProvenanceSelectionEvent(provTableModel.rows.get(rowIndex)));
-        }
-    }
-
-    public void deselectProv() {
-        if (provTable != null) {
-            provTable.clearSelection();
+            getEventBus().post(new ProvenanceSelectionEvent(
+                    ((ProvTableModel)getTableModel()).rows.get(rowIndex)));
         }
     }
 

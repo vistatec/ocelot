@@ -29,16 +29,12 @@
 package com.vistatec.ocelot.its;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.SegmentDeselectionEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import org.slf4j.Logger;
@@ -47,54 +43,23 @@ import org.slf4j.LoggerFactory;
 /**
  * Table view for displaying simple key-value pair ITS metadata on a segment.
  */
-public class OtherITSTableView extends JScrollPane {
+public class OtherITSTableView extends SegmentAttributeTablePane {
     private static final long serialVersionUID = 1L;
 
     private Logger LOG = LoggerFactory.getLogger(OtherITSTableView.class);
-    protected JTable itsTable;
-    private OtherITSTableModel itsTableModel;
 
     public OtherITSTableView(EventBus eventBus) {
-        eventBus.register(this);
+        super(eventBus);
     }
 
-    public JTable getTable() {
-        return this.itsTable;
-    }
-
-    public OtherITSTableModel getTableModel() {
-        return this.itsTableModel;
-    }
-
-    @Subscribe
-    public void setSegment(SegmentSelectionEvent e) {
-        Segment seg = e.getSegment();
-        setViewportView(null);
-        this.itsTableModel = new OtherITSTableModel();
-        this.itsTable = new JTable(this.itsTableModel);
-
-        List<OtherITSMetadata> itsMetadata = seg.getOtherITSMetadata();
-        this.itsTableModel.setRows(itsMetadata);
-        setViewportView(this.itsTable);
-    }
-
-    @Subscribe
-    public void clearSegment(SegmentDeselectionEvent e) {
-        clearTableSelection();
-        deleteTableValues();
-        setViewportView(null);
-    }
-
-    public void clearTableSelection() {
-        if (getTable() != null) {
-            getTable().clearSelection();
+    @Override
+    protected AbstractTableModel buildTableModelForSegment(Segment segment) {
+        OtherITSTableModel model = new OtherITSTableModel();
+        if (segment != null) {
+            List<OtherITSMetadata> itsMetadata = segment.getOtherITSMetadata();
+            model.setRows(itsMetadata);
         }
-    }
-
-    public void deleteTableValues() {
-        if (getTableModel() != null) {
-            getTableModel().deleteRows();
-        }
+        return model;
     }
 
     public class OtherITSTableModel extends AbstractTableModel {

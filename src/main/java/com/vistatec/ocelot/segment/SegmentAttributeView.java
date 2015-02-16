@@ -78,16 +78,13 @@ public class SegmentAttributeView extends JTabbedPane {
 
         // Deselect metadata to allow reselection for detail view after switching tabs.
         addChangeListener(new ChangeListener() {
+            private Component previousComponent = null;
             @Override
             public void stateChanged(ChangeEvent e) {
-                Component tab = getComponentAt(getSelectedIndex());
-                if (tab.equals(lqiTableView)) {
-                    lqiTableView.deselectLQI();
-                } else if (tab.equals(provTableView)) {
-                    provTableView.deselectProv();
-                } else if (tab.equals(itsTableView)) {
-                    itsTableView.clearTableSelection();
+                if (previousComponent != null && (previousComponent instanceof SegmentAttributeTablePane)) {
+                    ((SegmentAttributeTablePane)previousComponent).clearSelection();
                 }
+                previousComponent = getSelectedComponent();
             }
         });
         eventBus.register(this);

@@ -34,89 +34,72 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
-import com.vistatec.ocelot.events.SegmentDeselectionEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS metadata.
  */
-public class LanguageQualityIssueTableView extends JScrollPane {
+public class LanguageQualityIssueTableView extends SegmentAttributeTablePane {
     private static final long serialVersionUID = 1L;
 
-    protected JTable lqiTable;
-    protected LQITableModel lqiTableModel;
-    private TableRowSorter<LQITableModel> sort;
-    private EventBus eventBus;
-    private Segment selectedSegment;
-    
     public LanguageQualityIssueTableView(EventBus eventBus) {
-        this.eventBus = eventBus;
+        super(eventBus);
         addMouseListener(new LQIPopupMenuListener());
-        eventBus.register(this);
     }
-    
-    @Subscribe
-    public void setSegment(SegmentSelectionEvent e) {
-        selectedSegment = e.getSegment();
-        setViewportView(null);
-        lqiTableModel = new LQITableModel();
-        lqiTable = new JTable(lqiTableModel);
 
-        ListSelectionModel tableSelectionModel = lqiTable.getSelectionModel();
+    @Override
+    protected AbstractTableModel buildTableModelForSegment(Segment segment) {
+        LQITableModel model = new LQITableModel();
+        if (segment != null) {
+            List<LanguageQualityIssue> lqiData = segment.getLQI();
+            model.setRows(lqiData);
+        }
+        return model;
+    }
+
+    @Override
+    protected JTable buildTable(TableModel model) {
+        JTable table = super.buildTable(model);
+        ListSelectionModel tableSelectionModel = table.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
-
-        List<LanguageQualityIssue> lqiData = selectedSegment.getLQI();
-        lqiTableModel.setRows(lqiData);
-
-        sort = new TableRowSorter<LQITableModel>(lqiTableModel);
-        lqiTable.setRowSorter(sort);
-        lqiTable.addMouseListener(new LQIPopupMenuListener());
-
-        setViewportView(lqiTable);
+        TableRowSorter<LQITableModel> sort =
+                new TableRowSorter<LQITableModel>((LQITableModel)model);
+        table.setRowSorter(sort);
+        table.addMouseListener(new LQIPopupMenuListener());
+        return table;
     }
 
     @Subscribe
     public void handleLQIUpdate(LQIModificationEvent e) {
-        lqiTableModel.fireTableDataChanged();
+        getTableModel().fireTableDataChanged();
     }
 
-    @Subscribe
-    public void clearSegment(SegmentDeselectionEvent e) {
-        if (lqiTable != null) {
-            lqiTable.clearSelection();
-            lqiTableModel.deleteRows();
-            lqiTable.setRowSorter(null);
-        }
-        setViewportView(null);
-    }
-
-    public void selectedLQI() {
-        int rowIndex = lqiTable.getSelectedRow();
+    private void selectedLQI() {
+        int rowIndex = getTable().getSelectedRow();
         if (rowIndex >= 0) {
-            ITSMetadata selected = lqiTableModel.getRow(rowIndex);
-            eventBus.post(new LQISelectionEvent((LanguageQualityIssue)selected));
+            ITSMetadata selected = ((LQITableModel)getTableModel()).getRow(rowIndex);
+            getEventBus().post(new LQISelectionEvent((LanguageQualityIssue)selected));
         }
     }
 
-    public void deselectLQI() {
-        if (lqiTable != null) {
-            lqiTable.clearSelection();
-        }
-        eventBus.post(new LQIDeselectionEvent());
+    @Override
+    public void clearSelection() {
+        super.clearSelection();
+        getEventBus().post(new LQIDeselectionEvent());
     }
 
     static class LQITableModel extends AbstractTableModel {
@@ -193,17 +176,17 @@ public class LanguageQualityIssueTableView extends JScrollPane {
         }
         void lqiPopup(MouseEvent e) {
             LanguageQualityIssue selectedLQI = null;
-            if (lqiTable != null) {
-                int r = lqiTable.rowAtPoint(e.getPoint());
-                if (r >= 0 && r < lqiTable.getRowCount()) {
-                    lqiTable.setRowSelectionInterval(r, r);
-                    selectedLQI = lqiTableModel.getRow(r);
+            if (getTable() != null) {
+                int r = getTable().rowAtPoint(e.getPoint());
+                if (r >= 0 && r < getTable().getRowCount()) {
+                    getTable().setRowSelectionInterval(r, r);
+                    selectedLQI = ((LQITableModel)getTableModel()).getRow(r);
                 }
             }
-            if (e.isPopupTrigger() && selectedSegment != null) {
+            if (e.isPopupTrigger() && getSelectedSegment() != null) {
                 ContextMenu menu = selectedLQI == null ?
-                        new ContextMenu(selectedSegment) :
-                        new ContextMenu(selectedSegment, selectedLQI);
+                        new ContextMenu(getSelectedSegment()) :
+                        new ContextMenu(getSelectedSegment(), selectedLQI);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
