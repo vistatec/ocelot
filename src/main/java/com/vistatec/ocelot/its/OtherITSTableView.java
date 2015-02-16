@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Table view for displaying simple key-value pair ITS metadata on a segment.
  */
-public class OtherITSTableView extends SegmentAttributeTablePane {
+public class OtherITSTableView extends
+        SegmentAttributeTablePane<OtherITSTableView.OtherITSTableModel> {
     private static final long serialVersionUID = 1L;
 
     private Logger LOG = LoggerFactory.getLogger(OtherITSTableView.class);
@@ -53,13 +54,14 @@ public class OtherITSTableView extends SegmentAttributeTablePane {
     }
 
     @Override
-    protected AbstractTableModel buildTableModelForSegment(Segment segment) {
-        OtherITSTableModel model = new OtherITSTableModel();
-        if (segment != null) {
-            List<OtherITSMetadata> itsMetadata = segment.getOtherITSMetadata();
-            model.setRows(itsMetadata);
-        }
-        return model;
+    protected OtherITSTableModel createTableModel() {
+        return new OtherITSTableModel();
+    }
+
+    @Override
+    protected void segmentSelected(Segment seg) {
+        List<OtherITSMetadata> itsData = seg.getOtherITSMetadata();
+        getTableModel().setRows(itsData);
     }
 
     public class OtherITSTableModel extends AbstractTableModel {
@@ -70,7 +72,8 @@ public class OtherITSTableView extends SegmentAttributeTablePane {
         private List<OtherITSMetadata> rows = new ArrayList<OtherITSMetadata>();
 
         public void setRows(List<OtherITSMetadata> attrs) {
-            rows = attrs;
+            rows.clear();
+            rows.addAll(attrs);
         }
 
         public void deleteRows() {

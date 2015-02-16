@@ -33,6 +33,7 @@ import com.vistatec.ocelot.events.ProvenanceSelectionEvent;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTable;
@@ -40,13 +41,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS Provenance metadata.
  */
-public class ProvenanceTableView extends SegmentAttributeTablePane {
+public class ProvenanceTableView extends
+        SegmentAttributeTablePane<ProvenanceTableView.ProvTableModel> {
     private static final long serialVersionUID = 1L;
 
     public ProvenanceTableView(EventBus eventBus) {
@@ -54,32 +55,31 @@ public class ProvenanceTableView extends SegmentAttributeTablePane {
     }
 
     @Override
-    protected AbstractTableModel buildTableModelForSegment(Segment segment) {
-        ProvTableModel model = new ProvTableModel();
-        if (segment != null) {
-            model.setRows(segment.getProv());
-        }
-        return model;
+    protected ProvTableModel createTableModel() {
+        return new ProvTableModel();
     }
 
     @Override
-    protected JTable buildTable(TableModel model) {
+    protected JTable buildTable(ProvTableModel model) {
         JTable table = super.buildTable(model);
         ListSelectionModel tableSelectionModel = table.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new ProvSelectionHandler());
-        TableRowSorter<ProvTableModel> sort =
-                new TableRowSorter<ProvTableModel>((ProvTableModel)model);
-        table.setRowSorter(sort);
+        table.setRowSorter(new TableRowSorter<ProvTableModel>(model));
         return table;
     }
 
-    
+    @Override
+    protected void segmentSelected(Segment seg) {
+        List<Provenance> provData = seg.getProv();
+        getTableModel().setRows(provData);
+    }
+
     private void selectedProv() {
         int rowIndex = getTable().getSelectedRow();
         if (rowIndex >= 0) {
             getEventBus().post(new ProvenanceSelectionEvent(
-                    ((ProvTableModel)getTableModel()).rows.get(rowIndex)));
+                    getTableModel().rows.get(rowIndex)));
         }
     }
 
@@ -89,10 +89,11 @@ public class ProvenanceTableView extends SegmentAttributeTablePane {
         public static final int NUMCOLS = 6;
         public String [] colNames = {"Person", "Org", "Tool",
             "RevPerson", "RevOrg", "RevTool", "ProvRef"};
-        private List<Provenance> rows;
+        private List<Provenance> rows = new ArrayList<Provenance>();
 
         public void setRows(List<Provenance> attrs) {
-            rows = attrs;
+            rows.clear();
+            rows.addAll(attrs);
         }
 
         public void deleteRows() {

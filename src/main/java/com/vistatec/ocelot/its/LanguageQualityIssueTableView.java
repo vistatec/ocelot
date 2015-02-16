@@ -39,6 +39,7 @@ import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTable;
@@ -46,13 +47,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 /**
  * Table View for displaying segment ITS metadata.
  */
-public class LanguageQualityIssueTableView extends SegmentAttributeTablePane {
+public class LanguageQualityIssueTableView extends 
+            SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> {
     private static final long serialVersionUID = 1L;
 
     public LanguageQualityIssueTableView(EventBus eventBus) {
@@ -61,24 +62,17 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane {
     }
 
     @Override
-    protected AbstractTableModel buildTableModelForSegment(Segment segment) {
-        LQITableModel model = new LQITableModel();
-        if (segment != null) {
-            List<LanguageQualityIssue> lqiData = segment.getLQI();
-            model.setRows(lqiData);
-        }
-        return model;
+    protected LQITableModel createTableModel() {
+        return new LQITableModel();
     }
 
     @Override
-    protected JTable buildTable(TableModel model) {
+    protected JTable buildTable(LQITableModel model) {
         JTable table = super.buildTable(model);
         ListSelectionModel tableSelectionModel = table.getSelectionModel();
         tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
-        TableRowSorter<LQITableModel> sort =
-                new TableRowSorter<LQITableModel>((LQITableModel)model);
-        table.setRowSorter(sort);
+        table.setRowSorter(new TableRowSorter<LQITableModel>(model));
         table.addMouseListener(new LQIPopupMenuListener());
         return table;
     }
@@ -91,9 +85,15 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane {
     private void selectedLQI() {
         int rowIndex = getTable().getSelectedRow();
         if (rowIndex >= 0) {
-            ITSMetadata selected = ((LQITableModel)getTableModel()).getRow(rowIndex);
+            ITSMetadata selected = getTableModel().getRow(rowIndex);
             getEventBus().post(new LQISelectionEvent((LanguageQualityIssue)selected));
         }
+    }
+
+    @Override
+    protected void segmentSelected(Segment seg) {
+        List<LanguageQualityIssue> lqiData = seg.getLQI();
+        getTableModel().setRows(lqiData);
     }
 
     @Override
@@ -107,14 +107,15 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane {
 
         public static final int NUMCOLS = 3;
         public String[] colNames = {"Type", "Severity", "Comment"};
-        private List<LanguageQualityIssue> rows;
+        private List<LanguageQualityIssue> rows = new ArrayList<LanguageQualityIssue>();
 
         public LanguageQualityIssue getRow(int row) {
             return rows.get(row);
         }
 
         public void setRows(List<LanguageQualityIssue> attrs) {
-            rows = attrs;
+            rows.clear();
+            rows.addAll(attrs);
         }
 
         public void deleteRows() {
@@ -180,7 +181,7 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane {
                 int r = getTable().rowAtPoint(e.getPoint());
                 if (r >= 0 && r < getTable().getRowCount()) {
                     getTable().setRowSelectionInterval(r, r);
-                    selectedLQI = ((LQITableModel)getTableModel()).getRow(r);
+                    selectedLQI = getTableModel().getRow(r);
                 }
             }
             if (e.isPopupTrigger() && getSelectedSegment() != null) {

@@ -3,34 +3,34 @@ package com.vistatec.ocelot.segment;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.SegmentDeselectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 
-public abstract class SegmentAttributeTablePane extends JScrollPane {
+public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> extends JScrollPane {
     private static final long serialVersionUID = 1L;
     private JTable table;
-    private AbstractTableModel tableModel;
+    private T tableModel;
     private Segment selectedSegment;
     private EventBus eventBus;
 
     protected SegmentAttributeTablePane(EventBus eventBus) {
-        this.tableModel = buildTableModelForSegment(null);
+        this.tableModel = createTableModel();
         this.table = new JTable(tableModel);
         this.eventBus = eventBus;
         eventBus.register(this);
+        setViewportView(table);
     }
 
-    protected abstract AbstractTableModel buildTableModelForSegment(Segment segment);
+    protected abstract T createTableModel();
 
-    protected JTable buildTable(TableModel model) {
+    protected JTable buildTable(T model) {
         return new JTable(model);
     }
 
-    protected AbstractTableModel getTableModel() {
+    protected T getTableModel() {
         return tableModel;
     }
 
@@ -52,20 +52,23 @@ public abstract class SegmentAttributeTablePane extends JScrollPane {
 
     @Subscribe
     public void segmentSelected(SegmentSelectionEvent e) {
-        Segment seg = e.getSegment();
-        setViewportView(null);
-        this.tableModel = buildTableModelForSegment(seg);
-        this.table = buildTable(tableModel);
-        setViewportView(this.table);
+        segmentSelected(e.getSegment());
+        getTableModel().fireTableDataChanged();
     }
 
+    protected void segmentSelected(Segment seg) {
+    }
+
+    // XXX The main time this fires is when a new file is opened
+    // What is the right behavior?
+    // Probably this should be a different event
     @Subscribe
     public void segmentDeselected(SegmentDeselectionEvent e) {
         clearSelection();
         // TODO
         //tableModel.deleteRows();
-        table.setRowSorter(null);
-        setViewportView(null);
+        //table.setRowSorter(null);
+        //setViewportView(null);
     }
 
 }
