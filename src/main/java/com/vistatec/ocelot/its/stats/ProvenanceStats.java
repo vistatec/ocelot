@@ -30,8 +30,6 @@ package com.vistatec.ocelot.its.stats;
 
 import java.util.Objects;
 
-import net.sf.okapi.common.HashCodeUtil;
-
 /**
  * Aggregate data representation for Provenance displayed in SegmentAttributeTableView.
  */
@@ -116,8 +114,6 @@ public class ProvenanceStats implements ITSStats {
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, displayType);
-        h = HashCodeUtil.hash(h, value);
-        return h;
+        return Objects.hash(displayType, value, count);
     }
 }

@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.segment;
 
-import net.sf.okapi.common.HashCodeUtil;
+import java.util.Objects;
 
 public class CodeAtom implements SegmentAtom {
     private String id;
@@ -40,14 +40,14 @@ public class CodeAtom implements SegmentAtom {
         if (o == this) return true;
         if (o == null || !(o instanceof CodeAtom)) return false;
         CodeAtom c = (CodeAtom)o;
-        return id.equals(c.id) && data.equals(c.data) && verboseData.equals(c.verboseData);
+        return Objects.equals(id, c.id) &&
+               Objects.equals(data, c.data) &&
+               Objects.equals(verboseData, c.verboseData);
     }
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, id);
-        h = HashCodeUtil.hash(h, data);
-        return HashCodeUtil.hash(h, verboseData);
+        return Objects.hash(id, data, verboseData);
     }
 
     @Override

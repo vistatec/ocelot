@@ -36,7 +36,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
-import net.sf.okapi.common.HashCodeUtil;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 
@@ -173,12 +172,6 @@ public class LanguageQualityIssue extends ITSMetadata {
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, severity);
-        h = HashCodeUtil.hash(h, enabled);
-        h = HashCodeUtil.hash(h, profileReference);
-        h = HashCodeUtil.hash(h, type);
-        h = HashCodeUtil.hash(h, comment);
-        h = HashCodeUtil.hash(h, issuesRef);
-        return h;
+        return Objects.hash(severity, enabled, profileReference, type, comment, issuesRef);
     }
 }

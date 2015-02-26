@@ -34,8 +34,7 @@ import com.vistatec.ocelot.segment.Segment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.okapi.common.HashCodeUtil;
+import java.util.Objects;
 
 /**
  * Representation of all data associated with a single, user-defined rule.
@@ -167,10 +166,6 @@ public class Rule {
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, enabled);
-        h = HashCodeUtil.hash(h, label);
-        h = HashCodeUtil.hash(h, flag);
-        h = HashCodeUtil.hash(h, matchers);
-        return h;
+        return Objects.hash(enabled, label, flag, matchers);
     }
 }

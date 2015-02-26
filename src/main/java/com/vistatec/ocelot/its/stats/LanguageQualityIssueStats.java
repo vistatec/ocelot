@@ -30,8 +30,6 @@ package com.vistatec.ocelot.its.stats;
 
 import java.util.Objects;
 
-import net.sf.okapi.common.HashCodeUtil;
-
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 
 /**
@@ -116,9 +114,6 @@ public class LanguageQualityIssueStats implements ITSStats {
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, type);
-        h = HashCodeUtil.hash(h, minRange);
-        h = HashCodeUtil.hash(h, maxRange);
-        return h;
+        return Objects.hash(type, minRange, maxRange, count);
     }
 }

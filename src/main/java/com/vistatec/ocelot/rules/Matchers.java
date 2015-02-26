@@ -28,11 +28,10 @@
  */
 package com.vistatec.ocelot.rules;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import net.sf.okapi.common.HashCodeUtil;
 
 import org.apache.log4j.Logger;
 
@@ -205,9 +204,7 @@ public class Matchers {
 
 		@Override
 		public int hashCode() {
-		    return  HashCodeUtil.hash(
-		                HashCodeUtil.hash(HashCodeUtil.SEED, lowerBound),
-		                upperBound);
+		    return Objects.hash(lowerBound, upperBound);
 		}
 	}
 }

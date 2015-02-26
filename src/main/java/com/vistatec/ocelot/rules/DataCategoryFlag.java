@@ -29,11 +29,10 @@
 package com.vistatec.ocelot.rules;
 
 import java.awt.Color;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-
-import net.sf.okapi.common.HashCodeUtil;
 
 /**
  * Display methods for flags in SegmentView Table.
@@ -90,9 +89,6 @@ public class DataCategoryFlag {
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, text);
-        h = HashCodeUtil.hash(h, fill);
-        h = HashCodeUtil.hash(h, border);
-        return h;
+        return Objects.hash(text, fill, border);
     }
 }

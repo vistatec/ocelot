@@ -2,8 +2,6 @@ package com.vistatec.ocelot.rules;
 
 import java.util.Objects;
 
-import net.sf.okapi.common.HashCodeUtil;
-
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 
 /**
@@ -64,8 +62,6 @@ public class QuickAdd {
 
     @Override
     public int hashCode() {
-        int h = HashCodeUtil.hash(HashCodeUtil.SEED, name);
-        h = HashCodeUtil.hash(h, lqiData);
-        return h;
+        return Objects.hash(name, lqiData);
     }
 }
