@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.its.stats;
 
-import com.vistatec.ocelot.ObjectUtils;
+import java.util.Objects;
 
 import net.sf.okapi.common.HashCodeUtil;
 
@@ -109,9 +109,9 @@ public class ProvenanceStats implements ITSStats {
         if (o == this) return true;
         if (o == null || !(o instanceof ProvenanceStats)) return false;
         ProvenanceStats prov = (ProvenanceStats)o;
-        return ObjectUtils.safeEquals(displayType, prov.displayType) &&
-                ObjectUtils.safeEquals(value, prov.value) &&
-                ObjectUtils.safeEquals(count, prov.count);
+        return Objects.equals(displayType, prov.displayType) &&
+               Objects.equals(value, prov.value) &&
+               Objects.equals(count, prov.count);
     }
 
     @Override
