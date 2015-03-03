@@ -37,9 +37,12 @@ import com.vistatec.ocelot.rules.NullITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import static com.vistatec.ocelot.SegmentViewColumn.*;
+
 import com.vistatec.ocelot.services.SegmentService;
 
 import javax.swing.table.AbstractTableModel;
+
+import com.google.inject.Inject;
 
 /**
  * Table model that repackages SegmentController and rule data for use
@@ -54,6 +57,7 @@ public class SegmentTableModel extends AbstractTableModel {
 
     private final SegmentService segmentService;
 
+    @Inject
     public SegmentTableModel(SegmentService segmentService,
                              RuleConfiguration ruleConfig) {
         this.segmentService = segmentService;

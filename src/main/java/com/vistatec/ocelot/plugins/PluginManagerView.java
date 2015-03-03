@@ -54,6 +54,8 @@ import javax.swing.border.EmptyBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+
 /**
  * View for managing active plugins.
  */
@@ -70,6 +72,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
     private OcelotApp ocelotApp;
     private SegmentService segmentService;
 
+    @Inject
     public PluginManagerView(PluginManager pluginManager, OcelotApp ocelotApp,
             SegmentService segmentService) {
         super(new GridBagLayout());

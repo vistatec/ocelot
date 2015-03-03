@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
@@ -64,8 +65,11 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private SegmentService segmentService;
     private XliffService xliffService;
+
+    private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
 
+    @Inject
     public OcelotApp(AppConfig config, PluginManager pluginManager,
             RuleConfiguration ruleConfig, SegmentService segmentService,
             XliffService xliffService) {
@@ -74,6 +78,10 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
+    }
+
+    public File getOpenFile() {
+        return openFile;
     }
 
     /**
@@ -99,6 +107,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         segmentService.setSegments(segments);
 
         this.pluginManager.notifyOpenFile(openFile.getName());
+        this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
     }

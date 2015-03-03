@@ -94,6 +94,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.apache.log4j.Logger;
 
+import com.google.inject.Inject;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 
 /**
@@ -114,6 +115,7 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
     protected RuleConfiguration ruleConfig;
     private final OcelotEventQueue eventQueue;
 
+    @Inject
     public SegmentView(OcelotEventQueue eventQueue, SegmentTableModel segmentTableModel,
             RuleConfiguration ruleConfig) throws IOException, InstantiationException,
             InstantiationException, IllegalAccessException {

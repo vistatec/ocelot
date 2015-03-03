@@ -44,6 +44,7 @@ import java.awt.Dimension;
 
 import javax.swing.JPanel;
 
+import com.google.inject.Inject;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 /**
@@ -59,6 +60,7 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     private final OcelotEventQueue eventQueue;
 
+    @Inject
     public DetailView(OcelotEventQueue eventQueue) {
         this.eventQueue = eventQueue;
         setLayout(new BorderLayout());

@@ -30,30 +30,16 @@ package com.vistatec.ocelot;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.vistatec.ocelot.config.AppConfig;
-import com.vistatec.ocelot.config.Configs;
-import com.vistatec.ocelot.config.DirectoryBasedConfigs;
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.ProvenanceProfileView;
-import com.vistatec.ocelot.its.stats.ITSDocStats;
-import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.segment.Segment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
-import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
-import com.vistatec.ocelot.services.OkapiXliffService;
-import com.vistatec.ocelot.services.ProvenanceService;
-import com.vistatec.ocelot.services.SegmentService;
-import com.vistatec.ocelot.services.SegmentServiceImpl;
-import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
@@ -89,14 +75,9 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.xml.sax.SAXException;
-
-import com.vistatec.ocelot.services.ITSDocStatsService;
 
 /**
  * Main UI Thread class. Handles menu and file operations
@@ -124,69 +105,60 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private DetailView itsDetailView;
     private SegmentView segmentView;
 
-    protected File openSrcFile;
-    private String platformOS;
+    private final String platformOS;
     private boolean useNativeUI = false;
-    private ProvenanceConfig provConfig;
-    private RuleConfiguration ruleConfig;
-    private PluginManager pluginManager;
+    private final Color optionPaneBackgroundColor;
+
+    private final Injector ocelotScope;
     private final OcelotEventQueue eventQueue;
-    private Color optionPaneBackgroundColor;
+    private final OcelotApp ocelotApp;
 
-    private ProvenanceService provService;
-    private SegmentService segmentService;
-
-    private OcelotApp ocelotApp;
-
-    public Ocelot(OcelotApp ocelotApp, PluginManager pluginManager,
-                  RuleConfiguration ruleConfig, ProvenanceConfig provConfig,
-                  OcelotEventQueue eventQueue, ProvenanceService provService,
-                  SegmentService segmentService, ITSDocStatsService docStatsService)
-            throws IOException, InstantiationException, IllegalAccessException {
+    public Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
-        this.ocelotApp = ocelotApp;
-        this.pluginManager = pluginManager;
-        this.provConfig = provConfig;
-        this.ruleConfig = ruleConfig;
+        this.ocelotScope = ocelotScope;
+        this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
+        this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
+        eventQueue.registerListener(ocelotApp);
 
         platformOS = System.getProperty("os.name");
         useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI", "false"));
         optionPaneBackgroundColor = (Color)UIManager.get("OptionPane.background");
 
-        this.eventQueue = eventQueue;
-        this.provService = provService;
-        this.segmentService = segmentService;
+        SegmentView segView = ocelotScope.getInstance(SegmentView.class);
+        eventQueue.registerListener(segView);
 
-        add(setupMainPane(eventQueue, ruleConfig, segmentService, docStatsService));
+        SegmentAttributeView segAttrView = ocelotScope.getInstance(SegmentAttributeView.class);
+        eventQueue.registerListener(segAttrView);
+
+        DetailView detailView = ocelotScope.getInstance(DetailView.class);
+        eventQueue.registerListener(detailView);
+
+        add(setupMainPane(segView, segAttrView, detailView));
     }
 
-    private Component setupMainPane(OcelotEventQueue eventQueue, RuleConfiguration ruleConfig,
-            SegmentService segmentService, ITSDocStatsService docStatsService) throws IOException, InstantiationException, IllegalAccessException {
+    private Component setupMainPane(SegmentView segView,
+            SegmentAttributeView segAttrView, DetailView detailView) throws IOException, InstantiationException, IllegalAccessException {
         Dimension segSize = new Dimension(500, 500);
 
-        segmentView = new SegmentView(eventQueue,
-                new SegmentTableModel(segmentService, ruleConfig), ruleConfig);
+        segmentView = segView;
         segmentView.setMinimumSize(segSize);
-        this.eventQueue.registerListener(segmentView);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                setupSegAttrDetailPanes(eventQueue, docStatsService), segmentView);
+                setupSegAttrDetailPanes(segAttrView, detailView), segmentView);
         mainSplitPane.setOneTouchExpandable(true);
 
         return mainSplitPane;
     }
 
-    private Component setupSegAttrDetailPanes(OcelotEventQueue eventQueue,
-            ITSDocStatsService docStatsService) {
+    private Component setupSegAttrDetailPanes(SegmentAttributeView segAttrView,
+            DetailView detailView) {
         Dimension segAttrSize = new Dimension(385, 280);
-        itsDetailView = new DetailView(eventQueue);
+        itsDetailView = detailView;
         itsDetailView.setPreferredSize(segAttrSize);
-        this.eventQueue.registerListener(itsDetailView);
 
-        segmentAttrView = new SegmentAttributeView(eventQueue, docStatsService);
+        segmentAttrView = segAttrView;
         segmentAttrView.setMinimumSize(new Dimension(305, 280));
         segmentAttrView.setPreferredSize(segAttrSize);
-        this.eventQueue.registerListener(segmentAttrView);
 
         segAttrSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 segmentAttrView, itsDetailView);
@@ -211,31 +183,28 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         } else if (e.getSource() == this.menuOpenXLIFF) {
             promptOpenXLIFFFile();
         } else if (e.getSource() == this.menuRules) {
-            showModelessDialog(new FilterView(ruleConfig), "Filters");
+            showModelessDialog(ocelotScope.getInstance(FilterView.class), "Filters");
         } else if (e.getSource() == this.menuQuickAdd) {
-            showModelessDialog(new QuickAddView(this.ruleConfig, this.eventQueue), "QuickAdd Rules");
+            showModelessDialog(ocelotScope.getInstance(QuickAddView.class), "QuickAdd Rules");
         } else if (e.getSource() == this.menuPlugins) {
-            showModelessDialog(new PluginManagerView(pluginManager, ocelotApp,
-                    segmentService), "Plugin Manager");
+            showModelessDialog(ocelotScope.getInstance(PluginManagerView.class), "Plugin Manager");
 
         } else if (e.getSource() == this.menuProv) {
-            ProvenanceProfileView userProfileView = new ProvenanceProfileView(
-                    this.eventQueue, this.provConfig.getUserProvenance());
+            ProvenanceProfileView userProfileView = ocelotScope.getInstance(ProvenanceProfileView.class);
             this.eventQueue.registerListener(userProfileView);
             showModelessDialog(userProfileView, "Credentials");
 
         } else if (e.getSource() == this.menuExit) {
             handleApplicationExit();
         } else if (e.getSource() == this.menuSaveAs) {
-            if (openSrcFile != null) {
+            if (ocelotApp.hasOpenFile()) {
                 File saveFile = promptSaveAs();
-                if (save(saveFile)) {
-                    openSrcFile = saveFile;
+                if (saveFile != null && save(saveFile)) {
                     setMainTitle(saveFile.getName());
                 }
             }
         } else if (e.getSource() == this.menuSave) {
-            save(openSrcFile);
+            save(ocelotApp.getOpenFile());
         } else if (e.getSource() == this.menuTgtDiff) {
             this.segmentView.setEnabledTargetDiff(this.menuTgtDiff.isSelected());
         }
@@ -256,7 +225,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             try {
                 ocelotApp.openFile(sourceFile, detectVersion);
                 eventQueue.post(new OpenFileEvent(sourceFile.getName()));
-                this.openSrcFile = sourceFile;
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();
 
@@ -328,7 +296,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     "Save Unsaved Changes",
                     JOptionPane.YES_NO_OPTION);
             if (rv == JOptionPane.YES_OPTION) {
-                save(openSrcFile);
+                save(ocelotApp.getOpenFile());
             }
         }
         mainframe.dispose();
@@ -481,48 +449,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         dialog.setVisible(true);
     }
 
-    public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
+    public static void main(String[] args) throws IOException, IllegalAccessException, InstantiationException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(Ocelot.class.getResourceAsStream("/log4j.properties"));
         } else {
             PropertyConfigurator.configure(System.getProperty("log4j.configuration"));
         }
 
-        // XXX I don't like the fact that the values of these properties
-        // aren't known by the running application itself, only main.
-        File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
-        ocelotDir.mkdirs();
-
-        Configs configs = new DirectoryBasedConfigs(ocelotDir);
-
-        AppConfig appConfig = new AppConfig(configs);
-        ProvenanceConfig provConfig = new ProvenanceConfig(configs);
-        RuleConfiguration ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
-
-        PluginManager pluginManager = new PluginManager(appConfig, new File(ocelotDir, "plugins"));
-        pluginManager.discover();
-
         Injector ocelotScope = Guice.createInjector(new OcelotModule());
-        OcelotEventQueue eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
-        eventQueue.registerListener(pluginManager);
-        ITSDocStats docStats = ocelotScope.getInstance(ITSDocStats.class);
 
-        ProvenanceService provService = new ProvenanceService(eventQueue, provConfig);
-        eventQueue.registerListener(provService);
-
-        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
-        eventQueue.registerListener(segmentService);
-        XliffService xliffService = new OkapiXliffService(provConfig, eventQueue);
-        eventQueue.registerListener(xliffService);
-
-        ITSDocStatsService docStatsService = new ITSDocStatsService(docStats, eventQueue);
-        eventQueue.registerListener(docStatsService);
-
-        OcelotApp ocelotApp = new OcelotApp(appConfig, pluginManager,
-                ruleConfig, segmentService, xliffService);
-        eventQueue.registerListener(ocelotApp);
-        Ocelot ocelot = new Ocelot(ocelotApp, pluginManager, ruleConfig, provConfig,
-                eventQueue, provService, segmentService, docStatsService);
+        Ocelot ocelot = new Ocelot(ocelotScope);
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelot);
 
         try {

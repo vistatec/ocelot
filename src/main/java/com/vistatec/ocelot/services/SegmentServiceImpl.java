@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ItsDocStatsUpdateLqiEvent;
 import com.vistatec.ocelot.events.ItsDocStatsAddedProvEvent;
 import com.vistatec.ocelot.events.ItsDocStatsClearEvent;
@@ -61,6 +62,7 @@ public class SegmentServiceImpl implements SegmentService {
     private List<Segment> segments = new ArrayList<>(100);
     private final OcelotEventQueue eventQueue;
 
+    @Inject
     public SegmentServiceImpl(OcelotEventQueue eventQueue) {
         this.eventQueue = eventQueue;
     }

@@ -37,6 +37,7 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.google.inject.Inject;
 import com.vistatec.ocelot.services.ITSDocStatsService;
 
 /**
@@ -49,6 +50,7 @@ public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueu
     protected JTable docStatsTable;
     private TableRowSorter<DocumentStatsTableModel> sort;
 
+    @Inject
     public ITSDocStatsTableView(ITSDocStatsService docStatsService) {
         docStatsModel = new DocumentStatsTableModel(docStatsService);
         docStatsTable = new JTable(docStatsModel);

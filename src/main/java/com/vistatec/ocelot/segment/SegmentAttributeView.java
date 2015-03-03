@@ -32,8 +32,6 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.OpenFileEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -41,7 +39,6 @@ import com.vistatec.ocelot.its.LanguageQualityIssueTableView;
 import com.vistatec.ocelot.its.OtherITSTableView;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.ProvenanceTableView;
-import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.its.stats.ITSDocStatsTableView;
 
 import java.awt.Component;
@@ -49,8 +46,6 @@ import java.awt.Component;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import com.vistatec.ocelot.services.ITSDocStatsService;
 
 /**
  * Displays ITS metadata attached to the selected segment in the SegmentView.
@@ -65,8 +60,8 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
     protected OtherITSTableView itsTableView;
 
     @Inject
-    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsService docStatsService) {
-        aggregateTableView = new ITSDocStatsTableView(docStatsService);
+    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsTableView docStatsView) {
+        aggregateTableView = docStatsView;
         addTab("Doc Stats", aggregateTableView);
         eventQueue.registerListener(aggregateTableView);
 

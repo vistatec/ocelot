@@ -43,6 +43,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import com.google.inject.Inject;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 import com.vistatec.ocelot.ui.ODialogPanel;
@@ -62,6 +63,7 @@ public class FilterView extends ODialogPanel implements ActionListener {
     private RulesTable rulesTable;
     private StateQualifierTable statesTable;
 
+    @Inject
     public FilterView(RuleConfiguration filterRules) {
         super(new GridBagLayout());
         this.filterRules = filterRules;

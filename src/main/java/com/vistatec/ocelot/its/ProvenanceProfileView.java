@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.its;
 
 import com.google.common.eventbus.Subscribe;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -48,7 +49,11 @@ import com.vistatec.ocelot.events.UserProfileSaveEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.ui.ODialogPanel;
+
 import javax.swing.JOptionPane;
+
+import com.google.inject.Inject;
+import com.vistatec.ocelot.config.ProvenanceConfig;
 
 /**
  * Provenance configuration view.
@@ -62,10 +67,12 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
 
     private OcelotEventQueue eventQueue;
 
-    public ProvenanceProfileView(OcelotEventQueue eventQueue, UserProvenance profile) {
+    @Inject
+    public ProvenanceProfileView(OcelotEventQueue eventQueue, ProvenanceConfig config) {
         super(new GridBagLayout());
         setBorder(new EmptyBorder(10,10,10,10));
         this.eventQueue = eventQueue;
+        UserProvenance profile = config.getUserProvenance();
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
