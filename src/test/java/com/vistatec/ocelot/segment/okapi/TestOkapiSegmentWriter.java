@@ -47,7 +47,7 @@ import org.jmock.Mockery;
 
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 

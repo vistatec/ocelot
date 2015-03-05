@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,25 +26,43 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its;
+package com.vistatec.ocelot.its.model;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
 
+import java.util.EnumMap;
 import java.util.Map;
 
-public abstract class ITSMetadata {
-    private DataCategoryFlag flag = null;
+/**
+ * Represents ITS metadata in the ITS 2.0 spec that are simple key-value pairs.
+ * For example, MT confidence.
+ */
+public class OtherITSMetadata extends ITSMetadata {
+    private DataCategoryField itsType;
+    private Object value;
 
-    protected ITSMetadata() { }
-
-    public abstract Map<DataCategoryField, Object> getFieldValues();
-
-    public DataCategoryFlag getFlag() {
-        return flag;
+    public OtherITSMetadata() {
+        super();
     }
 
-    public void setFlag(DataCategoryFlag flag) {
-        this.flag = flag;
+    public OtherITSMetadata(DataCategoryField itsType, Object value) {
+        this.itsType = itsType;
+        this.value = value;
+    }
+
+    public DataCategoryField getType() {
+        return this.itsType;
+    }
+
+    public Object getValue() {
+        return this.value;
+    }
+
+    @Override
+    public Map<DataCategoryField, Object> getFieldValues() {
+        Map<DataCategoryField, Object> map =
+                new EnumMap<DataCategoryField, Object>(DataCategoryField.class);
+        map.put(getType(), getValue());
+        return map;
     }
 }

@@ -26,8 +26,9 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its;
+package com.vistatec.ocelot.its.view;
 
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.awt.GridBagConstraints;

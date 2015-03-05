@@ -16,12 +16,12 @@ import com.vistatec.ocelot.events.ItsDocStatsAddedProvEvent;
 import com.vistatec.ocelot.events.ItsDocStatsChangedEvent;
 import com.vistatec.ocelot.events.ItsDocStatsUpdateLqiEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.its.stats.ITSDocStats;
-import com.vistatec.ocelot.its.stats.ITSStats;
-import com.vistatec.ocelot.its.stats.LanguageQualityIssueStats;
-import com.vistatec.ocelot.its.stats.ProvenanceStats;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.stats.model.ITSDocStats;
+import com.vistatec.ocelot.its.stats.model.ITSStats;
+import com.vistatec.ocelot.its.stats.model.LanguageQualityIssueStats;
+import com.vistatec.ocelot.its.stats.model.ProvenanceStats;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
 
 public class TestItsDocStatsService {

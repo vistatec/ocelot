@@ -1,7 +1,7 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 public class LQISelectionEvent extends ItsSelectionEvent implements OcelotEvent {
     public LQISelectionEvent(LanguageQualityIssue lqi) {

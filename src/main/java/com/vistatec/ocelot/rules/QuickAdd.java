@@ -2,7 +2,7 @@ package com.vistatec.ocelot.rules;
 
 import java.util.Objects;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 /**
  * Data for a quickAdd rule.

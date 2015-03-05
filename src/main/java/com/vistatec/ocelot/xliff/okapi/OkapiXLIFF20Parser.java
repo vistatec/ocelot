@@ -28,8 +28,8 @@
  */
 package com.vistatec.ocelot.xliff.okapi;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
 
 import java.io.File;
 import java.io.IOException;

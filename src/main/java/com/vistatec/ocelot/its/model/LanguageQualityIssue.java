@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its;
+package com.vistatec.ocelot.its.model;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
 
@@ -96,12 +96,11 @@ public class LanguageQualityIssue extends ITSMetadata {
 
     @Override
     public Map<DataCategoryField, Object> getFieldValues() {
-    	Map<DataCategoryField, Object> map = 
-    			new EnumMap<DataCategoryField, Object>(DataCategoryField.class);
-    	map.put(DataCategoryField.LQI_TYPE, type);
-    	map.put(DataCategoryField.LQI_COMMENT, comment);
-    	map.put(DataCategoryField.LQI_SEVERITY, severity);
-    	return map;
+        Map<DataCategoryField, Object> map = new EnumMap<>(DataCategoryField.class);
+        map.put(DataCategoryField.LQI_TYPE, type);
+        map.put(DataCategoryField.LQI_COMMENT, comment);
+        map.put(DataCategoryField.LQI_SEVERITY, severity);
+        return map;
     }
 
     public String getType() {

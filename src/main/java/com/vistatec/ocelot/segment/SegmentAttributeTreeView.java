@@ -30,7 +30,7 @@ package com.vistatec.ocelot.segment;
 
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 import java.util.LinkedList;
 

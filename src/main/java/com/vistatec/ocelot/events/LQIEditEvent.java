@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.events;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class LQIEditEvent extends LQIEvent {

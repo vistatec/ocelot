@@ -1,7 +1,7 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 public abstract class LQIEvent implements OcelotEvent {
     private final LanguageQualityIssue lqi;

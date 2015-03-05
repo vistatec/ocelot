@@ -28,8 +28,8 @@
  */
 package com.vistatec.ocelot.rules;
 
-import com.vistatec.ocelot.its.ITSMetadata;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.awt.Color;

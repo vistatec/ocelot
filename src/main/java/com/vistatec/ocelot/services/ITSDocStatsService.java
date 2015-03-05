@@ -10,11 +10,11 @@ import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
 import com.vistatec.ocelot.events.ItsDocStatsRemovedLqiEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.its.stats.ITSDocStats;
-import com.vistatec.ocelot.its.stats.ITSStats;
-import com.vistatec.ocelot.its.stats.LanguageQualityIssueStats;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.stats.model.ITSDocStats;
+import com.vistatec.ocelot.its.stats.model.ITSStats;
+import com.vistatec.ocelot.its.stats.model.LanguageQualityIssueStats;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class ITSDocStatsService implements OcelotEventQueueListener {

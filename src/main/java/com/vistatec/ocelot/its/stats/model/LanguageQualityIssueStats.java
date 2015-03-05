@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,11 +26,11 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its.stats;
+package com.vistatec.ocelot.its.stats.model;
 
 import java.util.Objects;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 /**
  * Aggregate data representation for LQI displayed in SegmentAttributeTableView.
@@ -44,7 +44,7 @@ public class LanguageQualityIssueStats implements ITSStats {
     public LanguageQualityIssueStats() { }
 
     public LanguageQualityIssueStats(LanguageQualityIssue lqi) {
-        setType(lqi.getType());
+        this.type = lqi.getType();
         setRange(lqi.getSeverity());
     }
 
@@ -107,7 +107,7 @@ public class LanguageQualityIssueStats implements ITSStats {
         if (o == null || !(o instanceof LanguageQualityIssueStats)) return false;
         LanguageQualityIssueStats lqi = (LanguageQualityIssueStats)o;
         return type.equals(lqi.type) &&
-               minRange == lqi.minRange && 
+               minRange == lqi.minRange &&
                maxRange == lqi.maxRange &&
                Objects.equals(count, lqi.count);
     }

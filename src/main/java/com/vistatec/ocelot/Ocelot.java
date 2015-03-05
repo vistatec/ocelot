@@ -33,7 +33,7 @@ import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.ProvenanceProfileView;
+import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;

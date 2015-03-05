@@ -1,7 +1,7 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class ProvenanceAddEvent implements OcelotEvent {

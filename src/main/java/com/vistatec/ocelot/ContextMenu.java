@@ -28,8 +28,8 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.awt.event.ActionEvent;

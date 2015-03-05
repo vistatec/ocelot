@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.config;
 
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 
 public class UserProvenance extends Provenance {
     public UserProvenance(String revPerson, String revOrg, String extRef) {

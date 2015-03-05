@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
 
@@ -50,7 +50,7 @@ import java.util.List;
 
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.OkapiSegment;
 import com.vistatec.ocelot.segment.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.okapi.OkapiProvenance;

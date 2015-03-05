@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its;
+package com.vistatec.ocelot.its.view;
 
 import com.google.common.eventbus.Subscribe;
 

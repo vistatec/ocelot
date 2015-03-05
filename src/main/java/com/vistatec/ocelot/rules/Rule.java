@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.rules;
 
-import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.util.ArrayList;

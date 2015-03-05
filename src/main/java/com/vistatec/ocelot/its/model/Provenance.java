@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,9 +26,10 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its;
+package com.vistatec.ocelot.its.model;
 
 import com.vistatec.ocelot.rules.DataCategoryField;
+
 import java.util.EnumMap;
 import java.util.Map;
 /**
@@ -38,7 +39,7 @@ public abstract class Provenance extends ITSMetadata {
     private String person, org, tool, revPerson, revOrg, revTool, provRef, recsRef;
 
     public Provenance() { }
-    
+
     public String getRecsRef() {
         return recsRef;
     }

@@ -16,7 +16,7 @@ import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.stats.ITSDocStats;
+import com.vistatec.ocelot.its.stats.model.ITSDocStats;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;

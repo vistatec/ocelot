@@ -30,7 +30,7 @@ package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.io.BufferedWriter;

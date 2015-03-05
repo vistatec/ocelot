@@ -1,9 +1,10 @@
 package com.vistatec.ocelot.rules;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 public class TestQuickAdd {
 

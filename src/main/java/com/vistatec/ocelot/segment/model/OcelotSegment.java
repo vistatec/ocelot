@@ -30,10 +30,10 @@ package com.vistatec.ocelot.segment.model;
 
 import java.util.List;
 
-import com.vistatec.ocelot.its.ITSMetadata;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.OtherITSMetadata;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.OtherITSMetadata;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.rules.StateQualifier;
 
 /**

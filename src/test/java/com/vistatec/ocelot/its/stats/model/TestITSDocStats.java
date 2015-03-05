@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.its.stats;
+package com.vistatec.ocelot.its.stats.model;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,8 +8,8 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 
 import org.junit.*;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.stats.ProvenanceStats.Type;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.stats.model.ProvenanceStats.Type;
 import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 
 import static org.junit.Assert.*;

@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.rules;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 
 public class RulesTestHelpers {
 

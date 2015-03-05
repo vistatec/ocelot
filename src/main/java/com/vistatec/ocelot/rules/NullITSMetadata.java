@@ -34,7 +34,7 @@ import java.util.Map;
 
 import javax.swing.border.Border;
 
-import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.model.ITSMetadata;
 
 /**
  * Dummy ITS Metadata for empty columns.

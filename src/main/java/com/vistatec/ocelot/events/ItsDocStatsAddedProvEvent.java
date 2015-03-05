@@ -1,7 +1,7 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 
 public class ItsDocStatsAddedProvEvent implements OcelotEvent {
     private final Provenance prov;

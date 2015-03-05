@@ -41,9 +41,9 @@ import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.*;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.OtherITSMetadata;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.OtherITSMetadata;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;

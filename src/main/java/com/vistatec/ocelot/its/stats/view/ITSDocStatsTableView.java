@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,8 +26,9 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.its.stats;
+package com.vistatec.ocelot.its.stats.view;
 
+import com.vistatec.ocelot.its.stats.model.ITSStats;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.ItsDocStatsChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -46,16 +47,16 @@ import com.vistatec.ocelot.services.ITSDocStatsService;
 public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
-    private DocumentStatsTableModel docStatsModel;
+    private final DocumentStatsTableModel docStatsModel;
     protected JTable docStatsTable;
-    private TableRowSorter<DocumentStatsTableModel> sort;
+    private final TableRowSorter<DocumentStatsTableModel> sort;
 
     @Inject
     public ITSDocStatsTableView(ITSDocStatsService docStatsService) {
         docStatsModel = new DocumentStatsTableModel(docStatsService);
         docStatsTable = new JTable(docStatsModel);
 
-        sort = new TableRowSorter<DocumentStatsTableModel>(docStatsModel);
+        sort = new TableRowSorter<>(docStatsModel);
         docStatsTable.setRowSorter(sort);
 
         setViewportView(docStatsTable);

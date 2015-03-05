@@ -1,7 +1,7 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.model.ITSMetadata;
 
 public class ItsSelectionEvent implements OcelotEvent {
     private final ITSMetadata its;

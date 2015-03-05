@@ -29,7 +29,7 @@
 package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.xliff.XLIFFWriter;

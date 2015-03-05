@@ -3,7 +3,7 @@ package com.vistatec.ocelot.segment.okapi;
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
 
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.Provenance;
 
 public class OkapiProvenance extends Provenance {
     public OkapiProvenance(GenericAnnotation ga) {

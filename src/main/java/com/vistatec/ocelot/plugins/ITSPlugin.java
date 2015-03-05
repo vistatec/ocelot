@@ -28,8 +28,8 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.util.List;

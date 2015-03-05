@@ -1,6 +1,6 @@
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 public enum SegmentViewColumn {

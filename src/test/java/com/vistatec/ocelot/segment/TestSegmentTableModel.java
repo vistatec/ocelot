@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 import com.vistatec.ocelot.SegmentViewColumn;
-import com.vistatec.ocelot.its.ITSMetadata;
+import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import static com.vistatec.ocelot.SegmentViewColumn.*;

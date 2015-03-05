@@ -34,12 +34,12 @@ import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.LanguageQualityIssueTableView;
-import com.vistatec.ocelot.its.OtherITSTableView;
-import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.its.ProvenanceTableView;
-import com.vistatec.ocelot.its.stats.ITSDocStatsTableView;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.view.LanguageQualityIssueTableView;
+import com.vistatec.ocelot.its.view.OtherITSTableView;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.view.ProvenanceTableView;
+import com.vistatec.ocelot.its.stats.view.ITSDocStatsTableView;
 
 import java.awt.Component;
 
