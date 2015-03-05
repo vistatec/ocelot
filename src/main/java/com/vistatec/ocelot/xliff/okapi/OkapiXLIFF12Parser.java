@@ -71,9 +71,9 @@ import net.sf.okapi.filters.xliff.XLIFFFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.segment.model.OkapiSegment;
-import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
-import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 /**
  * Parse XLIFF file for use in the workbench.

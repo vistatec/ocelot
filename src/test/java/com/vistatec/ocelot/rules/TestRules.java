@@ -47,8 +47,8 @@ import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
-import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 import static org.junit.Assert.*;
 

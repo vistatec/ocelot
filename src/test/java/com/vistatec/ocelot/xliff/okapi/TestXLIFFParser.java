@@ -48,8 +48,8 @@ import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.Test;
 
-import com.vistatec.ocelot.segment.model.OkapiSegment;
-import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 /**
  * Test Okapi XLIFF parser conversion to Ocelot Segments.

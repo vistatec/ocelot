@@ -10,7 +10,7 @@ import org.junit.*;
 
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.stats.model.ProvenanceStats.Type;
-import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 
 import static org.junit.Assert.*;
 

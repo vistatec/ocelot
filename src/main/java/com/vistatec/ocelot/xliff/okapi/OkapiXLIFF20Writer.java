@@ -51,9 +51,9 @@ import java.util.List;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.segment.model.OkapiSegment;
-import com.vistatec.ocelot.segment.okapi.FragmentVariant;
-import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;

@@ -45,9 +45,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import com.vistatec.ocelot.segment.model.OkapiSegment;
-import com.vistatec.ocelot.segment.okapi.FragmentVariant;
-import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 
 import net.sf.okapi.lib.xliff2.core.MTag;
 

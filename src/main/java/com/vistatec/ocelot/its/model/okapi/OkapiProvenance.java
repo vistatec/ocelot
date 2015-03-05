@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.its.model.okapi;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;

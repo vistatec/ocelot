@@ -63,8 +63,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.segment.model.OkapiSegment;
-import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.

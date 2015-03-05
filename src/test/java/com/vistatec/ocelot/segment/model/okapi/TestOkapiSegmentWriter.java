@@ -26,8 +26,9 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.segment.model.okapi;
 
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 import com.vistatec.ocelot.xliff.okapi.OkapiSegmentWriter;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;

@@ -45,7 +45,7 @@ import java.util.Objects;
 
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;

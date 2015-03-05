@@ -26,9 +26,11 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.model;
+package com.vistatec.ocelot.segment.model.okapi;
 
 import com.vistatec.ocelot.rules.StateQualifier;
+import com.vistatec.ocelot.segment.model.BaseSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 /**
  * Ocelot segment that records the Okapi event number that the segment was
