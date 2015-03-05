@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, 2014, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.OkapiSegment;
+import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.
@@ -158,7 +159,7 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
                 tu.setTarget(tgt, tgtTC);
             }
         } else if (targetLocales.isEmpty()) {
-            tu.setTarget(LocaleId.fromString(parser.getTargetLang()), 
+            tu.setTarget(LocaleId.fromString(parser.getTargetLang()),
                          unwrap(seg.getTarget()));
 
         } else {

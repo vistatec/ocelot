@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2014-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
@@ -46,6 +46,8 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import com.vistatec.ocelot.segment.model.OkapiSegment;
+import com.vistatec.ocelot.segment.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 
 import net.sf.okapi.lib.xliff2.core.MTag;
 

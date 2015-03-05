@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2014-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.xliff.okapi;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -52,6 +52,8 @@ import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.segment.model.OkapiSegment;
+import com.vistatec.ocelot.segment.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;

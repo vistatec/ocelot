@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
@@ -45,6 +45,7 @@ import java.util.Objects;
 
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
@@ -69,7 +70,7 @@ public abstract class OkapiSegmentWriter {
         this.provConfig = provConfig;
         this.eventQueue = eventQueue;
     }
-    
+
     public ITSProvenanceAnnotations addOcelotProvenance(OcelotSegment seg) {
         UserProvenance userProvenance = provConfig.getUserProvenance();
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.okapi;
+package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
@@ -49,6 +49,7 @@ import net.sf.okapi.common.resource.TextContainer;
 import org.junit.Test;
 
 import com.vistatec.ocelot.segment.model.OkapiSegment;
+import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 /**
  * Test Okapi XLIFF parser conversion to Ocelot Segments.
@@ -69,7 +70,7 @@ public class TestXLIFFParser {
             assertEquals(tu.getTarget(frFr), tc);
         }
     }
-    
+
     @Test
     public void testXLIFFToSegment() throws Exception {
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
@@ -231,7 +232,7 @@ public class TestXLIFFParser {
     public void testEmptyAltTransTarget() throws Exception {
         // OC-26. Workaround for an issue in the Okapi XLIFF reader
         // (Okapi Issue 412).  If the alt-trans contains an empty
-        // target, don't crash. 
+        // target, don't crash.
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
         List<OcelotSegment> segments = parser.parse(new File(getClass().getResource("/oc26.xlf").toURI()));
         assertEquals(1, segments.size());
