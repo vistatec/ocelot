@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -39,43 +39,71 @@ import com.vistatec.ocelot.rules.Matchers.NumericMatcher;
 import com.vistatec.ocelot.rules.Matchers.RegexMatcher;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
+
 import static com.vistatec.ocelot.rules.RulesTestHelpers.lqi;
 
 import static org.junit.Assert.*;
 
+import com.vistatec.ocelot.segment.SimpleSegment;
+import com.vistatec.ocelot.segment.SimpleSegmentVariant;
+
 public class TestSegmentSelector {
 
-    static List<Segment> testSegments = new ArrayList<Segment>();
-    static Segment segPlain, segSQ, segA, segB, segSQ_A, segSQ_B;
+    static List<OcelotSegment> testSegments = new ArrayList<>();
+    static OcelotSegment segPlain, segSQ, segA, segB, segSQ_A, segSQ_B;
 
     @BeforeClass
     public static void setup() {
         // I need:
         // - 1 seg with no sq, no filter
-        segPlain = new Segment();
+        segPlain = new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .build();
 
         // - 1 seg with [some] sq
-        segSQ = new Segment();
-        segSQ.setStateQualifier(StateQualifier.ID);
+        segSQ = new SimpleSegment.Builder()
+                .segmentNumber(2)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .stateQualifier(StateQualifier.ID)
+                .build();
 
         // - 1 seg with no sq, filter A
-        segA = new Segment();
-        segA.setLQI(Collections.singletonList(lqi("omission", 85)));
+        segA = new SimpleSegment.Builder()
+                .segmentNumber(3)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .build();
+        segA.addAllLQI(Collections.singletonList(lqi("omission", 85)));
 
         // - 1 seg with no sq, filter B
-        segB = new Segment();
-        segB.setLQI(Collections.singletonList(lqi("terminology", 85)));
+        segB = new SimpleSegment.Builder()
+                .segmentNumber(4)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .build();
+        segB.addAllLQI(Collections.singletonList(lqi("terminology", 85)));
 
         // - 1 seg with [some] sq, filter A
-        segSQ_A = new Segment();
-        segSQ_A.setStateQualifier(StateQualifier.ID);
-        segSQ_A.setLQI(Collections.singletonList(lqi("omission", 85)));
+        segSQ_A = new SimpleSegment.Builder()
+                .segmentNumber(5)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .stateQualifier(StateQualifier.ID)
+                .build();
+        segSQ_A.addAllLQI(Collections.singletonList(lqi("omission", 85)));
 
         // - 1 seg with [some] sq, filter B
-        segSQ_B = new Segment();
-        segSQ_B.setStateQualifier(StateQualifier.ID);
-        segSQ_B.setLQI(Collections.singletonList(lqi("terminology", 85)));
+        segSQ_B = new SimpleSegment.Builder()
+                .segmentNumber(6)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .stateQualifier(StateQualifier.ID)
+                .build();
+        segSQ_B.addAllLQI(Collections.singletonList(lqi("terminology", 85)));
 
         testSegments.add(segPlain);
         testSegments.add(segSQ);
@@ -112,7 +140,7 @@ public class TestSegmentSelector {
         config.setFilterMode(FilterMode.ALL);
         config.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
         config.setStateQualifierEnabled(StateQualifier.ID, true);
-        assertEquals(new ArrayList<Segment>(Arrays.asList(segSQ, segSQ_A, segSQ_B)),
+        assertEquals(new ArrayList<>(Arrays.asList(segSQ, segSQ_A, segSQ_B)),
                      select(config, testSegments));
     }
 
@@ -122,7 +150,7 @@ public class TestSegmentSelector {
         RuleConfiguration config = new RuleConfiguration();
         config.setFilterMode(FilterMode.ALL_WITH_METADATA);
         config.setStateQualifierMode(StateQualifierMode.ALL);
-        assertEquals(new ArrayList<Segment>(Arrays.asList(segA, segB, segSQ_A, segSQ_B)),
+        assertEquals(new ArrayList<>(Arrays.asList(segA, segB, segSQ_A, segSQ_B)),
                      select(config, testSegments));
     }
 
@@ -133,7 +161,7 @@ public class TestSegmentSelector {
         config.setFilterMode(FilterMode.SELECTED_SEGMENTS);
         config.setStateQualifierMode(StateQualifierMode.ALL);
         config.addRule(getOmissionRule());
-        assertEquals(new ArrayList<Segment>(Arrays.asList(segA, segSQ_A)), 
+        assertEquals(new ArrayList<>(Arrays.asList(segA, segSQ_A)),
                      select(config, testSegments));
     }
 
@@ -153,7 +181,7 @@ public class TestSegmentSelector {
         config.setFilterMode(FilterMode.ALL_WITH_METADATA);
         config.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
         config.setStateQualifierEnabled(StateQualifier.ID, true);
-        assertEquals(new ArrayList<Segment>(Arrays.asList(segSQ_A, segSQ_B)), select(config, testSegments));
+        assertEquals(new ArrayList<>(Arrays.asList(segSQ_A, segSQ_B)), select(config, testSegments));
     }
 
     // - Specific rules, no states => none
@@ -174,7 +202,7 @@ public class TestSegmentSelector {
         config.addRule(getOmissionRule());
         config.setStateQualifierMode(StateQualifierMode.SELECTED_STATES);
         config.setStateQualifierEnabled(StateQualifier.ID, true);
-        assertEquals(new ArrayList<Segment>(Arrays.asList(segSQ_A)), select(config, testSegments));
+        assertEquals(new ArrayList<>(Arrays.asList(segSQ_A)), select(config, testSegments));
     }
 
     private Rule getOmissionRule() {
@@ -190,10 +218,10 @@ public class TestSegmentSelector {
         return r;
     }
 
-    List<Segment> select(RuleConfiguration config, List<Segment> candidates) {
+    List<OcelotSegment> select(RuleConfiguration config, List<OcelotSegment> candidates) {
         SegmentSelector selector = new SegmentSelector(config);
-        List<Segment> selected = new ArrayList<Segment>();
-        for (Segment s : candidates) {
+        List<OcelotSegment> selected = new ArrayList<>();
+        for (OcelotSegment s : candidates) {
             if (selector.matches(s)) {
                 selected.add(s);
             }

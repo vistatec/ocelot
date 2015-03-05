@@ -29,10 +29,6 @@
 package com.vistatec.ocelot.rules;
 
 import com.google.common.collect.Lists;
-import com.vistatec.ocelot.rules.Matchers;
-import com.vistatec.ocelot.rules.RuleMatcher;
-import com.vistatec.ocelot.rules.Rule;
-import com.vistatec.ocelot.rules.DataCategoryField;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,12 +45,14 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentVariant;
 import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 import static org.junit.Assert.*;
+
+import com.vistatec.ocelot.segment.SimpleSegment;
 
 public class TestRules {
 
@@ -73,8 +71,12 @@ public class TestRules {
         return new TextContainerVariant(new TextContainer());
     }
 
-    Segment emptySegment() {
-        return new Segment(1, 1, 1, emptyVariant(), emptyVariant(), emptyVariant());
+    OcelotSegment emptySegment() {
+        return new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(emptyVariant())
+                .target(emptyVariant())
+                .build();
     }
 
     @Test
@@ -84,13 +86,13 @@ public class TestRules {
         ruleMatchers.add(new RuleMatcher(DataCategoryField.MT_CONFIDENCE, numericMatcher(0, 75)));
         Rule filter = new Rule(ruleMatchers);
         
-        Segment segment = emptySegment();
-        segment.setOtherITSMetadata(Collections.singletonList(
+        OcelotSegment segment = emptySegment();
+        segment.addAllOtherITSMetadata(Collections.singletonList(
                 new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(50))));
         assertTrue(filter.matches(segment));
         
         segment = emptySegment();
-        segment.setOtherITSMetadata(Collections.singletonList(
+        segment.addAllOtherITSMetadata(Collections.singletonList(
                 new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE, new Double(80))));
         assertFalse(filter.matches(segment));
     }
@@ -113,31 +115,35 @@ public class TestRules {
 		// This one should not match - incorrect severity
 		LanguageQualityIssue lqi3 = lqi("omission", 60);
 		
-		Segment segment = emptySegment();
-		segment.setLQI(Lists.newArrayList(lqi1, lqi2, lqi3));
+		OcelotSegment segment = emptySegment();
+		segment.addAllLQI(Lists.newArrayList(lqi1, lqi2, lqi3));
 		assertTrue(filter.matches(segment));
 		
 		segment = emptySegment();
-		segment.setLQI(Collections.singletonList(lqi1));
+		segment.addAllLQI(Collections.singletonList(lqi1));
 		assertTrue(filter.matches(segment));
 		
 		segment = emptySegment();
-		segment.setLQI(Collections.singletonList(lqi2));
+		segment.addAllLQI(Collections.singletonList(lqi2));
 		assertFalse(filter.matches(segment));
 
 		segment = emptySegment();
-		segment.setLQI(Collections.singletonList(lqi3));
+		segment.addAllLQI(Collections.singletonList(lqi3));
 		assertFalse(filter.matches(segment));
 		
 		segment = emptySegment();
-		segment.setLQI(Lists.newArrayList(lqi1, lqi2));
+		segment.addAllLQI(Lists.newArrayList(lqi1, lqi2));
 		assertTrue(filter.matches(segment));
 
 		// Tricky!  Make sure we don't get a false positive
 		// because we have an omission AND a valid severity!
 		// (We do have each, but not on the same issue.)
-		segment = new Segment(6, 6, 6, emptyVariant(), emptyVariant(), emptyVariant());
-		segment.setLQI(Lists.newArrayList(lqi2, lqi3));
+		segment = new SimpleSegment.Builder()
+                        .segmentNumber(6)
+                        .source(emptyVariant())
+                        .target(emptyVariant())
+                        .build();
+		segment.addAllLQI(Lists.newArrayList(lqi2, lqi3));
 		assertFalse(filter.matches(segment));
 	}
 
@@ -259,8 +265,8 @@ public class TestRules {
                 GenericAnnotationType.PROV_PROVREF, "T")))));
     }
     
-    private Segment provSegment(Provenance prov) {
-        Segment segment = emptySegment();
+    private OcelotSegment provSegment(Provenance prov) {
+        OcelotSegment segment = emptySegment();
         segment.addProvenance(prov);
         return segment;
     }

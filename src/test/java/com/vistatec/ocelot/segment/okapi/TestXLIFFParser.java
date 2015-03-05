@@ -31,25 +31,24 @@ package com.vistatec.ocelot.segment.okapi;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentVariant;
 
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
+
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
-import net.sf.okapi.common.annotation.AltTranslation;
-import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
-import net.sf.okapi.common.annotation.XLIFFTool;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.Test;
+
+import com.vistatec.ocelot.segment.OkapiSegment;
 
 /**
  * Test Okapi XLIFF parser conversion to Ocelot Segments.
@@ -61,8 +60,10 @@ public class TestXLIFFParser {
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
 
         LocaleId frFr = new LocaleId("fr-fr");
-        for (Segment seg : parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()))) {
-            Event e = parser.getSegmentEvent(seg.getSourceEventNumber());
+        for (OcelotSegment seg : parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()))) {
+            assertTrue(seg instanceof OkapiSegment);
+            OkapiSegment okapiSeg = (OkapiSegment) seg;
+            Event e = parser.getSegmentEvent(okapiSeg.eventNum);
             ITextUnit tu = e.getTextUnit();
             TextContainer tc = ((TextContainerVariant)seg.getTarget()).getTextContainer();
             assertEquals(tu.getTarget(frFr), tc);
@@ -72,7 +73,7 @@ public class TestXLIFFParser {
     @Test
     public void testXLIFFToSegment() throws Exception {
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
-        List<Segment> segments = parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()));
+        List<OcelotSegment> segments = parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()));
 
         testReadProvenance(segments.get(0));
         testReadMultipleProv(segments.get(1));
@@ -90,9 +91,8 @@ public class TestXLIFFParser {
         testReadMTConfidence(segments.get(13));
     }
 
-    public void testReadProvenance(Segment seg) {
-        assertEquals("Provenance ref is incorrect", "#prov1", seg.getProvID());
-        List<Provenance> provRecords = seg.getProv();
+    public void testReadProvenance(OcelotSegment seg) {
+        List<Provenance> provRecords = seg.getProvenance();
         assertEquals("Discrepancy in provenance records", 1, provRecords.size());
         Provenance prov = provRecords.get(0);
         assertEquals("Provenance person is incorrect", "translator-1", prov.getPerson());
@@ -103,9 +103,8 @@ public class TestXLIFFParser {
         assertEquals("Provenance revTool is incorrect", "Ocelot", prov.getRevTool());
     }
 
-    public void testReadMultipleProv(Segment seg) {
-        assertEquals("Provenance ref is incorrect", "#prov2", seg.getProvID());
-        List<Provenance> provRecords = seg.getProv();
+    public void testReadMultipleProv(OcelotSegment seg) {
+        List<Provenance> provRecords = seg.getProvenance();
         assertEquals("Discrepancy in provenance records", 2, provRecords.size());
         for (Provenance prov : provRecords) {
             if (prov.getPerson() != null) {
@@ -120,8 +119,7 @@ public class TestXLIFFParser {
         }
     }
 
-    public void testReadLQI(Segment seg) {
-        assertEquals("LQI ref is incorrect", "#lqi1", seg.getLQIID());
+    public void testReadLQI(OcelotSegment seg) {
         List<LanguageQualityIssue> lqiRecords = seg.getLQI();
         assertEquals("Discrepancy in LQI records", 1, lqiRecords.size());
         LanguageQualityIssue lqi = lqiRecords.get(0);
@@ -130,8 +128,7 @@ public class TestXLIFFParser {
         assertEquals("LQI comment is incorrect", "comment1", lqi.getComment());
     }
 
-    public void testReadMultipleLQI(Segment seg) {
-        assertEquals("LQI ref is incorrect", "#lqi2", seg.getLQIID());
+    public void testReadMultipleLQI(OcelotSegment seg) {
         List<LanguageQualityIssue> lqiRecords = seg.getLQI();
         assertEquals("Discrepancy in LQI records", 2, lqiRecords.size());
         for (LanguageQualityIssue lqi : lqiRecords) {
@@ -144,60 +141,72 @@ public class TestXLIFFParser {
         }
     }
 
-    public void testReadSourceTargetLQI(Segment seg) {
+    public void testReadSourceTargetLQI(OcelotSegment seg) {
         List<LanguageQualityIssue> lqiRecords = seg.getLQI();
         assertEquals("Discrepancy in LQI records", 1, lqiRecords.size());
     }
 
-    public void testReadExistingAltTrans(Segment seg) {
+    public void testReadExistingAltTrans(OcelotSegment seg) {
         SegmentVariant originalTarget = seg.getOriginalTarget();
         assertNotNull(originalTarget);
         assertEquals("Original target is incorrect", "Original example target 5", originalTarget.getDisplayText());
     }
 
-    public void testIgnoreUnrelatedAltTrans(Segment seg) {
+    public void testIgnoreUnrelatedAltTrans(OcelotSegment seg) {
         SegmentVariant originalTarget = seg.getOriginalTarget();
         assertNotNull(originalTarget);
         assertEquals("Original target", "", originalTarget.getDisplayText());
     }
 
-    public void testReadCorrectAltTrans(Segment seg) {
+    public void testReadCorrectAltTrans(OcelotSegment seg) {
         SegmentVariant originalTarget = seg.getOriginalTarget();
         assertNotNull(originalTarget);
         assertEquals("Original target is incorrect", "Original example target 7", originalTarget.getDisplayText());
     }
 
-    public void testReadReviewPhaseName(Segment seg) {
-        assertEquals("Phase name is incorrect", "review", seg.getPhaseName());
-        assertTrue(seg.isEditablePhase());
+    public void testReadReviewPhaseName(OcelotSegment seg) {
+        assertTrue(seg instanceof OkapiSegment);
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        assertEquals("Phase name is incorrect", "review", okapiSeg.phaseName);
+        assertTrue(seg.isEditable());
     }
 
-    public void testReadRebuttalPhaseName(Segment seg) {
-        assertEquals("Phase name is incorrect", "rebuttal", seg.getPhaseName());
-        assertFalse(seg.isEditablePhase());
+    public void testReadRebuttalPhaseName(OcelotSegment seg) {
+        assertTrue(seg instanceof OkapiSegment);
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        assertEquals("Phase name is incorrect", "rebuttal", okapiSeg.phaseName);
+        assertFalse(seg.isEditable());
     }
 
-    public void testReadFinalReviewPhaseName(Segment seg) {
-        assertEquals("Phase name is incorrect", "final review", seg.getPhaseName());
-        assertTrue(seg.isEditablePhase());
+    public void testReadFinalReviewPhaseName(OcelotSegment seg) {
+        assertTrue(seg instanceof OkapiSegment);
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        assertEquals("Phase name is incorrect", "final review", okapiSeg.phaseName);
+        assertTrue(seg.isEditable());
     }
 
-    public void testReadTranslatorApprovalPhaseName(Segment seg) {
-        assertEquals("Phase name is incorrect", "translator approval", seg.getPhaseName());
-        assertFalse(seg.isEditablePhase());
+    public void testReadTranslatorApprovalPhaseName(OcelotSegment seg) {
+        assertTrue(seg instanceof OkapiSegment);
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        assertEquals("Phase name is incorrect", "translator approval", okapiSeg.phaseName);
+        assertFalse(seg.isEditable());
     }
 
-    public void testReadUnhandledPhaseName(Segment seg) {
-        assertEquals("Phase name is incorrect", "unknown", seg.getPhaseName());
-        assertTrue(seg.isEditablePhase());
+    public void testReadUnhandledPhaseName(OcelotSegment seg) {
+        assertTrue(seg instanceof OkapiSegment);
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        assertEquals("Phase name is incorrect", "unknown", okapiSeg.phaseName);
+        assertTrue(seg.isEditable());
     }
 
-    public void testReadMissingPhaseRef(Segment seg) {
-        assertNull(seg.getPhaseName());
-        assertTrue(seg.isEditablePhase());
+    public void testReadMissingPhaseRef(OcelotSegment seg) {
+        assertTrue(seg instanceof OkapiSegment);
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        assertNull(okapiSeg.phaseName);
+        assertTrue(seg.isEditable());
     }
 
-    public void testReadMTConfidence(Segment seg) {
+    public void testReadMTConfidence(OcelotSegment seg) {
         List<OtherITSMetadata> otherITSMetadata = seg.getOtherITSMetadata();
         assertNotNull(otherITSMetadata);
         assertEquals("Discrepancy in the number of MTConfidence annotations", 1, otherITSMetadata.size());
@@ -208,7 +217,7 @@ public class TestXLIFFParser {
     @Test
     public void testStateQualifiers() throws Exception {
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
-        List<Segment> segments = parser.parse(
+        List<OcelotSegment> segments = parser.parse(
                 new File(getClass().getResource("state_qualifiers.xlf").toURI()));
         assertEquals(ID, segments.get(0).getStateQualifier());
         assertEquals(EXACT, segments.get(1).getStateQualifier());
@@ -224,7 +233,7 @@ public class TestXLIFFParser {
         // (Okapi Issue 412).  If the alt-trans contains an empty
         // target, don't crash. 
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
-        List<Segment> segments = parser.parse(new File(getClass().getResource("/oc26.xlf").toURI()));
+        List<OcelotSegment> segments = parser.parse(new File(getClass().getResource("/oc26.xlf").toURI()));
         assertEquals(1, segments.size());
     }
 }

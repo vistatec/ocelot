@@ -37,7 +37,7 @@ import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.ui.ODialogPanel;
@@ -479,7 +479,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         if (ke.getID() == KeyEvent.KEY_PRESSED) {
             if (isPlatformKeyDown(ke) && (ke.getKeyCode() >= KeyEvent.VK_0
                     && ke.getKeyCode() <= KeyEvent.VK_9)) {
-                Segment seg = segmentView.getSelectedSegment();
+                OcelotSegment seg = segmentView.getSelectedSegment();
                 int hotkey = ke.getKeyCode() - KeyEvent.VK_0;
                 ocelotApp.quickAddLQI(seg, hotkey);
 

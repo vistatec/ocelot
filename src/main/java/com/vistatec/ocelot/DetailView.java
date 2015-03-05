@@ -36,7 +36,7 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.ProvenanceView;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentDetailView;
 
 import java.awt.BorderLayout;
@@ -56,7 +56,7 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     private NewLanguageQualityIssueView lqiDetailView;
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
-    private Segment selectedSegment;
+    private OcelotSegment selectedSegment;
 
     private final OcelotEventQueue eventQueue;
 

@@ -21,12 +21,12 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 public class SegmentMenu implements OcelotEventQueueListener {
     private JMenu menu;
     private JMenuItem menuAddIssue, menuRemoveIssue, menuRestoreTarget;
-    private Segment selectedSegment;
+    private OcelotSegment selectedSegment;
     private LanguageQualityIssue selectedLQI;
 
     private NewLanguageQualityIssueView addLQIView = null;
@@ -90,7 +90,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
 
     @Subscribe
     public void segmentEdited(SegmentEditEvent e) {
-        Segment seg = e.getSegment();
+        OcelotSegment seg = e.getSegment();
         if (seg.equals(selectedSegment)) {
             menuRestoreTarget.setEnabled(seg.hasOriginalTarget() &&
                     seg.getTarget().getDisplayText().equals(

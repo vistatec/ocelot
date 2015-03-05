@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ import com.vistatec.ocelot.segment.SegmentVariant;
  */
 public class SegmentServiceImpl implements SegmentService {
     // TODO: remove segments (data) from service implementation
-    private List<Segment> segments = new ArrayList<>(100);
+    private List<OcelotSegment> segments = new ArrayList<>(100);
     private final OcelotEventQueue eventQueue;
 
     @Inject
@@ -68,7 +68,7 @@ public class SegmentServiceImpl implements SegmentService {
     }
 
     @Override
-    public Segment getSegment(int row) {
+    public OcelotSegment getSegment(int row) {
         return segments.get(row);
     }
 
@@ -78,7 +78,7 @@ public class SegmentServiceImpl implements SegmentService {
     }
 
     @Override
-    public void setSegments(List<Segment> segments) {
+    public void setSegments(List<OcelotSegment> segments) {
         this.segments = segments;
         eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
     }
@@ -86,7 +86,7 @@ public class SegmentServiceImpl implements SegmentService {
     @Subscribe
     @Override
     public void updateSegmentTarget(SegmentTargetUpdateEvent e) {
-        Segment seg = e.getSegment();
+        OcelotSegment seg = e.getSegment();
         SegmentVariant updatedTarget = e.getUpdatedTarget();
         boolean updatedSeg = seg.updateTarget(updatedTarget);
         if (updatedSeg) {
@@ -97,16 +97,18 @@ public class SegmentServiceImpl implements SegmentService {
     @Subscribe
     @Override
     public void resetSegmentTarget(SegmentTargetResetEvent e) {
-        Segment seg = e.getSegment();
-        if (seg.resetTarget()) {
-            eventQueue.post(new SegmentEditEvent(seg));
+        OcelotSegment seg = e.getSegment();
+        if (seg.hasOriginalTarget() && !seg.getTargetDiff().isEmpty()) {
+            if (seg.resetTarget()) {
+                eventQueue.post(new SegmentEditEvent(seg));
+            }
         }
     }
 
     @Subscribe
     @Override
     public void addLQI(LQIAdditionEvent e) {
-        Segment seg = e.getSegment();
+        OcelotSegment seg = e.getSegment();
         LanguageQualityIssue lqi = e.getLQI();
         seg.addLQI(lqi);
         eventQueue.post(new ItsDocStatsUpdateLqiEvent(lqi));
@@ -119,7 +121,7 @@ public class SegmentServiceImpl implements SegmentService {
     public void editLQI(LQIEditEvent e) {
         LanguageQualityIssue editedLQI = e.getLQI();
 
-        Segment seg = e.getSegment();
+        OcelotSegment seg = e.getSegment();
         LanguageQualityIssue segmentLQI = e.getSegmentLQI();
         segmentLQI.setType(editedLQI.getType());
         segmentLQI.setComment(editedLQI.getComment());
@@ -135,7 +137,7 @@ public class SegmentServiceImpl implements SegmentService {
     @Subscribe
     @Override
     public void removeLQI(LQIRemoveEvent e) {
-        Segment seg = e.getSegment();
+        OcelotSegment seg = e.getSegment();
         LanguageQualityIssue lqi = e.getLQI();
         seg.removeLQI(lqi);
         eventQueue.post(new ItsDocStatsRemovedLqiEvent(segments));
@@ -146,10 +148,10 @@ public class SegmentServiceImpl implements SegmentService {
     @Subscribe
     public void addProvenance(ProvenanceAddEvent e) {
         Provenance prov = e.getProvenance();
-        Segment seg = e.getSegment();
+        OcelotSegment seg = e.getSegment();
         seg.addProvenance(prov);
         if (e.isOcelotProv) {
-            seg.setAddedRWProvenance(true);
+            seg.setOcelotProvenance(true);
         }
         eventQueue.post(new ItsDocStatsAddedProvEvent(prov));
     }

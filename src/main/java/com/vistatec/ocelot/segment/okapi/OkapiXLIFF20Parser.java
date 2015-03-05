@@ -30,6 +30,7 @@ package com.vistatec.ocelot.segment.okapi;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,11 +38,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.XLIFFParser;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+
+import com.vistatec.ocelot.segment.OkapiSegment;
+
 import net.sf.okapi.lib.xliff2.core.MTag;
 
 import net.sf.okapi.lib.xliff2.core.Part;
@@ -79,8 +84,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
     }
 
     @Override
-    public List<Segment> parse(File xliffFile) throws IOException {
-        List<Segment> segments = new LinkedList<Segment>();
+    public List<OcelotSegment> parse(File xliffFile) throws IOException {
+        List<OcelotSegment> segments = new LinkedList<>();
         segmentEventMapping = new HashMap<Integer, Integer>();
         events = new LinkedList<Event>();
         segmentUnitParts = new LinkedList<>();
@@ -124,14 +129,17 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
      * @return Segment - Ocelot Segment
      * @throws MalformedURLException
      */
-    private Segment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex) throws MalformedURLException {
+    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
-        Segment seg = new Segment(this.documentSegmentNum++, segmentUnitPartIndex, segmentUnitPartIndex,
-                new FragmentVariant(unitPart, false),
-                new FragmentVariant(unitPart, true),
-                null); //TODO: load original target from file
-        seg.setLQI(parseLqiData(unitPart));
-        seg.setProv(parseProvData(unitPart));
+        //TODO: load original target from file
+        OkapiSegment seg = new OkapiSegment.Builder()
+                .segmentNumber(documentSegmentNum++)
+                .eventNumber(segmentUnitPartIndex)
+                .source(new FragmentVariant(unitPart, false))
+                .target(new FragmentVariant(unitPart, true))
+                .build();
+        seg.addAllLQI(parseLqiData(unitPart));
+        seg.addAllProvenance(parseProvData(unitPart));
         return seg;
     }
 

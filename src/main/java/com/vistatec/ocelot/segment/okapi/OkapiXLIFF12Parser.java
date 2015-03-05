@@ -33,7 +33,7 @@ import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField;
 import com.vistatec.ocelot.rules.StateQualifier;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.XLIFFParser;
 
 import java.io.File;
@@ -71,6 +71,8 @@ import net.sf.okapi.filters.xliff.XLIFFFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.segment.OkapiSegment;
+
 /**
  * Parse XLIFF file for use in the workbench.
  * The Event list is used when writing out files through Okapi; updates to
@@ -81,7 +83,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
     private LinkedList<Event> events;
     private XLIFFFilter filter;
     private int documentSegmentNum;
-    private String sourceLang, targetLang, fileOriginal;
+    private String sourceLang, targetLang;
 
     public OkapiXLIFF12Parser() {}
 
@@ -112,9 +114,9 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
     }
 
     @Override
-    public List<Segment> parse(File xliffFile) throws IOException {
+    public List<OcelotSegment> parse(File xliffFile) throws IOException {
         events = new LinkedList<Event>();
-        List<Segment> segments = new LinkedList<Segment>();
+        List<OcelotSegment> segments = new LinkedList<OcelotSegment>();
         documentSegmentNum = 1;
 
         List<String> locales = FileUtil.guessLanguages(xliffFile.getAbsolutePath());
@@ -133,7 +135,6 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
         this.filter.open(fileDoc);
         int fileEventNum = 0;
 
-        fileOriginal = "";
         while(this.filter.hasNext()) {
             Event event = this.filter.next();
             events.add(event);
@@ -164,7 +165,6 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
                     setTargetLang(fileTargetLang);
                     fileDoc.setTargetLocale(LocaleId.fromString(fileTargetLang));
                 }
-                fileOriginal = fileElement.getName();
 
             } else if (event.isTextUnit()) {
                 ITextUnit tu = (ITextUnit) event.getResource();
@@ -176,7 +176,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
         return segments;
     }
 
-    public Segment convertTextUnitToSegment(ITextUnit tu, int fileEventNum) {
+    public OkapiSegment convertTextUnitToSegment(ITextUnit tu, int fileEventNum) {
         TextContainer srcTu = tu.getSource();
         TextContainer tgtTu = new TextContainer();
 
@@ -196,16 +196,18 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 
         TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
 
-        Segment seg = new Segment(documentSegmentNum++, fileEventNum, fileEventNum,
-                new TextContainerVariant(srcTu), new TextContainerVariant(tgtTu),
-                oriTgtTu != null ? new TextContainerVariant(oriTgtTu) : null);
-        seg.setFileOriginal(fileOriginal);
-        seg.setTransUnitId(tu.getId());
+        OkapiSegment.Builder segBuilder = new OkapiSegment.Builder()
+                .segmentNumber(documentSegmentNum++)
+                .eventNumber(fileEventNum)
+                .source(new TextContainerVariant(srcTu))
+                .target(new TextContainerVariant(tgtTu))
+                .originalTarget(oriTgtTu != null ? new TextContainerVariant(oriTgtTu) : null);
+
         Property stateQualifier = tgtTu.getProperty("state-qualifier");
         if (stateQualifier != null) {
             StateQualifier sq = StateQualifier.get(stateQualifier.getValue());
             if (sq != null) {
-                seg.setStateQualifier(sq);
+                segBuilder.stateQualifier(sq);
             }
             else {
                 LOG.info("Ignoring state-qualifier value '" + 
@@ -215,30 +217,28 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
         XLIFFPhaseAnnotation phaseAnn = tu.getAnnotation(XLIFFPhaseAnnotation.class);
         if (phaseAnn != null) {
             XLIFFPhase refPhase = phaseAnn.getReferencedPhase();
-            seg.setPhaseName(refPhase.getPhaseName());
+            segBuilder.phaseName(refPhase.getPhaseName());
         }
-        attachITSDataToSegment(seg, tu, srcTu, tgtTu);
-        return seg;
+        return attachITSDataToSegment(segBuilder.build(), tu, srcTu, tgtTu);
     }
     
-    public void attachITSDataToSegment(Segment seg, ITextUnit tu, TextContainer srcTu, TextContainer tgtTu) {
+    public OkapiSegment attachITSDataToSegment(OkapiSegment seg, ITextUnit tu,
+            TextContainer srcTu, TextContainer tgtTu) {
         ITSLQIAnnotations lqiAnns = retrieveITSLQIAnnotations(tu, srcTu, tgtTu);
-        List<LanguageQualityIssue> lqiList = new ArrayList<LanguageQualityIssue>();
+        List<LanguageQualityIssue> lqiList = new ArrayList<>();
         for (GenericAnnotation ga : lqiAnns.getAnnotations(GenericAnnotationType.LQI)) {
             lqiList.add(new LanguageQualityIssue(ga));
-            seg.setLQIID(lqiAnns.getData());
         }
-        seg.setLQI(lqiList);
+        seg.addAllLQI(lqiList);
 
         ITSProvenanceAnnotations provAnns = retrieveITSProvAnnotations(tu, srcTu, tgtTu);
         List<GenericAnnotation> provAnnList = provAnns.getAnnotations(GenericAnnotationType.PROV);
         if (provAnnList != null) {
-            List<Provenance> provList = new ArrayList<Provenance>();
+            List<Provenance> provList = new ArrayList<>();
             for (GenericAnnotation ga : provAnnList) {
                 provList.add(new OkapiProvenance(ga));
-                seg.setProvID(provAnns.getData());
             }
-            seg.setProv(provList);
+            seg.addAllProvenance(provList);
         }
 
         if (tgtTu != null) {
@@ -247,8 +247,9 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
                 otherList.add(new OtherITSMetadata(DataCategoryField.MT_CONFIDENCE,
                         mtAnn.getDouble(GenericAnnotationType.MTCONFIDENCE_VALUE)));
             }
-            seg.setOtherITSMetadata(otherList);
+            seg.addAllOtherITSMetadata(otherList);
         }
+        return seg;
     }
 
     public ITSLQIAnnotations retrieveITSLQIAnnotations(ITextUnit tu, TextContainer srcTu, TextContainer tgtTu) {

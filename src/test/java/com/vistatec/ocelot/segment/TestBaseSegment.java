@@ -4,21 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Collections;
-
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-/**
- * Other tests in SegmentController are also relevant to Segment
- * functionality.
- */
-public class TestSegment {
+public class TestBaseSegment {
 
     @Test
     public void testMultipleSegmentUpdates() throws Exception {
-        Segment seg = newSegment();
+        OcelotSegment seg = newSegment();
         SegmentVariant originalTarget = seg.getTarget();
         SegmentVariant newTarget1 = new SimpleSegmentVariant("update1");
         seg.updateTarget(newTarget1);
@@ -33,7 +27,7 @@ public class TestSegment {
 
     @Test
     public void testResetTarget() {
-        Segment seg = newSegment();
+        OcelotSegment seg = newSegment();
         seg.updateTarget(new SimpleSegmentVariant("update"));
         assertTrue(seg.hasOriginalTarget());
         assertEquals("update", seg.getTarget().getDisplayText());
@@ -51,14 +45,14 @@ public class TestSegment {
 
     @Test
     public void testResetWithNoOriginalTarget() {
-        Segment seg = newSegment();
+        OcelotSegment seg = newSegment();
         seg.resetTarget();
         assertEquals("target", seg.getTarget().getDisplayText());
     }
 
     @Test
     public void testTargetChangesAffectEditDistance() {
-        Segment seg = newSegment();
+        OcelotSegment seg = newSegment();
         seg.updateTarget(new SimpleSegmentVariant("targetA"));
         assertEquals(1, seg.getEditDistance());
         seg.updateTarget(new SimpleSegmentVariant("targetAB"));
@@ -68,9 +62,12 @@ public class TestSegment {
     }
 
     private static int nextSegmentId = 1;
-    public static Segment newSegment() {
+    public static SimpleSegment newSegment() {
         int id = nextSegmentId++;
-        return new Segment(id, id, id, new SimpleSegmentVariant("source"),
-                new SimpleSegmentVariant("target"), null);
+        return new SimpleSegment.Builder()
+                .segmentNumber(id)
+                .source(new SimpleSegmentVariant("source"))
+                .target(new SimpleSegmentVariant("target"))
+                .build();
     }
 }

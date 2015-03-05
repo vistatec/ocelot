@@ -35,7 +35,7 @@ import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.awt.event.MouseAdapter;
@@ -91,7 +91,7 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
     }
 
     @Override
-    protected void segmentSelected(Segment seg) {
+    protected void segmentSelected(OcelotSegment seg) {
         List<LanguageQualityIssue> lqiData = seg.getLQI();
         getTableModel().setRows(lqiData);
     }

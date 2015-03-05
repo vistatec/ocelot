@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 /**
  * Segment Plugins are notified when a user enters/exits a target segment edit
@@ -40,13 +40,13 @@ public interface SegmentPlugin extends Plugin {
      * Called when a segment's target becomes editable.
      * @param seg 
      */
-    public void onSegmentTargetEnter(Segment seg);
+    public void onSegmentTargetEnter(OcelotSegment seg);
 
     /**
      * Called when a segment's target has finished editing.
      * @param seg 
      */
-    public void onSegmentTargetExit(Segment seg);
+    public void onSegmentTargetExit(OcelotSegment seg);
 
     /**
      * Called when a file is opened.

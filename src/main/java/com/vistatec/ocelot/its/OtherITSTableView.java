@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.its;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class OtherITSTableView extends SegmentAttributeTablePane<OtherITSTableVi
     }
 
     @Override
-    protected void segmentSelected(Segment seg) {
+    protected void segmentSelected(OcelotSegment seg) {
         List<OtherITSMetadata> itsData = seg.getOtherITSMetadata();
         getTableModel().setRows(itsData);
     }

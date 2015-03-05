@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.XLIFFWriter;
 
 import java.util.List;
@@ -51,10 +51,12 @@ import java.util.List;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.segment.OkapiSegment;
 
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Part;
+import net.sf.okapi.lib.xliff2.core.Segment;
 import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.TagType;
 import net.sf.okapi.lib.xliff2.its.IITSItem;
@@ -83,34 +85,35 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     }
 
     @Override
-    public void updateSegment(Segment seg) {
-        net.sf.okapi.lib.xliff2.core.Segment unitPart = this.parser.getSegmentUnitPart(seg.getSourceEventNumber());
+    public void updateSegment(OcelotSegment seg) {
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        Segment unitPart = this.parser.getSegmentUnitPart(okapiSeg.eventNum);
         if (unitPart == null) {
-            LOG.error("Failed to find Okapi Unit Part associated with segment #"+seg.getSegmentNumber());
+            LOG.error("Failed to find Okapi Unit Part associated with segment #"+okapiSeg.getSegmentNumber());
 
         } else if (unitPart.isSegment()) {
             //TODO: set ori target
-            if (seg.hasOriginalTarget()) {
-                FragmentVariant targetFrag = (FragmentVariant) seg.getTarget();
+            if (okapiSeg.hasOriginalTarget()) {
+                FragmentVariant targetFrag = (FragmentVariant) okapiSeg.getTarget();
                 Fragment updatedOkapiFragment = targetFrag.getUpdatedOkapiFragment(unitPart.getTarget());
                 unitPart.setTarget(updatedOkapiFragment);
             }
 
-            updateITSLQIAnnotations(unitPart, seg);
+            updateITSLQIAnnotations(unitPart, okapiSeg);
 
-            if (!haveAddedOcelotProvAnnotation(unitPart, seg)) {
-                updateITSProvAnnotations(unitPart, seg);
+            if (!haveAddedOcelotProvAnnotation(unitPart, okapiSeg)) {
+                updateITSProvAnnotations(unitPart, okapiSeg);
             }
 
-            FragmentVariant source = (FragmentVariant) seg.getSource();
+            FragmentVariant source = (FragmentVariant) okapiSeg.getSource();
             source.updateSegmentAtoms(unitPart);
 
-            FragmentVariant target = (FragmentVariant) seg.getTarget();
+            FragmentVariant target = (FragmentVariant) okapiSeg.getTarget();
             target.updateSegmentAtoms(unitPart);
 
         } else {
             LOG.error("Unit part associated with Segment was not an Okapi Segment!");
-            LOG.error("Failed to update Unit Part for segment #"+seg.getSegmentNumber());
+            LOG.error("Failed to update Unit Part for segment #"+okapiSeg.getSegmentNumber());
         }
     }
 
@@ -120,7 +123,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
      * @param unitPart - Okapi representation of the segment to annotate
      * @param seg - Ocelot segment
      */
-    private void updateITSProvAnnotations(Part unitPart, Segment seg) {
+    private void updateITSProvAnnotations(Part unitPart, OcelotSegment seg) {
         Provenances okapiOcelotProv = getOkapiOcelotProvenance(seg);
         if (okapiOcelotProv != null) {
             ITSWriter.annotate(unitPart.getTarget(), 0, -1, okapiOcelotProv);
@@ -136,7 +139,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
      * @param seg - Ocelot segment
      * @return - Okapi ITS Provenance Object or null if profile {@link UserProvenance} is not set
      */
-    private Provenances getOkapiOcelotProvenance(Segment seg) {
+    private Provenances getOkapiOcelotProvenance(OcelotSegment seg) {
         UserProvenance userProvenance = provConfig.getUserProvenance();
         if (userProvenance.isEmpty()) {
             return null;
@@ -156,8 +159,8 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
         return okapiProvGroup;
     }
 
-    private boolean haveAddedOcelotProvAnnotation(Part unitPart, Segment seg) {
-        boolean haveAddedUserProv = seg.addedRWProvenance();
+    private boolean haveAddedOcelotProvAnnotation(Part unitPart, OcelotSegment seg) {
+        boolean haveAddedUserProv = seg.hasOcelotProvenance();
 
         List<Tag> targetTags = unitPart.getTarget().getOwnTags();
         for (Tag tag : targetTags) {
@@ -182,10 +185,10 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
      * @param unitPart - Okapi representation of the segment
      * @param seg - Ocelot segment
      */
-    public void updateITSLQIAnnotations(Part unitPart, Segment seg) {
+    public void updateITSLQIAnnotations(Part unitPart, OcelotSegment seg) {
         removeExistingLqiAnnotationsFromSegment(unitPart);
 
-        if (seg.containsLQI()) {
+        if (!seg.getLQI().isEmpty()) {
             String ocelotLqiId = "OcelotLQI" + seg.getSegmentNumber();
             LocQualityIssues newOkapiLqiGroup = convertOcelotToOkapiLqi(
                     seg.getLQI(), ocelotLqiId);

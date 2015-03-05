@@ -71,7 +71,7 @@ public class TestSegmentTableModel {
     private class TestSegmentService implements SegmentService {
 
         @Override
-        public Segment getSegment(int row) {
+        public OcelotSegment getSegment(int row) {
             return null;
         }
 
@@ -81,7 +81,7 @@ public class TestSegmentTableModel {
         }
 
         @Override
-        public void setSegments(List<Segment> segments) {
+        public void setSegments(List<OcelotSegment> segments) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

@@ -86,7 +86,7 @@ public class SegmentDetailView extends JScrollPane {
         setViewportView(table);
     }
 
-    public void setSegment(Segment selectedSegment) {
+    public void setSegment(OcelotSegment selectedSegment) {
         tableModel.setSegment(selectedSegment);
         updateRowHeights();
     }
@@ -137,9 +137,9 @@ public class SegmentDetailView extends JScrollPane {
         public static final int SEGMENTROWS = 3;
         private String[] column = {"Label", "Segments"};
         private String[] rowName = {"Source:", "Target:", "Original Target:", "Edit Distance: "};
-        private Segment segment;
+        private OcelotSegment segment;
 
-        public void setSegment(Segment seg) {
+        public void setSegment(OcelotSegment seg) {
             segment = seg;
         }
         

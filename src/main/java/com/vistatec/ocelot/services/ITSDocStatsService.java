@@ -15,7 +15,7 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.its.stats.ITSStats;
 import com.vistatec.ocelot.its.stats.LanguageQualityIssueStats;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 public class ITSDocStatsService implements OcelotEventQueueListener {
     private final ITSDocStats itsDocStats;
@@ -50,11 +50,11 @@ public class ITSDocStatsService implements OcelotEventQueueListener {
     @Subscribe
     public void recalculateStats(ItsDocStatsRecalculateEvent e) {
         itsDocStats.clear();
-        for (Segment seg : e.getSegments()) {
+        for (OcelotSegment seg : e.getSegments()) {
             for (LanguageQualityIssue lqi : seg.getLQI()) {
                 itsDocStats.updateStats(new LanguageQualityIssueStats(lqi));
             }
-            for (Provenance prov : seg.getProv()) {
+            for (Provenance prov : seg.getProvenance()) {
                 itsDocStats.addProvenanceStats(prov);
             }
         }

@@ -8,7 +8,7 @@ import org.junit.*;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 import static org.junit.Assert.*;
 
@@ -18,6 +18,8 @@ import org.jmock.Mockery;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.Provenance;
+import com.vistatec.ocelot.segment.SimpleSegment;
+import com.vistatec.ocelot.segment.SimpleSegmentVariant;
 
 public class TestOkapiSegmentWriter {
     private final Mockery mockery = new Mockery();
@@ -26,7 +28,11 @@ public class TestOkapiSegmentWriter {
 
     @Test
     public void testMissingProvenance() {
-        Segment seg = new Segment();
+        OcelotSegment seg = new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .build();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
@@ -35,31 +41,39 @@ public class TestOkapiSegmentWriter {
         TestSegmentWriter segmentWriter = new TestSegmentWriter(
                 new TestProvenanceConfig(null, null, null), mockEventQueue);
         // OC-16: make sure this doesn't crash
-        ITSProvenanceAnnotations provAnns = segmentWriter.addRWProvenance(seg);
+        ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         // We shouldn't add a second annotation record for our empty user provenance
         assertEquals(1, provAnns.getAnnotations("its-prov").size());
 
         // Do it again, make sure it doesn't crash
-        ITSProvenanceAnnotations provAnns2 = segmentWriter.addRWProvenance(seg);
+        ITSProvenanceAnnotations provAnns2 = segmentWriter.addOcelotProvenance(seg);
         assertEquals(1, provAnns2.getAnnotations("its-prov").size());
     }
 
     @Test
     public void testDontAddRedundantProvenance() throws Exception {
-        Segment seg = new Segment();
+        OcelotSegment seg = new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .build();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_PROVREF, "X")));
         TestSegmentWriter segmentWriter = new TestSegmentWriter(
                 new TestProvenanceConfig("T", "S", "X"), mockEventQueue);
-        ITSProvenanceAnnotations provAnns = segmentWriter.addRWProvenance(seg);
+        ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(1, provAnns.getAnnotations("its-prov").size());
     }
 
     @Test
     public void testAddUserProvenance() throws Exception {
-        final Segment seg = new Segment();
+        final OcelotSegment seg = new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant(""))
+                .target(new SimpleSegmentVariant(""))
+                .build();
         Provenance prov = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
@@ -71,7 +85,7 @@ public class TestOkapiSegmentWriter {
 
         TestSegmentWriter segmentWriter = new TestSegmentWriter(
                 new TestProvenanceConfig("A", "B", "C"), mockEventQueue);
-        ITSProvenanceAnnotations provAnns = segmentWriter.addRWProvenance(seg);
+        ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(2, provAnns.getAnnotations("its-prov").size());
 
         GenericAnnotation origAnno = provAnns.getAnnotations("its-prov").get(0);
@@ -104,7 +118,7 @@ public class TestOkapiSegmentWriter {
             super(config, eventQueue);
         }
         @Override
-        public void updateSegment(Segment seg) {
+        public void updateSegment(OcelotSegment seg) {
         }
     }
 }

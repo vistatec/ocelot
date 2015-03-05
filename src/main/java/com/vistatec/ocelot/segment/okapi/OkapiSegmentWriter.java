@@ -31,7 +31,7 @@ package com.vistatec.ocelot.segment.okapi;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -61,7 +61,7 @@ import net.sf.okapi.common.skeleton.ISkeletonWriter;
  * workbench segments as different file formats.
  */
 public abstract class OkapiSegmentWriter {
-    public abstract void updateSegment(Segment seg);
+    public abstract void updateSegment(OcelotSegment seg);
     private ProvenanceConfig provConfig;
     private final OcelotEventQueue eventQueue;
 
@@ -70,10 +70,10 @@ public abstract class OkapiSegmentWriter {
         this.eventQueue = eventQueue;
     }
     
-    public ITSProvenanceAnnotations addRWProvenance(Segment seg) {
+    public ITSProvenanceAnnotations addOcelotProvenance(OcelotSegment seg) {
         UserProvenance userProvenance = provConfig.getUserProvenance();
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
-        for (Provenance prov : seg.getProv()) {
+        for (Provenance prov : seg.getProvenance()) {
             String revPerson = prov.getRevPerson();
             String revOrg = prov.getRevOrg();
             String provRef = prov.getProvRef();
@@ -87,15 +87,15 @@ public abstract class OkapiSegmentWriter {
                     GenericAnnotationType.PROV_PROVREF, provRef);
             provAnns.add(ga);
 
-            // Check for existing RW annotation.
+            // Check for existing Ocelot annotation.
             if (Objects.equals(prov.getRevPerson(), userProvenance.getRevPerson()) &&
                 Objects.equals(prov.getRevOrg(), userProvenance.getRevOrg()) &&
                 Objects.equals(prov.getProvRef(), userProvenance.getProvRef())) {
-                seg.setAddedRWProvenance(true);
+                seg.setOcelotProvenance(true);
             }
         }
 
-        if (!seg.addedRWProvenance() && !userProvenance.isEmpty()) {
+        if (!seg.hasOcelotProvenance() && !userProvenance.isEmpty()) {
             GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
                     GenericAnnotationType.PROV_REVPERSON, userProvenance.getRevPerson(),
                     GenericAnnotationType.PROV_REVORG, userProvenance.getRevOrg(),

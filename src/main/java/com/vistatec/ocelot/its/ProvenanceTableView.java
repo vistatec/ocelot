@@ -31,7 +31,7 @@ package com.vistatec.ocelot.its;
 import com.vistatec.ocelot.events.ProvenanceSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.util.ArrayList;
@@ -70,8 +70,8 @@ public class ProvenanceTableView extends SegmentAttributeTablePane<ProvenanceTab
     }
 
     @Override
-    protected void segmentSelected(Segment seg) {
-        List<Provenance> provData = seg.getProv();
+    protected void segmentSelected(OcelotSegment seg) {
+        List<Provenance> provData = seg.getProvenance();
         getTableModel().setRows(provData);
     }
 

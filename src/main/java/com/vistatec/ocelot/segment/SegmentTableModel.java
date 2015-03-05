@@ -191,7 +191,7 @@ public class SegmentTableModel extends AbstractTableModel {
         return col == getSegmentTargetColumnIndex();
     }
 
-    Segment getSegment(int row) {
+    OcelotSegment getSegment(int row) {
         return segmentService.getSegment(row);
     }
 }

@@ -14,7 +14,7 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
     private static final long serialVersionUID = 1L;
     private JTable table;
     private T tableModel;
-    private Segment selectedSegment;
+    private OcelotSegment selectedSegment;
 
     protected SegmentAttributeTablePane() {
         initializeTable();
@@ -41,7 +41,7 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
         return table;
     }
 
-    protected Segment getSelectedSegment() {
+    protected OcelotSegment getSelectedSegment() {
         return selectedSegment;
     }
 
@@ -55,7 +55,7 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
         getTableModel().fireTableDataChanged();
     }
 
-    protected void segmentSelected(Segment seg) {
+    protected void segmentSelected(OcelotSegment seg) {
     }
 
     @Subscribe

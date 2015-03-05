@@ -30,7 +30,7 @@ package com.vistatec.ocelot.segment.okapi;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentVariant;
 import com.vistatec.ocelot.segment.XLIFFWriter;
 
@@ -63,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.OkapiSegment;
 
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.
@@ -84,34 +85,35 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
     }
 
     @Override
-    public void updateSegment(Segment seg) {
-        Event event = getParser().getSegmentEvent(seg.getSourceEventNumber());
+    public void updateSegment(OcelotSegment seg) {
+        OkapiSegment okapiSeg = (OkapiSegment) seg;
+        Event event = getParser().getSegmentEvent(okapiSeg.eventNum);
         if (event == null) {
-            LOG.error("Failed to find Okapi Event associated with segment #"+seg.getSegmentNumber());
+            LOG.error("Failed to find Okapi Event associated with segment #"+okapiSeg.getSegmentNumber());
 
         } else if (event.isTextUnit()) {
             ITextUnit textUnit = event.getTextUnit();
-            String rwRef = "RW" + seg.getSegmentNumber();
+            String rwRef = "RW" + okapiSeg.getSegmentNumber();
 
-            updateITSLQIAnnotations(textUnit, seg, rwRef);
+            updateITSLQIAnnotations(textUnit, okapiSeg, rwRef);
 
-            ITSProvenanceAnnotations provAnns = addRWProvenance(seg);
+            ITSProvenanceAnnotations provAnns = addOcelotProvenance(okapiSeg);
             textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
             provAnns.setData(rwRef);
             textUnit.setAnnotation(provAnns);
 
-            if (seg.hasOriginalTarget()) {
+            if (okapiSeg.hasOriginalTarget()) {
                 // Make sure the Okapi Event is aware that the target has changed.
-                textUnit.setTarget(LocaleId.fromString(parser.getTargetLang()), unwrap(seg.getTarget()));
-                updateOriginalTarget(seg);
+                textUnit.setTarget(LocaleId.fromString(parser.getTargetLang()), unwrap(okapiSeg.getTarget()));
+                updateOriginalTarget(okapiSeg);
             }
         } else {
             LOG.error("Event associated with Segment was not an Okapi TextUnit!");
-            LOG.error("Failed to update event for segment #"+seg.getSegmentNumber());
+            LOG.error("Failed to update event for segment #"+okapiSeg.getSegmentNumber());
         }
     }
 
-    void updateITSLQIAnnotations(ITextUnit tu, Segment seg, String rwRef) {
+    void updateITSLQIAnnotations(ITextUnit tu, OcelotSegment seg, String rwRef) {
         ITSLQIAnnotations lqiAnns = new ITSLQIAnnotations();
         for (LanguageQualityIssue lqi : seg.getLQI()) {
             GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.LQI,
@@ -139,14 +141,14 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
         return ((TextContainerVariant)v).getTextContainer();
     }
 
-    void removeITSLQITextUnitSourceAnnotations(ITextUnit tu, Segment seg) {
+    void removeITSLQITextUnitSourceAnnotations(ITextUnit tu, OcelotSegment seg) {
         TextContainer tc = unwrap(seg.getSource());
         tc.setProperty(new Property(Property.ITS_LQI, ""));
         tc.setAnnotation(null);
         tu.setSource(tc);
     }
 
-    void removeITSLQITextUnitTargetAnnotations(ITextUnit tu, Segment seg) {
+    void removeITSLQITextUnitTargetAnnotations(ITextUnit tu, OcelotSegment seg) {
         Set<LocaleId> targetLocales = tu.getTargetLocales();
         if (targetLocales.size() == 1) {
             for (LocaleId tgt : targetLocales) {
@@ -169,7 +171,7 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
      * doesn't exist already.
      * @param seg - Segment edited
      */
-    public void updateOriginalTarget(Segment seg) {
+    public void updateOriginalTarget(OcelotSegment seg) {
         TextContainer segTarget = unwrap(seg.getTarget());
         TextContainer segSource = unwrap(seg.getSource());
         TextContainer segOriTarget = unwrap(seg.getOriginalTarget());

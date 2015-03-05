@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface XLIFFParser {
-    public List<Segment> parse(File xliffFile) throws IOException;
+    public List<OcelotSegment> parse(File xliffFile) throws IOException;
 
     public String getSourceLang();
 

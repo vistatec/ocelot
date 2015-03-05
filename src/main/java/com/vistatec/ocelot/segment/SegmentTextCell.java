@@ -147,7 +147,7 @@ public class SegmentTextCell extends JTextPane {
         }
     }
 
-    public void setTargetDiff(ArrayList<String> targetDiff) {
+    public void setTargetDiff(List<String> targetDiff) {
         setTextPane(targetDiff);
     }
 

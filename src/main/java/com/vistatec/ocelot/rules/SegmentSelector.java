@@ -30,7 +30,7 @@ package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 /**
  * Class that uses a {@link RuleConfiguration} to decide whether
@@ -43,7 +43,7 @@ public class SegmentSelector {
         this.ruleConfig = ruleConfig;
     }
     
-    public boolean matches(Segment s) {
+    public boolean matches(OcelotSegment s) {
         if (ruleConfig.getFilterMode() == FilterMode.ALL &&
             ruleConfig.getStateQualifierMode() == StateQualifierMode.ALL) { 
             return true; 
@@ -58,7 +58,7 @@ public class SegmentSelector {
         case ALL:
             return true;
         case ALL_WITH_METADATA:
-            return s.getAllITSMetadata().size() > 0;
+            return s.getITSMetadata().size() > 0;
         case SELECTED_SEGMENTS:
             for (Rule r : ruleConfig.getRules()) {
                 if (r.getEnabled() && r.matches(s)) {

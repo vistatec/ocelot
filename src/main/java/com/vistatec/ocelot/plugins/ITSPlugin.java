@@ -30,7 +30,8 @@ package com.vistatec.ocelot.plugins;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
+
 import java.util.List;
 
 /**
@@ -43,12 +44,12 @@ public interface ITSPlugin extends Plugin {
      * the workbench.
      */
     public void sendLQIData(String sourceLang, String targetLang,
-            Segment seg, List<LanguageQualityIssue> lqi);
+            OcelotSegment seg, List<LanguageQualityIssue> lqi);
 
     /**
      * Send this plugin the ITS Provenance data for a segment from the
      * workbench.
      */
     public void sendProvData(String sourceLang, String targetLang,
-            Segment seg, List<Provenance> prov);
+            OcelotSegment seg, List<Provenance> prov);
 }

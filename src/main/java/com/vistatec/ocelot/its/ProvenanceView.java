@@ -28,11 +28,13 @@
  */
 package com.vistatec.ocelot.its;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
+
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -142,7 +144,7 @@ public class ProvenanceView extends JScrollPane {
         setViewportView(mainPanel);
     }
 
-    public void setMetadata(Segment selectedSegment, ITSMetadata data) {
+    public void setMetadata(OcelotSegment selectedSegment, ITSMetadata data) {
         Provenance prov = (Provenance) data;
         dataCategoryLabel.setText("Provenance");
         segmentLabel.setText("Segment #");

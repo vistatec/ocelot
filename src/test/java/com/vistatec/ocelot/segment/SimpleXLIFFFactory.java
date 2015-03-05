@@ -15,9 +15,9 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
  */
 public class SimpleXLIFFFactory implements XLIFFFactory {
     private String sourceLang, targetLang;
-    private List<Segment> segs;
+    private List<OcelotSegment> segs;
 
-    public SimpleXLIFFFactory(String sourceLang, String targetLang, List<Segment> segs) {
+    public SimpleXLIFFFactory(String sourceLang, String targetLang, List<OcelotSegment> segs) {
         this.sourceLang = sourceLang;
         this.targetLang = targetLang;
         this.segs = segs;
@@ -28,8 +28,8 @@ public class SimpleXLIFFFactory implements XLIFFFactory {
 
         return new XLIFFParser() {
             @Override
-            public List<Segment> parse(File xliffFile) throws IOException {
-                return new ArrayList<Segment>(segs);
+            public List<OcelotSegment> parse(File xliffFile) throws IOException {
+                return new ArrayList<OcelotSegment>(segs);
             }
 
             @Override
@@ -49,7 +49,7 @@ public class SimpleXLIFFFactory implements XLIFFFactory {
             ProvenanceConfig config, OcelotEventQueue eventQueue) {
         return new XLIFFWriter() {
             @Override
-            public void updateSegment(Segment seg) {
+            public void updateSegment(OcelotSegment seg) {
             }
 
             @Override

@@ -30,7 +30,7 @@ package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.its.ITSMetadata;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -214,7 +214,7 @@ public class RuleConfiguration {
      * to the configuration (ie, last rule in rules.properties) is checked
      * first.
      */
-    public ITSMetadata getTopDataCategory(Segment seg, int flagCol) {
+    public ITSMetadata getTopDataCategory(OcelotSegment seg, int flagCol) {
         LinkedList<ITSMetadata> displayFlags = new LinkedList<ITSMetadata>();
         for (int pos = ruleOrdering.size()-1; pos >= 0; pos--) {
             Rule r = ruleOrdering.get(pos);
@@ -231,7 +231,7 @@ public class RuleConfiguration {
             }
         }
 
-        for (ITSMetadata its : seg.getAllITSMetadata()) {
+        for (ITSMetadata its : seg.getITSMetadata()) {
             if (!displayFlags.contains(its)) {
                 displayFlags.add(its);
                 if (displayFlags.size() > flagCol) {

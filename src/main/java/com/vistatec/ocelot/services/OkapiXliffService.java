@@ -1,7 +1,7 @@
 package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.XLIFFFactory;
 import com.vistatec.ocelot.segment.XLIFFParser;
 import com.vistatec.ocelot.segment.XLIFFWriter;
@@ -41,9 +41,9 @@ public class OkapiXliffService implements XliffService {
     }
 
     @Override
-    public List<Segment> parse(File xliffFile, File detectVersion) throws FileNotFoundException, IOException, XMLStreamException {
+    public List<OcelotSegment> parse(File xliffFile, File detectVersion) throws FileNotFoundException, IOException, XMLStreamException {
         XLIFFParser newParser = xliffFactory.newXLIFFParser(detectVersion);
-        List<Segment> xliffSegments = newParser.parse(xliffFile);
+        List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
 
         xliffParser = newParser;
         segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig, eventQueue);

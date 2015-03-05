@@ -1,16 +1,16 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 public abstract class SegmentEvent implements OcelotEvent {
-    private Segment segment;
+    private OcelotSegment segment;
 
-    protected SegmentEvent(Segment segment) {
+    protected SegmentEvent(OcelotSegment segment) {
         this.segment = segment;
     }
 
-    public Segment getSegment() {
+    public OcelotSegment getSegment() {
         return segment;
     }
 }

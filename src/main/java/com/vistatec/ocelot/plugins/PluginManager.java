@@ -35,7 +35,7 @@ import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentModel;
 import com.vistatec.ocelot.services.SegmentService;
 
@@ -164,9 +164,9 @@ public class PluginManager implements OcelotEventQueueListener {
         public void exportData(String sourceLang, String targetLang,
                 SegmentService segmentService) {
             for (int row = 0; row < segmentService.getNumSegments(); row++) {
-                Segment seg = segmentService.getSegment(row);
+                OcelotSegment seg = segmentService.getSegment(row);
                 List<LanguageQualityIssue> lqi = seg.getLQI();
-                List<Provenance> prov = seg.getProv();
+                List<Provenance> prov = seg.getProvenance();
                 for (ITSPlugin plugin : getEnabledITSPlugins()) {
                     try {
                         plugin.sendLQIData(sourceLang, targetLang,
@@ -187,7 +187,7 @@ public class PluginManager implements OcelotEventQueueListener {
          */
         @Subscribe
         public void notifySegmentTargetEnter(SegmentTargetEnterEvent event) {
-            Segment seg = event.getSegment();
+            OcelotSegment seg = event.getSegment();
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
                     try {
@@ -206,7 +206,7 @@ public class PluginManager implements OcelotEventQueueListener {
          */
         @Subscribe
         public void notifySegmentTargetExit(SegmentTargetExitEvent event) {
-            Segment seg = event.getSegment();
+            OcelotSegment seg = event.getSegment();
             for (SegmentPlugin segPlugin : segPlugins.keySet()) {
                 if (isEnabled(segPlugin)) {
                     try {

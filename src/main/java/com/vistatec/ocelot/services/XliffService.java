@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,7 +16,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
  */
 public interface XliffService extends OcelotEventQueueListener {
 
-    public List<Segment> parse(File xliffFile, File detectVersion) throws FileNotFoundException, IOException, XMLStreamException;
+    public List<OcelotSegment> parse(File xliffFile, File detectVersion) throws FileNotFoundException, IOException, XMLStreamException;
 
     public void save(File file) throws FileNotFoundException, IOException;
 

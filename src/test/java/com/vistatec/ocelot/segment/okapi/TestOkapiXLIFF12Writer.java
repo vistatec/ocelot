@@ -24,7 +24,7 @@ import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
@@ -58,7 +58,7 @@ public class TestOkapiXLIFF12Writer {
                 new ConfigsForProvTesting("revPerson=q", null)), eventQueue);
         eventQueue.registerListener(xliffService);
 
-        List<Segment> segments = xliffService.parse(temp, detectVersion);
+        List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
@@ -86,7 +86,7 @@ public class TestOkapiXLIFF12Writer {
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();
-        List<Segment> segments = xliffService.parse(new File(uri), new File(uri));
+        List<OcelotSegment> segments = xliffService.parse(new File(uri), new File(uri));
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 

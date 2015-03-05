@@ -32,7 +32,7 @@ import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 
@@ -102,7 +102,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     }
 
     public void openFile(File openFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
-        List<Segment> segments = xliffService.parse(openFile, detectVersion);
+        List<OcelotSegment> segments = xliffService.parse(openFile, detectVersion);
         segmentService.clearAllSegments();
         segmentService.setSegments(segments);
 
@@ -134,9 +134,9 @@ public class OcelotApp implements OcelotEventQueueListener {
         pluginManager.notifySaveFile(filename);
     }
 
-    public void quickAddLQI(Segment seg, int hotkey) {
+    public void quickAddLQI(OcelotSegment seg, int hotkey) {
         QuickAdd qa = ruleConfig.getQuickAddLQI(hotkey);
-        if (seg != null && qa != null && seg.isEditablePhase()) {
+        if (seg != null && qa != null && seg.isEditable()) {
             segmentService.addLQI(new LQIAdditionEvent(qa.createLQI(), seg));
         }
     }

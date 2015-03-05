@@ -1,9 +1,9 @@
 package com.vistatec.ocelot.events;
 
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
 
 public class SegmentTargetResetEvent extends SegmentEvent {
-    public SegmentTargetResetEvent(Segment segment) {
+    public SegmentTargetResetEvent(OcelotSegment segment) {
         super(segment);
     }
 }

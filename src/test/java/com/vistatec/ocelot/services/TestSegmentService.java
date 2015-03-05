@@ -19,7 +19,8 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.SimpleSegment;
 import com.vistatec.ocelot.segment.SimpleSegmentVariant;
 
 public class TestSegmentService {
@@ -39,10 +40,12 @@ public class TestSegmentService {
             oneOf(mockEventQueue).post(with(any(SegmentEditEvent.class)));
         }});
 
-        Segment seg = new Segment(1, 1, 1,
-                new SimpleSegmentVariant("source"),
-                new SimpleSegmentVariant("target"),
-                new SimpleSegmentVariant("original_target"));
+        OcelotSegment seg = new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant("source"))
+                .target(new SimpleSegmentVariant("target"))
+                .originalTarget(new SimpleSegmentVariant("original_target"))
+                .build();
 
         segmentService.resetSegmentTarget(new SegmentTargetResetEvent(seg));
         assertTrue(seg.getTarget().getDisplayText().equals(
@@ -55,11 +58,13 @@ public class TestSegmentService {
             oneOf(mockEventQueue).post(with(any(ItsDocStatsRecalculateEvent.class)));
         }});
 
-        List<Segment> segments = new ArrayList<>();
-        segments.add(new Segment(1, 1, 1,
-                new SimpleSegmentVariant("source"),
-                new SimpleSegmentVariant("target"),
-                new SimpleSegmentVariant("original_target")));
+        List<OcelotSegment> segments = new ArrayList<>();
+        segments.add(new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant("source"))
+                .target(new SimpleSegmentVariant("target"))
+                .originalTarget(new SimpleSegmentVariant("original_target"))
+                .build());
 
         assertTrue(segmentService.getNumSegments() == 0);
         segmentService.setSegments(segments);
@@ -75,21 +80,22 @@ public class TestSegmentService {
         }});
 
         LanguageQualityIssue lqi = RulesTestHelpers.lqi("omission", 85);
-        Segment seg = new Segment(1, 1, 1,
-                new SimpleSegmentVariant("source"),
-                new SimpleSegmentVariant("target"),
-                new SimpleSegmentVariant("original_target")
-        );
+        OcelotSegment seg = new SimpleSegment.Builder()
+                .segmentNumber(1)
+                .source(new SimpleSegmentVariant("source"))
+                .target(new SimpleSegmentVariant("target"))
+                .originalTarget(new SimpleSegmentVariant("original_target"))
+                .build();
         seg.addLQI(lqi);
 
         LanguageQualityIssue modifiedLqi = RulesTestHelpers.lqi("grammar", 75);
-        assertTrue(seg.containsLQI());
+        assertTrue(!seg.getLQI().isEmpty());
         assertTrue(seg.getLQI().get(0).getType().equals("omission"));
         assertTrue(seg.getLQI().get(0).getSeverity() == 85);
 
         segmentService.editLQI(new LQIEditEvent(modifiedLqi, seg, lqi));
 
-        assertTrue(seg.containsLQI());
+        assertTrue(!seg.getLQI().isEmpty());
         assertTrue(seg.getLQI().get(0).getType().equals("grammar"));
         assertTrue(seg.getLQI().get(0).getSeverity() == 75);
     }
