@@ -33,7 +33,7 @@ import com.vistatec.ocelot.events.ProvenanceSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
+import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
 
 import java.util.ArrayList;
 import java.util.List;

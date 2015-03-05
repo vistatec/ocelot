@@ -37,7 +37,7 @@ import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.view.ProvenanceView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentDetailView;
+import com.vistatec.ocelot.segment.view.SegmentDetailView;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

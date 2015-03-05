@@ -38,8 +38,8 @@ import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentAttributeView;
-import com.vistatec.ocelot.segment.SegmentView;
+import com.vistatec.ocelot.segment.view.SegmentAttributeView;
+import com.vistatec.ocelot.segment.view.SegmentView;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;

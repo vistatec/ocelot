@@ -41,8 +41,8 @@ import org.junit.*;
 import com.google.common.collect.Lists;
 import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.SegmentTextCell;
-import com.vistatec.ocelot.segment.SegmentVariantSelection;
+import com.vistatec.ocelot.segment.view.SegmentTextCell;
+import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 import com.vistatec.ocelot.segment.model.TextAtom;
 
 import static org.junit.Assert.*;

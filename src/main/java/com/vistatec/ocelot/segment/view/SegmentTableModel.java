@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.view;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
@@ -80,7 +80,7 @@ public class SegmentTableModel extends AbstractTableModel {
     public Map<SegmentViewColumn, Boolean> getColumnEnabledStates() {
         return Collections.unmodifiableMap(enabledColumns);
     }
-    
+
     @Override
     public String getColumnName(int col) {
         return getColumn(col).getName();
@@ -165,7 +165,7 @@ public class SegmentTableModel extends AbstractTableModel {
         }
         return -1; // should never happen
     }
-    
+
     @Override
     public Object getValueAt(int row, int col) {
         SegmentViewColumn column = getColumn(col);

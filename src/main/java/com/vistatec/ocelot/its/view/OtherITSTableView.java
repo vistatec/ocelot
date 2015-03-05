@@ -30,7 +30,7 @@ package com.vistatec.ocelot.its.view;
 
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
+import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
 
 import java.util.ArrayList;
 import java.util.List;

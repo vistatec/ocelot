@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.segment.editdistance;
 
-import com.vistatec.ocelot.segment.SegmentTextCell;
+import com.vistatec.ocelot.segment.view.SegmentTextCell;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import java.util.ArrayList;

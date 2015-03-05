@@ -21,7 +21,7 @@ import javax.swing.table.TableColumnModel;
 
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
-import com.vistatec.ocelot.segment.SegmentTableModel;
+import com.vistatec.ocelot.segment.view.SegmentTableModel;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OTable;
 import com.vistatec.ocelot.ui.TableRowToggleMouseAdapter;

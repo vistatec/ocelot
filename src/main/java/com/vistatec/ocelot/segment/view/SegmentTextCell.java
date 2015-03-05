@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, VistaTEC or third-party contributors as indicated
+ * Copyright (C) 2013-2015, VistaTEC or third-party contributors as indicated
  * by the @author tags or express copyright attribution statements applied by
  * the authors. All third-party contributions are distributed under license by
  * VistaTEC.
@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.view;
 
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
@@ -163,13 +163,13 @@ public class SegmentTextCell extends JTextPane {
         @Override
         public void remove(FilterBypass fb, int offset, int length)
                 throws BadLocationException {
-            
+
             if (v != null) {
                 // Disallow tag deletions
                 if (!v.containsTag(offset, length)) {
                     // Remove from cell editor
                     super.remove(fb, offset, length);
-    
+
                     // Remove from underlying segment structure
                     deleteChars(offset, length);
                 }
