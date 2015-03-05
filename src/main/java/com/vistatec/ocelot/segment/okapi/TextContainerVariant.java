@@ -5,12 +5,13 @@ import java.util.List;
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
+
 import com.google.common.collect.Lists;
-import com.vistatec.ocelot.segment.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.CodeAtom;
-import com.vistatec.ocelot.segment.SegmentAtom;
-import com.vistatec.ocelot.segment.SegmentVariant;
-import com.vistatec.ocelot.segment.TextAtom;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 /**
  * XLIFF 1.2 segment variant, implemented using Okapi

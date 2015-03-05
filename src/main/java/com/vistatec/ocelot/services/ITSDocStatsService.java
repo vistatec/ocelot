@@ -15,7 +15,7 @@ import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.its.stats.ITSDocStats;
 import com.vistatec.ocelot.its.stats.ITSStats;
 import com.vistatec.ocelot.its.stats.LanguageQualityIssueStats;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class ITSDocStatsService implements OcelotEventQueueListener {
     private final ITSDocStats itsDocStats;

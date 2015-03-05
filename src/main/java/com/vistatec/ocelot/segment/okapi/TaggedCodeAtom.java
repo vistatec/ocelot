@@ -1,6 +1,7 @@
 package com.vistatec.ocelot.segment.okapi;
 
-import com.vistatec.ocelot.segment.CodeAtom;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+
 import net.sf.okapi.lib.xliff2.core.Tag;
 
 /**

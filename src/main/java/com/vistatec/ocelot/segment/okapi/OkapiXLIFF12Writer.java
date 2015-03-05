@@ -30,9 +30,9 @@ package com.vistatec.ocelot.segment.okapi;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentVariant;
-import com.vistatec.ocelot.segment.XLIFFWriter;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -63,7 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.segment.OkapiSegment;
+import com.vistatec.ocelot.segment.model.OkapiSegment;
 
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.

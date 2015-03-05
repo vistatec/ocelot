@@ -3,7 +3,7 @@ package com.vistatec.ocelot.events;
 import java.util.List;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class ItsDocStatsRemovedLqiEvent implements OcelotEvent {
     private final List<OcelotSegment> segments;

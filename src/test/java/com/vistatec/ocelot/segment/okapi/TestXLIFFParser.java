@@ -31,8 +31,8 @@ package com.vistatec.ocelot.segment.okapi;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
@@ -48,7 +48,7 @@ import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.Test;
 
-import com.vistatec.ocelot.segment.OkapiSegment;
+import com.vistatec.ocelot.segment.model.OkapiSegment;
 
 /**
  * Test Okapi XLIFF parser conversion to Ocelot Segments.

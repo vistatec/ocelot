@@ -33,8 +33,8 @@ import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField;
 import com.vistatec.ocelot.rules.StateQualifier;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.XLIFFParser;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFParser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,7 +71,7 @@ import net.sf.okapi.filters.xliff.XLIFFFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.segment.OkapiSegment;
+import com.vistatec.ocelot.segment.model.OkapiSegment;
 
 /**
  * Parse XLIFF file for use in the workbench.

@@ -8,7 +8,7 @@ import org.junit.*;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import static org.junit.Assert.*;
 
@@ -18,8 +18,8 @@ import org.jmock.Mockery;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.SimpleSegment;
-import com.vistatec.ocelot.segment.SimpleSegmentVariant;
+import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 
 public class TestOkapiSegmentWriter {
     private final Mockery mockery = new Mockery();

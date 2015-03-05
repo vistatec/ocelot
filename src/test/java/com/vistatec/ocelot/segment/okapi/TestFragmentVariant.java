@@ -15,8 +15,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.vistatec.ocelot.segment.CodeAtom;
-import com.vistatec.ocelot.segment.TextAtom;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 public class TestFragmentVariant {
     private FragmentVariant sampleFV, plainTextFV, plainCodeFV;

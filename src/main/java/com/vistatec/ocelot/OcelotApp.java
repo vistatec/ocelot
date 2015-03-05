@@ -32,7 +32,7 @@ import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 

@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

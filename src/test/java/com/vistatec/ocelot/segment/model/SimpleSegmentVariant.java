@@ -1,4 +1,5 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
  * simplify construction of Segment instances for tests.
  */
 public class SimpleSegmentVariant extends BaseSegmentVariant {
-    private List<SegmentAtom> atoms = new ArrayList<SegmentAtom>();;
+    private List<SegmentAtom> atoms = new ArrayList<>();
 
     private SimpleSegmentVariant() {
     }

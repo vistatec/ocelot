@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.vistatec.ocelot.segment.SegmentVariantSelection;
 
 public abstract class BaseSegmentVariant implements SegmentVariant {
 

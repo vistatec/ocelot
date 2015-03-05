@@ -1,4 +1,6 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
+
+import com.vistatec.ocelot.segment.SegmentTextCell;
 
 public class TextAtom implements SegmentAtom {
     private String text;

@@ -1,5 +1,8 @@
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+
 import static org.junit.Assert.*;
 
 import org.junit.*;

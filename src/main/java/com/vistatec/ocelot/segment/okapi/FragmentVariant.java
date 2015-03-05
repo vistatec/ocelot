@@ -28,13 +28,15 @@
  */
 package com.vistatec.ocelot.segment.okapi;
 
-import com.vistatec.ocelot.segment.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.CodeAtom;
-import com.vistatec.ocelot.segment.SegmentAtom;
-import com.vistatec.ocelot.segment.SegmentVariant;
-import com.vistatec.ocelot.segment.TextAtom;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.PCont;
 import net.sf.okapi.lib.xliff2.core.Segment;
@@ -42,6 +44,7 @@ import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.Tags;
 import net.sf.okapi.lib.xliff2.renderer.IFragmentObject;
 import net.sf.okapi.lib.xliff2.renderer.XLIFFFragmentRenderer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

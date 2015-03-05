@@ -28,6 +28,8 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;

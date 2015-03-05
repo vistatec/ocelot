@@ -11,11 +11,11 @@ import net.sf.okapi.common.resource.TextFragment.TagType;
 import org.junit.*;
 
 import com.google.common.collect.Lists;
-import com.vistatec.ocelot.segment.CodeAtom;
-import com.vistatec.ocelot.segment.SegmentAtom;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.SegmentTextCell;
 import com.vistatec.ocelot.segment.SegmentVariantSelection;
-import com.vistatec.ocelot.segment.TextAtom;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 import static org.junit.Assert.*;
 

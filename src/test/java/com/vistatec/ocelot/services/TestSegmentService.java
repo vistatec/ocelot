@@ -19,9 +19,9 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.SimpleSegment;
-import com.vistatec.ocelot.segment.SimpleSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 
 public class TestSegmentService {
     private final Mockery mockery = new Mockery();

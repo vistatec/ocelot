@@ -28,9 +28,13 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
@@ -42,6 +46,7 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

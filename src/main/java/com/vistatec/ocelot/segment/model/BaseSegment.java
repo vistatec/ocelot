@@ -26,7 +26,7 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
 
 import java.util.ArrayList;
 import java.util.List;

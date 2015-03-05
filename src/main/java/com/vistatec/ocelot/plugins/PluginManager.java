@@ -35,8 +35,7 @@ import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentModel;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
 
 import java.security.AccessController;

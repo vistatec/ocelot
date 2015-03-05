@@ -29,7 +29,7 @@
 package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.its.ITSMetadata;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.util.ArrayList;
 import java.util.List;

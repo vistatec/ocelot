@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.xliff;
 
 import java.io.File;
 import java.io.FileNotFoundException;

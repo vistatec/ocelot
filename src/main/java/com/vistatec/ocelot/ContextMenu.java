@@ -30,7 +30,7 @@ package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

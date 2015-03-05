@@ -38,14 +38,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.XLIFFParser;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFParser;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import com.vistatec.ocelot.segment.OkapiSegment;
+import com.vistatec.ocelot.segment.model.OkapiSegment;
 
 import net.sf.okapi.lib.xliff2.core.MTag;
 

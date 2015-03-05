@@ -1,5 +1,7 @@
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;

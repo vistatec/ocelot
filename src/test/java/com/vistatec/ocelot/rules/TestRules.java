@@ -45,14 +45,14 @@ import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.OtherITSMetadata;
 import com.vistatec.ocelot.its.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.okapi.TextContainerVariant;
 
 import static org.junit.Assert.*;
 
-import com.vistatec.ocelot.segment.SimpleSegment;
+import com.vistatec.ocelot.segment.model.SimpleSegment;
 
 public class TestRules {
 

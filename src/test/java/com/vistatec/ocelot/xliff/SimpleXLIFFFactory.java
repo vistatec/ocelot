@@ -1,4 +1,6 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.xliff;
+
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.io.File;
 import java.io.IOException;

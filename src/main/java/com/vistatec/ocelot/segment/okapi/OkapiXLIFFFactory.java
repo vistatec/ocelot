@@ -46,9 +46,9 @@ import org.apache.commons.io.input.BOMInputStream;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.segment.XLIFFFactory;
-import com.vistatec.ocelot.segment.XLIFFParser;
-import com.vistatec.ocelot.segment.XLIFFWriter;
+import com.vistatec.ocelot.xliff.XLIFFFactory;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 /**
  * Detect which XLIFF parser version to use for the XLIFF file.

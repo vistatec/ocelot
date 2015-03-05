@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 /**
  * Segment Plugins are notified when a user enters/exits a target segment edit

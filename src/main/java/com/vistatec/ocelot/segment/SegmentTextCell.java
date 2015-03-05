@@ -28,6 +28,8 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;

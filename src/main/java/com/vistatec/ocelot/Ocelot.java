@@ -37,7 +37,7 @@ import com.vistatec.ocelot.its.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentAttributeView;
 import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.ui.ODialogPanel;

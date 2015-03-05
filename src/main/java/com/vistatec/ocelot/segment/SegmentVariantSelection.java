@@ -1,5 +1,7 @@
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+
 /**
  * Represents a clipboard selection of SegmentVariant content.
  */

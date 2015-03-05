@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
 
 public interface SegmentAtom {
     /**

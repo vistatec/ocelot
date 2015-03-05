@@ -30,7 +30,7 @@ package com.vistatec.ocelot.rules;
 
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 /**
  * Class that uses a {@link RuleConfiguration} to decide whether

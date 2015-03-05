@@ -13,13 +13,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.vistatec.ocelot.segment.CodeAtom;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.SegmentAtom;
-import com.vistatec.ocelot.segment.SegmentVariant;
-import com.vistatec.ocelot.segment.SimpleSegment;
-import com.vistatec.ocelot.segment.SimpleSegmentVariant;
-import com.vistatec.ocelot.segment.TextAtom;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 public class TestOkapiXliff20Parser {
 

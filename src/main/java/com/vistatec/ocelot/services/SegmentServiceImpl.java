@@ -28,7 +28,7 @@
  */
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +51,7 @@ import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.SegmentVariant;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 /**
  * Service for performing segment related operations.

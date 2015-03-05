@@ -21,7 +21,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class SegmentMenu implements OcelotEventQueueListener {
     private JMenu menu;

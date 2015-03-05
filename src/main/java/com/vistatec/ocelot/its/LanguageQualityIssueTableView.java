@@ -35,7 +35,7 @@ import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.SegmentAttributeTablePane;
 
 import java.awt.event.MouseAdapter;

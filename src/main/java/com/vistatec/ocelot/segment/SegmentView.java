@@ -28,6 +28,8 @@
  */
 package com.vistatec.ocelot.segment;
 
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;

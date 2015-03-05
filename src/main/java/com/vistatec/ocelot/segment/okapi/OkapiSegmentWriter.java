@@ -31,7 +31,7 @@ package com.vistatec.ocelot.segment.okapi;
 import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;

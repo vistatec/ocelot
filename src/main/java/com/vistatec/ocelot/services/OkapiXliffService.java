@@ -1,10 +1,10 @@
 package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.segment.OcelotSegment;
-import com.vistatec.ocelot.segment.XLIFFFactory;
-import com.vistatec.ocelot.segment.XLIFFParser;
-import com.vistatec.ocelot.segment.XLIFFWriter;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFFactory;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 import java.io.File;
 import java.io.FileNotFoundException;

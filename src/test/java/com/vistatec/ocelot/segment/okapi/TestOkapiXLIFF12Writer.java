@@ -24,7 +24,7 @@ import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;

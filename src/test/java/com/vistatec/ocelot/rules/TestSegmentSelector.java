@@ -39,14 +39,14 @@ import com.vistatec.ocelot.rules.Matchers.NumericMatcher;
 import com.vistatec.ocelot.rules.Matchers.RegexMatcher;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import static com.vistatec.ocelot.rules.RulesTestHelpers.lqi;
 
 import static org.junit.Assert.*;
 
-import com.vistatec.ocelot.segment.SimpleSegment;
-import com.vistatec.ocelot.segment.SimpleSegmentVariant;
+import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 
 public class TestSegmentSelector {
 

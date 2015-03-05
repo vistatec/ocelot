@@ -1,10 +1,11 @@
-package com.vistatec.ocelot.segment;
+package com.vistatec.ocelot.segment.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import com.google.common.collect.Lists;

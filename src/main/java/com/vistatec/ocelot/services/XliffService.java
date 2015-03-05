@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.segment.OcelotSegment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
