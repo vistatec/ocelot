@@ -26,46 +26,45 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.config;
+package com.vistatec.ocelot.config.xml;
+
+import javax.xml.bind.annotation.XmlElement;
 
 import com.vistatec.ocelot.plugins.Plugin;
-import java.util.ArrayList;
-import java.util.List;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * XML Root Ocelot configuration element.
+ * Plugin configuration XML element.
  */
-@XmlRootElement
-public class RootConfig {
+public class PluginConfig {
+    protected String className;
+    protected boolean enabled;
+
+    public PluginConfig() {}
+
+    public PluginConfig(Plugin plugin, boolean enabled) {
+        this.className = plugin.getClass().getName();
+        this.enabled = enabled;
+    }
+
+    public boolean matches(Plugin plugin) {
+        return className.equals(plugin.getClass().getName());
+    }
+
     @XmlElement
-    protected List<PluginConfig> plugins;
-
-    public RootConfig() {
-        plugins = new ArrayList<PluginConfig>();
+    public String getClassName() {
+        return this.className;
     }
 
-    public void enablePlugin(Plugin plugin, boolean enabled) {
-        PluginConfig pcfg = findPluginConfig(plugin);
-        pcfg.setEnabled(enabled);
+    public void setClassName(String className) {
+        this.className = className;
     }
 
-    public PluginConfig findPluginConfig(Plugin plugin) {
-        PluginConfig foundPluginConfig = null;
-        for (PluginConfig pcfg : plugins) {
-            if (pcfg.matches(plugin)) {
-                foundPluginConfig = pcfg;
-            }
-        }
-        if (foundPluginConfig == null) {
-            foundPluginConfig = new PluginConfig(plugin, false);
-            addPluginConfig(foundPluginConfig);
-        }
-        return foundPluginConfig;
+    @XmlElement
+    public boolean getEnabled() {
+        return this.enabled;
     }
 
-    public void addPluginConfig(PluginConfig pluginConfig) {
-        this.plugins.add(pluginConfig);
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

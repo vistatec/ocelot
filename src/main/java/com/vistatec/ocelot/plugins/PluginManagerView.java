@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.vistatec.ocelot.config.ConfigTransferService;
 
 /**
  * View for managing active plugins.
@@ -195,8 +196,13 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         Object source = e.getItemSelectable();
         if (source.getClass().equals(JCheckBox.class)) {
             JCheckBox checkbox = (JCheckBox) source;
-            pluginManager.setEnabled(checkboxToPlugin.get(checkbox),
-                    e.getStateChange() == ItemEvent.SELECTED);
+            try {
+                pluginManager.setEnabled(checkboxToPlugin.get(checkbox),
+                        e.getStateChange() == ItemEvent.SELECTED);
+            } catch (ConfigTransferService.TransferException ex) {
+                LOG.error("Failed to save enabling plugin", ex);
+                JOptionPane.showMessageDialog(getDialog(), "Could not save plugin enabled.");
+            }
             setExportEnabledState();
         }
     }

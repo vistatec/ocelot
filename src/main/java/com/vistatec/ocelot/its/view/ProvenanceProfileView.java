@@ -53,7 +53,7 @@ import com.vistatec.ocelot.ui.ODialogPanel;
 import javax.swing.JOptionPane;
 
 import com.google.inject.Inject;
-import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.config.ConfigService;
 
 /**
  * Provenance configuration view.
@@ -68,11 +68,11 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
     private OcelotEventQueue eventQueue;
 
     @Inject
-    public ProvenanceProfileView(OcelotEventQueue eventQueue, ProvenanceConfig config) {
+    public ProvenanceProfileView(OcelotEventQueue eventQueue, ConfigService cfgService) {
         super(new GridBagLayout());
         setBorder(new EmptyBorder(10,10,10,10));
         this.eventQueue = eventQueue;
-        UserProvenance profile = config.getUserProvenance();
+        UserProvenance profile = cfgService.getUserProvenance();
 
         GridBagConstraints gridBag = new GridBagConstraints();
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;

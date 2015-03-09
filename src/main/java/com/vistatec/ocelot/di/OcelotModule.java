@@ -2,18 +2,25 @@ package com.vistatec.ocelot.di;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+
+import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.io.ByteSource;
+import com.google.common.io.CharSink;
+import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.vistatec.ocelot.OcelotApp;
-import com.vistatec.ocelot.config.AppConfig;
+import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
-import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
@@ -31,7 +38,7 @@ import com.vistatec.ocelot.services.XliffService;
  * Main Ocelot object dependency context module.
  */
 public class OcelotModule extends AbstractModule {
-    private static Logger LOG = LoggerFactory.getLogger(OcelotModule.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OcelotModule.class);
 
     @Override
     protected void configure() {
@@ -43,8 +50,7 @@ public class OcelotModule extends AbstractModule {
 
         bind(OcelotApp.class).in(Scopes.SINGLETON);
 
-        AppConfig appConfig = null;
-        ProvenanceConfig provConfig = null;
+        ConfigService cfgService = null;
         RuleConfiguration ruleConfig = null;
         PluginManager pluginManager = null;
         try {
@@ -53,29 +59,28 @@ public class OcelotModule extends AbstractModule {
 
             Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            appConfig = new AppConfig(configs);
-            provConfig = new ProvenanceConfig(configs);
+            cfgService = setupConfigService(ocelotDir);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
-            pluginManager = new PluginManager(appConfig, new File(ocelotDir, "plugins"));
+            pluginManager = new PluginManager(cfgService, new File(ocelotDir, "plugins"));
             pluginManager.discover();
             eventQueue.registerListener(pluginManager);
-        } catch (IOException ex) {
+        } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
         }
 
-        bind(AppConfig.class).toInstance(appConfig);
-        bind(ProvenanceConfig.class).toInstance(provConfig);
         bind(RuleConfiguration.class).toInstance(ruleConfig);
         bind(PluginManager.class).toInstance(pluginManager);
 
-        bindServices(eventQueue, provConfig, docStats);
+        bindServices(eventQueue, cfgService, docStats);
     }
 
-    private void bindServices(OcelotEventQueue eventQueue, ProvenanceConfig provConfig,
+    private void bindServices(OcelotEventQueue eventQueue, ConfigService cfgService,
             ITSDocStats docStats) {
-        ProvenanceService provService = new ProvenanceService(eventQueue, provConfig);
+        bind(ConfigService.class).toInstance(cfgService);
+
+        ProvenanceService provService = new ProvenanceService(eventQueue, cfgService);
         bind(ProvenanceService.class).toInstance(provService);
         eventQueue.registerListener(provService);
 
@@ -87,8 +92,20 @@ public class OcelotModule extends AbstractModule {
         bind(ITSDocStatsService.class).toInstance(docStatsService);
         eventQueue.registerListener(docStatsService);
 
-        XliffService xliffService = new OkapiXliffService(provConfig, eventQueue);
+        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         bind(XliffService.class).toInstance(xliffService);
         eventQueue.registerListener(xliffService);
+    }
+
+    private ConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {
+        File configFile = new File(ocelotDir, "ocelot_cfg.xml");
+        ByteSource configSource = !configFile.exists() ?
+                ByteSource.empty() :
+                Files.asByteSource(configFile);
+
+        CharSink configSink = Files.asCharSink(configFile,
+                Charset.forName("UTF-8"));
+        return new ConfigService(new XmlConfigTransferService(
+                configSource, configSink));
     }
 }

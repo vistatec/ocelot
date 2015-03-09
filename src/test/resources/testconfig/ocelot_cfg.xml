@@ -8,4 +8,9 @@
         <className>com.vistatec.ocelot.plugins.samples.segmentplugin.SampleSegmentPlugin</className>
         <enabled>true</enabled>
     </plugins>
+    <userProvenance>
+        <revPerson>A</revPerson>
+        <revOrganization>B</revOrganization>
+        <externalReference>C</externalReference>
+    </userProvenance>
 </rootConfig>

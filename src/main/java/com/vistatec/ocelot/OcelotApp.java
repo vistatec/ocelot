@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
@@ -59,7 +58,6 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 public class OcelotApp implements OcelotEventQueueListener {
     private Logger LOG = LoggerFactory.getLogger(OcelotApp.class);
 
-    protected AppConfig appConfig;
     private PluginManager pluginManager;
     private RuleConfiguration ruleConfig;
 
@@ -70,10 +68,9 @@ public class OcelotApp implements OcelotEventQueueListener {
     private boolean fileDirty = false, hasOpenFile = false;
 
     @Inject
-    public OcelotApp(AppConfig config, PluginManager pluginManager,
+    public OcelotApp(PluginManager pluginManager,
             RuleConfiguration ruleConfig, SegmentService segmentService,
             XliffService xliffService) {
-        this.appConfig = config;
         this.pluginManager = pluginManager;
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;

@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.xliff.okapi;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
@@ -62,6 +61,7 @@ import net.sf.okapi.common.skeleton.GenericSkeleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
@@ -76,8 +76,8 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
     private OkapiXLIFF12Parser parser;
 
     public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser,
-            ProvenanceConfig provConfig, OcelotEventQueue eventQueue) {
-        super(provConfig, eventQueue);
+            UserProvenance userProvenance, OcelotEventQueue eventQueue) {
+        super(userProvenance, eventQueue);
         this.parser = xliffParser;
     }
 

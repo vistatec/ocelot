@@ -40,7 +40,6 @@ import java.io.Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -76,13 +75,13 @@ import net.sf.okapi.lib.xliff2.reader.Event;
 public class OkapiXLIFF20Writer implements XLIFFWriter {
     private final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
     private final OkapiXLIFF20Parser parser;
-    private final ProvenanceConfig provConfig;
+    private final UserProvenance userProvenance;
     private final OcelotEventQueue eventQueue;
 
-    public OkapiXLIFF20Writer(OkapiXLIFF20Parser parser, ProvenanceConfig provConfig,
+    public OkapiXLIFF20Writer(OkapiXLIFF20Parser parser, UserProvenance userProvenance,
             OcelotEventQueue eventQueue) {
         this.parser = parser;
-        this.provConfig = provConfig;
+        this.userProvenance = userProvenance;
         this.eventQueue = eventQueue;
     }
 
@@ -142,7 +141,6 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
      * @return - Okapi ITS Provenance Object or null if profile {@link UserProvenance} is not set
      */
     private Provenances getOkapiOcelotProvenance(OcelotSegment seg) {
-        UserProvenance userProvenance = provConfig.getUserProvenance();
         if (userProvenance.isEmpty()) {
             return null;
         }
