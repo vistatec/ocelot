@@ -13,6 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <okapi.version>0.27-SNAPSHOT</okapi.version>
+    <okapi.xliff2.version>1.0-SNAPSHOT</okapi.xliff2.version>
   </properties>
   
   <repositories>
@@ -80,26 +81,43 @@
         <artifactId>jackson-mapper-lgpl</artifactId>
         <version>1.9.13</version>
     </dependency>
+
+    <!-- Okapi -->
     <dependency>
-        <groupId>net.sf.okapi</groupId>
-        <artifactId>okapi-core</artifactId>
-        <version>${okapi.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>net.sf.okapi.filters</groupId>
-        <artifactId>okapi-filter-its</artifactId>
-        <version>${okapi.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>net.sf.okapi.filters</groupId>
-        <artifactId>okapi-filter-xliff</artifactId>
-        <version>${okapi.version}</version>
+      <groupId>net.sf.okapi</groupId>
+      <artifactId>okapi-core</artifactId>
+      <version>${okapi.version}</version>
     </dependency>
 
+    <!-- Okapi ITS -->
     <dependency>
-        <groupId>net.sf.okapi.lib</groupId>
-        <artifactId>okapi-lib-xliff2</artifactId>
-        <version>1.0-SNAPSHOT</version>
+      <groupId>net.sf.okapi.filters</groupId>
+      <artifactId>okapi-filter-its</artifactId>
+      <version>${okapi.version}</version>
+    </dependency>
+
+    <!-- Okapi XLIFF -->
+    <dependency>
+      <groupId>net.sf.okapi.filters</groupId>
+      <artifactId>okapi-filter-xliff</artifactId>
+      <version>${okapi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.okapi.lib</groupId>
+      <artifactId>okapi-lib-xliff2</artifactId>
+      <version>${okapi.xliff2.version}</version>
+    </dependency>
+
+    <!-- Okapi TM -->
+    <dependency>
+      <groupId>net.sf.okapi.tm</groupId>
+      <artifactId>okapi-tm-pensieve</artifactId>
+      <version>${okapi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.okapi.filters</groupId>
+      <artifactId>okapi-filter-pensieve</artifactId>
+      <version>${okapi.version}</version>
     </dependency>
 
     <dependency>

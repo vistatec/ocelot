@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4">
+  <header creationtool="Ocelot"
+          creationtoolversion="3"
+          segtype="sentence"
+          o-tmf="various"
+          adminlang="en-US"
+          srclang="en-US"
+          datatype="PlainText" />
+  <body>
+
+    <tu>
+      <tuv xml:lang="en-US">
+        <seg>apple orange pear</seg>
+      </tuv>
+      <tuv xml:lang="es-ES">
+        <seg>manzana narajna pera</seg>
+      </tuv>
+    </tu>
+
+    <tu>
+      <tuv xml:lang="en-US">
+        <seg>orange apple pear</seg>
+      </tuv>
+      <tuv xml:lang="es-ES">
+        <seg>narajna manzana pera</seg>
+      </tuv>
+    </tu>
+
+    <tu>
+      <tuv xml:lang="en-US">
+        <seg>banana apple</seg>
+      </tuv>
+      <tuv xml:lang="es-ES">
+        <seg>plátano manzana</seg>
+      </tuv>
+    </tu>
+
+    <tu>
+      <tuv xml:lang="en-US">
+        <seg>watermelon pineapple</seg>
+      </tuv>
+      <tuv xml:lang="es-ES">
+        <seg>sandía piña</seg>
+      </tuv>
+    </tu>
+
+  </body>
+</tmx>

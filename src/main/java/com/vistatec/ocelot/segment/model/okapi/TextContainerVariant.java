@@ -34,28 +34,27 @@ import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 
-import com.google.common.collect.Lists;
-import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.TextAtom;
 
 /**
  * XLIFF 1.2 segment variant, implemented using Okapi
  * TextContainers.
  */
-public class TextContainerVariant extends BaseSegmentVariant {
-    private TextContainer tc;
+public class TextContainerVariant extends OkapiSegmentVariant {
+    private final TextContainer tc;
 
     public TextContainerVariant(TextContainer tc) {
         this.tc = tc;
     }
 
+    @Override
     public TextContainerVariant createEmptyTarget() {
         return new TextContainerVariant(new TextContainer());
     }
 
+    @Override
     public TextContainerVariant createCopy() {
         return new TextContainerVariant(tc.clone());
     }
@@ -70,37 +69,9 @@ public class TextContainerVariant extends BaseSegmentVariant {
         return tc;
     }
 
-    // XXX problem - in paired tags, they both have the same IDs.
-    // IDs aren't unique!
     @Override
     protected List<SegmentAtom> getAtoms() {
-        List<SegmentAtom> atoms = Lists.newArrayList();
-        StringBuilder sb = new StringBuilder();
-        TextFragment tf = tc.getUnSegmentedContentCopy();
-        for (int i = 0; i < tf.length(); i++) {
-            char tfChar = tf.charAt(i);
-            if (TextFragment.isMarker(tfChar)) {
-                if (sb.length() > 0) {
-                    // Flush as text
-                    atoms.add(new TextAtom(sb.toString()));
-                    sb.setLength(0);
-                }
-                char codeMarker = tf.charAt(++i);
-                int codeIndex = TextFragment.toIndex(codeMarker);
-                Code code = tf.getCode(codeIndex);
-                atoms.add(new CodeAtom(codeIndex+"", getCodeText(code, false),
-                                       getCodeText(code, true)));
-            }
-            else {
-                sb.append(tfChar);
-            }
-        }
-        // Flush trailing markup
-        if (sb.length() > 0) {
-            atoms.add(new TextAtom(sb.toString()));
-        }
-
-        return atoms;
+        return convertTextFragment(tc.getUnSegmentedContentCopy());
     }
 
     @Override
@@ -120,21 +91,6 @@ public class TextContainerVariant extends BaseSegmentVariant {
             }
         }
         tc.setContent(frag);
-    }
-
-    private String getCodeText(Code code, boolean verbose) {
-        if (verbose) {
-            return code.hasOuterData() ? code.getOuterData() : code.getData();
-        }
-        switch (code.getTagType()) {
-        case OPENING:
-            return "<" + code.getType() + ">"; 
-        case CLOSING:
-            return "</" + code.getType() + ">";
-        case PLACEHOLDER:
-            return "<" + code.getType() + "/>";
-        }
-        throw new IllegalStateException();
     }
 
     @Override

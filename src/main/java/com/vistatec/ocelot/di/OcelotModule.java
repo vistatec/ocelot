@@ -33,6 +33,10 @@ import com.vistatec.ocelot.services.ProvenanceService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.tm.TmManager;
+import com.vistatec.ocelot.tm.TmService;
+import com.vistatec.ocelot.tm.okapi.OkapiTmManager;
+import com.vistatec.ocelot.tm.okapi.OkapiTmService;
 
 /**
  * Main Ocelot object dependency context module.
@@ -53,6 +57,7 @@ public class OcelotModule extends AbstractModule {
         ConfigService cfgService = null;
         RuleConfiguration ruleConfig = null;
         PluginManager pluginManager = null;
+        TmManager tmManager = null;
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
@@ -65,6 +70,12 @@ public class OcelotModule extends AbstractModule {
             pluginManager = new PluginManager(cfgService, new File(ocelotDir, "plugins"));
             pluginManager.discover();
             eventQueue.registerListener(pluginManager);
+
+            File tm = new File(ocelotDir, "tm");
+            tm.mkdirs();
+            tmManager = new OkapiTmManager(tm, cfgService);
+            bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
+
         } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
@@ -72,6 +83,7 @@ public class OcelotModule extends AbstractModule {
 
         bind(RuleConfiguration.class).toInstance(ruleConfig);
         bind(PluginManager.class).toInstance(pluginManager);
+        bind(TmManager.class).toInstance(tmManager);
 
         bindServices(eventQueue, cfgService, docStats);
     }
@@ -95,6 +107,8 @@ public class OcelotModule extends AbstractModule {
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         bind(XliffService.class).toInstance(xliffService);
         eventQueue.registerListener(xliffService);
+
+        bind(TmService.class).to(OkapiTmService.class);
     }
 
     private ConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {
