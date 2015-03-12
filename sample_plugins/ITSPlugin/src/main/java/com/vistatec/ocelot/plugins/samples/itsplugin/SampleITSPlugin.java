@@ -29,9 +29,9 @@
 package com.vistatec.ocelot.plugins.samples.itsplugin;
 
 import com.vistatec.ocelot.plugins.ITSPlugin;
-import com.vistatec.ocelot.its.LanguageQualityIssue;
-import com.vistatec.ocelot.its.Provenance;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import java.util.List;
 
 /**
@@ -51,12 +51,12 @@ public class SampleITSPlugin implements ITSPlugin {
 
     @Override
     public void sendProvData(String sourceLang, String targetLang,
-        Segment seg, List<Provenance> prov) {
+        OcelotSegment seg, List<Provenance> prov) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void sendLQIData(String sourceLang, String targetLang, Segment seg, List<LanguageQualityIssue> lqi) {
+    public void sendLQIData(String sourceLang, String targetLang, OcelotSegment seg, List<LanguageQualityIssue> lqi) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

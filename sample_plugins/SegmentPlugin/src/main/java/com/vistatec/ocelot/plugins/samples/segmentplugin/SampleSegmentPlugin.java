@@ -29,7 +29,7 @@
 package com.vistatec.ocelot.plugins.samples.segmentplugin;
 
 import com.vistatec.ocelot.plugins.SegmentPlugin;
-import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import java.util.Date;
 
 /**
@@ -47,13 +47,13 @@ public class SampleSegmentPlugin implements SegmentPlugin {
     }
 
     @Override
-    public void onSegmentTargetEnter(Segment seg) {
-        System.out.println("TU enter segment #"+seg.getTransUnitId()+": "+new Date());
+    public void onSegmentTargetEnter(OcelotSegment seg) {
+        System.out.println("TU enter segment #"+seg.getSegmentNumber()+": "+new Date());
     }
 
     @Override
-    public void onSegmentTargetExit(Segment seg) {
-        System.out.println("TU exit segment #"+seg.getTransUnitId()+": "+new Date());
+    public void onSegmentTargetExit(OcelotSegment seg) {
+        System.out.println("TU exit segment #"+seg.getSegmentNumber()+": "+new Date());
     }
 
     @Override
