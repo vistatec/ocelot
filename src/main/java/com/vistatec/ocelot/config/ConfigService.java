@@ -2,6 +2,9 @@ package com.vistatec.ocelot.config;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.PluginConfig;
 
@@ -13,6 +16,7 @@ import com.vistatec.ocelot.plugins.Plugin;
  * Service for reading/saving configuration values.
  */
 public class ConfigService {
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigService.class);
 
     private final ConfigTransferService cfgXservice;
     private RootConfig config;
@@ -78,27 +82,45 @@ public class ConfigService {
         return config.getTmManagement().getTm();
     }
 
-    public void enableTm(String tmName, boolean enable) throws ConfigTransferService.TransferException {
-        boolean addTmConfig = true;
+    public TmConfig.TmEnabled getTmConfig(String tmName) {
         for (TmConfig.TmEnabled tm : config.getTmManagement().getTm()) {
             if (tm.getTmName().equals(tmName)) {
-                tm.setEnabled(enable);
-                addTmConfig = false;
+                return tm;
             }
         }
-        if (addTmConfig) {
-            TmConfig.TmEnabled newTmConfig = new TmConfig.TmEnabled();
-            newTmConfig.setTmName(tmName);
-            newTmConfig.setEnabled(enable);
-            config.getTmManagement().getTm().add(newTmConfig);
+        return null;
+    }
+
+    public void enableTm(String tmName, boolean enable) throws ConfigTransferService.TransferException {
+        TmConfig.TmEnabled tmConfig = getTmConfig(tmName);
+        if (tmConfig == null) {
+            LOG.error("Missing TM configuration for '{}'", tmName);
+            throw new IllegalStateException("Missing TM configuration for '"+tmName+"'");
+        }
+        tmConfig.setEnabled(enable);
+        cfgXservice.save(config);
+    }
+
+    public void saveTmDataDir(String tmName, String tmDataDir) throws ConfigTransferService.TransferException {
+        for (TmConfig.TmEnabled tm : config.getTmManagement().getTm()) {
+            if (tm.getTmName().equals(tmName)) {
+                tm.setTmDataDir(tmDataDir);
+            }
         }
         cfgXservice.save(config);
     }
 
-    public void saveTmConfig(TmConfig tmCfg) throws ConfigTransferService.TransferException {
-        config.getTmManagement().setTm(tmCfg.getTm());
-        config.getTmManagement().setFuzzyThreshold(tmCfg.getFuzzyThreshold());
-        config.getTmManagement().setMaxResults(tmCfg.getMaxResults());
+    public TmConfig.TmEnabled createNewTmConfig(String tmName, boolean enabled, String tmDataDir) throws ConfigTransferService.TransferException {
+        TmConfig.TmEnabled newTmConfig = new TmConfig.TmEnabled();
+        newTmConfig.setTmName(tmName);
+        newTmConfig.setEnabled(enabled);
+        newTmConfig.setTmDataDir(tmDataDir);
+        config.getTmManagement().getTm().add(newTmConfig);
+        cfgXservice.save(config);
+        return newTmConfig;
+    }
+
+    public void saveConfig() throws ConfigTransferService.TransferException {
         cfgXservice.save(config);
     }
 }

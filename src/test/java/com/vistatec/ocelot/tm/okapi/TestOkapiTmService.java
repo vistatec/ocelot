@@ -29,8 +29,8 @@ public class TestOkapiTmService {
 
     @Before
     public void before() throws URISyntaxException, IOException, ConfigTransferService.TransferException {
-        File testTmIndices = getTestOkapiTmDir();
-        deleteDirectory(testTmIndices);
+        File testTmIndices = OkapiTmTestHelpers.getTestOkapiTmDir();
+        OkapiTmTestHelpers.deleteDirectory(testTmIndices);
         testTmIndices.mkdirs();
 
         this.testTm = new File(TestOkapiTmService.class.getResource("simple_tm.tmx").toURI());
@@ -94,25 +94,7 @@ public class TestOkapiTmService {
 
     @AfterClass
     public static void cleanup() throws URISyntaxException {
-        deleteDirectory(getTestOkapiTmDir());
-    }
-
-    public static File getTestOkapiTmDir() throws URISyntaxException {
-        File packageDir = new File(TestOkapiTmService.class.getResource("").toURI());
-        return new File(packageDir, "test");
-    }
-
-    public static void deleteDirectory(File dir) {
-        if (dir.exists() && dir.isDirectory()) {
-            for (File f : dir.listFiles()) {
-                if (f.isDirectory()) {
-                    deleteDirectory(f);
-                } else {
-                    f.delete();
-                }
-            }
-            dir.delete();
-        }
+        OkapiTmTestHelpers.deleteDirectory(OkapiTmTestHelpers.getTestOkapiTmDir());
     }
 
     private class OkapiTmServiceBuilder {
@@ -128,7 +110,7 @@ public class TestOkapiTmService {
             return this;
         }
 
-        public OkapiTmService build() throws ConfigTransferService.TransferException, URISyntaxException {
+        public OkapiTmService build() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
             final RootConfig config = new RootConfig();
             config.getTmManagement().setFuzzyThreshold(fuzzyThreshold);
             config.getTmManagement().setMaxResults(maxResults);
@@ -140,7 +122,8 @@ public class TestOkapiTmService {
                 }
             });
             ConfigService cfgService = new ConfigService(cfgXService);
-            return new OkapiTmService(new OkapiTmManager(getTestOkapiTmDir(), cfgService),
+            return new OkapiTmService(new OkapiTmManager(
+                    OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService),
                     cfgService);
         }
     }

@@ -46,6 +46,7 @@ public class TmConfig {
     public static class TmEnabled {
         private String tmName;
         private boolean enabled;
+        private String tmDataDir;
 
         @XmlElement
         public String getTmName() {
@@ -63,6 +64,15 @@ public class TmConfig {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+
+        @XmlElement
+        public String getTmDataDir() {
+            return tmDataDir;
+        }
+
+        public void setTmDataDir(String tmDataDir) {
+            this.tmDataDir = tmDataDir;
         }
 
     }
