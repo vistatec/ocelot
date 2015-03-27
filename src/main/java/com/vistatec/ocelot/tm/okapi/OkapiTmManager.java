@@ -210,7 +210,7 @@ public class OkapiTmManager implements TmManager {
             for (File tmxFile : tmDataDir.listFiles()) {
                 indexTmx(tmName, tmxFile);
             }
-            cfgService.saveTmDataDir(tmName, tmDataDir.getAbsolutePath());
+            cfgService.saveTmDataDir(tmConfig, tmDataDir.getAbsolutePath());
         }
         LOG.debug("Setting TM data directory to itself '{} to {}', doing nothing",
                 tmConfig.getTmDataDir(), tmDataDir.getAbsolutePath());

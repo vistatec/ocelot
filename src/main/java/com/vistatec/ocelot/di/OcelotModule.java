@@ -17,6 +17,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
@@ -111,7 +112,7 @@ public class OcelotModule extends AbstractModule {
         bind(TmService.class).to(OkapiTmService.class);
     }
 
-    private ConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {
+    private OcelotConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {
         File configFile = new File(ocelotDir, "ocelot_cfg.xml");
         ByteSource configSource = !configFile.exists() ?
                 ByteSource.empty() :
@@ -119,7 +120,7 @@ public class OcelotModule extends AbstractModule {
 
         CharSink configSink = Files.asCharSink(configFile,
                 Charset.forName("UTF-8"));
-        return new ConfigService(new XmlConfigTransferService(
+        return new OcelotConfigService(new XmlConfigTransferService(
                 configSource, configSink));
     }
 }

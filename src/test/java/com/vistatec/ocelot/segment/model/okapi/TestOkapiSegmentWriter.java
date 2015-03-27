@@ -45,7 +45,6 @@ import static org.junit.Assert.*;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 
-import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.Provenance;

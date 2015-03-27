@@ -46,7 +46,7 @@ import java.util.List;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
-import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.TestProvenanceConfig;
 import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
@@ -87,7 +87,7 @@ public class TestOkapiXLIFF12Writer {
 
         ByteSource testLoad = Resources.asByteSource(
                 TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-        ConfigService cfgService = new ConfigService(new XmlConfigTransferService(testLoad, null));
+        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
@@ -116,7 +116,7 @@ public class TestOkapiXLIFF12Writer {
         // a dummy revPerson value
         ByteSource testLoad = Resources.asByteSource(
                 TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-        ConfigService cfgService = new ConfigService(new XmlConfigTransferService(testLoad, null));
+        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 

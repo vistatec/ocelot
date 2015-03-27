@@ -13,7 +13,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -121,7 +121,7 @@ public class TestOkapiTmService {
                     allowing(cfgXService).save(with(any(RootConfig.class)));
                 }
             });
-            ConfigService cfgService = new ConfigService(cfgXService);
+            OcelotConfigService cfgService = new OcelotConfigService(cfgXService);
             return new OkapiTmService(new OkapiTmManager(
                     OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService),
                     cfgService);

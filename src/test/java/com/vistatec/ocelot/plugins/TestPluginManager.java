@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.xml.RootConfig;
 
@@ -51,7 +51,7 @@ public class TestPluginManager {
 
         File pluginDir = new File(url.toURI());
         PluginManager pluginManager = new PluginManager(
-                new ConfigService(new TestConfigTransferService()), pluginDir);
+                new OcelotConfigService(new TestConfigTransferService()), pluginDir);
         pluginManager.discover();
 
         Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();

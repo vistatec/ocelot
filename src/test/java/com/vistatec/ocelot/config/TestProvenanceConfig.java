@@ -20,7 +20,7 @@ public class TestProvenanceConfig {
 
     @Test
     public void testEmptyProvenance() throws ConfigTransferService.TransferException, JAXBException {
-        ConfigService cfgService = new ConfigService(
+        OcelotConfigService cfgService = new OcelotConfigService(
                 new XmlConfigTransferService(ByteSource.empty(), null));
         assertTrue(cfgService.getUserProvenance().isEmpty());
     }
@@ -29,7 +29,7 @@ public class TestProvenanceConfig {
     public void testLoadProvenance() throws JAXBException, ConfigTransferService.TransferException {
         ByteSource testLoad = Resources.asByteSource(
                 TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-        ConfigService cfgService = new ConfigService(new XmlConfigTransferService(
+        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(
                 testLoad, null
         ));
 
@@ -47,7 +47,7 @@ public class TestProvenanceConfig {
                 TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
 
         StringWriter writer = new StringWriter();
-        ConfigService cfgService = new ConfigService(
+        OcelotConfigService cfgService = new OcelotConfigService(
                 new XmlConfigTransferService(testLoad, new TestCharSink(writer)));
 
         UserProvenance prov = cfgService.getUserProvenance();
@@ -57,7 +57,7 @@ public class TestProvenanceConfig {
         cfgService.saveUserProvenance(prov);
 
         ByteSource savedConfig = ByteSource.wrap(writer.toString().getBytes(Charset.forName("UTF-8")));
-        ConfigService testCfgService = new ConfigService(new XmlConfigTransferService(savedConfig, null));
+        OcelotConfigService testCfgService = new OcelotConfigService(new XmlConfigTransferService(savedConfig, null));
 
         UserProvenance roundtrip = testCfgService.getUserProvenance();
         assertEquals("D", roundtrip.getProvRef());
