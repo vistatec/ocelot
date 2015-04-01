@@ -28,26 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.google.common.eventbus.EventBus;
-import com.vistatec.ocelot.config.AppConfig;
-import com.vistatec.ocelot.config.Configs;
-import com.vistatec.ocelot.config.DirectoryBasedConfigs;
-import com.vistatec.ocelot.config.ProvenanceConfig;
-import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.plugins.PluginManagerView;
-import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.its.ProvenanceProfileView;
-import com.vistatec.ocelot.rules.FilterView;
-import com.vistatec.ocelot.rules.QuickAdd;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.rules.RulesParser;
-import com.vistatec.ocelot.segment.Segment;
-import com.vistatec.ocelot.segment.SegmentAttributeView;
-import com.vistatec.ocelot.segment.SegmentController;
-import com.vistatec.ocelot.segment.SegmentTableModel;
-import com.vistatec.ocelot.segment.SegmentView;
-import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.DefaultKeyboardFocusManager;
@@ -80,11 +60,31 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
+
+import com.google.common.eventbus.EventBus;
+import com.vistatec.ocelot.config.AppConfig;
+import com.vistatec.ocelot.config.Configs;
+import com.vistatec.ocelot.config.DirectoryBasedConfigs;
+import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
+import com.vistatec.ocelot.its.ProvenanceProfileView;
+import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.plugins.PluginManagerView;
+import com.vistatec.ocelot.rules.FilterView;
+import com.vistatec.ocelot.rules.QuickAdd;
+import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.rules.RulesParser;
+import com.vistatec.ocelot.segment.Segment;
+import com.vistatec.ocelot.segment.SegmentAttributeView;
+import com.vistatec.ocelot.segment.SegmentController;
+import com.vistatec.ocelot.segment.SegmentTableModel;
+import com.vistatec.ocelot.segment.SegmentView;
+import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
 
 /**
  * Main UI Thread class. Handles menu and file operations
@@ -298,16 +298,23 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
+    	boolean canClose = true;
         if (segmentController.isDirty()) {
             int rv = JOptionPane.showConfirmDialog(this,
                     "You have unsaved changes. Would you like to save before exiting?",
                     "Save Unsaved Changes",
-                    JOptionPane.YES_NO_OPTION);
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            //can close the frame only if the user pressed either "YES" or "NO" button.
+            canClose = rv == JOptionPane.YES_OPTION || rv == JOptionPane.NO_OPTION; 
             if (rv == JOptionPane.YES_OPTION) {
                 save(openSrcFile);
             }
         }
-        mainframe.dispose();
+		if (canClose) {
+			mainframe.dispose();
+			//Explicitly exits the application.
+			System.exit(0);
+		}
     }
 
     /**
@@ -416,10 +423,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);
-        mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //This default close operation let us handle the application exit.
+        mainframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainframe.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                // TODO: cleanup
+               handleApplicationExit();
             }
         });
 
@@ -518,4 +526,5 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             });
         }
     }
+
 }
