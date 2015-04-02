@@ -34,11 +34,14 @@ import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -47,13 +50,17 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -85,12 +92,13 @@ import com.vistatec.ocelot.segment.SegmentController;
 import com.vistatec.ocelot.segment.SegmentTableModel;
 import com.vistatec.ocelot.segment.SegmentView;
 import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
+import com.vistatec.ocelot.tool.OcelotToolBar;
 
 /**
  * Main UI Thread class. Handles menu and file operations
  *
  */
-public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
+public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher, ItemListener {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
     private static String APPNAME = "Ocelot";
@@ -104,6 +112,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JMenuItem menuPlugins;
     private JCheckBoxMenuItem menuTgtDiff;
 
+    private OcelotToolBar toolBar;
+    
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
     private JSplitPane segAttrSplitPane;
@@ -231,6 +241,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
                 this.menuSave.setEnabled(true);
                 this.menuSaveAs.setEnabled(true);
+                this.toolBar.loadFontsAndSizes(segmentController.getFileSourceLang(), segmentController.getFileTargetLang());
+                this.toolBar.setSourceFont(segmentView.getSourceFont());
+                this.toolBar.setTargetFont(segmentView.getTargetFont());
             } catch (FileNotFoundException ex) {
                 LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
             } catch (Exception e) {
@@ -423,6 +436,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);
+//        mainframe.setLayout(new BorderLayout());
         //This default close operation let us handle the application exit.
         mainframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainframe.addWindowListener(new WindowAdapter() {
@@ -436,14 +450,24 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setIconImage(icon);
 
         initializeMenuBar();
-        mainframe.getContentPane().add(this);
+        toolBar = new OcelotToolBar(this);
+//        JPanel menuToolContainer = new JPanel();
+//        menuToolContainer.setLayout(new BoxLayout(menuToolContainer, BoxLayout.Y_AXIS));
+//        menuToolContainer.add(menuBar);
+////        menuToolContainer.add(Box.createHorizontalGlue());
+////        menuToolContainer.add(new JSeparator(JSeparator.VERTICAL));
+////        menuToolContainer.add(Box.createHorizontalGlue());
+//        menuToolContainer.add(toolBar);
+        mainframe.getContentPane().add(toolBar, BorderLayout.NORTH);
+        mainframe.getContentPane().add(this, BorderLayout.CENTER);
 
         // Display the window
         mainframe.pack();
         mainframe.setVisible(true);
     }
 
-    public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
+
+	public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(Ocelot.class.getResourceAsStream("/log4j.properties"));
         } else {
@@ -526,5 +550,35 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             });
         }
     }
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		
+		JComboBox<?> combo = (JComboBox<?>)e.getSource();
+		if(combo != null ){
+			if(combo.getName().equals(OcelotToolBar.SOURCE_FONT_FAMILY_COMBO_NAME) || combo.getName().equals(OcelotToolBar.SOURCE_FONT_SIZE_COMBO_NAME)){
+				handleSourceFontChangedEvent();
+			} else if (combo.getName().equals(OcelotToolBar.TARGET_FONT_FAMILY_COMBO_NAME) || combo.getName().equals(OcelotToolBar.TARGET_FONT_SIZE_COMBO_NAME)){
+				handleTargetFontChangedEvent();
+			}
+		}
+	}
+
+	private void handleTargetFontChangedEvent() {
+		
+		final Font targetFont = toolBar.getSelectedTargetFont();
+		if(targetFont != null){
+			segmentView.setTargetFont(targetFont);
+		}
+	}
+
+	private void handleSourceFontChangedEvent() {
+		
+		final Font sourceFont = toolBar.getSelectedSourceFont();
+		if(sourceFont != null){
+			segmentView.setSourceFont(sourceFont);
+		}
+		
+	}
 
 }
