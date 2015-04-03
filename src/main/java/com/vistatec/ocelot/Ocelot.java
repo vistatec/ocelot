@@ -50,8 +50,6 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -60,7 +58,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -556,29 +553,37 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 		
 		JComboBox<?> combo = (JComboBox<?>)e.getSource();
 		if(combo != null ){
-			if(combo.getName().equals(OcelotToolBar.SOURCE_FONT_FAMILY_COMBO_NAME) || combo.getName().equals(OcelotToolBar.SOURCE_FONT_SIZE_COMBO_NAME)){
+			if(combo.getName().equals(OcelotToolBar.SOURCE_FONT_TOOL_NAME) ){
 				handleSourceFontChangedEvent();
-			} else if (combo.getName().equals(OcelotToolBar.TARGET_FONT_FAMILY_COMBO_NAME) || combo.getName().equals(OcelotToolBar.TARGET_FONT_SIZE_COMBO_NAME)){
+			} else if (combo.getName().equals(OcelotToolBar.TARGET_FONT_TOOL_NAME) ){
 				handleTargetFontChangedEvent();
 			}
 		}
 	}
 
+	/**
+	 * Handles the event the selected target font changed. It applies the new
+	 * selected font to both target columns.
+	 */
 	private void handleTargetFontChangedEvent() {
-		
+
 		final Font targetFont = toolBar.getSelectedTargetFont();
-		if(targetFont != null){
+		if (targetFont != null) {
 			segmentView.setTargetFont(targetFont);
 		}
 	}
 
+	/**
+	 * Handles the event the selected target font changed. It applies the new
+	 * selected font to the source column.
+	 */
 	private void handleSourceFontChangedEvent() {
-		
+
 		final Font sourceFont = toolBar.getSelectedSourceFont();
-		if(sourceFont != null){
+		if (sourceFont != null) {
 			segmentView.setSourceFont(sourceFont);
 		}
-		
+
 	}
 
 }
