@@ -22,7 +22,7 @@ import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.xml.RootConfig;
-import com.vistatec.ocelot.config.xml.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
@@ -79,10 +79,10 @@ public class TestOkapiTmManager {
         final File oldDataDir = setupOldForeignDataDir();
 
         final String existingTmName = "exists";
-        final TmConfig.TmEnabled exist = setupExistingTm(existingTmName,
+        final TmManagement.TmConfig exist = setupExistingTm(existingTmName,
                 oldDataDir.getAbsolutePath());
 
-        final List<TmConfig.TmEnabled> testTmConfigs = new ArrayList<>();
+        final List<TmManagement.TmConfig> testTmConfigs = new ArrayList<>();
         testTmConfigs.add(exist);
         cfgService = mockery.mock(ConfigService.class);
         mockery.checking(new Expectations() {
@@ -143,11 +143,11 @@ public class TestOkapiTmManager {
         return newDataDir;
     }
 
-    private TmConfig.TmEnabled setupExistingTm(String existingTmName, String dataDir) throws URISyntaxException{
+    private TmManagement.TmConfig setupExistingTm(String existingTmName, String dataDir) throws URISyntaxException{
         File existingTm = new File(OkapiTmTestHelpers.getTestOkapiTmDir(), existingTmName);
         existingTm.mkdirs();
 
-        final TmConfig.TmEnabled exist = new TmConfig.TmEnabled();
+        final TmManagement.TmConfig exist = new TmManagement.TmConfig();
         exist.setTmName(existingTmName);
         exist.setTmDataDir(dataDir);
 

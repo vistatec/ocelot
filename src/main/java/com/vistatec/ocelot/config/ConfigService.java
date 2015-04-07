@@ -3,7 +3,7 @@ package com.vistatec.ocelot.config;
 import java.util.List;
 
 import com.vistatec.ocelot.config.xml.PluginConfig;
-import com.vistatec.ocelot.config.xml.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.plugins.Plugin;
 
 /**
@@ -25,12 +25,12 @@ public interface ConfigService {
     public double getFuzzyThreshold();
     public int getMaxResults();
 
-    public List<TmConfig.TmEnabled> getTms();
-    public TmConfig.TmEnabled getTmConfig(String tmName);
+    public List<TmManagement.TmConfig> getTms();
+    public TmManagement.TmConfig getTmConfig(String tmName);
 
     public void enableTm(String tmName, boolean enable) throws ConfigTransferService.TransferException;
 
-    public void saveTmDataDir(TmConfig.TmEnabled config, String tmDataDir) throws ConfigTransferService.TransferException;
+    public void saveTmDataDir(TmManagement.TmConfig config, String tmDataDir) throws ConfigTransferService.TransferException;
 
-    public TmConfig.TmEnabled createNewTmConfig(String tmName, boolean enabled, String tmDataDir) throws ConfigTransferService.TransferException;
+    public TmManagement.TmConfig createNewTmConfig(String tmName, boolean enabled, String tmDataDir) throws ConfigTransferService.TransferException;
 }

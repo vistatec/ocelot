@@ -8,12 +8,12 @@ import javax.xml.bind.annotation.XmlElement;
 /**
  * XML TM configuration object.
  */
-public class TmConfig {
+public class TmManagement {
     private double fuzzyThreshold;
     private int maxResults;
-    private List<TmEnabled> tm;
+    private List<TmConfig> tm;
 
-    public TmConfig() {
+    public TmManagement() {
         this.tm = new ArrayList<>();
     }
 
@@ -35,15 +35,15 @@ public class TmConfig {
         this.maxResults = maxResults;
     }
 
-    public List<TmEnabled> getTm() {
+    public List<TmConfig> getTms() {
         return tm;
     }
 
-    public void setTm(List<TmEnabled> tm) {
+    public void setTm(List<TmConfig> tm) {
         this.tm = tm;
     }
 
-    public static class TmEnabled {
+    public static class TmConfig {
         private String tmName;
         private boolean enabled;
         private String tmDataDir;

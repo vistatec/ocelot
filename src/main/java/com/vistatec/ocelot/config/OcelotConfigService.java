@@ -9,7 +9,7 @@ import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.PluginConfig;
 
 import com.vistatec.ocelot.config.xml.ProvenanceConfig;
-import com.vistatec.ocelot.config.xml.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.plugins.Plugin;
 
 /**
@@ -92,13 +92,13 @@ public class OcelotConfigService implements ConfigService {
     }
 
     @Override
-    public List<TmConfig.TmEnabled> getTms() {
-        return config.getTmManagement().getTm();
+    public List<TmManagement.TmConfig> getTms() {
+        return config.getTmManagement().getTms();
     }
 
     @Override
-    public TmConfig.TmEnabled getTmConfig(String tmName) {
-        for (TmConfig.TmEnabled tm : config.getTmManagement().getTm()) {
+    public TmManagement.TmConfig getTmConfig(String tmName) {
+        for (TmManagement.TmConfig tm : config.getTmManagement().getTms()) {
             if (tm.getTmName().equals(tmName)) {
                 return tm;
             }
@@ -108,7 +108,7 @@ public class OcelotConfigService implements ConfigService {
 
     @Override
     public void enableTm(String tmName, boolean enable) throws ConfigTransferService.TransferException {
-        TmConfig.TmEnabled tmConfig = getTmConfig(tmName);
+        TmManagement.TmConfig tmConfig = getTmConfig(tmName);
         if (tmConfig == null) {
             LOG.error("Missing TM configuration for '{}'", tmName);
             throw new IllegalStateException("Missing TM configuration for '"+tmName+"'");
@@ -118,18 +118,18 @@ public class OcelotConfigService implements ConfigService {
     }
 
     @Override
-    public void saveTmDataDir(TmConfig.TmEnabled tm, String tmDataDir) throws ConfigTransferService.TransferException {
+    public void saveTmDataDir(TmManagement.TmConfig tm, String tmDataDir) throws ConfigTransferService.TransferException {
         tm.setTmDataDir(tmDataDir);
         cfgXservice.save(config);
     }
 
     @Override
-    public TmConfig.TmEnabled createNewTmConfig(String tmName, boolean enabled, String tmDataDir) throws ConfigTransferService.TransferException {
-        TmConfig.TmEnabled newTmConfig = new TmConfig.TmEnabled();
+    public TmManagement.TmConfig createNewTmConfig(String tmName, boolean enabled, String tmDataDir) throws ConfigTransferService.TransferException {
+        TmManagement.TmConfig newTmConfig = new TmManagement.TmConfig();
         newTmConfig.setTmName(tmName);
         newTmConfig.setEnabled(enabled);
         newTmConfig.setTmDataDir(tmDataDir);
-        config.getTmManagement().getTm().add(newTmConfig);
+        config.getTmManagement().getTms().add(newTmConfig);
         cfgXservice.save(config);
         return newTmConfig;
     }

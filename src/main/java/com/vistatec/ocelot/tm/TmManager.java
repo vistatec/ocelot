@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement;
 
 /**
  * Manages importing TMs in Ocelot.
@@ -16,7 +16,7 @@ public interface TmManager {
      * Fetch list of all configured TMs.
      * @return TM configurations
      */
-    public List<TmConfig.TmEnabled> fetchTms();
+    public List<TmManagement.TmConfig> fetchTms();
 
     /**
      * Perform all functionality required to setup a new TM for usage by the

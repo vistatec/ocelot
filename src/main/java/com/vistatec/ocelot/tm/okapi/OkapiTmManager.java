@@ -20,7 +20,7 @@ import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement;
 
 import net.sf.okapi.tm.pensieve.seeker.PensieveSeeker;
 import net.sf.okapi.tm.pensieve.writer.PensieveWriter;
@@ -42,8 +42,8 @@ public class OkapiTmManager implements TmManager {
     private void discover() throws IOException, ConfigTransferService.TransferException {
         Set<String> configuredTms = new HashSet<>();
 
-        List<TmConfig.TmEnabled> tms = this.cfgService.getTms();
-        for (TmConfig.TmEnabled tm : tms) {
+        List<TmManagement.TmConfig> tms = this.cfgService.getTms();
+        for (TmManagement.TmConfig tm : tms) {
             if (verifyExistingTm(tm)) {
                 configuredTms.add(tm.getTmName());
             }
@@ -60,7 +60,7 @@ public class OkapiTmManager implements TmManager {
      * If TM config points to a non-existent directory for the root or data,
      * delete the configuration; otherwise generate Pensieve index if missing.
      */
-    private boolean verifyExistingTm(TmConfig.TmEnabled tmConfig) throws IOException, ConfigTransferService.TransferException {
+    private boolean verifyExistingTm(TmManagement.TmConfig tmConfig) throws IOException, ConfigTransferService.TransferException {
         File tmDir = new File(this.tmRootDir, tmConfig.getTmName());
         if (!tmDir.exists()) {
             removeTmConfig(tmConfig);
@@ -110,7 +110,7 @@ public class OkapiTmManager implements TmManager {
 
     @Override
     public void deleteTm(String tmName) throws IOException, ConfigTransferService.TransferException {
-        TmConfig.TmEnabled config = cfgService.getTmConfig(tmName);
+        TmManagement.TmConfig config = cfgService.getTmConfig(tmName);
         if (config == null) {
             throw new IOException("'"+tmName+"' missing TM configuration!");
         }
@@ -125,8 +125,8 @@ public class OkapiTmManager implements TmManager {
         removeTmConfig(config);
     }
 
-    private void removeTmConfig(TmConfig.TmEnabled config) throws ConfigTransferService.TransferException {
-        List<TmConfig.TmEnabled> configs = cfgService.getTms();
+    private void removeTmConfig(TmManagement.TmConfig config) throws ConfigTransferService.TransferException {
+        List<TmManagement.TmConfig> configs = cfgService.getTms();
         configs.remove(config);
         cfgService.saveConfig();
     }
@@ -175,7 +175,7 @@ public class OkapiTmManager implements TmManager {
     @Override
     public void regenerateTm(String tmName) throws IOException {
         deletePensieveIndex(tmName);
-        TmConfig.TmEnabled config = cfgService.getTmConfig(tmName);
+        TmManagement.TmConfig config = cfgService.getTmConfig(tmName);
         File tmDataDir = new File(config.getTmDataDir());
         for (File tmx : tmDataDir.listFiles()) {
             indexTmx(tmName, tmx);
@@ -198,7 +198,7 @@ public class OkapiTmManager implements TmManager {
 
     @Override
     public void changeTmDataDir(String tmName, File tmDataDir) throws IOException, ConfigTransferService.TransferException {
-        TmConfig.TmEnabled tmConfig = cfgService.getTmConfig(tmName);
+        TmManagement.TmConfig tmConfig = cfgService.getTmConfig(tmName);
         if (tmConfig == null) {
             throw new IOException("TM '"+tmName+"' does not exist!");
         }
@@ -222,7 +222,7 @@ public class OkapiTmManager implements TmManager {
             throw new IOException("File '"+tmx.getAbsolutePath()+"' does not exist");
         }
 
-        TmConfig.TmEnabled config = cfgService.getTmConfig(tmName);
+        TmManagement.TmConfig config = cfgService.getTmConfig(tmName);
         File tmDataDir = new File((config == null) ?
                 constructDefaultTmDataDir(tmName) : config.getTmDataDir());
         if (tmDataDir.exists()) {
@@ -289,7 +289,7 @@ public class OkapiTmManager implements TmManager {
      */
     Iterator<TmPair> getSeekers() throws IOException {
         List<TmPair> seekers = new ArrayList<>();
-        for (TmConfig.TmEnabled tm : this.cfgService.getTms()) {
+        for (TmManagement.TmConfig tm : this.cfgService.getTms()) {
             try {
                 DirectoryWrapper luceneIndex = loadTm(tm.getTmName());
                 seekers.add(new TmPair(tm.getTmName(),
@@ -302,7 +302,7 @@ public class OkapiTmManager implements TmManager {
     }
 
     @Override
-    public List<TmConfig.TmEnabled> fetchTms() {
+    public List<TmManagement.TmConfig> fetchTms() {
         return cfgService.getTms();
     }
 

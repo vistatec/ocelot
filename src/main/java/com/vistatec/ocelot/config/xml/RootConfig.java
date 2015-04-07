@@ -40,12 +40,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RootConfig {
     @XmlElement protected List<PluginConfig> plugins;
     @XmlElement protected ProvenanceConfig userProvenance;
-    @XmlElement protected TmConfig tmManagement;
+    @XmlElement protected TmManagement tmManagement;
 
     public RootConfig() {
         this.plugins = new ArrayList<>();
         this.userProvenance = new ProvenanceConfig();
-        this.tmManagement = new TmConfig();
+        this.tmManagement = new TmManagement();
     }
 
     public List<PluginConfig> getPlugins() {
@@ -56,7 +56,7 @@ public class RootConfig {
         return userProvenance;
     }
 
-    public TmConfig getTmManagement() {
+    public TmManagement getTmManagement() {
         return tmManagement;
     }
 
