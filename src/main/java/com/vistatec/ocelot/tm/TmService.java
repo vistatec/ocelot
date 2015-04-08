@@ -3,13 +3,13 @@ package com.vistatec.ocelot.tm;
 import java.io.IOException;
 import java.util.List;
 
-import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
 
 /**
  * Service for utilizing TMs.
  */
 public interface TmService {
-    public List<TmMatch> getFuzzyTermMatches(OcelotSegment segment) throws IOException;
+    public List<TmMatch> getFuzzyTermMatches(List<SegmentAtom> segment) throws IOException;
 
-    public List<TmMatch> getConcordanceMatches(OcelotSegment segment) throws IOException;
+    public List<TmMatch> getConcordanceMatches(List<SegmentAtom> segment) throws IOException;
 }

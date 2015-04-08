@@ -23,8 +23,8 @@ import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmTmxWriter;
 
@@ -75,9 +75,7 @@ public class TestOkapiTmManager {
 
         manager.initializeNewTm("initTM", newDataDir);
 
-        OcelotSegment appleOrange = new SimpleSegment.Builder()
-                .source("apple orange")
-                .build();
+        List<SegmentAtom> appleOrange = new SimpleSegmentVariant("apple orange").getAtoms();
         assertEquals(2, tmService.getFuzzyTermMatches(appleOrange).size());
     }
 
@@ -120,10 +118,7 @@ public class TestOkapiTmManager {
                 cfgService, tmxWriter);
         tmService = new OkapiTmService(manager, penalizer, cfgService);
 
-        OcelotSegment appleOrange = new SimpleSegment.Builder()
-                .source("apple orange")
-                .build();
-
+        List<SegmentAtom> appleOrange = new SimpleSegmentVariant("apple orange").getAtoms();
         assertEquals(0, tmService.getFuzzyTermMatches(appleOrange).size());
         manager.changeTmDataDir(existingTmName, newDataDir);
         assertEquals(2, tmService.getFuzzyTermMatches(appleOrange).size());
