@@ -11,6 +11,7 @@ import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
+import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmService;
 
 import net.sf.okapi.common.resource.TextFragment;
@@ -21,11 +22,13 @@ import net.sf.okapi.tm.pensieve.common.TmHit;
  */
 public class OkapiTmService implements TmService {
     private final OkapiTmManager manager;
+    private final TmPenalizer penalizer;
     private final ConfigService cfgService;
 
     @Inject
-    public OkapiTmService(OkapiTmManager manager, ConfigService cfgService) {
+    public OkapiTmService(OkapiTmManager manager, TmPenalizer penalizer, ConfigService cfgService) {
         this.manager = manager;
+        this.penalizer = penalizer;
         this.cfgService = cfgService;
     }
 
@@ -48,7 +51,7 @@ public class OkapiTmService implements TmService {
 
             matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
         }
-        return matches;
+        return penalizer.applyPenalties(matches);
     }
 
     @Override
@@ -66,7 +69,7 @@ public class OkapiTmService implements TmService {
 
             matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
         }
-        return matches;
+        return penalizer.applyPenalties(matches);
     }
 
     public List<TmMatch> convertOkapiTmHit(String tmOrigin, List<TmHit> leverageResults) {

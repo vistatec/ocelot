@@ -47,6 +47,7 @@ public class TmManagement {
         private String tmName;
         private boolean enabled;
         private String tmDataDir;
+        private float penalty;
 
         @XmlElement
         public String getTmName() {
@@ -73,6 +74,15 @@ public class TmManagement {
 
         public void setTmDataDir(String tmDataDir) {
             this.tmDataDir = tmDataDir;
+        }
+
+        @XmlElement
+        public float getPenalty() {
+            return penalty;
+        }
+
+        public void setPenalty(float penalty) {
+            this.penalty = penalty;
         }
 
     }

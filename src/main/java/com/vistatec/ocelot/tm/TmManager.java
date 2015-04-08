@@ -19,6 +19,13 @@ public interface TmManager {
     public List<TmManagement.TmConfig> fetchTms();
 
     /**
+     * Fetch a TM configuration by the TM name.
+     * @param tmName - Name of the TM
+     * @return
+     */
+    public TmManagement.TmConfig fetchTm(String tmName);
+
+    /**
      * Perform all functionality required to setup a new TM for usage by the
      * TmManager and by a {@link TmService}
      * @param tmName - Label for the new TM

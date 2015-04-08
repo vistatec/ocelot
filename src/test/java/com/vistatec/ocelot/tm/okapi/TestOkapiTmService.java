@@ -19,6 +19,7 @@ import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
 import com.vistatec.ocelot.tm.TmMatch;
+import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmTmxWriter;
 
 public class TestOkapiTmService {
@@ -112,6 +113,7 @@ public class TestOkapiTmService {
 
         public OkapiTmService build() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
             TmTmxWriter tmxWriter = mockery.mock(TmTmxWriter.class);
+            final TmPenalizer penalizer = mockery.mock(TmPenalizer.class);
 
             final RootConfig config = new RootConfig();
             config.getTmManagement().setFuzzyThreshold(fuzzyThreshold);
@@ -121,11 +123,14 @@ public class TestOkapiTmService {
                     allowing(cfgXService).parse();
                         will(returnValue(config));
                     allowing(cfgXService).save(with(any(RootConfig.class)));
+                    allowing(penalizer).applyPenalties(with(any(List.class)));
+                        will(new OkapiTmTestHelpers.ReturnFirstArgument());
                 }
             });
             OcelotConfigService cfgService = new OcelotConfigService(cfgXService);
-            return new OkapiTmService(new OkapiTmManager(
-                    OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService, tmxWriter),
+            return new OkapiTmService(
+                    new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService, tmxWriter),
+                    penalizer,
                     cfgService);
         }
     }

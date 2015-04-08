@@ -25,6 +25,7 @@ import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmTmxWriter;
 
 public class TestOkapiTmManager {
@@ -34,6 +35,7 @@ public class TestOkapiTmManager {
     private OkapiTmManager manager;
     private OkapiTmService tmService;
     private TmTmxWriter tmxWriter;
+    private TmPenalizer penalizer;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -51,6 +53,7 @@ public class TestOkapiTmManager {
     public void testInitializeNewTm() throws IOException, ConfigTransferService.TransferException, URISyntaxException {
         final File newDataDir = setupNewForeignDataDir();
         tmxWriter = mockery.mock(TmTmxWriter.class);
+        penalizer = mockery.mock(TmPenalizer.class);
 
         final ConfigTransferService cfgXService = mockery.mock(ConfigTransferService.class);
         final RootConfig config = new RootConfig();
@@ -61,12 +64,14 @@ public class TestOkapiTmManager {
                     allowing(cfgXService).parse();
                         will(returnValue(config));
                     allowing(cfgXService).save(with(any(RootConfig.class)));
+                    allowing(penalizer).applyPenalties(with(any(List.class)));
+                        will(new OkapiTmTestHelpers.ReturnFirstArgument());
                 }
         });
         cfgService = new OcelotConfigService(cfgXService);
         manager = new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(),
                 cfgService, tmxWriter);
-        tmService = new OkapiTmService(manager, cfgService);
+        tmService = new OkapiTmService(manager, penalizer, cfgService);
 
         manager.initializeNewTm("initTM", newDataDir);
 
@@ -81,6 +86,7 @@ public class TestOkapiTmManager {
         final File newDataDir = setupNewForeignDataDir();
         final File oldDataDir = setupOldForeignDataDir();
         tmxWriter = mockery.mock(TmTmxWriter.class);
+        penalizer = mockery.mock(TmPenalizer.class);
 
         final String existingTmName = "exists";
         final TmManagement.TmConfig exist = setupExistingTm(existingTmName,
@@ -105,11 +111,14 @@ public class TestOkapiTmManager {
                         will(returnValue(1.0));
                     allowing(cfgService).getMaxResults();
                         will(returnValue(100));
+
+                    allowing(penalizer).applyPenalties(with(any(List.class)));
+                        will(new OkapiTmTestHelpers.ReturnFirstArgument());
                 }
         });
         manager = new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(),
                 cfgService, tmxWriter);
-        tmService = new OkapiTmService(manager, cfgService);
+        tmService = new OkapiTmService(manager, penalizer, cfgService);
 
         OcelotSegment appleOrange = new SimpleSegment.Builder()
                 .source("apple orange")

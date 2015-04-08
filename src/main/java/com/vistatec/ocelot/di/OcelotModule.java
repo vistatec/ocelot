@@ -35,10 +35,12 @@ import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.tm.TmManager;
+import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmService;
 import com.vistatec.ocelot.tm.okapi.OkapiTmManager;
 import com.vistatec.ocelot.tm.okapi.OkapiTmService;
 import com.vistatec.ocelot.tm.okapi.OkapiTmxWriter;
+import com.vistatec.ocelot.tm.penalty.SimpleTmPenalizer;
 
 /**
  * Main Ocelot object dependency context module.
@@ -92,6 +94,7 @@ public class OcelotModule extends AbstractModule {
         bind(RuleConfiguration.class).toInstance(ruleConfig);
         bind(PluginManager.class).toInstance(pluginManager);
         bind(TmManager.class).toInstance(tmManager);
+        bind(TmPenalizer.class).to(SimpleTmPenalizer.class);
 
         bindServices(eventQueue, cfgService, docStats);
     }
