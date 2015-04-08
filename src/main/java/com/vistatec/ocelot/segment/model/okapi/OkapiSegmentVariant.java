@@ -65,7 +65,7 @@ public abstract class OkapiSegmentVariant extends BaseSegmentVariant {
     }
 
     @Override
-    protected abstract List<SegmentAtom> getAtoms();
+    public abstract List<SegmentAtom> getAtoms();
 
     @Override
     protected abstract void setAtoms(List<SegmentAtom> atoms);

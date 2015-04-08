@@ -38,6 +38,7 @@ import com.vistatec.ocelot.tm.TmManager;
 import com.vistatec.ocelot.tm.TmService;
 import com.vistatec.ocelot.tm.okapi.OkapiTmManager;
 import com.vistatec.ocelot.tm.okapi.OkapiTmService;
+import com.vistatec.ocelot.tm.okapi.OkapiTmxWriter;
 
 /**
  * Main Ocelot object dependency context module.
@@ -72,9 +73,15 @@ public class OcelotModule extends AbstractModule {
             pluginManager.discover();
             eventQueue.registerListener(pluginManager);
 
+            SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+            bind(SegmentService.class).toInstance(segmentService);
+            eventQueue.registerListener(segmentService);
+
             File tm = new File(ocelotDir, "tm");
             tm.mkdirs();
-            tmManager = new OkapiTmManager(tm, cfgService);
+            OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
+            eventQueue.registerListener(tmxWriter);
+            tmManager = new OkapiTmManager(tm, cfgService, tmxWriter);
             bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
 
         } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
@@ -96,10 +103,6 @@ public class OcelotModule extends AbstractModule {
         ProvenanceService provService = new ProvenanceService(eventQueue, cfgService);
         bind(ProvenanceService.class).toInstance(provService);
         eventQueue.registerListener(provService);
-
-        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
-        bind(SegmentService.class).toInstance(segmentService);
-        eventQueue.registerListener(segmentService);
 
         ITSDocStatsService docStatsService = new ITSDocStatsService(docStats, eventQueue);
         bind(ITSDocStatsService.class).toInstance(docStatsService);

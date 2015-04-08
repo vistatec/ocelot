@@ -35,6 +35,13 @@ public interface SegmentVariant {
     String getDisplayText();
 
     /**
+     * Get the SegmentAtom representation of this variant for easier
+     * serialization to other formats.
+     * @return
+     */
+    List<SegmentAtom> getAtoms();
+
+    /**
      * Return the style information for the editable cells.  The return
      * value is a list of paired strings:
      *  [0] - text

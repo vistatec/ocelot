@@ -32,10 +32,13 @@ public class OkapiTmManager implements TmManager {
     private static final Logger LOG = LoggerFactory.getLogger(OkapiTmManager.class);
     private final File tmRootDir;
     private final ConfigService cfgService;
+    private final OkapiTmxWriter tmxWriter;
 
-    public OkapiTmManager(File tmDir, ConfigService cfgService) throws IOException, ConfigTransferService.TransferException {
+    public OkapiTmManager(File tmDir, ConfigService cfgService,
+            OkapiTmxWriter tmxWriter) throws IOException, ConfigTransferService.TransferException {
         this.tmRootDir = tmDir;
         this.cfgService = cfgService;
+        this.tmxWriter = tmxWriter;
         discover();
     }
 
@@ -123,6 +126,11 @@ public class OkapiTmManager implements TmManager {
         deletePensieveIndex(tmName);
         deleteFileDirectory(new File(tmRootDir, tmName));
         removeTmConfig(config);
+    }
+
+    @Override
+    public void saveOpenFileAsTmx(File tmx) throws IOException {
+        this.tmxWriter.exportTmx(tmx);
     }
 
     private void removeTmConfig(TmManagement.TmConfig config) throws ConfigTransferService.TransferException {

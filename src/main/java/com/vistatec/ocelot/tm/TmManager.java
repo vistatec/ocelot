@@ -30,6 +30,8 @@ public interface TmManager {
 
     public void deleteTm(String tmName) throws IOException, ConfigTransferService.TransferException;
 
+    public void saveOpenFileAsTmx(File tmx) throws IOException;
+
     /**
      * Change where a TM fetches the data for their TM and regenerate the index.
      * @param tmName

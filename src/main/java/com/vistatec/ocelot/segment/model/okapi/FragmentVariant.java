@@ -161,7 +161,7 @@ public class FragmentVariant extends BaseSegmentVariant {
     }
 
     @Override
-    protected List<SegmentAtom> getAtoms() {
+    public List<SegmentAtom> getAtoms() {
         return this.segmentAtoms;
     }
 

@@ -63,7 +63,7 @@ public class PensieveTmMatch implements TmMatch {
         }
 
         @Override
-        protected List<SegmentAtom> getAtoms() {
+        public List<SegmentAtom> getAtoms() {
             return this.atoms;
         }
 

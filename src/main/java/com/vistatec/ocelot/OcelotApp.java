@@ -42,35 +42,35 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
 /**
  * Main Ocelot application context.
  */
 public class OcelotApp implements OcelotEventQueueListener {
-    private Logger LOG = LoggerFactory.getLogger(OcelotApp.class);
+    private final OcelotEventQueue eventQueue;
 
-    private PluginManager pluginManager;
-    private RuleConfiguration ruleConfig;
+    private final PluginManager pluginManager;
+    private final RuleConfiguration ruleConfig;
 
-    private SegmentService segmentService;
-    private XliffService xliffService;
+    private final SegmentService segmentService;
+    private final XliffService xliffService;
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
 
     @Inject
-    public OcelotApp(PluginManager pluginManager,
+    public OcelotApp(OcelotEventQueue eventQueue, PluginManager pluginManager,
             RuleConfiguration ruleConfig, SegmentService segmentService,
             XliffService xliffService) {
+        this.eventQueue = eventQueue;
         this.pluginManager = pluginManager;
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
@@ -107,6 +107,9 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
+
+        eventQueue.post(new OpenFileEvent(openFile.getName(),
+                xliffService.getSourceLang(), xliffService.getTargetLang()));
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {

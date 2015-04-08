@@ -31,7 +31,6 @@ package com.vistatec.ocelot;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
-import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
@@ -224,7 +223,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         if (sourceFile != null) {
             try {
                 ocelotApp.openFile(sourceFile, detectVersion);
-                eventQueue.post(new OpenFileEvent(sourceFile.getName()));
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();
 

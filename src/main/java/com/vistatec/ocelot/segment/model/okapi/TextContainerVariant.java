@@ -70,7 +70,7 @@ public class TextContainerVariant extends OkapiSegmentVariant {
     }
 
     @Override
-    protected List<SegmentAtom> getAtoms() {
+    public List<SegmentAtom> getAtoms() {
         return convertTextFragment(tc.getUnSegmentedContentCopy());
     }
 
