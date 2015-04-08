@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4"><header creationtool="Ocelot-Okapi-Tmx-Writer" creationtoolversion="v1.1-68-g1bbb00b" segtype="sentence" o-tmf="unknown" adminlang="en" srclang="en" datatype="unknown"></header><body>
+<tu tuid="1">
+<tuv xml:lang="en"><seg>plain text</seg></tuv>
+<tuv xml:lang="fr"><seg>target plain text</seg></tuv>
+</tu>
+</body>
+</tmx>

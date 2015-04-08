@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A text-only SegmentVariant implementation (no codes) to
- * simplify construction of Segment instances for tests.
+ * SegmentVariant implementation for use in tests.
  */
 public class SimpleSegmentVariant extends BaseSegmentVariant {
     private List<SegmentAtom> atoms = new ArrayList<>();
@@ -23,7 +22,7 @@ public class SimpleSegmentVariant extends BaseSegmentVariant {
     }
 
     @Override
-    protected List<SegmentAtom> getAtoms() {
+    public List<SegmentAtom> getAtoms() {
         return atoms;
     }
 
@@ -51,5 +50,23 @@ public class SimpleSegmentVariant extends BaseSegmentVariant {
     @Override
     protected void setAtoms(List<SegmentAtom> atoms) {
         this.atoms = atoms;
+    }
+
+    public static class Builder {
+        List<SegmentAtom> segAtoms = new ArrayList<>();
+
+        public Builder text(String text) {
+            segAtoms.add(new TextAtom(text));
+            return this;
+        }
+
+        public Builder code(String id, String basic, String verbose) {
+            segAtoms.add(new CodeAtom(id, basic, verbose));
+            return this;
+        }
+
+        public SegmentVariant build() {
+            return new SimpleSegmentVariant(segAtoms);
+        }
     }
 }

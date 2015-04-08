@@ -18,8 +18,8 @@ import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
-import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
+import com.vistatec.ocelot.tm.TmTmxWriter;
 
 public class TestOkapiTmService {
     private final Mockery mockery = new Mockery();
@@ -46,7 +46,7 @@ public class TestOkapiTmService {
 
         OcelotSegment appleOrange = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("apple orange"))
+                .source("apple orange")
                 .build();
         List<TmMatch> appleOrangeResults = tmService.getFuzzyTermMatches(appleOrange);
         assertEquals(2, appleOrangeResults.size());
@@ -57,7 +57,7 @@ public class TestOkapiTmService {
 
         OcelotSegment orangeApple = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("orange apple"))
+                .source("orange apple")
                 .build();
         List<TmMatch> orangeAppleResults = tmService.getFuzzyTermMatches(orangeApple);
         assertEquals(2, appleOrangeResults.size());
@@ -68,7 +68,7 @@ public class TestOkapiTmService {
 
         OcelotSegment watermelon = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("watermelon"))
+                .source("watermelon")
                 .build();
         List<TmMatch> watermelonResults = tmService.getFuzzyTermMatches(watermelon);
         assertEquals(1, watermelonResults.size());
@@ -86,7 +86,7 @@ public class TestOkapiTmService {
 
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("apple"))
+                .source("apple")
                 .build();
         List<TmMatch> results = tmService.getConcordanceMatches(seg);
         assertEquals(4, results.size());
@@ -111,6 +111,8 @@ public class TestOkapiTmService {
         }
 
         public OkapiTmService build() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
+            TmTmxWriter tmxWriter = mockery.mock(TmTmxWriter.class);
+
             final RootConfig config = new RootConfig();
             config.getTmManagement().setFuzzyThreshold(fuzzyThreshold);
             config.getTmManagement().setMaxResults(maxResults);
@@ -123,7 +125,7 @@ public class TestOkapiTmService {
             });
             OcelotConfigService cfgService = new OcelotConfigService(cfgXService);
             return new OkapiTmService(new OkapiTmManager(
-                    OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService),
+                    OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService, tmxWriter),
                     cfgService);
         }
     }

@@ -37,7 +37,6 @@ import java.util.List;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
-import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.*;
 
@@ -46,9 +45,7 @@ import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.rules.DataCategoryField.Matcher;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 import static org.junit.Assert.*;
 
@@ -67,15 +64,11 @@ public class TestRules {
                 GenericAnnotationType.PROV_TOOL, "U"))));
     }
 
-    SegmentVariant emptyVariant() {
-        return new TextContainerVariant(new TextContainer());
-    }
-
     OcelotSegment emptySegment() {
         return new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(emptyVariant())
-                .target(emptyVariant())
+                .source("")
+                .target("")
                 .build();
     }
 
@@ -140,8 +133,8 @@ public class TestRules {
 		// (We do have each, but not on the same issue.)
 		segment = new SimpleSegment.Builder()
                         .segmentNumber(6)
-                        .source(emptyVariant())
-                        .target(emptyVariant())
+                        .source("")
+                        .target("")
                         .build();
 		segment.addAllLQI(Lists.newArrayList(lqi2, lqi3));
 		assertFalse(filter.matches(segment));

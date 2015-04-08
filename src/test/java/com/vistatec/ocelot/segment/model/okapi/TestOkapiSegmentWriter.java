@@ -60,8 +60,8 @@ public class TestOkapiSegmentWriter {
     public void testMissingProvenance() {
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
@@ -84,8 +84,8 @@ public class TestOkapiSegmentWriter {
     public void testDontAddRedundantProvenance() throws Exception {
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
@@ -101,8 +101,8 @@ public class TestOkapiSegmentWriter {
     public void testAddUserProvenance() throws Exception {
         final OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         Provenance prov = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",

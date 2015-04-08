@@ -21,6 +21,7 @@ import com.google.common.io.Files;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.tm.TmTmxWriter;
 
 import net.sf.okapi.tm.pensieve.seeker.PensieveSeeker;
 import net.sf.okapi.tm.pensieve.writer.PensieveWriter;
@@ -32,10 +33,10 @@ public class OkapiTmManager implements TmManager {
     private static final Logger LOG = LoggerFactory.getLogger(OkapiTmManager.class);
     private final File tmRootDir;
     private final ConfigService cfgService;
-    private final OkapiTmxWriter tmxWriter;
+    private final TmTmxWriter tmxWriter;
 
     public OkapiTmManager(File tmDir, ConfigService cfgService,
-            OkapiTmxWriter tmxWriter) throws IOException, ConfigTransferService.TransferException {
+            TmTmxWriter tmxWriter) throws IOException, ConfigTransferService.TransferException {
         this.tmRootDir = tmDir;
         this.cfgService = cfgService;
         this.tmxWriter = tmxWriter;

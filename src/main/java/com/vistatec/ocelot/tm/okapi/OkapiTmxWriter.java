@@ -12,6 +12,7 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.tm.TmTmxWriter;
 
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.filterwriter.TMXWriter;
@@ -21,7 +22,7 @@ import net.sf.okapi.common.resource.TextFragment;
 /**
  * Export currently open file as a TMX file using the Okapi TMXWriter.
  */
-public class OkapiTmxWriter implements OcelotEventQueueListener {
+public class OkapiTmxWriter implements TmTmxWriter, OcelotEventQueueListener {
     private final String CREATION_TOOL = "Ocelot-Okapi-Tmx-Writer";
     private final String SEGMENTATION = "sentence";
 
@@ -41,6 +42,7 @@ public class OkapiTmxWriter implements OcelotEventQueueListener {
         this.hasOpenFile = true;
     }
 
+    @Override
     public void exportTmx(File tmx) throws IOException {
         if (!this.hasOpenFile) {
             throw new IOException("No open file to export to TMX!");
