@@ -87,13 +87,31 @@ public class OcelotConfigService implements ConfigService {
     }
 
     @Override
+    public void saveFuzzyThreshold(float threshold) throws ConfigTransferService.TransferException {
+        config.getTmManagement().setFuzzyThreshold(threshold);
+        cfgXservice.save(config);
+    }
+
+    @Override
     public int getMaxResults() {
         return config.getTmManagement().getMaxResults();
     }
 
     @Override
+    public void saveMaxResults(int maxResults) throws ConfigTransferService.TransferException {
+        config.getTmManagement().setMaxResults(maxResults);
+        cfgXservice.save(config);
+    }
+
+    @Override
     public List<TmManagement.TmConfig> getTms() {
         return config.getTmManagement().getTms();
+    }
+
+    @Override
+    public void saveTms(List<TmManagement.TmConfig> tmConfig) throws ConfigTransferService.TransferException {
+        config.getTmManagement().setTm(tmConfig);
+        cfgXservice.save(config);
     }
 
     @Override

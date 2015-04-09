@@ -13,7 +13,7 @@ import com.vistatec.ocelot.config.xml.TmManagement;
 public interface TmManager {
 
     /**
-     * Fetch list of all configured TMs.
+     * Fetch search ordered list of all configured TMs.
      * @return TM configurations
      */
     public List<TmManagement.TmConfig> fetchTms();
@@ -24,6 +24,13 @@ public interface TmManager {
      * @return
      */
     public TmManagement.TmConfig fetchTm(String tmName);
+
+    /**
+     * Save the search ordering preference for TMs.
+     * @param orderedTms - Ordered list where first element is search first
+     * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
+     */
+    public void saveTmOrdering(List<TmManagement.TmConfig> orderedTms) throws ConfigTransferService.TransferException;
 
     /**
      * Perform all functionality required to setup a new TM for usage by the

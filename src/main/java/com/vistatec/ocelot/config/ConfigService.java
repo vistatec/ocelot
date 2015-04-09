@@ -23,9 +23,12 @@ public interface ConfigService {
     public void saveUserProvenance(UserProvenance prov) throws ConfigTransferService.TransferException;
 
     public double getFuzzyThreshold();
+    public void saveFuzzyThreshold(float threshold) throws ConfigTransferService.TransferException;
     public int getMaxResults();
+    public void saveMaxResults(int maxResults) throws ConfigTransferService.TransferException;
 
     public List<TmManagement.TmConfig> getTms();
+    public void saveTms(List<TmManagement.TmConfig> tmConfigs) throws ConfigTransferService.TransferException;
     public TmManagement.TmConfig getTmConfig(String tmName);
 
     public void enableTm(String tmName, boolean enable) throws ConfigTransferService.TransferException;
