@@ -117,6 +117,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
         eventBus.register(this);
+        
     }
 
     public final void initializeTable() {
@@ -245,6 +246,7 @@ public class SegmentView extends JScrollPane implements RuleListener {
             int rowHeight = tableFontMetrics.getHeight();
             
             for (int col = 1; col < 4; col++) {
+            	
                 int width = sourceTargetTable.getColumnModel().getColumn(col).getWidth();
                 if (col == 1) {
                     String text = segmentTableModel.getSegment(modelRow).getSource().getDisplayText();
