@@ -182,6 +182,9 @@ public class TextContainerVariant implements SegmentVariant {
             // Check for append
             if (index == offset) {
                 sb.append(newText);
+                //This line solves duplicate paragraphs point from the issue OC-58
+                //and mirrored words issue
+                index += newText.length();
             }
             tf.setCodedText(sb.toString());
             if (index > offset) {
