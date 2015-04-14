@@ -35,6 +35,7 @@ public class TmManagement {
         this.maxResults = maxResults;
     }
 
+    @XmlElement
     public List<TmConfig> getTms() {
         return tm;
     }
