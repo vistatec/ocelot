@@ -25,6 +25,7 @@ import com.vistatec.ocelot.tm.TmTmxWriter;
 public class TestOkapiTmService {
     private final Mockery mockery = new Mockery();
     private final ConfigTransferService cfgXService = mockery.mock(ConfigTransferService.class);
+
     private OkapiTmService tmService;
     private File testTm;
 
@@ -39,11 +40,13 @@ public class TestOkapiTmService {
 
     @Test
     public void testFuzzy() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
-        this.tmService = new OkapiTmServiceBuilder()
-                .fuzzyThreshold(1)
-                .maxResults(5)
-                .build();
-        this.tmService.importTmx("simple_tm", testTm);
+        final RootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
+                    .tmName("simple_tm")
+                    .testTmFileResource(testTm)
+                    .fuzzyThreshold(1)
+                    .maxResults(5)
+                    .build();
+        this.tmService = new OkapiTmServiceBuilder(config).build();
 
         List<SegmentAtom> appleOrange = new SimpleSegmentVariant("apple orange").getAtoms();
         List<TmMatch> appleOrangeResults = tmService.getFuzzyTermMatches(appleOrange);
@@ -70,15 +73,36 @@ public class TestOkapiTmService {
 
     @Test
     public void testConcordance() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
-        this.tmService = new OkapiTmServiceBuilder()
-                .fuzzyThreshold(1)
-                .maxResults(5)
-                .build();
-        this.tmService.importTmx("simple_tm", testTm);
+        final RootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
+                    .tmName("simple_tm")
+                    .testTmFileResource(testTm)
+                    .fuzzyThreshold(1)
+                    .maxResults(5)
+                    .build();
+        this.tmService = new OkapiTmServiceBuilder(config).build();
 
         List<SegmentAtom> apple = new SimpleSegmentVariant("apple").getAtoms();
         List<TmMatch> results = tmService.getConcordanceMatches(apple);
         assertEquals(4, results.size());
+    }
+
+    @Test
+    public void testSearchOnlyEnabled() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
+        final RootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
+                    .tmName("simple_tm")
+                    .testTmFileResource(testTm)
+                    .fuzzyThreshold(1)
+                    .maxResults(5)
+                    .build();
+        this.tmService = new OkapiTmServiceBuilder(config).build();
+
+        List<SegmentAtom> apple = new SimpleSegmentVariant("apple").getAtoms();
+        List<TmMatch> results = tmService.getConcordanceMatches(apple);
+        assertEquals(4, results.size());
+
+        config.getTmManagement().getTms().get(0).setEnabled(false);
+        results = tmService.getConcordanceMatches(apple);
+        assertEquals(0, results.size());
     }
 
     @AfterClass
@@ -87,25 +111,16 @@ public class TestOkapiTmService {
     }
 
     private class OkapiTmServiceBuilder {
-        private int fuzzyThreshold, maxResults;
+        private final RootConfig config;
 
-        public OkapiTmServiceBuilder fuzzyThreshold(int threshold) {
-            this.fuzzyThreshold = threshold;
-            return this;
-        }
-
-        public OkapiTmServiceBuilder maxResults(int max) {
-            this.maxResults = max;
-            return this;
+        public OkapiTmServiceBuilder(RootConfig config) {
+            this.config = config;
         }
 
         public OkapiTmService build() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
             TmTmxWriter tmxWriter = mockery.mock(TmTmxWriter.class);
             final TmPenalizer penalizer = mockery.mock(TmPenalizer.class);
 
-            final RootConfig config = new RootConfig();
-            config.getTmManagement().setFuzzyThreshold(fuzzyThreshold);
-            config.getTmManagement().setMaxResults(maxResults);
             mockery.checking(new Expectations() {
                 {
                     allowing(cfgXService).parse();
@@ -115,11 +130,10 @@ public class TestOkapiTmService {
                         will(new OkapiTmTestHelpers.ReturnFirstArgument());
                 }
             });
+
             OcelotConfigService cfgService = new OcelotConfigService(cfgXService);
-            return new OkapiTmService(
-                    new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService, tmxWriter),
-                    penalizer,
-                    cfgService);
+            OkapiTmManager tmManager = new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService, tmxWriter);
+            return new OkapiTmService(tmManager, penalizer, cfgService);
         }
     }
 }

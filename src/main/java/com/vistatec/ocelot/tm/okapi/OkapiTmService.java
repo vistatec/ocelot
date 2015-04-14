@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.google.inject.Inject;
 import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmPenalizer;
@@ -31,10 +32,6 @@ public class OkapiTmService implements TmService {
         this.cfgService = cfgService;
     }
 
-    public void importTmx(String tmName, File tmx) throws IOException {
-        manager.importTmx(tmName, tmx);
-    }
-
     @Override
     public List<TmMatch> getFuzzyTermMatches(List<SegmentAtom> segment) throws IOException {
         Iterator<OkapiTmManager.TmPair> tmPairs = manager.getSeekers();
@@ -43,11 +40,13 @@ public class OkapiTmService implements TmService {
         List<TmMatch> matches = new ArrayList<>();
         while (tmPairs.hasNext()) {
             OkapiTmManager.TmPair tmPair = tmPairs.next();
-            List<TmHit> results = tmPair.getSeeker().searchFuzzy(
-                    new TextFragment(getSearchText(segment)),
-                    pensieveThreshold, cfgService.getMaxResults(), null);
+            if (checkTmEnabled(tmPair)) {
+                List<TmHit> results = tmPair.getSeeker().searchFuzzy(
+                        new TextFragment(getSearchText(segment)),
+                        pensieveThreshold, cfgService.getMaxResults(), null);
 
-            matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
+                matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
+            }
         }
         return penalizer.applyPenalties(matches);
     }
@@ -60,11 +59,13 @@ public class OkapiTmService implements TmService {
         List<TmMatch> matches = new ArrayList<>();
         while(tmPairs.hasNext()) {
             OkapiTmManager.TmPair tmPair = tmPairs.next();
-            List<TmHit> results = tmPair.getSeeker().searchSimpleConcordance(
-                    getSearchText(segment), pensieveThreshold,
-                    cfgService.getMaxResults(), null);
+            if (checkTmEnabled(tmPair)) {
+                List<TmHit> results = tmPair.getSeeker().searchSimpleConcordance(
+                        getSearchText(segment), pensieveThreshold,
+                        cfgService.getMaxResults(), null);
 
-            matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
+                matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
+            }
         }
         return penalizer.applyPenalties(matches);
     }
@@ -83,5 +84,10 @@ public class OkapiTmService implements TmService {
             searchText.append(atom.getData());
         }
         return searchText.toString();
+    }
+
+    private boolean checkTmEnabled(OkapiTmManager.TmPair tmPair) {
+        TmManagement.TmConfig config = this.manager.fetchTm(tmPair.getTmOrigin());
+        return config != null && config.isEnabled();
     }
 }

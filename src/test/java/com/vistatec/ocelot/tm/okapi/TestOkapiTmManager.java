@@ -17,10 +17,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.google.common.io.Files;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
@@ -51,59 +49,42 @@ public class TestOkapiTmManager {
 
     @Test
     public void testInitializeNewTm() throws IOException, ConfigTransferService.TransferException, URISyntaxException {
-        final File newDataDir = setupNewForeignDataDir();
         tmxWriter = mockery.mock(TmTmxWriter.class);
         penalizer = mockery.mock(TmPenalizer.class);
-
-        final ConfigTransferService cfgXService = mockery.mock(ConfigTransferService.class);
-        final RootConfig config = new RootConfig();
-        config.getTmManagement().setMaxResults(100);
-        config.getTmManagement().setFuzzyThreshold(1.0);
-        mockery.checking(new Expectations() {
-                {
-                    allowing(cfgXService).parse();
-                        will(returnValue(config));
-                    allowing(cfgXService).save(with(any(RootConfig.class)));
-                    allowing(penalizer).applyPenalties(with(any(List.class)));
-                        will(new OkapiTmTestHelpers.ReturnFirstArgument());
-                }
-        });
-        cfgService = new OcelotConfigService(cfgXService);
-        manager = new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(),
-                cfgService, tmxWriter);
-        tmService = new OkapiTmService(manager, penalizer, cfgService);
-
-        manager.initializeNewTm("initTM", newDataDir);
-
-        List<SegmentAtom> appleOrange = new SimpleSegmentVariant("apple orange").getAtoms();
-        assertEquals(2, tmService.getFuzzyTermMatches(appleOrange).size());
-    }
-
-    @Test
-    public void testChangingTmDataDir() throws IOException, ConfigTransferService.TransferException, URISyntaxException {
-        final File newDataDir = setupNewForeignDataDir();
-        final File oldDataDir = setupOldForeignDataDir();
-        tmxWriter = mockery.mock(TmTmxWriter.class);
-        penalizer = mockery.mock(TmPenalizer.class);
-
-        final String existingTmName = "exists";
-        final TmManagement.TmConfig exist = setupExistingTm(existingTmName,
-                oldDataDir.getAbsolutePath());
-
-        final List<TmManagement.TmConfig> testTmConfigs = new ArrayList<>();
-        testTmConfigs.add(exist);
         cfgService = mockery.mock(ConfigService.class);
+
+        final RootConfig rootConfig = setupNewForeignDataDir();
+        final TmManagement.TmConfig tmConfig = rootConfig.getTmManagement().getTms().get(0);
+        final File tmDataDir = new File(tmConfig.getTmDataDir());
+        assertTrue(tmDataDir.exists());
+
+        final String INIT_TM_NAME = "initTM";
+        final TmManagement.TmConfig initNewConfig = new TmManagement.TmConfig();
+        initNewConfig.setTmName(INIT_TM_NAME);
+        initNewConfig.setTmDataDir(tmConfig.getTmDataDir());
+        initNewConfig.setEnabled(true);
+        final List<TmManagement.TmConfig> configTms = new ArrayList();
+        configTms.add(initNewConfig);
+
         mockery.checking(new Expectations() {
                 {
                     allowing(cfgService).getTms();
-                        will(returnValue(testTmConfigs));
+                        will(onConsecutiveCalls(
+                                returnValue(new ArrayList()),
+                                returnValue(configTms)));
+                    allowing(cfgService).saveConfig();
 
-                    allowing(cfgService).getTmConfig(with("non-existent"));
+                    allowing(cfgService).getTmConfig(with(INIT_TM_NAME));
+                        will(onConsecutiveCalls(
+                                returnValue(null),
+                                returnValue(initNewConfig),
+                                returnValue(initNewConfig),
+                                returnValue(initNewConfig)));
+                    allowing(cfgService).getTmConfig(with(tmConfig.getTmName()));
                         will(returnValue(null));
-                    allowing(cfgService).getTmConfig(existingTmName);
-                        will(returnValue(exist));
 
-                    oneOf(cfgService).saveTmDataDir(with(exist), with(newDataDir.getAbsolutePath()));
+                    allowing(cfgService).createNewTmConfig(with(INIT_TM_NAME),
+                            with(true), with(tmConfig.getTmDataDir()));
 
                     allowing(cfgService).getFuzzyThreshold();
                         will(returnValue(1.0));
@@ -118,9 +99,77 @@ public class TestOkapiTmManager {
                 cfgService, tmxWriter);
         tmService = new OkapiTmService(manager, penalizer, cfgService);
 
+        manager.initializeNewTm(INIT_TM_NAME, tmDataDir);
+
+        List<SegmentAtom> appleOrange = new SimpleSegmentVariant("apple orange").getAtoms();
+        assertEquals(2, tmService.getFuzzyTermMatches(appleOrange).size());
+    }
+
+    @Test
+    public void testChangingTmDataDir() throws IOException, ConfigTransferService.TransferException, URISyntaxException {
+        tmxWriter = mockery.mock(TmTmxWriter.class);
+        penalizer = mockery.mock(TmPenalizer.class);
+
+        final RootConfig oldRootConfig = setupOldForeignDataDir();
+        final TmManagement.TmConfig oldTmConfig = oldRootConfig.getTmManagement().getTms().get(0);
+        final File oldDataDir = new File(oldTmConfig.getTmDataDir());
+        assertTrue(oldDataDir.exists());
+
+        final RootConfig newRootConfig = setupNewForeignDataDir();
+        final TmManagement.TmConfig newTmConfig = newRootConfig.getTmManagement().getTms().get(0);
+        final File newDataDir = new File(newTmConfig.getTmDataDir());
+        assertTrue(newDataDir.exists());
+
+        cfgService = mockery.mock(ConfigService.class);
+        mockery.checking(new Expectations() {
+                {
+                    allowing(cfgService).getTms();
+                        will(onConsecutiveCalls(
+                                returnValue(new ArrayList()),
+                                returnValue(oldRootConfig.getTmManagement().getTms()),
+                                returnValue(oldRootConfig.getTmManagement().getTms())));
+                    allowing(cfgService).saveConfig();
+
+                    allowing(cfgService).getTmConfig(oldTmConfig.getTmName());
+                        will(onConsecutiveCalls(
+                                returnValue(null),
+                                returnValue(oldTmConfig),
+                                returnValue(oldTmConfig),
+                                returnValue(oldTmConfig),
+                                returnValue(oldTmConfig),
+                                returnValue(oldTmConfig),
+                                returnValue(oldTmConfig),
+                                returnValue(oldTmConfig)));
+
+                    allowing(cfgService).createNewTmConfig(with(oldTmConfig.getTmName()),
+                            with(true), with(oldTmConfig.getTmDataDir()));
+
+                    allowing(cfgService).getTmConfig(with("non-existent"));
+                        will(returnValue(null));
+
+                    oneOf(cfgService).saveTmDataDir(with(oldTmConfig), with(newDataDir.getAbsolutePath()));
+
+                    allowing(cfgService).getFuzzyThreshold();
+                        will(returnValue(1.0));
+                    allowing(cfgService).getMaxResults();
+                        will(returnValue(100));
+
+                    allowing(penalizer).applyPenalties(with(any(List.class)));
+                        will(new OkapiTmTestHelpers.ReturnFirstArgument());
+                }
+        });
+        manager = new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(),
+                cfgService, tmxWriter);
+        tmService = new OkapiTmService(manager, penalizer, cfgService);
+
+        // Index existing TM
+        manager.initializeNewTm(oldTmConfig.getTmName(), oldDataDir);
+
         List<SegmentAtom> appleOrange = new SimpleSegmentVariant("apple orange").getAtoms();
         assertEquals(0, tmService.getFuzzyTermMatches(appleOrange).size());
-        manager.changeTmDataDir(existingTmName, newDataDir);
+
+        // Change TM to new data directory
+        manager.changeTmDataDir(oldTmConfig.getTmName(), newDataDir);
         assertEquals(2, tmService.getFuzzyTermMatches(appleOrange).size());
 
         assertTrue(oldDataDir.exists());
@@ -130,37 +179,30 @@ public class TestOkapiTmManager {
         manager.changeTmDataDir("non-existent", newDataDir);
     }
 
-    private File setupOldForeignDataDir() throws IOException, URISyntaxException {
-        File emptyTm = new File(TestOkapiTmManager.class.getResource("empty.tmx").toURI());
-
+    static RootConfig setupOldForeignDataDir() throws IOException, URISyntaxException {
         File packageDir = new File(TestOkapiTmManager.class.getResource("").toURI());
-        final File oldDataDir = new File(packageDir, "old");
-        oldDataDir.mkdirs();
 
-        Files.copy(emptyTm, new File(oldDataDir, "copied_empty.tmx"));
-        return oldDataDir;
+        final String existingTmName = "exists";
+        File emptyTmx = new File(TestOkapiTmManager.class.getResource("empty.tmx").toURI());
+
+        return new TmConfigBuilder(packageDir)
+                .tmName(existingTmName)
+                .testTmFileResource(emptyTmx)
+                .build();
     }
 
-    private File setupNewForeignDataDir() throws IOException, URISyntaxException {
-        File testTm = new File(TestOkapiTmManager.class.getResource("simple_tm.tmx").toURI());
-
+    static RootConfig setupNewForeignDataDir() throws IOException, URISyntaxException {
         File packageDir = new File(TestOkapiTmManager.class.getResource("").toURI());
-        final File newDataDir = new File(packageDir, "new");
-        newDataDir.mkdirs();
 
-        Files.copy(testTm, new File(newDataDir, "copied_simple_tm.tmx"));
-        return newDataDir;
-    }
+        final String newTmName = "new";
+        File newTmx = new File(TestOkapiTmManager.class.getResource("simple_tm.tmx").toURI());
 
-    private TmManagement.TmConfig setupExistingTm(String existingTmName, String dataDir) throws URISyntaxException{
-        File existingTm = new File(OkapiTmTestHelpers.getTestOkapiTmDir(), existingTmName);
-        existingTm.mkdirs();
-
-        final TmManagement.TmConfig exist = new TmManagement.TmConfig();
-        exist.setTmName(existingTmName);
-        exist.setTmDataDir(dataDir);
-
-        return exist;
+        return new TmConfigBuilder(packageDir)
+                .tmName(newTmName)
+                .testTmFileResource(newTmx)
+                .fuzzyThreshold(1)
+                .maxResults(100)
+                .build();
     }
 
     @AfterClass
