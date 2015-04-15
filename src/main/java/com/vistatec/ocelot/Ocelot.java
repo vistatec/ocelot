@@ -39,6 +39,9 @@ import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.TmManager;
+import com.vistatec.ocelot.tm.TmService;
+import com.vistatec.ocelot.tm.gui.TmController;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
 import java.awt.BorderLayout;
@@ -96,6 +99,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JMenuItem menuPlugins;
     private JCheckBoxMenuItem menuTgtDiff;
     private JMenuItem menuColumns;
+    private JMenuItem menuConfigTm;
 
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
@@ -111,12 +115,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private final Injector ocelotScope;
     private final OcelotEventQueue eventQueue;
     private final OcelotApp ocelotApp;
+    private final TmController tmController;
 
     public Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.ocelotScope = ocelotScope;
         this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
         this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
+        TmManager tmManager = ocelotScope.getInstance(TmManager.class);
+        TmService tmService = ocelotScope.getInstance(TmService.class);
+        this.tmController = new TmController(tmManager, tmService);
         eventQueue.registerListener(ocelotApp);
 
         platformOS = System.getProperty("os.name");
@@ -209,6 +217,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         }
         else if (e.getSource() == this.menuColumns) {
             showModelessDialog(new ColumnSelector(segmentView.getTableModel()), "Configure Columns");
+        } else if (e.getSource() == this.menuConfigTm){
+        	tmController.openTmConfigDialog(mainframe);
         }
     }
 
@@ -359,6 +369,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuColumns = new JMenuItem("Configure Columns");
         menuColumns.addActionListener(this);
         menuView.add(menuColumns);
+        menuConfigTm = new JMenuItem("Configure TM");
+        menuConfigTm.addActionListener(this);
+        menuView.add(menuConfigTm);
 
         menuFilter = new JMenu("Filter");
         menuBar.add(menuFilter);
