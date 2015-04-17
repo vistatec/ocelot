@@ -28,24 +28,22 @@ import javax.swing.border.LineBorder;
 
 import org.apache.log4j.Logger;
 
-import com.vistatec.ocelot.tm.gui.TmController;
-
 /**
  * Modal dialog letting users add a new TM to the list of TMs already configured
  * in Ocelot. Users have to insert a name and a root directory for the TM. The
  * root directory must contain at least a .tmx file.
  */
-public class CreateNewTmDialog extends JDialog implements Runnable,
+public class TmAddingDialog extends JDialog implements Runnable,
 		ActionListener {
 
 	/** serial version UID. */
 	private static final long serialVersionUID = 7715304755942763439L;
 
 	/** Log. */
-	private final Logger log = Logger.getLogger(CreateNewTmDialog.class);
+	private final Logger log = Logger.getLogger(TmAddingDialog.class);
 
 	/** the controller. */
-	private TmController controller;
+	private TmGuiConfigController controller;
 
 	/** The Name label. */
 	private JLabel lblName;
@@ -82,7 +80,7 @@ public class CreateNewTmDialog extends JDialog implements Runnable,
 	 * @param owner
 	 *            the owner dialog.
 	 */
-	public CreateNewTmDialog(final TmController controller, final JDialog owner) {
+	public TmAddingDialog(final TmGuiConfigController controller, final JDialog owner) {
 
 		super(owner, true);
 		this.controller = controller;
@@ -96,7 +94,7 @@ public class CreateNewTmDialog extends JDialog implements Runnable,
 	 * @param owner
 	 *            the owner.
 	 */
-	public CreateNewTmDialog(final TmController controller, final JFrame owner) {
+	public TmAddingDialog(final TmGuiConfigController controller, final JFrame owner) {
 
 		super(owner, true);
 		this.controller = controller;

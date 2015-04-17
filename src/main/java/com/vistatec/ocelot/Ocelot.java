@@ -28,29 +28,15 @@
  */
 package com.vistatec.ocelot;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.vistatec.ocelot.di.OcelotModule;
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.view.ProvenanceProfileView;
-import com.vistatec.ocelot.plugins.PluginManagerView;
-import com.vistatec.ocelot.rules.FilterView;
-import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.view.SegmentAttributeView;
-import com.vistatec.ocelot.segment.view.SegmentView;
-import com.vistatec.ocelot.tm.TmManager;
-import com.vistatec.ocelot.tm.TmService;
-import com.vistatec.ocelot.tm.gui.TmController;
-import com.vistatec.ocelot.ui.ODialogPanel;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FileDialog;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
@@ -62,6 +48,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -80,6 +67,21 @@ import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.vistatec.ocelot.di.OcelotModule;
+import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.view.ProvenanceProfileView;
+import com.vistatec.ocelot.plugins.PluginManagerView;
+import com.vistatec.ocelot.rules.FilterView;
+import com.vistatec.ocelot.rules.QuickAddView;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.view.SegmentAttributeView;
+import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.gui.TmGuiManager;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 /**
  * Main UI Thread class. Handles menu and file operations
@@ -104,9 +106,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
     private JSplitPane segAttrSplitPane;
+    private JSplitPane tmConcordanceSplitPane;
     private SegmentAttributeView segmentAttrView;
     private DetailView itsDetailView;
     private SegmentView segmentView;
+    private TmGuiManager tmGuiManager;
 
     private final String platformOS;
     private boolean useNativeUI = false;
@@ -115,16 +119,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private final Injector ocelotScope;
     private final OcelotEventQueue eventQueue;
     private final OcelotApp ocelotApp;
-    private final TmController tmController;
 
     public Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
         super(new BorderLayout());
         this.ocelotScope = ocelotScope;
         this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
         this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
-        TmManager tmManager = ocelotScope.getInstance(TmManager.class);
-        TmService tmService = ocelotScope.getInstance(TmService.class);
-        this.tmController = new TmController(tmManager, tmService);
+        this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
+        this.eventQueue.registerListener(tmGuiManager);
         eventQueue.registerListener(ocelotApp);
 
         platformOS = System.getProperty("os.name");
@@ -148,10 +150,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         Dimension segSize = new Dimension(500, 500);
 
         segmentView = segView;
-        segmentView.setMinimumSize(segSize);
+//        segmentView.setMinimumSize(segSize);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                setupSegAttrDetailPanes(segAttrView, detailView), segmentView);
+                setupSegAttrDetailPanes(segAttrView, detailView), setupSegmentTmConcordancePanes());
         mainSplitPane.setOneTouchExpandable(true);
 
         return mainSplitPane;
@@ -172,6 +174,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         segAttrSplitPane.setOneTouchExpandable(true);
 
         return segAttrSplitPane;
+    }
+    
+    private Component setupSegmentTmConcordancePanes(){
+    	
+    	tmConcordanceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tmGuiManager.getConcordancePanel(), segmentView);
+    	tmConcordanceSplitPane.setOneTouchExpandable(true);
+    	return tmConcordanceSplitPane;
     }
 
     public void setMainTitle(String sourceTitle) {
@@ -218,7 +227,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         else if (e.getSource() == this.menuColumns) {
             showModelessDialog(new ColumnSelector(segmentView.getTableModel()), "Configure Columns");
         } else if (e.getSource() == this.menuConfigTm){
-        	tmController.openTmConfigDialog(mainframe);
+        	eventQueue.post(new ConfigTmRequestEvent(mainframe));
         }
     }
 
@@ -444,6 +453,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         // Display the window
         mainframe.pack();
         mainframe.setVisible(true);
+        tmConcordanceSplitPane.setDividerLocation(0.3);
+//        Vector<Component> components = new Vector<Component>();
+//        components.add(segmentView.getTable());
+//        components.add(itsDetailView);
+//        components.add(segmentAttrView);
+//        FocusTraversalPolicy policy = new MyOwnFocusTraversalPolicy(components);
+//        mainframe.setFocusTraversalPolicy(policy);
+        
     }
 
     void showModelessDialog(ODialogPanel panel, String title) {
@@ -527,4 +544,40 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             });
         }
     }
+    
+    public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {
+        Vector<Component> order;
+
+        public MyOwnFocusTraversalPolicy(Vector<Component> order) {
+          this.order = new Vector<Component>(order.size());
+          this.order.addAll(order);
+        }
+
+        public Component getComponentAfter(Container focusCycleRoot,
+            Component aComponent) {
+          int idx = (order.indexOf(aComponent) + 1) % order.size();
+          return order.get(idx);
+        }
+
+        public Component getComponentBefore(Container focusCycleRoot,
+            Component aComponent) {
+          int idx = order.indexOf(aComponent) - 1;
+          if (idx < 0) {
+            idx = order.size() - 1;
+          }
+          return order.get(idx);
+        }
+
+        public Component getDefaultComponent(Container focusCycleRoot) {
+          return order.get(0);
+        }
+
+        public Component getLastComponent(Container focusCycleRoot) {
+          return order.lastElement();
+        }
+
+        public Component getFirstComponent(Container focusCycleRoot) {
+          return order.get(0);
+        }
+      }
 }

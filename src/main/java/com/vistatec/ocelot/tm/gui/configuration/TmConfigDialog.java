@@ -6,11 +6,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
 import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
-import com.vistatec.ocelot.tm.gui.TmController;
 
 public class TmConfigDialog extends JDialog implements Runnable, ActionListener {
 
@@ -60,11 +59,11 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 
 	private static final int ARROW_BTN_HEIGHT = 20;
 
-	private TmController controller;
+	private TmGuiConfigController controller;
 
 	private Logger log = Logger.getLogger(TmConfigDialog.class);
 
-	private JFrame ownerFrame;
+	private Window ownerFrame;
 
 	private JButton btnAdd;
 
@@ -88,8 +87,9 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 
 	// private JScrollPane tablePane;
 
-	public TmConfigDialog(TmController controller, JFrame ownerFrame) {
-		super(ownerFrame, true);
+	public TmConfigDialog(TmGuiConfigController controller, Window ownerFrame) {
+		super(ownerFrame);
+		setModal(true);
 		this.controller = controller;
 		this.ownerFrame = ownerFrame;
 	}
