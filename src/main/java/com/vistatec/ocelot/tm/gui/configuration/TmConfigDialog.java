@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
 
 public class TmConfigDialog extends JDialog implements Runnable, ActionListener {
 
@@ -40,16 +41,6 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 	 * 
 	 */
 	private static final long serialVersionUID = -8852580443557452694L;
-
-	private static final String ARROW_UP_ICO = "arrow-up.png";
-
-	private static final String ARROW_DOWN_ICO = "arrow-down.png";
-
-	private static final String DELETE_ICO = "delete.png";
-
-	private static final String CHANGE_DIR_ICO = "change-dir.png";
-
-	private static final String ADD_ICO = "add.png";
 
 	private static final int TOP_BTN_WIDTH = 80;
 
@@ -103,32 +94,32 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		btnAdd = new JButton("Add");
 		ImageIcon icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(ADD_ICO)));
+				.getResource(TmIconsConst.ADD_ICO)));
 		configButton(btnAdd, btnDim, icon);
 
 		btnNew = new JButton("New");
-		icon = new ImageIcon(kit.createImage(Ocelot.class.getResource(ADD_ICO)));
+		icon = new ImageIcon(kit.createImage(Ocelot.class.getResource(TmIconsConst.ADD_ICO)));
 		configButton(btnNew, btnDim, icon);
 
 		btnMoveUp = new JButton();
 
 		icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(ARROW_UP_ICO)));
+				.getResource(TmIconsConst.ARROW_UP_ICO)));
 		configButton(btnMoveUp, arrowBtnDim, icon);
 
 		btnMoveDown = new JButton();
 		icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(ARROW_DOWN_ICO)));
+				.getResource(TmIconsConst.ARROW_DOWN_ICO)));
 		configButton(btnMoveDown, arrowBtnDim, icon);
 		btnDim = new Dimension(120, TOP_BTN_HEIGHT);
 		btnChangeDir = new JButton("Change Dir");
 		icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(CHANGE_DIR_ICO)));
+				.getResource(TmIconsConst.CHANGE_DIR_ICO)));
 		configButton(btnChangeDir, btnDim, icon);
 
 		btnRemove = new JButton("Remove");
 		icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(DELETE_ICO)));
+				.getResource(TmIconsConst.DELETE_ICO)));
 		configButton(btnRemove, btnDim, icon);
 
 		// Add buttons to top panel

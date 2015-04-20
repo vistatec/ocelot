@@ -147,9 +147,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     private Component setupMainPane(SegmentView segView,
             SegmentAttributeView segAttrView, DetailView detailView) throws IOException, InstantiationException, IllegalAccessException {
-        Dimension segSize = new Dimension(500, 500);
+//        Dimension segSize = new Dimension(500, 500);
 
         segmentView = segView;
+        //Commented this line in order to let the vertical split panel divider to be freely moved.
 //        segmentView.setMinimumSize(segSize);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -454,12 +455,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.pack();
         mainframe.setVisible(true);
         tmConcordanceSplitPane.setDividerLocation(0.3);
-//        Vector<Component> components = new Vector<Component>();
-//        components.add(segmentView.getTable());
-//        components.add(itsDetailView);
-//        components.add(segmentAttrView);
-//        FocusTraversalPolicy policy = new MyOwnFocusTraversalPolicy(components);
-//        mainframe.setFocusTraversalPolicy(policy);
         
     }
 

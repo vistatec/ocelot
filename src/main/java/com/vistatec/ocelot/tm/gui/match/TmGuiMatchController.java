@@ -14,7 +14,6 @@ import net.sf.okapi.tm.pensieve.common.TmHit;
 import net.sf.okapi.tm.pensieve.common.TranslationUnit;
 import net.sf.okapi.tm.pensieve.common.TranslationUnitVariant;
 
-import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -34,7 +33,7 @@ public class TmGuiMatchController extends TmGuiController {
 	
 	private OcelotSegment currSelectedSegment;
 	
-	private ConcordanceSearchPanel concordancePanel;
+	private ConcordanceDetachablePanel concordancePanel;
 	
 	public TmGuiMatchController(final TmService tmService, final OcelotEventQueue eventQueue) {
 
@@ -113,9 +112,9 @@ public class TmGuiMatchController extends TmGuiController {
 	
 	public Component getConcordancePanel() {
 		if(concordancePanel == null){
-			concordancePanel = new ConcordanceSearchPanel(this);
+			concordancePanel = new ConcordanceDetachablePanel(this);
 		}
-		return concordancePanel;
+		return concordancePanel.getAttachedComponent();
 	}
 	
 	public void replaceTarget(final SegmentVariant newTarget ){
@@ -129,4 +128,5 @@ public class TmGuiMatchController extends TmGuiController {
 	public void setSelectedSegment(OcelotSegment selectedSegment){
 		this.currSelectedSegment = selectedSegment;
 	}
+
 }

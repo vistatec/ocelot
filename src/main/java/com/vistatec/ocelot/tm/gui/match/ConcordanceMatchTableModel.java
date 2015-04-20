@@ -92,7 +92,7 @@ public class ConcordanceMatchTableModel extends DefaultTableModel {
 				break;
 			case MATCH_SCORE_COL:
 				
-				retValue = String.valueOf(currMatch.getMatchScore() * 100) + "%";
+				retValue = String.valueOf((int)(currMatch.getMatchScore() * 100)) + "%";
 				break;
 			case TARGET_COL:
 				retValue = currMatch.getTarget();
