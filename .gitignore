@@ -13,3 +13,4 @@ manifest.mf
 /dist/
 target
 ocelot.log
+*.csv

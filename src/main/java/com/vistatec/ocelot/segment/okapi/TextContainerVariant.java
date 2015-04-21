@@ -159,7 +159,7 @@ public class TextContainerVariant implements SegmentVariant {
                     // Time to start replacing
                     isReplacing = true;
                     sb.append(newText);
-                    index += newText.length(); // not really necessary any more
+                    index += newText.length();
                 }
                 if (isReplacing && charsToReplace-- <= 0) {
                     isReplacing = false;
@@ -182,6 +182,9 @@ public class TextContainerVariant implements SegmentVariant {
             // Check for append
             if (index == offset) {
                 sb.append(newText);
+                //This line solves duplicate paragraphs point from the issue OC-58
+                //and mirrored words issue
+                index += newText.length();
             }
             tf.setCodedText(sb.toString());
             if (index > offset) {
@@ -191,7 +194,7 @@ public class TextContainerVariant implements SegmentVariant {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o) { 	
         if (o == this) return true;
         if (o == null || !(o instanceof TextContainerVariant)) return false;
         // XXX This is not correct, but it's based on the legacy behavior
