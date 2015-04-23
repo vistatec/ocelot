@@ -31,6 +31,7 @@ package com.vistatec.ocelot.segment.view;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import java.awt.Color;
+import java.awt.event.InputMethodEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +61,8 @@ public class SegmentTextCell extends JTextPane {
     public static final String tagStyle = "tag", regularStyle = "regular",
             insertStyle = "insert", deleteStyle = "delete";
     private SegmentVariant v;
+    
+    private boolean inputMethodChanged;
 
     public SegmentTextCell() {
         setEditController();
@@ -152,8 +155,26 @@ public class SegmentTextCell extends JTextPane {
     public void setTargetDiff(List<String> targetDiff) {
         setTextPane(targetDiff);
     }
+    
+    
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.text.JTextComponent#processInputMethodEvent(java.awt.event.InputMethodEvent)
+	 */
+    @Override
+	protected void processInputMethodEvent(InputMethodEvent e) {
+    	/* Some keyboards, such as Traditional Chinese keyboard, trigger the INPUT_METHOD_TEXT_CHANGED event while typing text.
+    	 * This event causes the remove method in the DocumentFilter to be invoked, resulting in some characters erroneously deleted.
+    	 * The inputMethodChanged field value is set to true in case this event is triggered. This field is then checked within the remove method,
+    	 * and the characters are actually removed only if this field is false.
+    	 */
+    	inputMethodChanged = e.getID() == InputMethodEvent.INPUT_METHOD_TEXT_CHANGED;
+		super.processInputMethodEvent(e);
+	}
 
-    /**
+
+
+	/**
      * Handles edit behavior in segment text cell.
      */
     public class SegmentFilter extends DocumentFilter {
@@ -169,15 +190,18 @@ public class SegmentTextCell extends JTextPane {
                 if (!v.containsTag(offset, length)) {
                     // Remove from cell editor
                     super.remove(fb, offset, length);
-
-                    // Remove from underlying segment structure
-                    deleteChars(offset, length);
+    
+                    if(!inputMethodChanged){
+	                    // Remove from underlying segment structure
+	                    deleteChars(offset, length);
+                    }
                 }
             }
             else {
                 // TODO: why does this correct the spacing issue?
                 super.remove(fb, offset, length);
             }
+            inputMethodChanged = false;
         }
 
         @Override
@@ -199,6 +223,7 @@ public class SegmentTextCell extends JTextPane {
                     insertChars(str, offset);
                 }
             }
+            inputMethodChanged = false;
 
         }
 
