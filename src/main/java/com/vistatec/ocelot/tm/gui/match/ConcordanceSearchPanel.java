@@ -1,16 +1,10 @@
 package com.vistatec.ocelot.tm.gui.match;
 
-import static com.vistatec.ocelot.SegmentViewColumn.Original;
-import static com.vistatec.ocelot.SegmentViewColumn.SegNum;
-import static com.vistatec.ocelot.SegmentViewColumn.Source;
-import static com.vistatec.ocelot.SegmentViewColumn.Target;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -32,19 +26,14 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 
 import com.vistatec.ocelot.Ocelot;
-import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.TextAtom;
-import com.vistatec.ocelot.segment.view.SegmentTextCell;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.gui.AbstractDetachableTmPanel;
 import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
@@ -54,7 +43,7 @@ import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
  * i.e. by pressing the appropriate button the panel is detached from the Ocelot
  * main frame and it is displayed inside its own window.
  */
-public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
+public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 
 	/** Search field width constant. */
 	private static final int SEARCH_TXT_WIDTH = 300;
@@ -65,9 +54,6 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 	/** Search button size. */
 	private static final int SEARCH_BTN_SIZE = 25;
 
-	/** The controller. */
-	TmGuiMatchController controller;
-
 	/** The search text field. */
 	private JTextField txtSearch;
 
@@ -75,7 +61,7 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 	private JButton btnSearch;
 
 	/** The table displaying the concordance mathces. */
-	private JTable matchesTable;
+	private TmTable matchesTable;
 
 	/** The loading label. */
 	private JLabel lblLoading;
@@ -91,7 +77,7 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 
 	/** The table model. */
 	private ConcordanceMatchTableModel tableModel;
-	
+
 	private ConcordanceCellRenderer sourceColRenderer;
 
 	/**
@@ -100,8 +86,9 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 	 * @param controller
 	 *            the controller.
 	 */
-	public ConcordanceDetachablePanel(TmGuiMatchController controller) {
-		this.controller = controller;
+	public ConcordanceSearchPanel(TmGuiMatchController controller) {
+		
+		super(controller);
 	}
 
 	/**
@@ -126,9 +113,6 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 		btnSearch.setPreferredSize(dim);
 		btnSearch.setMaximumSize(dim);
 		btnSearch.setMinimumSize(dim);
-		icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(TmIconsConst.PIN_ICO)));
-
 		configTable();
 		lblLoading = new JLabel("Loading...");
 		lblNoResults = new JLabel("No results");
@@ -145,6 +129,7 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 				12));
 		buildComponents();
 		panel = new JPanel();
+		panel.setName("Concordance Search");
 		JPanel concordancePanel = (JPanel) panel;
 		concordancePanel.setLayout(new GridBagLayout());
 
@@ -189,42 +174,23 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 	 */
 	private void configTable() {
 		tableModel = new ConcordanceMatchTableModel(null);
-		matchesTable = new JTable(tableModel);
-		matchesTable.getSelectionModel().setSelectionMode(
-				ListSelectionModel.SINGLE_SELECTION);
-		matchesTable.setDefaultRenderer(SegmentVariant.class,
-				new SegmentVariantCellRenderer());
-		matchesTable.setDefaultRenderer(String.class,
-				new AlternateRowsColorRenderer());
-		matchesTable.setTableHeader(null);
-
-		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_MASK),
-				"selectPreviousRow");
-		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_MASK),
-				"selectNextRow");
-		matchesTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-				.put(KeyStroke.getKeyStroke("DOWN"), "none");
-		matchesTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-				.put(KeyStroke.getKeyStroke("UP"), "none");
-
+		matchesTable = new TmTable();
+		matchesTable.setModel(tableModel);
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
 				KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK),
 				"replaceTarget");
-		ReplaceTargetAction action = new ReplaceTargetAction();
-		matchesTable.getActionMap().put("replaceTarget", action);
-		
-
+		matchesTable.getActionMap().put("replaceTarget", new ReplaceTargetAction());
 		TableColumn scoreCol = matchesTable.getColumnModel().getColumn(
-				ConcordanceMatchTableModel.MATCH_SCORE_COL);
+				tableModel.getMatchScoreColumnIdx());
+		scoreCol.setCellRenderer(new MatchScoreRenderer());
 		scoreCol.setPreferredWidth(50);
 		scoreCol.setMaxWidth(50);
 		TableColumn tmCol = matchesTable.getColumnModel().getColumn(
-				ConcordanceMatchTableModel.TM_NAME_COL);
+				tableModel.getTmColumnIdx());
 		tmCol.setPreferredWidth(200);
 		tmCol.setMaxWidth(200);
-		TableColumn sourceCol = matchesTable.getColumnModel().getColumn(ConcordanceMatchTableModel.SOURCE_COL);
+		TableColumn sourceCol = matchesTable.getColumnModel().getColumn(
+				tableModel.getSourceColumnIdx());
 		sourceColRenderer = new ConcordanceCellRenderer();
 		sourceCol.setCellRenderer(sourceColRenderer);
 	}
@@ -233,33 +199,54 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 	 * Performs the concordance search.
 	 */
 	private void performConcordanceSearch() {
+		
 		if (txtSearch.getText() != null && !txtSearch.getText().isEmpty()) {
+			setLoading();
 			sourceColRenderer.setSearchedString(txtSearch.getText());
+			
 			SegmentAtom text = new TextAtom(txtSearch.getText());
-			scrollPanel.setViewportView(infoPanel);
-			// infoPanel.removeAll();
-			infoPanel.add(lblLoading);
-			scrollPanel.repaint();
-			// infoPanel.repaint();
-			// List<TmMatch> results =
-			// controller.getConcordanceMatches(Arrays.asList(new
-			// SegmentAtom[]{text}));
-			List<TmMatch> results = controller.getFuzzyMatches(Arrays
+			final List<TmMatch> results = controller.getConcordanceMatches(Arrays
 					.asList(new SegmentAtom[] { text }));
+
 			if (results != null && !results.isEmpty()) {
-				tableModel.setModel(results);
-				updateRowHeights();
-				scrollPanel.setViewportView(matchesTable);
-				scrollPanel.repaint();
-				matchesTable.getSelectionModel().setSelectionInterval(0, 0);
+				SwingUtilities.invokeLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						tableModel.setModel(results);
+						scrollPanel.setViewportView(matchesTable);
+						scrollPanel.repaint();
+						matchesTable.getSelectionModel().setSelectionInterval(0, 0);
+						
+					}
+				});
 			} else {
-				infoPanel.removeAll();
-				infoPanel.add(lblNoResults);
-				infoPanel.repaint();
+				SwingUtilities.invokeLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						infoPanel.removeAll();
+						infoPanel.add(lblNoResults);
+						infoPanel.repaint();
+					}
+				});
 			}
 
 		}
 	}
+	
+	public void setLoading(){
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				scrollPanel.setViewportView(infoPanel);
+				infoPanel.add(lblLoading);
+				scrollPanel.repaint();
+			}
+		});
+	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -287,14 +274,9 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 	 *            the text form the concordance search.
 	 */
 	public void setTextAndPerformConcordanceSearch(final String text) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
+				controller.selectConcordanceTab();
 				txtSearch.setText(text);
 				performConcordanceSearch();
-			}
-		});
 	}
 
 	/**
@@ -337,31 +319,8 @@ public class ConcordanceDetachablePanel extends AbstractDetachableTmPanel {
 		((JFrame) window).setTitle("Concordance Search");
 		window.setPreferredSize(new Dimension(800, 400));
 	}
-	
-	protected void updateRowHeights() {
-//        if (matchesTable.getColumnModel().getColumnCount() != tableModel.getColumnCount()) {
-//            // We haven't finished building the column model, so there's no point in calculating
-//            // the row height yet.
-//            return;
-//        }
-//        scrollPanel.setViewportView(null);
-//        for (int viewRow = 0; viewRow < matchesTable.getRowCount(); viewRow++) {
-//            FontMetrics font = matchesTable.getFontMetrics(matchesTable.getFont());
-//            int rowHeight = font.getHeight();
-//            rowHeight = getColumnHeight(ConcordanceMatchTableModel.SOURCE_COL, viewRow,
-//                    tableModel.getElementAtRow(viewRow).getSource().getDisplayText(), rowHeight);
-//            rowHeight = getColumnHeight(ConcordanceMatchTableModel.TARGET_COL, viewRow,
-//            		tableModel.getElementAtRow(viewRow).getTarget().getDisplayText(), rowHeight);
-//            matchesTable.setRowHeight(viewRow, rowHeight);
-//        }
-//        scrollPanel.setViewportView(matchesTable);
-    }
-	
-//	private int getColumnHeight(int column, int viewRow, String text, int previousHeight) {
-//        
-//		JTextPane tex 
-//        return Math.max(previousHeight, segmentCell.getPreferredSize().height);
-//    }
+
+
 }
 
 class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
@@ -392,18 +351,15 @@ class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
 					} catch (BadLocationException e) {
 						e.printStackTrace();
 					}
-					
+
 				}
 			}
 		}
 		return textPane;
 	}
 
-	
-	
 	public void setSearchedString(String searchedString) {
 		this.searchedString = searchedString;
-
 	}
 
 }

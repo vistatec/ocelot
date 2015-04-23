@@ -42,6 +42,8 @@ import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -154,7 +156,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 //        segmentView.setMinimumSize(segSize);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                setupSegAttrDetailPanes(segAttrView, detailView), setupSegmentTmConcordancePanes());
+                setupSegAttrDetailPanes(segAttrView, detailView), setupSegmentTmPanes());
         mainSplitPane.setOneTouchExpandable(true);
 
         return mainSplitPane;
@@ -177,10 +179,22 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         return segAttrSplitPane;
     }
     
-    private Component setupSegmentTmConcordancePanes(){
+    private Component setupSegmentTmPanes(){
     	
-    	tmConcordanceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tmGuiManager.getConcordancePanel(), segmentView);
+    	tmConcordanceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tmGuiManager.getTmPanel(), segmentView);
     	tmConcordanceSplitPane.setOneTouchExpandable(true);
+    	tmConcordanceSplitPane.addContainerListener(new ContainerListener() {
+			
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+				
+			}
+			
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				tmConcordanceSplitPane.setDividerLocation(0.3);				
+			}
+		});
     	return tmConcordanceSplitPane;
     }
 
@@ -454,7 +468,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         // Display the window
         mainframe.pack();
         mainframe.setVisible(true);
-        tmConcordanceSplitPane.setDividerLocation(0.3);
+        tmConcordanceSplitPane.setDividerLocation(0.4);
         
     }
 

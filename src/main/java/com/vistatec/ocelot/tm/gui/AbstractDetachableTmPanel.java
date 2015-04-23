@@ -13,10 +13,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
 import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
+import com.vistatec.ocelot.tm.gui.match.TmGuiMatchController;
 
 /**
  * Detachable panel displayed on top of Ocelot frame.
@@ -31,11 +33,18 @@ public abstract class AbstractDetachableTmPanel implements DetachableComponent,
 	protected Window window;
 
 	/** The original panel container. In case of TM panel, it is a Split Pane. */
-	protected JSplitPane panelContainer;
+	protected Component panelContainer;
+	
+	protected TmGuiMatchController controller;
 
 	/** The pin button. This is the button firing the attach/detach events. */
 	private JButton btnPin;
 
+	public AbstractDetachableTmPanel(final TmGuiMatchController controller) {
+		
+		this.controller = controller;
+	}
+	
 	/**
 	 * Manages the pin button pressed event.
 	 * 
@@ -123,11 +132,12 @@ public abstract class AbstractDetachableTmPanel implements DetachableComponent,
 	 */
 	private void attach() {
 
-		panelContainer.add(panel, JSplitPane.LEFT);
+//		panelContainer.add(panel, JSplitPane.LEFT);
+		((JTabbedPane)panelContainer).add(panel);
 		window.setVisible(false);
 		window.dispose();
 		window = null;
-		panelContainer.setDividerLocation(0.3);
+//		panelContainer.setDividerLocation(0.3);
 		panelContainer.repaint();
 	}
 
@@ -177,7 +187,8 @@ public abstract class AbstractDetachableTmPanel implements DetachableComponent,
 			});
 			Window mainFrame = SwingUtilities.getWindowAncestor(panel);
 			window.setIconImages(mainFrame.getIconImages());
-			panelContainer = (JSplitPane) panel.getParent();
+//			panelContainer = (JSplitPane) panel.getParent();
+			panelContainer = panel.getParent();
 			window.add(panel);
 			window.setLocationRelativeTo(mainFrame);
 

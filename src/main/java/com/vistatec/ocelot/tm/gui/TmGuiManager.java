@@ -29,6 +29,10 @@ public class TmGuiManager implements OcelotEventQueueListener{
 		return matchController.getConcordancePanel();
 	}
 	
+	public Component getTmPanel(){
+		return matchController.getTmPanel();
+	}
+	
 	@Subscribe
 	public void handleConfigTmRequest(ConfigTmRequestEvent e){
 		configController.openTmConfigDialog(e.getCurrentWindow());
