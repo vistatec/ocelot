@@ -35,6 +35,7 @@ import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.QuickAddEvent;
+import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
@@ -119,6 +120,8 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
 
     protected RuleConfiguration ruleConfig;
     private final OcelotEventQueue eventQueue;
+    
+    private boolean targetChangedFromMatch;
 
     @Inject
     public SegmentView(OcelotEventQueue eventQueue, SegmentTableModel segmentTableModel,
@@ -274,7 +277,7 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
 
     private void updateTableRow(int row) {
         segmentTableModel.fireTableRowsUpdated(row, row);
-        updateRowHeights();
+        updateRowHeight(row);
     }
 
     public void requestFocusTable() {
@@ -302,18 +305,32 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
         }
         setViewportView(null);
         for (int viewRow = 0; viewRow < sort.getViewRowCount(); viewRow++) {
-            int modelRow = sort.convertRowIndexToModel(viewRow);
-            FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
-            int rowHeight = font.getHeight();
-            rowHeight = getColumnHeight(SegNum, viewRow, "1", rowHeight);
-            rowHeight = getColumnHeight(Source, viewRow,
-                    segmentTableModel.getSegment(modelRow).getSource().getDisplayText(), rowHeight);
-            rowHeight = getColumnHeight(Target, viewRow,
-                    segmentTableModel.getSegment(modelRow).getTarget().getDisplayText(), rowHeight);
-            rowHeight = getColumnHeight(Original, viewRow, getOriginalTargetText(modelRow), rowHeight);
-            sourceTargetTable.setRowHeight(viewRow, rowHeight);
+//            int modelRow = sort.convertRowIndexToModel(viewRow);
+//            FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
+//            int rowHeight = font.getHeight();
+//            rowHeight = getColumnHeight(SegNum, viewRow, "1", rowHeight);
+//            rowHeight = getColumnHeight(Source, viewRow,
+//                    segmentTableModel.getSegment(modelRow).getSource().getDisplayText(), rowHeight);
+//            rowHeight = getColumnHeight(Target, viewRow,
+//                    segmentTableModel.getSegment(modelRow).getTarget().getDisplayText(), rowHeight);
+//            rowHeight = getColumnHeight(Original, viewRow, getOriginalTargetText(modelRow), rowHeight);
+//            sourceTargetTable.setRowHeight(viewRow, rowHeight);
+        	updateRowHeight(viewRow);
         }
         setViewportView(sourceTargetTable);
+    }
+    
+    private void updateRowHeight(int row){
+    	int modelRow = sort.convertRowIndexToModel(row);
+        FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
+        int rowHeight = font.getHeight();
+        rowHeight = getColumnHeight(SegNum, row, "1", rowHeight);
+        rowHeight = getColumnHeight(Source, row,
+                segmentTableModel.getSegment(modelRow).getSource().getDisplayText(), rowHeight);
+        rowHeight = getColumnHeight(Target, row,
+                segmentTableModel.getSegment(modelRow).getTarget().getDisplayText(), rowHeight);
+        rowHeight = getColumnHeight(Original, row, getOriginalTargetText(modelRow), rowHeight);
+        sourceTargetTable.setRowHeight(row, rowHeight);
     }
 
     // TODO: move elsewhere
@@ -404,15 +421,31 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
     }
     
 	@Subscribe
-	public void handleTargetUpdatedFromMatch(
+	public synchronized void handleTargetUpdatedFromMatch(
 			SegmentTargetUpdateFromMatchEvent event) {
-		int selRow = sourceTargetTable.getSelectedRow();
-		segmentTableModel.fireTableRowsUpdated(selRow, selRow);
-		updateRowHeights();
-		sourceTargetTable.requestFocusInWindow();
+//		int selRow = sourceTargetTable.getSelectedRow();
+////		segmentTableModel.fireTableRowsUpdated(selRow, selRow);
+////		updateRowHeights();
+//		updateTableRow(selRow);
+//		sourceTargetTable.requestFocusInWindow();
+		targetChangedFromMatch = true;
+	}
+
+	@Subscribe
+	public synchronized void handleTargetUpdatedFromMatch(
+			SegmentEditEvent event) {
+		if (targetChangedFromMatch) {
+			int selRow = sourceTargetTable.getSelectedRow();
+			// segmentTableModel.fireTableRowsUpdated(selRow, selRow);
+			// updateRowHeights();
+			updateTableRow(selRow);
+			sourceTargetTable.requestFocusInWindow();
+			targetChangedFromMatch = false;
+		}
 
 	}
 
+	
     @Override
     public void enabledRule(String ruleLabel, boolean enabled) {
         reloadTable();

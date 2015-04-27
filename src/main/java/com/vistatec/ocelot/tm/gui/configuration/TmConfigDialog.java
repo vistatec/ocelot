@@ -4,87 +4,122 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.TableColumn;
 
-import org.apache.log4j.Logger;
-
 import com.vistatec.ocelot.Ocelot;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
 
+/**
+ * Modal dialog letting users view and change the current TM Configuration in
+ * Ocelot. Users can perform following changes:
+ * <ul>
+ * <li>add a new TM;</li>
+ * <li>remove an existing TM;</li>
+ * <li>change the root directory for an existing TM;</li>
+ * <li>change the penalty value of an existing TM;</li>
+ * <li>enable/disable an existing TM;</li>
+ * <li>change the ordering of configured TMs.</li>
+ * </ul>
+ */
 public class TmConfigDialog extends JDialog implements Runnable, ActionListener {
 
-	/**
-	 * 
-	 */
+	/** serial version UID. */
 	private static final long serialVersionUID = -8852580443557452694L;
 
+	/** Top panel buttons width constant. */
 	private static final int TOP_BTN_WIDTH = 80;
 
+	/** Top panel buttons height constant. */
 	private static final int TOP_BTN_HEIGHT = 20;
 
+	/** Arrow buttons width constant. */
 	private static final int ARROW_BTN_WIDTH = 20;
 
+	/** Arrow buttons height constant. */
 	private static final int ARROW_BTN_HEIGHT = 20;
 
+	/** Panels width constant. */
+	private static final int PANELS_WIDTH = 600;
+
+	/** Button panels height constant. */
+	private static final int BUTTON_PANELS_HEIGHT = 50;
+
+	/** Table panel height constant. */
+	private static final int TABLE_PANEL_HEIGHT = 200;
+
+	/** Dialog width constant. */
+	private static final int DIALOG_WIDTH = 650;
+
+	/** Dialog height constant. */
+	private static final int DIALOG_HEIGHT = 370;
+
+	/** The controller. */
 	private TmGuiConfigController controller;
 
-	private Logger log = Logger.getLogger(TmConfigDialog.class);
-
-	private Window ownerFrame;
-
+	/** Add button. */
 	private JButton btnAdd;
 
-	private JButton btnNew;
-
+	/** arrow up button. */
 	private JButton btnMoveUp;
 
+	/** arrow down button. */
 	private JButton btnMoveDown;
 
+	/** Change directory button. */
 	private JButton btnChangeDir;
 
+	/** Remove button. */
 	private JButton btnRemove;
 
+	/** Save button. */
 	private JButton btnSave;
 
+	/** Cancel button. */
 	private JButton btnCancel;
 
+	/** The table displaying configured TMs. */
 	private JTable tmTable;
 
+	/** The table model. */
 	private TmTableModel tmTableModel;
 
-	// private JScrollPane tablePane;
-
+	/**
+	 * Constructor.
+	 * 
+	 * @param controller
+	 *            the controller.
+	 * @param ownerFrame
+	 *            the owner frame.
+	 */
 	public TmConfigDialog(TmGuiConfigController controller, Window ownerFrame) {
 		super(ownerFrame);
 		setModal(true);
 		this.controller = controller;
-		this.ownerFrame = ownerFrame;
 	}
 
+	/**
+	 * Creates the button panel displayed on top of the dialog.
+	 * 
+	 * @return the top button panel.
+	 */
 	private Component createTopBtnPanel() {
 
 		// Create Top Buttons
@@ -92,26 +127,26 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		final Dimension arrowBtnDim = new Dimension(ARROW_BTN_WIDTH,
 				ARROW_BTN_HEIGHT);
 		Toolkit kit = Toolkit.getDefaultToolkit();
+		// create ADD button.
 		btnAdd = new JButton("Add");
 		ImageIcon icon = new ImageIcon(kit.createImage(Ocelot.class
 				.getResource(TmIconsConst.ADD_ICO)));
 		configButton(btnAdd, btnDim, icon);
 
-		btnNew = new JButton("New");
-		icon = new ImageIcon(kit.createImage(Ocelot.class.getResource(TmIconsConst.ADD_ICO)));
-		configButton(btnNew, btnDim, icon);
-
+		// create Arrow UP button.
 		btnMoveUp = new JButton();
-
 		icon = new ImageIcon(kit.createImage(Ocelot.class
 				.getResource(TmIconsConst.ARROW_UP_ICO)));
 		configButton(btnMoveUp, arrowBtnDim, icon);
 
+		// create Arrow DOWN button.
 		btnMoveDown = new JButton();
 		icon = new ImageIcon(kit.createImage(Ocelot.class
 				.getResource(TmIconsConst.ARROW_DOWN_ICO)));
 		configButton(btnMoveDown, arrowBtnDim, icon);
 		btnDim = new Dimension(120, TOP_BTN_HEIGHT);
+
+		// create CHANGE DIR button.
 		btnChangeDir = new JButton("Change Dir");
 		icon = new ImageIcon(kit.createImage(Ocelot.class
 				.getResource(TmIconsConst.CHANGE_DIR_ICO)));
@@ -125,9 +160,10 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		// Add buttons to top panel
 		JPanel topButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10,
 				20));
-		topButtonPanel.setPreferredSize(new Dimension(600, 50));
+		topButtonPanel.setPreferredSize(new Dimension(PANELS_WIDTH,
+				BUTTON_PANELS_HEIGHT));
 		topButtonPanel.add(btnAdd);
-//		topButtonPanel.add(btnNew);
+		// topButtonPanel.add(btnNew);
 		JSeparator separator = new JSeparator(JSeparator.VERTICAL);
 		separator.setPreferredSize(new Dimension(2, 20));
 		topButtonPanel.add(separator);
@@ -144,6 +180,16 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		return topButtonPanel;
 	}
 
+	/**
+	 * Configures a button, setting sizes and icon.
+	 * 
+	 * @param btn
+	 *            the button to configure
+	 * @param dim
+	 *            the dimension
+	 * @param icon
+	 *            the icon
+	 */
 	private void configButton(JButton btn, Dimension dim, ImageIcon icon) {
 
 		btn.setPreferredSize(dim);
@@ -153,14 +199,16 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		btn.addActionListener(this);
 	}
 
+	/**
+	 * Creates the main panel displaying the TM table.
+	 * 
+	 * @return the table panel.
+	 */
 	private Component createTablePanel() {
 
 		// Create table
 		tmTableModel = new TmTableModel(controller.getTmOrderedList());
 		tmTable = new JTable(tmTableModel);
-		// TODO delete, only for test purpose
-		// tmTableModel = new TmTableModel(createTmList());
-		// tmTable = new JTable(tmTableModel);
 		tmTable.getTableHeader().setReorderingAllowed(false);
 		tmTable.setDefaultRenderer(String.class, new TooltipCellRenderer());
 		TableColumn dirPathColumn = tmTable.getColumnModel().getColumn(
@@ -169,22 +217,6 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		TableColumn nameCol = tmTable.getColumnModel().getColumn(
 				TmTableModel.TM_NAME_COL);
 		nameCol.setPreferredWidth(250);
-		// TableColumn delColumn =
-		// tmTable.getColumnModel().getColumn(TmTableModel.TM_DEL_COL);
-		// Toolkit kit = Toolkit.getDefaultToolkit();
-		// ImageIcon icon = new
-		// ImageIcon(kit.createImage(Ocelot.class.getResource(DELETE_ICO)));
-		// delColumn.setCellRenderer(new ImageCellRenderer(icon, "Delete"));
-		// delColumn.setMaxWidth(20);
-		// delColumn.setWidth(20);
-		// TableColumn changeDirColumn =
-		// tmTable.getColumnModel().getColumn(TmTableModel.TM_CHANGE_DIR_COL);
-		// icon = new
-		// ImageIcon(kit.createImage(Ocelot.class.getResource(CHANGE_DIR_ICO)));
-		// changeDirColumn.setCellRenderer(new ImageCellRenderer(icon,
-		// "Change directory"));
-		// changeDirColumn.setMaxWidth(20);
-		// changeDirColumn.setWidth(20);
 		// Create table scroll container
 		JScrollPane tablePane = new JScrollPane(tmTable);
 		tablePane.setBorder(BorderFactory
@@ -193,10 +225,16 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		tablePane
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		tablePane.setPreferredSize(new Dimension(600, 200));
+		tablePane.setPreferredSize(new Dimension(PANELS_WIDTH,
+				TABLE_PANEL_HEIGHT));
 		return tablePane;
 	}
 
+	/**
+	 * Creates the buttons panel displayed on bottom of the dialog.
+	 * 
+	 * @return the bottom buttons panel.
+	 */
 	private Component createBottomBtnPanel() {
 
 		// Create bottom buttons.
@@ -208,54 +246,58 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		// Add buttons to bottom panel
 		JPanel bottomPanel = new JPanel(
 				new FlowLayout(FlowLayout.RIGHT, 10, 20));
-		bottomPanel.setPreferredSize(new Dimension(600, 50));
+		bottomPanel.setPreferredSize(new Dimension(PANELS_WIDTH,
+				BUTTON_PANELS_HEIGHT));
 		bottomPanel.add(btnSave);
 		bottomPanel.add(btnCancel);
 		return bottomPanel;
 
 	}
 
+	/**
+	 * run method. Configures the dialog, creates its components and makes it
+	 * visible.
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 
 		setTitle("TM Configuration");
-		setPreferredSize(new Dimension(650, 370));
+		setPreferredSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		add(createTopBtnPanel(), BorderLayout.NORTH);
 		add(createTablePanel(), BorderLayout.CENTER);
 		add(createBottomBtnPanel(), BorderLayout.SOUTH);
 		pack();
-		setLocationRelativeTo(ownerFrame);
+		setLocationRelativeTo(getOwner());
 		setVisible(true);
 	}
 
-	public static void main(String[] args) {
-
-		JFrame frame = new JFrame();
-		Toolkit kit = Toolkit.getDefaultToolkit();
-		Image icon = kit.createImage(Ocelot.class.getResource("logo64.png"));
-		frame.setIconImage(icon);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		TmConfigDialog dialog = new TmConfigDialog(null, frame);
-		SwingUtilities.invokeLater(dialog);
-	}
-
-	private void deleteSelectedRow() {
+	/**
+	 * It prompts a confirmation message to the user. If user confirms, it
+	 * deletes the selected TM and removes the associated row from the table.
+	 * 
+	 */
+	private void deleteSelectedTm() {
 
 		int selRow = tmTable.getSelectedRow();
 		if (selRow != -1) {
 			int option = JOptionPane.showConfirmDialog(this,
-					"Do you want to delete the selected TM?", "Remove TM",
+					"Do you want to delete the selected TM?", "Delete TM",
 					JOptionPane.YES_NO_OPTION);
 			if (option == JOptionPane.YES_OPTION) {
-				TmConfig deletedTm = tmTableModel.deleteRow(selRow);
-				controller.handleTmDeleted(deletedTm);
+				if (controller.deleteTm(tmTableModel.getTmAtRow(selRow)
+						.getTmName())) {
+					tmTableModel.deleteRow(selRow);
+				}
 			}
 		}
 	}
 
+	/**
+	 * Changes the root directory of the selected TM.
+	 */
 	private void changeSelTmDirectory() {
 
 		TmConfig selTm = tmTableModel.getTmAtRow(tmTable.getSelectedRow());
@@ -267,14 +309,20 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			int option = fileChooser.showOpenDialog(this);
 			if (option == JFileChooser.APPROVE_OPTION) {
-				selTm.setTmDataDir(fileChooser.getSelectedFile()
-						.getAbsolutePath());
-				tmTableModel.fireTableDataChanged();
-				controller.handleTmChangedDir(selTm);
+				File selectedDir = fileChooser.getSelectedFile();
+				if (controller.changeTmDirectory(selTm, selectedDir)) {
+					selTm.setTmDataDir(selectedDir.getAbsolutePath());
+					tmTableModel.fireTableRowsUpdated(tmTable.getSelectedRow(),
+							tmTable.getSelectedRow());
+					tmTableModel.setEdited(true);
+				}
 			}
 		}
 	}
 
+	/**
+	 * Closes this dialog.
+	 */
 	private void close() {
 
 		controller.closeDialog();
@@ -282,91 +330,102 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		dispose();
 	}
 
+	/**
+	 * Upon user confirmation, it discards all changes applied to the TM
+	 * configuration by restoring the previous one. Then it closes the dialog.
+	 * If no changes have been applied, it simply closes the dialog.
+	 * 
+	 */
+	private void cancel() {
+
+		if (tmTableModel.isEdited()) {
+			int option = JOptionPane
+					.showConfirmDialog(
+							this,
+							"Changes to TM configuration will be discarded. Do you wish to continue?",
+							"Cancel TM Configuration",
+							JOptionPane.YES_NO_OPTION);
+			if (option == JOptionPane.YES_OPTION) {
+				controller.cancel();
+				close();
+			}
+		} else {
+			close();
+		}
+
+	}
+
+	/**
+	 * Saves the current TM configuration, then it closes the dialog.
+	 */
 	private void save() {
 
-		try {
-			controller.deleteTmList();
-			controller.changeTmDirectory();
-			controller.setTmOrderedList(tmTableModel.getTmList());
+		if (controller.save(tmTableModel.getTmList())) {
 			close();
-		} catch (IOException | TransferException e) {
-			log.trace("Error while saving the TM configuration", e);
-			e.printStackTrace();
-
-			JOptionPane.showMessageDialog(this,
-					"An error occurred while saving the TM configuration",
-					"TM Error", JOptionPane.ERROR_MESSAGE);
-		} catch (Exception e) {
-			log.trace("Error while saving the TM configuration", e);
-e.printStackTrace();
-			JOptionPane.showMessageDialog(this,
-					"An error occurred while saving the TM configuration",
-					"TM Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
-	public List<TmConfig> getNewConfiguration() {
-
-		return tmTableModel.getTmList();
-	}
-
+	/**
+	 * Manages the events triggered by buttons defined in the dialog.
+	 * 
+	 * @param e
+	 *            the triggered event
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
 		JButton sourceBtn = (JButton) e.getSource();
 		if (btnAdd.equals(sourceBtn)) {
-			controller.opentCreateTmDialog();
-		} else if (btnNew.equals(sourceBtn)) {
-			controller.opentCreateTmDialog();
+			// add button pressed
+			controller.opentAddTmDialog();
 		} else if (btnSave.equals(sourceBtn)) {
+			// save button pressed
 			save();
 
 		} else if (btnCancel.equals(sourceBtn)) {
-			close();
+			// cancel button pressed
+			cancel();
 		} else {
+			// remaining button actions need a selected row. If no row is
+			// selected, do nothing.
 			int selRow = tmTable.getSelectedRow();
+			// if a row is selected
 			if (selRow != -1) {
 				if (btnMoveUp.equals(sourceBtn)) {
+					// arrow up button pressed
 					if (tmTableModel.moveUpRow(selRow)) {
 						tmTable.getSelectionModel().setSelectionInterval(
 								selRow - 1, selRow - 1);
 					}
 				} else if (btnMoveDown.equals(sourceBtn)) {
+					// arrow down button pressed
 					if (tmTableModel.moveDownRow(selRow)) {
 						tmTable.getSelectionModel().setSelectionInterval(
 								selRow + 1, selRow + 1);
 					}
 				} else if (btnChangeDir.equals(sourceBtn)) {
+					// change dir button pressed
 					changeSelTmDirectory();
 				} else if (btnRemove.equals(sourceBtn)) {
-					deleteSelectedRow();
+					// remove button pressed
+					deleteSelectedTm();
 				}
 			}
 		}
 
 	}
 
+	/**
+	 * Adds a new row to the TM table.
+	 * 
+	 * @param newTm
+	 *            the TM to be added.
+	 */
 	public void addNewTm(TmConfig newTm) {
 
 		tmTableModel.addRow(newTm);
 
 	}
-
-	// class TableButtonListener extends MouseAdapter {
-	//
-	// @Override
-	// public void mouseClicked(MouseEvent e) {
-	// if(e.getButton() == MouseEvent.BUTTON1){
-	// int clickedCol = tmTable.getSelectedColumn();
-	// if(clickedCol == TmTableModel.TM_DEL_COL){
-	// deleteSelectedRow();
-	// } else if (clickedCol == TmTableModel.TM_CHANGE_DIR_COL){
-	// changeSelTmDirectory();
-	// }
-	// }
-	//
-	// }
-	//
-	// }
 
 }

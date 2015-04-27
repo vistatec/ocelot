@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * Modal dialog letting users add a new TM to the list of TMs already configured
  * in Ocelot. Users have to insert a name and a root directory for the TM. The
- * root directory must contain at least a .tmx file.
+ * root directory must contain at least a .tmx file. Both fields are mandatory.
  */
 public class TmAddingDialog extends JDialog implements Runnable,
 		ActionListener {

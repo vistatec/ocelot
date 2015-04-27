@@ -61,12 +61,12 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 		gridBag.gridx = 0;
 		gridBag.gridy = 0;
 		gridBag.anchor = GridBagConstraints.NORTHWEST;
-		gridBag.insets = new Insets(10, 5, 0, 0);
+		gridBag.insets = new Insets(10, 5, 10, 0);
 		translationsPanel.add(getPinComponent(), gridBag);
 		gridBag.gridx = 1;
 		gridBag.gridy = 0;
 		gridBag.anchor = GridBagConstraints.NORTHWEST;
-		gridBag.insets = new Insets(10, 0, 0, 0);
+		gridBag.insets = new Insets(10, 0, 10, 0);
 		translationsPanel.add(lblTranslations, gridBag);
 		gridBag.gridx = 0;
 		gridBag.gridy = 1;

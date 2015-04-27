@@ -82,6 +82,8 @@ import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.TmManager;
+import com.vistatec.ocelot.tm.TmService;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
@@ -104,6 +106,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JCheckBoxMenuItem menuTgtDiff;
     private JMenuItem menuColumns;
     private JMenuItem menuConfigTm;
+    private JMenuItem menuSaveAsTmx;
 
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
@@ -127,7 +130,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.ocelotScope = ocelotScope;
         this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
         this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
-        this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
+        TmManager tmManager = ocelotScope.getInstance(TmManager.class);
+        TmService tmService = ocelotScope.getInstance(TmService.class);
+        this.tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue);
         this.eventQueue.registerListener(tmGuiManager);
         eventQueue.registerListener(ocelotApp);
 
@@ -234,6 +239,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     setMainTitle(saveFile.getName());
                 }
             }
+        } else if (e.getSource().equals(menuSaveAsTmx)){
+        	tmGuiManager.saveAsTmx(mainframe);
         } else if (e.getSource() == this.menuSave) {
             save(ocelotApp.getOpenFile());
         } else if (e.getSource() == this.menuTgtDiff) {
@@ -262,6 +269,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
                 this.menuSave.setEnabled(true);
                 this.menuSaveAs.setEnabled(true);
+                this.menuSaveAsTmx.setEnabled(true);
             } catch (FileNotFoundException ex) {
                 LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
             } catch (Exception e) {
@@ -373,6 +381,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 Event.SHIFT_MASK | getPlatformKeyMask()));
         menuFile.add(menuSaveAs);
 
+        menuSaveAsTmx = new JMenuItem("Save As tmx");
+        menuSaveAsTmx.setEnabled(false);
+        menuSaveAsTmx.addActionListener(this);
+        //TODO add accelerator
+        menuFile.add(menuSaveAsTmx);
+        
         menuProv = new JMenuItem("Profile");
         menuProv.addActionListener(this);
         menuProv.setAccelerator(

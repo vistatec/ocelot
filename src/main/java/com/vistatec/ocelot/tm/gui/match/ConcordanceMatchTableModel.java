@@ -58,7 +58,7 @@ public class ConcordanceMatchTableModel extends TmMatchTableModel {
 				retValue = currMatch.getSource();
 				break;
 			case MATCH_SCORE_COL:
-				retValue = (int) (currMatch.getMatchScore() * 100);
+				retValue = (int) (currMatch.getMatchScore());
 				break;
 			case TARGET_COL:
 				retValue = currMatch.getTarget();

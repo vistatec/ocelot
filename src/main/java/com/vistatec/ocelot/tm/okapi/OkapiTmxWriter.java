@@ -36,7 +36,7 @@ public class OkapiTmxWriter implements TmTmxWriter, OcelotEventQueueListener {
     }
 
     @Subscribe
-    void setOpenFileLangs(OpenFileEvent fileEvent) {
+    public void setOpenFileLangs(OpenFileEvent fileEvent) {
         this.sourceLang = LocaleId.fromString(fileEvent.getSrcLang());
         this.targetLang = LocaleId.fromString(fileEvent.getTgtLang());
         this.hasOpenFile = true;

@@ -31,10 +31,9 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmService;
-import com.vistatec.ocelot.tm.gui.TmGuiController;
 import com.vistatec.ocelot.tm.okapi.PensieveTmMatch;
 
-public class TmGuiMatchController extends TmGuiController {
+public class TmGuiMatchController  {
 
 	private TmService tmService;
 
@@ -61,9 +60,9 @@ public class TmGuiMatchController extends TmGuiController {
 		List<TmMatch> matches = null;
 		try {
 			matches = tmService.getFuzzyTermMatches(currentSelection);
-			// TODO delete --- only for test purpose
+//			 TODO delete --- only for test purpose
 //			matches = createStubTmMatchList();
-//			Collections.shuffle(matches);
+			Collections.shuffle(matches);
 		} catch (IOException e) {
 			Logger.getLogger(TmGuiMatchController.class).trace(
 					"Error while retrieving fuzzy matches.", e);
@@ -79,7 +78,7 @@ public class TmGuiMatchController extends TmGuiController {
 		try {
 			matches = tmService.getConcordanceMatches(currentSelection);
 			// TODO delete --- only for test purpose
-			matches = createStubTmMatchList();
+//			matches = createStubTmMatchList();
 		} catch (IOException e) {
 			Logger.getLogger(TmGuiMatchController.class).trace(
 					"Error while retrieving concordance search matches.", e);

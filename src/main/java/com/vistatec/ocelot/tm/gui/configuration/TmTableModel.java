@@ -3,6 +3,7 @@ package com.vistatec.ocelot.tm.gui.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
@@ -26,6 +27,8 @@ public class TmTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "Name", "Path", "Penalty", "Enabled" };
 
 	private List<TmConfig> model;
+	
+	private boolean edited;
 	
 	public TmTableModel(final List<TmConfig> model) {
 		
@@ -134,9 +137,11 @@ public class TmTableModel extends AbstractTableModel {
 			switch (columnIndex) {
 			case TM_ENABLED_COL:
 				currTm.setEnabled((boolean)aValue);
+				edited = true;
 				break;
 			case TM_PENALTY_COL:
 				currTm.setPenalty((float)aValue);
+				edited = true;
 				break;
 
 			default:
@@ -157,7 +162,7 @@ public class TmTableModel extends AbstractTableModel {
 			TmConfig tmToMove = model.get(rowIdx);
 			model.set(rowIdx, model.get(rowIdx + 1));
 			model.set(rowIdx + 1, tmToMove);
-			fireTableDataChanged();
+			fireTableRowsUpdated(rowIdx, rowIdx + 1);
 			moved = true;
 		}
 		return moved;
@@ -169,7 +174,7 @@ public class TmTableModel extends AbstractTableModel {
 			TmConfig tmToMove = model.get(rowIdx);
 			model.set(rowIdx, model.get(rowIdx - 1));
 			model.set(rowIdx - 1, tmToMove);
-			fireTableDataChanged();
+			fireTableRowsUpdated(rowIdx - 1, rowIdx);
 			moved = true;
 		}
 		return moved;
@@ -180,7 +185,8 @@ public class TmTableModel extends AbstractTableModel {
 		TmConfig deletedTm = null;
 		if(model != null && selRow < model.size()){
 			deletedTm = model.remove(selRow);
-			fireTableDataChanged();
+//			fireTableDataChanged();
+			fireTableRowsDeleted(selRow, selRow);
 		}
 		return deletedTm;
 	}
@@ -207,5 +213,19 @@ public class TmTableModel extends AbstractTableModel {
 		}
 		
 	}
+	
+	
+	@Override
+	public void fireTableChanged(TableModelEvent e) {
+		super.fireTableChanged(e);
+		edited = true;
+	}
 
+	public boolean isEdited(){
+		return edited;
+	}
+	
+	public void setEdited(final boolean edited){
+		this.edited = edited;
+	}
 }

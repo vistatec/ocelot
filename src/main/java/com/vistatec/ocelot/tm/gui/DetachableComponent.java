@@ -6,7 +6,7 @@ import java.awt.Window;
 /**
  * This interface provide methods for managing detachable Swing components. A
  * class defining a Swing component that can be detached by the owner window and
- * be displayed inside its own window, should implement this interface. 
+ * can be displayed inside its own window, should implement this interface.
  */
 public interface DetachableComponent {
 
