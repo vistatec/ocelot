@@ -5,26 +5,43 @@ import java.util.List;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 
+/**
+ * Data model assigned to the table displayed in the Concordance Search panel.
+ */
 public class ConcordanceMatchTableModel extends TmMatchTableModel {
 
-	/**
-	 * 
-	 */
+	/** Serial version UID. */
 	private static final long serialVersionUID = 2115553091508295586L;
 
+	/** The source column index. */
 	private static final int SOURCE_COL = 0;
 
+	/** The match score column index. */
 	private static final int MATCH_SCORE_COL = 1;
 
+	/** The target column index. */
 	private static final int TARGET_COL = 2;
 
+	/** The TM name column index. */
 	private static final int TM_NAME_COL = 3;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param model
+	 *            the list of TMs being the actual model.
+	 */
 	public ConcordanceMatchTableModel(final List<TmMatch> model) {
 
-		super(model, new String[]{"","","",""});
+		super(model, new String[] { "", "", "", "" });
 	}
 
+	/**
+	 * Gets the class of the objects displayed in the queried column.
+	 * 
+	 * @return the class of the objects displayed in the queried column
+	 * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+	 */
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
 
@@ -47,6 +64,10 @@ public class ConcordanceMatchTableModel extends TmMatchTableModel {
 		return clazz;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#getValueAt(int, int)
+	 */
 	@Override
 	public Object getValueAt(int row, int column) {
 
@@ -73,22 +94,38 @@ public class ConcordanceMatchTableModel extends TmMatchTableModel {
 		return retValue;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getSourceColumnIdx()
+	 */
 	@Override
 	public int getSourceColumnIdx() {
 		return SOURCE_COL;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getTargetColumnIdx()
+	 */
 	@Override
 	public int getTargetColumnIdx() {
 
 		return TARGET_COL;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getMatchScoreColumnIdx()
+	 */
 	@Override
 	public int getMatchScoreColumnIdx() {
 		return MATCH_SCORE_COL;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getTmColumnIdx()
+	 */
 	@Override
 	public int getTmColumnIdx() {
 		return TM_NAME_COL;

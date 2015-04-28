@@ -14,23 +14,33 @@ import javax.swing.event.TableModelEvent;
 
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
+/**
+ * Table used in TM panels. It is configured in order to react to the following
+ * keystrokes:
+ * <ul>
+ * <li>ALT+Arrow UP: moves selection to the previous row;</li>
+ * <li>ALT+Arrow DOWN: moves selection to the next row;</li>
+ * </ul>
+ * Moreover it resizes its rows height by fitting them to their contents each
+ * time table data or table margins change.
+ */
 public class TmTable extends JTable {
 
-	/**
-	 * 
-	 */
+	/** Serial version UID. */
 	private static final long serialVersionUID = -8088882927665970088L;
 
-	
-	public TmTable(	) {
+	/**
+	 * Constructor.
+	 */
+	public TmTable() {
 		
 		init();
 	}
-	
 
+	/**
+	 * Initializes the table.
+	 */
 	private void init() {
-		// tableModel = new ConcordanceMatchTableModel(null);
-		// matchesTable = new JTable(tableModel);
 
 		getSelectionModel().setSelectionMode(
 				ListSelectionModel.SINGLE_SELECTION);
@@ -54,6 +64,9 @@ public class TmTable extends JTable {
 
 	}
 
+	/**
+	 * Updates the rows height in order to fit their content.
+	 */
 	private void updateRowHeights() {
 		if (getColumnModel().getColumnCount() != getModel().getColumnCount()) {
 			// We haven't finished building the column model, so there's no
@@ -74,6 +87,13 @@ public class TmTable extends JTable {
 
 	}
 
+	/**
+	 * Gets the preferred renderer height for the cell identified by row and column parameters.
+	 * @param row the row index
+	 * @param column the column index
+	 * @param previousHeight the previous preferred height
+	 * @return the preferred height for this cell.
+	 */
 	private int getPreferredHeightForCell(int row, int column,
 			int previousHeight) {
 
@@ -89,6 +109,10 @@ public class TmTable extends JTable {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.JTable#tableChanged(javax.swing.event.TableModelEvent)
+	 */
 	@Override
 	public void tableChanged(TableModelEvent e) {
 		super.tableChanged(e);
@@ -96,10 +120,14 @@ public class TmTable extends JTable {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.JTable#columnMarginChanged(javax.swing.event.ChangeEvent)
+	 */
 	@Override
 	public void columnMarginChanged(ChangeEvent e) {
 		super.columnMarginChanged(e);
 		updateRowHeights();
 	}
-	
+
 }

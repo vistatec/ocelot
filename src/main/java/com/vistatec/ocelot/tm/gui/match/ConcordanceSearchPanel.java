@@ -78,6 +78,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	/** The table model. */
 	private ConcordanceMatchTableModel tableModel;
 
+	/** The table cell renderer assigned to the source column. */
 	private ConcordanceCellRenderer sourceColRenderer;
 
 	/**
@@ -87,7 +88,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	 *            the controller.
 	 */
 	public ConcordanceSearchPanel(TmGuiMatchController controller) {
-		
+
 		super(controller);
 	}
 
@@ -96,6 +97,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	 */
 	private void buildComponents() {
 
+		// Build and configure the search text field.
 		txtSearch = new JTextField();
 		final Dimension txtDim = new Dimension(SEARCH_TXT_WIDTH,
 				SEARCH_TXT_HEIGHT);
@@ -103,6 +105,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		txtSearch.setMinimumSize(txtDim);
 		txtSearch.setMaximumSize(txtDim);
 		txtSearch.addActionListener(this);
+		// Build and configure the search button.
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		ImageIcon icon = new ImageIcon(kit.createImage(Ocelot.class
 				.getResource(TmIconsConst.FIND_ICO)));
@@ -113,7 +116,9 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		btnSearch.setPreferredSize(dim);
 		btnSearch.setMaximumSize(dim);
 		btnSearch.setMinimumSize(dim);
+		// configure the table
 		configTable();
+		// Build and configure the info panel and its labels.
 		lblLoading = new JLabel("Loading...");
 		lblNoResults = new JLabel("No results");
 		infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -124,38 +129,45 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	 * Makes the concordance search panel.
 	 */
 	protected void makePanel() {
+		// Creates the Concordance Search label.
 		JLabel lblConcordance = new JLabel("Concordance Search");
 		lblConcordance.setFont(lblConcordance.getFont().deriveFont(Font.BOLD,
 				12));
+		// builds panel components.
 		buildComponents();
+		// Create the panel.
 		panel = new JPanel();
 		panel.setName("Concordance Search");
 		JPanel concordancePanel = (JPanel) panel;
 		concordancePanel.setLayout(new GridBagLayout());
-
 		GridBagConstraints gridBag = new GridBagConstraints();
+		// Add the pin button
 		gridBag.gridx = 0;
 		gridBag.gridy = 0;
 		gridBag.anchor = GridBagConstraints.NORTHWEST;
 		gridBag.insets = new Insets(10, 5, 0, 0);
 		concordancePanel.add(getPinComponent(), gridBag);
+		// Add the concordance label
 		gridBag.gridx = 1;
 		gridBag.gridy = 0;
 		gridBag.anchor = GridBagConstraints.NORTHWEST;
 		gridBag.insets = new Insets(10, 0, 0, 0);
 		concordancePanel.add(lblConcordance, gridBag);
 
+		// Add the search text field.
 		gridBag.gridx = 0;
 		gridBag.gridy = 1;
 		gridBag.gridwidth = 2;
 		gridBag.insets = new Insets(10, 0, 0, 0);
 		gridBag.anchor = GridBagConstraints.NORTHWEST;
 		concordancePanel.add(txtSearch, gridBag);
+		// add the search button
 		gridBag.gridx = 2;
 		gridBag.gridwidth = 1;
 		gridBag.insets = new Insets(10, 0, 0, 10);
 		gridBag.fill = GridBagConstraints.NONE;
 		concordancePanel.add(btnSearch, gridBag);
+		// Add the scroll panel containing the table.
 		gridBag.gridx = 0;
 		gridBag.gridy = 2;
 		gridBag.gridwidth = 3;
@@ -173,22 +185,30 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	 * Configures the table.
 	 */
 	private void configTable() {
+		// creates the data model
 		tableModel = new ConcordanceMatchTableModel(null);
+		// creates the table.
 		matchesTable = new TmTable();
 		matchesTable.setModel(tableModel);
+		// Configure the action "replaceTarget" for the keystroke ALT+R
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
 				KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK),
 				"replaceTarget");
-		matchesTable.getActionMap().put("replaceTarget", new ReplaceTargetAction());
+		matchesTable.getActionMap().put("replaceTarget",
+				new ReplaceTargetAction());
+		// Assign the match score renderer to the match score column, and set
+		// size
 		TableColumn scoreCol = matchesTable.getColumnModel().getColumn(
 				tableModel.getMatchScoreColumnIdx());
 		scoreCol.setCellRenderer(new MatchScoreRenderer());
 		scoreCol.setPreferredWidth(50);
 		scoreCol.setMaxWidth(50);
+		// Set size to the TM column
 		TableColumn tmCol = matchesTable.getColumnModel().getColumn(
 				tableModel.getTmColumnIdx());
 		tmCol.setPreferredWidth(200);
 		tmCol.setMaxWidth(200);
+		// Assign the Concordance cell renderer to the source column
 		TableColumn sourceCol = matchesTable.getColumnModel().getColumn(
 				tableModel.getSourceColumnIdx());
 		sourceColRenderer = new ConcordanceCellRenderer();
@@ -199,30 +219,32 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	 * Performs the concordance search.
 	 */
 	private void performConcordanceSearch() {
-		
+
 		if (txtSearch.getText() != null && !txtSearch.getText().isEmpty()) {
 			setLoading();
 			sourceColRenderer.setSearchedString(txtSearch.getText());
-			
+
 			SegmentAtom text = new TextAtom(txtSearch.getText());
-			final List<TmMatch> results = controller.getConcordanceMatches(Arrays
-					.asList(new SegmentAtom[] { text }));
+			final List<TmMatch> results = controller
+					.getConcordanceMatches(Arrays
+							.asList(new SegmentAtom[] { text }));
 
 			if (results != null && !results.isEmpty()) {
 				SwingUtilities.invokeLater(new Runnable() {
-					
+
 					@Override
 					public void run() {
 						tableModel.setModel(results);
 						scrollPanel.setViewportView(matchesTable);
 						scrollPanel.repaint();
-						matchesTable.getSelectionModel().setSelectionInterval(0, 0);
-						
+						matchesTable.getSelectionModel().setSelectionInterval(
+								0, 0);
+
 					}
 				});
 			} else {
 				SwingUtilities.invokeLater(new Runnable() {
-					
+
 					@Override
 					public void run() {
 						infoPanel.removeAll();
@@ -234,10 +256,13 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 
 		}
 	}
-	
-	public void setLoading(){
+
+	/**
+	 * Displays the info panel with the loading label.
+	 */
+	public void setLoading() {
 		SwingUtilities.invokeLater(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				scrollPanel.setViewportView(infoPanel);
@@ -246,7 +271,6 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 			}
 		});
 	}
-	
 
 	/*
 	 * (non-Javadoc)
@@ -274,9 +298,9 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	 *            the text form the concordance search.
 	 */
 	public void setTextAndPerformConcordanceSearch(final String text) {
-				controller.selectConcordanceTab();
-				txtSearch.setText(text);
-				performConcordanceSearch();
+		controller.selectConcordanceTab();
+		txtSearch.setText(text);
+		performConcordanceSearch();
 	}
 
 	/**
@@ -320,18 +344,32 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		window.setPreferredSize(new Dimension(800, 400));
 	}
 
-
 }
 
+/**
+ * Table cell renderer for concordance highlights. By setting the searched
+ * string, this renderer highlights all words in the rendered column matching
+ * the concordance string.
+ */
 class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
 
+	/** The serial version UID. */
 	private static final long serialVersionUID = -4227851946202241316L;
 
+	/** The searched string. */
 	private String searchedString;
 
+	/** The highlight painter. */
 	private DefaultHighlightPainter painter = new DefaultHighlightPainter(
 			Color.yellow);
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.vistatec.ocelot.tm.gui.match.SegmentVariantCellRenderer#
+	 * getTableCellRendererComponent(javax.swing.JTable, java.lang.Object,
+	 * boolean, boolean, int, int)
+	 */
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
@@ -358,6 +396,12 @@ class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
 		return textPane;
 	}
 
+	/**
+	 * Sets the searched string.
+	 * 
+	 * @param searchedString
+	 *            the searched string.
+	 */
 	public void setSearchedString(String searchedString) {
 		this.searchedString = searchedString;
 	}

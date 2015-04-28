@@ -95,8 +95,6 @@ public class TmGuiManager implements OcelotEventQueueListener {
 	@Subscribe
 	public void handleConcordanceSearchEvent(ConcordanceSearchEvent e) {
 
-		System.out.println("ConcordanceSearchEvent event received. Text = "
-				+ e.getText());
 		matchController.performConcordanceSearch(e.getText());
 	}
 

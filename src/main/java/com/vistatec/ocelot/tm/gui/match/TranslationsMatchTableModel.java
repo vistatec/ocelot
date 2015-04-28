@@ -5,22 +5,43 @@ import java.util.List;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 
+/**
+ * Table data model associated to the table displayed in the TM Translations
+ * panel.
+ */
 public class TranslationsMatchTableModel extends TmMatchTableModel {
 
 	/** Serial version UID. */
 	private static final long serialVersionUID = -8386866780750598834L;
 
+	/** The segment number column index. */
 	public static final int SEG_NUM_COL = 0;
+	/** The source column index. */
 	public static final int SOURCE_COL = 1;
+	/** The match score column index. */
 	public static final int MATCH_SCORE_COL = 2;
+	/** The target column index. */
 	public static final int TARGET_COL = 3;
+	/** The TM name column index. */
 	public static final int TM_NAME_COL = 4;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param model
+	 *            the TM list being the actual model.
+	 */
 	public TranslationsMatchTableModel(final List<TmMatch> model) {
 
 		super(model, new String[] { "", "", "", "", "" });
 	}
 
+	/**
+	 * Gets the class of objects displayed in the parameter column.
+	 * 
+	 * @return the class of the objects at the queried column.
+	 * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+	 */
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
 
@@ -44,11 +65,23 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 		return clazz;
 	}
 
+	/**
+	 * The model is not editable. It always returns <code>false</code>.
+	 * 
+	 * @return <code>false</code>
+	 * @see com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#isCellEditable(int,
+	 *      int)
+	 */
 	@Override
 	public boolean isCellEditable(int row, int column) {
 		return false;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.swing.table.DefaultTableModel#getValueAt(int, int)
+	 */
 	@Override
 	public Object getValueAt(int row, int column) {
 
@@ -78,28 +111,56 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 		return retValue;
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getSourceColumnIdx()
+	 */
 	@Override
 	public int getSourceColumnIdx() {
 		return SOURCE_COL;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getTargetColumnIdx()
+	 */
 	@Override
 	public int getTargetColumnIdx() {
 		return TARGET_COL;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getMatchScoreColumnIdx
+	 * ()
+	 */
 	@Override
 	public int getMatchScoreColumnIdx() {
 		return MATCH_SCORE_COL;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.vistatec.ocelot.tm.gui.match.TmMatchTableModel#getTmColumnIdx()
+	 */
 	@Override
 	public int getTmColumnIdx() {
 		return TM_NAME_COL;
 	}
 
-	public int getSegmentNumColumnIdx(){
+	/**
+	 * Gets the segment number column index.
+	 * 
+	 * @return the segment number column index.
+	 */
+	public int getSegmentNumColumnIdx() {
 		return SEG_NUM_COL;
 	}
 }
