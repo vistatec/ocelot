@@ -28,9 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-//<<<<<<< HEAD
-//=======
-//>>>>>>> marta_branch
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -55,11 +52,8 @@ import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-//=======
 import javax.swing.JComboBox;
-//<<<<<<< HEAD
 import javax.swing.JDialog;
-//>>>>>>> marta_branch
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -71,11 +65,8 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-//<<<<<<< HEAD
-//=======
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
-//>>>>>>> marta_branch
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -93,32 +84,9 @@ import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
-import com.vistatec.ocelot.tool.OcelotToolBar;
 import com.vistatec.ocelot.ui.ODialogPanel;
+import com.vistatec.ocelot.ui.OcelotToolBar;
 
-//import org.apache.log4j.Logger;
-//import org.apache.log4j.PropertyConfigurator;
-//
-//import com.google.common.eventbus.EventBus;
-//import com.vistatec.ocelot.config.AppConfig;
-//import com.vistatec.ocelot.config.Configs;
-//import com.vistatec.ocelot.config.DirectoryBasedConfigs;
-//import com.vistatec.ocelot.config.ProvenanceConfig;
-//import com.vistatec.ocelot.its.NewLanguageQualityIssueView;
-//import com.vistatec.ocelot.its.ProvenanceProfileView;
-//import com.vistatec.ocelot.plugins.PluginManager;
-//import com.vistatec.ocelot.plugins.PluginManagerView;
-//import com.vistatec.ocelot.rules.FilterView;
-//import com.vistatec.ocelot.rules.QuickAdd;
-//import com.vistatec.ocelot.rules.RuleConfiguration;
-//import com.vistatec.ocelot.rules.RulesParser;
-//import com.vistatec.ocelot.segment.Segment;
-//import com.vistatec.ocelot.segment.SegmentAttributeView;
-//import com.vistatec.ocelot.segment.SegmentController;
-//import com.vistatec.ocelot.segment.SegmentTableModel;
-//import com.vistatec.ocelot.segment.SegmentView;
-//import com.vistatec.ocelot.segment.okapi.OkapiXLIFF12Factory;
-//import com.vistatec.ocelot.tool.OcelotToolBar;
 
 /**
  * Main UI Thread class. Handles menu and file operations
@@ -336,23 +304,27 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
-    	boolean canClose = true;
+        boolean canClose = true;
         if (ocelotApp.isFileDirty()) {
-            int rv = JOptionPane.showConfirmDialog(this,
-                    "You have unsaved changes. Would you like to save before exiting?",
-                    "Save Unsaved Changes",
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            //can close the frame only if the user pressed either "YES" or "NO" button.
-            canClose = rv == JOptionPane.YES_OPTION || rv == JOptionPane.NO_OPTION; 
+            int rv = JOptionPane
+                    .showConfirmDialog(
+                            this,
+                            "You have unsaved changes. Would you like to save before exiting?",
+                            "Save Unsaved Changes",
+                            JOptionPane.YES_NO_CANCEL_OPTION);
+            // can close the frame only if the user pressed either "YES" or "NO"
+            // button.
+            canClose = rv == JOptionPane.YES_OPTION
+                    || rv == JOptionPane.NO_OPTION;
             if (rv == JOptionPane.YES_OPTION) {
                 save(ocelotApp.getOpenFile());
             }
         }
-		if (canClose) {
-			mainframe.dispose();
-			//Explicitly exits the application.
-			System.exit(0);
-		}
+        if (canClose) {
+            mainframe.dispose();
+            // Explicitly exits the application.
+            System.exit(0);
+        }
     }
 
     /**
@@ -484,13 +456,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
         initializeMenuBar();
         toolBar = new OcelotToolBar(this);
-//        JPanel menuToolContainer = new JPanel();
-//        menuToolContainer.setLayout(new BoxLayout(menuToolContainer, BoxLayout.Y_AXIS));
-//        menuToolContainer.add(menuBar);
-////        menuToolContainer.add(Box.createHorizontalGlue());
-////        menuToolContainer.add(new JSeparator(JSeparator.VERTICAL));
-////        menuToolContainer.add(Box.createHorizontalGlue());
-//        menuToolContainer.add(toolBar);
         mainframe.getContentPane().add(toolBar, BorderLayout.NORTH);
         mainframe.getContentPane().add(this, BorderLayout.CENTER);
 
@@ -595,29 +560,29 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 		}
 	}
 
-	/**
-	 * Handles the event the selected target font changed. It applies the new
-	 * selected font to both target columns.
-	 */
-	private void handleTargetFontChangedEvent() {
+    /**
+     * Handles the event the selected target font changed. It applies the new
+     * selected font to both target columns.
+     */
+    private void handleTargetFontChangedEvent() {
 
-		final Font targetFont = toolBar.getSelectedTargetFont();
-		if (targetFont != null) {
-			segmentView.setTargetFont(targetFont);
-		}
-	}
+        final Font targetFont = toolBar.getSelectedTargetFont();
+        if (targetFont != null) {
+            segmentView.setTargetFont(targetFont);
+        }
+    }
 
-	/**
-	 * Handles the event the selected target font changed. It applies the new
-	 * selected font to the source column.
-	 */
-	private void handleSourceFontChangedEvent() {
+    /**
+     * Handles the event the selected target font changed. It applies the new
+     * selected font to the source column.
+     */
+    private void handleSourceFontChangedEvent() {
 
-		final Font sourceFont = toolBar.getSelectedSourceFont();
-		if (sourceFont != null) {
-			segmentView.setSourceFont(sourceFont);
-		}
+        final Font sourceFont = toolBar.getSelectedSourceFont();
+        if (sourceFont != null) {
+            segmentView.setSourceFont(sourceFont);
+        }
 
-	}
+    }
 
 }

@@ -157,20 +157,27 @@ public class SegmentTextCell extends JTextPane {
     }
     
     
-	/*
-	 * (non-Javadoc)
-	 * @see javax.swing.text.JTextComponent#processInputMethodEvent(java.awt.event.InputMethodEvent)
-	 */
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.swing.text.JTextComponent#processInputMethodEvent(java.awt.event
+     * .InputMethodEvent)
+     */
     @Override
-	protected void processInputMethodEvent(InputMethodEvent e) {
-    	/* Some keyboards, such as Traditional Chinese keyboard, trigger the INPUT_METHOD_TEXT_CHANGED event while typing text.
-    	 * This event causes the remove method in the DocumentFilter to be invoked, resulting in some characters erroneously deleted.
-    	 * The inputMethodChanged field value is set to true in case this event is triggered. This field is then checked within the remove method,
-    	 * and the characters are actually removed only if this field is false.
-    	 */
-    	inputMethodChanged = e.getID() == InputMethodEvent.INPUT_METHOD_TEXT_CHANGED;
-		super.processInputMethodEvent(e);
-	}
+    protected void processInputMethodEvent(InputMethodEvent e) {
+        /*
+         * Some keyboards, such as Traditional Chinese keyboard, trigger the
+         * INPUT_METHOD_TEXT_CHANGED event while typing text. This event causes
+         * the remove method in the DocumentFilter to be invoked, resulting in
+         * some characters erroneously deleted. The inputMethodChanged field
+         * value is set to true in case this event is triggered. This field is
+         * then checked within the remove method, and the characters are
+         * actually removed only if this field is false.
+         */
+        inputMethodChanged = e.getID() == InputMethodEvent.INPUT_METHOD_TEXT_CHANGED;
+        super.processInputMethodEvent(e);
+    }
 
 
 
