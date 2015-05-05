@@ -28,6 +28,50 @@
  */
 package com.vistatec.ocelot;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.DefaultKeyboardFocusManager;
+import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.KeyEventDispatcher;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.xml.sax.SAXException;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
@@ -41,49 +85,14 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
 import com.vistatec.ocelot.ui.ODialogPanel;
+import com.vistatec.ocelot.ui.OcelotToolBar;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.DefaultKeyboardFocusManager;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.FileDialog;
-import java.awt.Image;
-import java.awt.KeyEventDispatcher;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Main UI Thread class. Handles menu and file operations
  *
  */
-public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher {
+public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEventDispatcher, ItemListener {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
     private static String APPNAME = "Ocelot";
@@ -98,6 +107,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JCheckBoxMenuItem menuTgtDiff;
     private JMenuItem menuColumns;
 
+    private OcelotToolBar toolBar;
+    
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
     private JSplitPane segAttrSplitPane;
@@ -230,6 +241,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
                 this.menuSave.setEnabled(true);
                 this.menuSaveAs.setEnabled(true);
+                this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
+                this.toolBar.setSourceFont(segmentView.getSourceFont());
+                this.toolBar.setTargetFont(segmentView.getTargetFont());
             } catch (FileNotFoundException ex) {
                 LOG.error("Failed to parse file '" + sourceFile.getName() + "'", ex);
             } catch (Exception e) {
@@ -290,16 +304,27 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
+        boolean canClose = true;
         if (ocelotApp.isFileDirty()) {
-            int rv = JOptionPane.showConfirmDialog(this,
-                    "You have unsaved changes. Would you like to save before exiting?",
-                    "Save Unsaved Changes",
-                    JOptionPane.YES_NO_OPTION);
+            int rv = JOptionPane
+                    .showConfirmDialog(
+                            this,
+                            "You have unsaved changes. Would you like to save before exiting?",
+                            "Save Unsaved Changes",
+                            JOptionPane.YES_NO_CANCEL_OPTION);
+            // can close the frame only if the user pressed either "YES" or "NO"
+            // button.
+            canClose = rv == JOptionPane.YES_OPTION
+                    || rv == JOptionPane.NO_OPTION;
             if (rv == JOptionPane.YES_OPTION) {
                 save(ocelotApp.getOpenFile());
             }
         }
-        mainframe.dispose();
+        if (canClose) {
+            mainframe.dispose();
+            // Explicitly exits the application.
+            System.exit(0);
+        }
     }
 
     /**
@@ -416,10 +441,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);
-        mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        mainframe.setLayout(new BorderLayout());
+        //This default close operation let us handle the application exit.
+        mainframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainframe.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                // TODO: cleanup
+               handleApplicationExit();
             }
         });
 
@@ -428,7 +455,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.setIconImage(icon);
 
         initializeMenuBar();
-        mainframe.getContentPane().add(this);
+        toolBar = new OcelotToolBar(this);
+        mainframe.getContentPane().add(toolBar, BorderLayout.NORTH);
+        mainframe.getContentPane().add(this, BorderLayout.CENTER);
 
         // Display the window
         mainframe.pack();
@@ -449,7 +478,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         dialog.setVisible(true);
     }
 
-    public static void main(String[] args) throws IOException, IllegalAccessException, InstantiationException {
+
+	public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, InstantiationException, IllegalAccessException {
         if (System.getProperty("log4j.configuration") == null) {
             PropertyConfigurator.configure(Ocelot.class.getResourceAsStream("/log4j.properties"));
         } else {
@@ -516,4 +546,43 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
             });
         }
     }
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		
+		JComboBox<?> combo = (JComboBox<?>)e.getSource();
+		if(combo != null ){
+			if(combo.getName().equals(OcelotToolBar.SOURCE_FONT_TOOL_NAME) ){
+				handleSourceFontChangedEvent();
+			} else if (combo.getName().equals(OcelotToolBar.TARGET_FONT_TOOL_NAME) ){
+				handleTargetFontChangedEvent();
+			}
+		}
+	}
+
+    /**
+     * Handles the event the selected target font changed. It applies the new
+     * selected font to both target columns.
+     */
+    private void handleTargetFontChangedEvent() {
+
+        final Font targetFont = toolBar.getSelectedTargetFont();
+        if (targetFont != null) {
+            segmentView.setTargetFont(targetFont);
+        }
+    }
+
+    /**
+     * Handles the event the selected target font changed. It applies the new
+     * selected font to the source column.
+     */
+    private void handleSourceFontChangedEvent() {
+
+        final Font sourceFont = toolBar.getSelectedSourceFont();
+        if (sourceFont != null) {
+            segmentView.setSourceFont(sourceFont);
+        }
+
+    }
+
 }
