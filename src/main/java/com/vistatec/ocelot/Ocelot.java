@@ -75,6 +75,7 @@ import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.freme.manager.EnrichmentManager;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
@@ -116,6 +117,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private DetailView itsDetailView;
     private SegmentView segmentView;
     private TmGuiManager tmGuiManager;
+    private EnrichmentManager enrichManager;
 
     private final String platformOS;
     private boolean useNativeUI = false;
@@ -149,6 +151,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         DetailView detailView = ocelotScope.getInstance(DetailView.class);
         eventQueue.registerListener(detailView);
 
+        enrichManager = new EnrichmentManager(mainframe);
+        eventQueue.registerListener(enrichManager);
+        
         add(setupMainPane(segView, segAttrView, detailView));
     }
 

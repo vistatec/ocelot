@@ -41,6 +41,7 @@ import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
+import com.vistatec.ocelot.events.SegmentVariantSelectionEvent;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
@@ -380,7 +381,13 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
                 if (its != null) {
                     eventQueue.post(new ItsSelectionEvent(its));
                 }
-            }
+            } else if (colIndex == segmentTableModel.getSegmentSourceColumnIndex()){
+                eventQueue.post(new SegmentVariantSelectionEvent(seg.getSource()));
+            } else if (colIndex == segmentTableModel.getSegmentTargetColumnIndex()){
+                eventQueue.post(new SegmentVariantSelectionEvent(seg.getTarget()));
+            } 
+            
+            
         }
         postSegmentSelection(seg);
     }

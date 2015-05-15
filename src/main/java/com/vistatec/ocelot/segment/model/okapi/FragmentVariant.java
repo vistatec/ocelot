@@ -30,6 +30,7 @@ package com.vistatec.ocelot.segment.model.okapi;
 
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.TextAtom;
@@ -56,6 +57,9 @@ public class FragmentVariant extends BaseSegmentVariant {
     private List<SegmentAtom> segmentAtoms;
     private boolean isTarget;
     private int protectedContentId = 0;
+    private boolean enriched;
+    //TODO add enrichment tags
+    private List<Enrichment> enrichments;
 
     public FragmentVariant(Segment okapiSegment, boolean isTarget) {
         this.isTarget = isTarget;
@@ -194,6 +198,36 @@ public class FragmentVariant extends BaseSegmentVariant {
         return isTarget;
     }
     
+    public void setEnrichments(final List<Enrichment> enrichments ){
+        this.enrichments = enrichments;
+    }
+    
+    public void addEnrichment(final Enrichment enrichment){
+        if(enrichment != null){
+            if(enrichments == null){
+                enrichments = new ArrayList<Enrichment>();
+            }
+            enrichments.add(enrichment);
+        }
+    }
+    
+    public void addEnrichmentList(final List<Enrichment> enrichmentList){
+        if(enrichmentList != null){
+            if(enrichments == null){
+                enrichments = new ArrayList<Enrichment>();
+            }
+            enrichments.addAll(enrichmentList);
+        }
+    }
+    
+    public boolean isEnriched(){
+        return enriched;
+    }
+    
+    public void setEnriched(final boolean enriched){
+        this.enriched = enriched;
+    }
+    
     @Override
     public FragmentVariant createEmptyTarget() {
         return new FragmentVariant(new ArrayList<SegmentAtom>(), true);
@@ -208,5 +242,9 @@ public class FragmentVariant extends BaseSegmentVariant {
     public void setContent(SegmentVariant variant) {
         FragmentVariant copy = (FragmentVariant) variant;
         this.segmentAtoms = copy.copyAtoms();
+    }
+
+    public List<Enrichment> getEnirchments() {
+        return enrichments;
     }
 }
