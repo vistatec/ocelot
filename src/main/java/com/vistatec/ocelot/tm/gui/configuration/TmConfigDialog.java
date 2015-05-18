@@ -26,6 +26,7 @@ import javax.swing.table.TableColumn;
 import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
+import com.vistatec.ocelot.ui.TooltipCellRenderer;
 
 /**
  * Modal dialog letting users view and change the current TM Configuration in
@@ -88,6 +89,9 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 
 	/** Remove button. */
 	private JButton btnRemove;
+	
+	/** Settings button. */
+	private JButton btnSettings;
 
 	/** Save button. */
 	private JButton btnSave;
@@ -146,6 +150,12 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		configButton(btnMoveDown, arrowBtnDim, icon);
 		btnDim = new Dimension(120, TOP_BTN_HEIGHT);
 
+		//crate SETTINGS button.
+		btnSettings = new JButton("Settings");
+		icon = new ImageIcon(kit.createImage(Ocelot.class
+                .getResource(TmIconsConst.SETTINGS_ICO)));
+		configButton(btnSettings, btnDim, icon);
+		
 		// create CHANGE DIR button.
 		btnChangeDir = new JButton("Change Dir");
 		icon = new ImageIcon(kit.createImage(Ocelot.class
@@ -169,6 +179,10 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		topButtonPanel.add(separator);
 		topButtonPanel.add(btnMoveUp);
 		topButtonPanel.add(btnMoveDown);
+		separator = new JSeparator(JSeparator.VERTICAL);
+        separator.setPreferredSize(new Dimension(2, 20));
+        topButtonPanel.add(separator);
+        topButtonPanel.add(btnSettings);
 		separator = new JSeparator(JSeparator.VERTICAL);
 		separator.setPreferredSize(new Dimension(2, 20));
 		topButtonPanel.add(separator);
@@ -386,7 +400,9 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		} else if (btnCancel.equals(sourceBtn)) {
 			// cancel button pressed
 			cancel();
-		} else {
+		} else if (btnSettings.equals(sourceBtn)){
+            controller.openSettingsDialog();
+        } else {
 			// remaining button actions need a selected row. If no row is
 			// selected, do nothing.
 			int selRow = tmTable.getSelectedRow();

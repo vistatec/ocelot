@@ -14,6 +14,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.log4j.Logger;
 
+import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 import com.vistatec.ocelot.tm.TmManager;
@@ -30,8 +31,17 @@ public class TmGuiConfigController {
 	/** The logger for this class. */
 	private final Logger logger = Logger.getLogger(TmGuiConfigController.class);
 
+	/** Default fuzzy threshold value. */
+	private static final float DEF_FUZZY_THRESHOLD = 0.75f;
+	
+	/** Default max results value. */
+	private static final int DEF_MAX_RESULTS = 5;
+	
 	/** The object managing the TM Configuration in Ocelot. */
 	private TmManager tmManager;
+	
+	/** The Ocelot configuration service. */
+    private ConfigService cfgService;
 
 	/** The TM configuration dialog. */
 	private TmConfigDialog configDialog;
@@ -39,6 +49,9 @@ public class TmGuiConfigController {
 	/** The Adding TM dialog. */
 	private TmAddingDialog addDialog;
 
+	/** The TM Settings dialog. */
+	private TmSettingsDialog settingDialog;
+	
 	/** Current opened dialog. */
 	private JDialog currDialog;
 
@@ -56,10 +69,19 @@ public class TmGuiConfigController {
 	 * 
 	 * @param tmManager
 	 *            the TM Manager.
+	 * @param cfgService
+     *            the configuration service              
 	 */
-	public TmGuiConfigController(final TmManager tmManager) {
+	public TmGuiConfigController(final TmManager tmManager, final ConfigService cfgService) {
 
 		this.tmManager = tmManager;
+		this.cfgService = cfgService;
+		try {
+            this.cfgService.saveFuzzyThreshold(DEF_FUZZY_THRESHOLD);
+            this.cfgService.saveMaxResults(DEF_MAX_RESULTS);
+        } catch (TransferException e) {
+            logger.trace("Error while setting TM default values to the Configuration Service.", e);
+        }
 	}
 
 	/**
@@ -238,6 +260,9 @@ public class TmGuiConfigController {
 		} else if (currDialog.equals(addDialog)) {
 			currDialog = configDialog;
 			addDialog = null;
+		} else if (currDialog.equals(settingDialog)){
+		    currDialog = configDialog;
+		    settingDialog = null;
 		}
 	}
 
@@ -329,4 +354,60 @@ public class TmGuiConfigController {
 		}
 	}
 
+	/**
+	 * Gets currently configured fuzzy threshold.
+	 * @return currently configured fuzzy threshold.
+	 */
+	public int getFuzzyThreshold(){
+	
+	    return (int)(cfgService.getFuzzyThreshold()*100);
+	}
+	
+	/**
+	 * Gets currently configured max results.
+	 * @return currently configured max results
+	 */
+	public int getMaxResults(){
+	    return cfgService.getMaxResults();
+	}
+	
+	/**
+	 * Gets the default fuzzy threshold value.
+	 * @return the default fuzzy threshold value. 
+	 */
+	public int getDefaultFuzzyThreshold(){
+	    
+	    return (int)(DEF_FUZZY_THRESHOLD*100);
+	}
+	
+	/**
+	 * Gets the default max results value.
+	 * @return the default max results value.
+	 */
+	public int getDefaultMaxResults(){
+	    
+	    return DEF_MAX_RESULTS;
+	}
+	
+	/**
+	 * Saves the TM settings.
+	 * @param fuzzyThreshold the fuzzy threshold value.
+	 * @param maxResults the max results value.
+	 * @throws TransferException the Transfer exception.
+	 */
+	public void saveTmSettings(float fuzzyThreshold, int maxResults) throws TransferException{
+	    
+	    cfgService.saveFuzzyThreshold(fuzzyThreshold);
+	    cfgService.saveMaxResults(maxResults);
+	}
+
+	/**
+	 * Opens the TM Settings dialog.
+	 */
+    public void openSettingsDialog() {
+        
+        settingDialog = new TmSettingsDialog(configDialog, this);
+        currDialog = settingDialog;
+        SwingUtilities.invokeLater(settingDialog);
+    }
 }

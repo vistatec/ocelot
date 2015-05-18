@@ -82,8 +82,6 @@ import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
-import com.vistatec.ocelot.tm.TmManager;
-import com.vistatec.ocelot.tm.TmService;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 
@@ -130,9 +128,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.ocelotScope = ocelotScope;
         this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
         this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
-        TmManager tmManager = ocelotScope.getInstance(TmManager.class);
-        TmService tmService = ocelotScope.getInstance(TmService.class);
-        this.tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue);
+        this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
         this.eventQueue.registerListener(tmGuiManager);
         eventQueue.registerListener(ocelotApp);
 
