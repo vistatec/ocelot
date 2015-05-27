@@ -190,7 +190,7 @@ public class SegmentTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == getSegmentTargetColumnIndex();
+        return col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex();
     }
 
     OcelotSegment getSegment(int row) {

@@ -17,10 +17,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
+import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -37,6 +37,7 @@ import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.tm.TmManager;
 import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmService;
+import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.tm.okapi.OkapiTmManager;
 import com.vistatec.ocelot.tm.okapi.OkapiTmService;
 import com.vistatec.ocelot.tm.okapi.OkapiTmxWriter;
@@ -62,6 +63,9 @@ public class OcelotModule extends AbstractModule {
         RuleConfiguration ruleConfig = null;
         PluginManager pluginManager = null;
         TmManager tmManager = null;
+        TmService tmService = null;
+        TmPenalizer penalizer = null;
+        TmGuiManager tmGuiManager = null;
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
@@ -84,7 +88,13 @@ public class OcelotModule extends AbstractModule {
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
             tmManager = new OkapiTmManager(tm, cfgService, tmxWriter);
+            
             bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
+            penalizer = new SimpleTmPenalizer(tmManager);
+            tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, cfgService);
+            tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, cfgService);
+
+            
 
         } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
             LOG.error("Failed to initialize configuration", ex);
@@ -94,10 +104,13 @@ public class OcelotModule extends AbstractModule {
         bind(RuleConfiguration.class).toInstance(ruleConfig);
         bind(PluginManager.class).toInstance(pluginManager);
         bind(TmManager.class).toInstance(tmManager);
-        bind(TmPenalizer.class).to(SimpleTmPenalizer.class);
+        bind(TmPenalizer.class).toInstance(penalizer);
+        bind(TmService.class).toInstance(tmService);
+        bind(TmGuiManager.class).toInstance(tmGuiManager);
 
         bindServices(eventQueue, cfgService, docStats);
     }
+    
 
     private void bindServices(OcelotEventQueue eventQueue, ConfigService cfgService,
             ITSDocStats docStats) {
@@ -115,7 +128,6 @@ public class OcelotModule extends AbstractModule {
         bind(XliffService.class).toInstance(xliffService);
         eventQueue.registerListener(xliffService);
 
-        bind(TmService.class).to(OkapiTmService.class);
     }
 
     private OcelotConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {

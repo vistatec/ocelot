@@ -107,7 +107,6 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
-
         eventQueue.post(new OpenFileEvent(openFile.getName(),
                 xliffService.getSourceLang(), xliffService.getTargetLang()));
     }
