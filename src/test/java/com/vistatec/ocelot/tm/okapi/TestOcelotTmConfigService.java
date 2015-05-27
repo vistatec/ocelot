@@ -1,15 +1,17 @@
 package com.vistatec.ocelot.tm.okapi;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
-import java.util.Scanner;
-
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import javax.xml.bind.JAXBException;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,6 +22,7 @@ import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 
 public class TestOcelotTmConfigService {
     private OcelotConfigService cfgService;
@@ -34,23 +37,25 @@ public class TestOcelotTmConfigService {
     }
 
     @Test
-    public void testCreateTmConfig() throws URISyntaxException, IOException, ConfigTransferService.TransferException {
+    public void testCreateTmConfig() throws URISyntaxException, IOException, ConfigTransferService.TransferException, JAXBException {
         RootConfig config = TestOkapiTmManager.setupNewForeignDataDir();
         cfgService.createNewTmConfig("config_test", true,
                 config.getTmManagement().getTms().get(0).getTmDataDir());
-        String goal = readFile("create_config_goal.xml");
-        Assert.assertEquals(goal, testOutput.getString());
+        ConfigTransferService svc = new XmlConfigTransferService(
+                ByteSource.wrap(testOutput.getString().getBytes(StandardCharsets.UTF_8)),
+                new TestCharSink());
+        List<TmConfig> tms = svc.parse().getTmManagement().getTms();
+        assertEquals(1, tms.size());
+        assertEquals("config_test", tms.get(0).getTmName());
+        Path tmDir = Paths.get(tms.get(0).getTmDataDir());
+        Path expectedDir = Paths.get(System.getProperty("user.dir"),
+                                "target", "test-classes", "new", "data");
+        assertEquals(expectedDir, tmDir);
     }
 
     @After
     public void teardown() throws URISyntaxException {
         TestOkapiTmManager.cleanup();
-    }
-
-    public String readFile(String file) {
-        InputStream goalStream = TestOcelotTmConfigService.class.getResourceAsStream(file);
-        Scanner goal = new Scanner(goalStream, "UTF-8").useDelimiter("\\A");
-        return goal.next();
     }
 
     public class TestCharSink extends CharSink {
