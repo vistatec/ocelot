@@ -30,6 +30,7 @@ package com.vistatec.ocelot.segment.view;
 
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
@@ -563,10 +564,18 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
                         seg.isEditable() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY
                         : jtable.getBackground();
 
+                        
             Color foreground = seg.isEditable()
                     ? isSelected ? jtable.getSelectionForeground() : jtable.getForeground()
                     : Color.GRAY;
-
+             
+            if (((FragmentVariant) seg.getSource()).isEnriched()
+                    && (((FragmentVariant) seg.getTarget()).isEnriched()
+                            || seg.getTarget().getDisplayText() == null || seg
+                            .getTarget().getDisplayText().isEmpty())) {
+                foreground = Color.red;
+            }
+                    
             setHorizontalAlignment(JLabel.LEFT);
             setVerticalAlignment(JLabel.TOP);
             setBackground(background);

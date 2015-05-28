@@ -26,4 +26,5 @@ public interface FremePlugin extends Plugin {
     List<Enrichment> enrichContent(final String plainText) throws FremeEnrichmentException;
     
     List<Enrichment> enrichContent(final InputStream inputContent) throws FremeEnrichmentException;
+    
 }

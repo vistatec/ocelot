@@ -38,8 +38,10 @@ import com.vistatec.ocelot.services.XliffService;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JMenu;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
@@ -165,5 +167,12 @@ public class OcelotApp implements OcelotEventQueueListener {
             this.title = title;
             this.body = body;
         }
+    }
+    
+    public List<JMenu> getPluginMenues(){
+        
+        List<JMenu> menues = new ArrayList<JMenu>();
+        menues.add(pluginManager.getFremeMenu());
+        return menues;
     }
 }

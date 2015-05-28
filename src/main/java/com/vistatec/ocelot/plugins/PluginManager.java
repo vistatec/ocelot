@@ -28,6 +28,8 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -42,11 +44,17 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
@@ -63,9 +71,12 @@ import com.vistatec.ocelot.freme.manager.EnrichmentFrame;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
+import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
 import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.view.SegmentTableModel;
 import com.vistatec.ocelot.services.SegmentService;
 
 /**
@@ -76,7 +87,7 @@ import com.vistatec.ocelot.services.SegmentService;
  * themselves are instantiated immediately and are treated like stateful
  * singletons.
  */
-public class PluginManager implements OcelotEventQueueListener {
+public class PluginManager implements OcelotEventQueueListener, ItemListener {
     private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
     private List<String> itsPluginClassNames = new ArrayList<String>();
     private List<String> segPluginClassNames = new ArrayList<String>();
@@ -84,6 +95,7 @@ public class PluginManager implements OcelotEventQueueListener {
     private HashMap<ITSPlugin, Boolean> itsPlugins;
     private HashMap<SegmentPlugin, Boolean> segPlugins;
     private HashMap<FremePlugin, Boolean> fremePlugins;
+    private JMenu fremeMenu;
     private ClassLoader classLoader;
     private File pluginDir;
     private final ConfigService cfgService;
@@ -126,10 +138,10 @@ public class PluginManager implements OcelotEventQueueListener {
         return this.segPlugins.keySet();
     }
 
-    public Set<FremePlugin> getFremePlugins(){
+    public Set<FremePlugin> getFremePlugins() {
         return this.fremePlugins.keySet();
     }
-    
+
     /**
      * Return if the plugin should receive data from the workbench.
      */
@@ -159,6 +171,7 @@ public class PluginManager implements OcelotEventQueueListener {
         } else if (plugin instanceof FremePlugin) {
             FremePlugin fremePlugin = (FremePlugin) plugin;
             fremePlugins.put(fremePlugin, enabled);
+            fremeMenu.setEnabled(enabled);
         }
         cfgService.savePluginEnabled(plugin, enabled);
     }
@@ -251,19 +264,38 @@ public class PluginManager implements OcelotEventQueueListener {
             if (!fragment.isEnriched()) {
                 for (FremePlugin fremePlugin : fremePlugins.keySet()) {
                     try {
-                        List<Enrichment> enrichments = fremePlugin.enrichContent(fragment.getDisplayText());
+                        List<Enrichment> enrichments = fremePlugin
+                                .enrichContent(fragment.getDisplayText());
                         fragment.setEnrichments(enrichments);
                         fragment.setEnriched(true);
-                        if(enrichments != null && !enrichments.isEmpty() ){
-                            EnrichmentFrame enrichFrame = new EnrichmentFrame(fragment, null);
+                        if (enrichments != null && !enrichments.isEmpty()) {
+                            EnrichmentFrame enrichFrame = new EnrichmentFrame(
+                                    fragment, null);
                             SwingUtilities.invokeLater(enrichFrame);
                         }
                     } catch (FremeEnrichmentException e1) {
-                        LOG.error("Freme plugin '" + fremePlugin.getPluginName()
-                                + "' threw an exception on segment variant selection", e);
+                        LOG.error(
+                                "Freme plugin '"
+                                        + fremePlugin.getPluginName()
+                                        + "' threw an exception on segment variant selection",
+                                e);
                     }
                 }
             }
+        }
+    }
+
+    public void blablabla(final SegmentTableModel segmentModel) {
+
+        if (fremePlugins != null) {
+            FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
+            ExecutorService executor = Executors.newCachedThreadPool();
+            for (int i = 0; i < segmentModel.getRowCount(); i++) {
+                Runnable enricher = new SegmentEnricher(fremePlugin,
+                        segmentModel, i);
+                executor.execute(enricher);
+            }
+            executor.shutdown();
         }
     }
 
@@ -488,5 +520,98 @@ public class PluginManager implements OcelotEventQueueListener {
             String s = filename.substring(i);
             return s.equalsIgnoreCase(".jar");
         }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        FremeEServiceMenuItem menuItem = (FremeEServiceMenuItem) e
+                .getItemSelectable();
+        try {
+            if (fremePlugins != null) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
+                            .entrySet()) {
+                        if (fremePlugin.getValue()) {
+                            fremePlugin.getKey().turnOnService(
+                                    menuItem.getServiceType());
+                        }
+                    }
+                } else {
+                    for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
+                            .entrySet()) {
+                        if (fremePlugin.getValue()) {
+                            fremePlugin.getKey().turnOffService(
+                                    menuItem.getServiceType());
+                        }
+                    }
+                }
+            }
+        } catch (UnknownServiceException exc) {
+            LOG.trace("Error while turning on/off the service with type: "
+                    + menuItem.getServiceType(), exc);
+            JOptionPane.showMessageDialog(null,
+                    "An error has occurred while turning on/off the service.",
+                    "Freme e-Service", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public JMenu getFremeMenu() {
+
+        if (fremePlugins != null) {
+            fremeMenu = new FremeMenu(this);
+            boolean enableMenu = false;
+            for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
+                    .entrySet()) {
+                if (fremePlugin.getValue()) {
+                    enableMenu = true;
+                    break;
+                }
+            }
+            fremeMenu.setEnabled(enableMenu);
+        }
+
+        return fremeMenu;
+    }
+}
+
+class SegmentEnricher implements Runnable {
+
+    private SegmentTableModel segmentModel;
+
+    private FremePlugin plugin;
+
+    private int row;
+
+    public SegmentEnricher(final FremePlugin plugin,
+            final SegmentTableModel segmentModel, final int row) {
+
+        this.plugin = plugin;
+        this.segmentModel = segmentModel;
+        this.row = row;
+    }
+
+    @Override
+    public void run() {
+
+        try {
+            FragmentVariant source = (FragmentVariant) segmentModel.getValueAt(
+                    row, segmentModel.getSegmentSourceColumnIndex());
+            if (source != null) {
+                plugin.enrichContent(source.getDisplayText());
+                source.setEnriched(true);
+            }
+            FragmentVariant target = (FragmentVariant) segmentModel.getValueAt(
+                    row, segmentModel.getSegmentTargetColumnIndex());
+            if (target != null && !target.getDisplayText().isEmpty()) {
+                plugin.enrichContent(target.getDisplayText());
+                target.setEnriched(true);
+            }
+            segmentModel.fireTableRowsUpdated(row, row);
+        } catch (FremeEnrichmentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // at the end
     }
 }

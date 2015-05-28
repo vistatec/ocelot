@@ -90,11 +90,11 @@ public class SegmentTableModel extends AbstractTableModel {
         return SegNum.ordinal();
     }
 
-    int getSegmentSourceColumnIndex() {
+   public int getSegmentSourceColumnIndex() {
         return Source.ordinal();
     }
 
-    int getSegmentTargetColumnIndex() {
+    public int getSegmentTargetColumnIndex() {
         return Target.ordinal();
     }
 

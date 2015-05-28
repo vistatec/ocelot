@@ -50,6 +50,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -439,6 +440,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuPlugins = new JMenuItem("Plugins");
         menuPlugins.addActionListener(this);
         menuExtensions.add(menuPlugins);
+        List<JMenu> pluginMenues = ocelotApp.getPluginMenues();
+        if(pluginMenues != null){
+            for(JMenu menu: pluginMenues){
+                menuExtensions.add(menu);
+            }
+        }
 
         menuHelp = new JMenu("Help");
         menuBar.add(menuHelp);
