@@ -28,8 +28,6 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.config.AppConfig;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
@@ -37,6 +35,10 @@ import java.util.Set;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+import com.vistatec.ocelot.config.OcelotConfigService;
+import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.config.xml.RootConfig;
 
 public class TestPluginManager {
 
@@ -48,7 +50,8 @@ public class TestPluginManager {
         assertNotNull(url);
 
         File pluginDir = new File(url.toURI());
-        PluginManager pluginManager = new PluginManager(new AppConfig(), pluginDir);
+        PluginManager pluginManager = new PluginManager(
+                new OcelotConfigService(new TestConfigTransferService()), pluginDir);
         pluginManager.discover();
 
         Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
@@ -62,5 +65,19 @@ public class TestPluginManager {
         Plugin segPlugin = segPlugins.iterator().next();
         assertEquals("Sample Segment Plugin", segPlugin.getPluginName());
         assertEquals("1.0", segPlugin.getPluginVersion());
+    }
+
+    public class TestConfigTransferService implements ConfigTransferService {
+
+        @Override
+        public RootConfig parse() throws ConfigTransferService.TransferException {
+            return new RootConfig();
+        }
+
+        @Override
+        public void save(RootConfig cfg) throws ConfigTransferService.TransferException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }

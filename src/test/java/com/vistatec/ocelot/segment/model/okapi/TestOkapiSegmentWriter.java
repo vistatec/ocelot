@@ -37,7 +37,6 @@ import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 
 import org.junit.*;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
@@ -61,8 +60,8 @@ public class TestOkapiSegmentWriter {
     public void testMissingProvenance() {
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
@@ -70,7 +69,7 @@ public class TestOkapiSegmentWriter {
                 GenericAnnotationType.PROV_PROVREF, "X")));
         // pass empty provenance properties
         TestSegmentWriter segmentWriter = new TestSegmentWriter(
-                new TestProvenanceConfig(null, null, null), mockEventQueue);
+                new UserProvenance(null, null, null), mockEventQueue);
         // OC-16: make sure this doesn't crash
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         // We shouldn't add a second annotation record for our empty user provenance
@@ -85,15 +84,15 @@ public class TestOkapiSegmentWriter {
     public void testDontAddRedundantProvenance() throws Exception {
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         seg.addProvenance(new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_PROVREF, "X")));
         TestSegmentWriter segmentWriter = new TestSegmentWriter(
-                new TestProvenanceConfig("T", "S", "X"), mockEventQueue);
+                new UserProvenance("T", "S", "X"), mockEventQueue);
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(1, provAnns.getAnnotations("its-prov").size());
     }
@@ -102,8 +101,8 @@ public class TestOkapiSegmentWriter {
     public void testAddUserProvenance() throws Exception {
         final OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         Provenance prov = new OkapiProvenance(new GenericAnnotation(GenericAnnotationType.PROV,
                 GenericAnnotationType.PROV_REVORG, "S",
@@ -115,7 +114,7 @@ public class TestOkapiSegmentWriter {
         }});
 
         TestSegmentWriter segmentWriter = new TestSegmentWriter(
-                new TestProvenanceConfig("A", "B", "C"), mockEventQueue);
+                new UserProvenance("A", "B", "C"), mockEventQueue);
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(2, provAnns.getAnnotations("its-prov").size());
 
@@ -130,23 +129,9 @@ public class TestOkapiSegmentWriter {
         assertEquals("C", userAnno.getString(GenericAnnotationType.PROV_PROVREF));
     }
 
-    class TestProvenanceConfig extends ProvenanceConfig {
-        private String revPerson, revOrg, extRef;
-        public TestProvenanceConfig(String revPerson, String revOrg, String extRef) {
-            super();
-            this.revPerson = revPerson;
-            this.revOrg = revOrg;
-            this.extRef = extRef;
-        }
-        @Override
-        public UserProvenance getUserProvenance() {
-            return new UserProvenance(revPerson, revOrg, extRef);
-        }
-    }
-
     class TestSegmentWriter extends OkapiSegmentWriter {
-        TestSegmentWriter(ProvenanceConfig config, OcelotEventQueue eventQueue) {
-            super(config, eventQueue);
+        TestSegmentWriter(UserProvenance userProvenance, OcelotEventQueue eventQueue) {
+            super(userProvenance, eventQueue);
         }
         @Override
         public void updateSegment(OcelotSegment seg) {

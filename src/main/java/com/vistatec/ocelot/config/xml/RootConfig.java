@@ -26,45 +26,38 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.config;
+package com.vistatec.ocelot.config.xml;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
-
-import com.vistatec.ocelot.plugins.Plugin;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Plugin configuration XML element.
+ * XML Root Ocelot configuration element.
  */
-public class PluginConfig {
-    protected String className;
-    protected boolean enabled;
+@XmlRootElement
+public class RootConfig {
+    @XmlElement protected List<PluginConfig> plugins;
+    @XmlElement protected ProvenanceConfig userProvenance;
+    @XmlElement protected TmManagement tmManagement;
 
-    public PluginConfig() {}
-
-    public PluginConfig(Plugin plugin, boolean enabled) {
-        this.className = plugin.getClass().getName();
-        this.enabled = enabled;
-    }
-    
-    public boolean matches(Plugin plugin) {
-        return className.equals(plugin.getClass().getName());
+    public RootConfig() {
+        this.plugins = new ArrayList<>();
+        this.userProvenance = new ProvenanceConfig();
+        this.tmManagement = new TmManagement();
     }
 
-    @XmlElement
-    public String getClassName() {
-        return this.className;
+    public List<PluginConfig> getPlugins() {
+        return plugins;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public ProvenanceConfig getUserProvenance() {
+        return userProvenance;
     }
 
-    @XmlElement
-    public boolean getEnabled() {
-        return this.enabled;
+    public TmManagement getTmManagement() {
+        return tmManagement;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 }

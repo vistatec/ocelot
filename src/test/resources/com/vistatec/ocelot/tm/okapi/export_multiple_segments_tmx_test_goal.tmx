@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4"><header creationtool="Ocelot-Okapi-Tmx-Writer" creationtoolversion="v1.1-68-g1bbb00b" segtype="sentence" o-tmf="unknown" adminlang="en" srclang="en" datatype="unknown"></header><body>
+<tu tuid="1">
+<tuv xml:lang="en"><seg>source 1</seg></tuv>
+<tuv xml:lang="fr"><seg>target 1</seg></tuv>
+</tu>
+<tu tuid="2">
+<tuv xml:lang="en"><seg><ph x="1" type="<mrk>">&lt;mrk id=&quot;1&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph>test<ph x="2" type="<mrk>">&lt;mrk id=&quot;2&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph></seg></tuv>
+<tuv xml:lang="fr"><seg><ph x="1" type="<mrk>">&lt;mrk id=&quot;1&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph>test<ph x="2" type="<mrk>">&lt;mrk id=&quot;2&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph></seg></tuv>
+</tu>
+</body>
+</tmx>

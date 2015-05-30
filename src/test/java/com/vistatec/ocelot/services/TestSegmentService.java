@@ -42,9 +42,9 @@ public class TestSegmentService {
 
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("source"))
-                .target(new SimpleSegmentVariant("target"))
-                .originalTarget(new SimpleSegmentVariant("original_target"))
+                .source("source")
+                .target("target")
+                .originalTarget("original_target")
                 .build();
 
         segmentService.resetSegmentTarget(new SegmentTargetResetEvent(seg));
@@ -61,9 +61,9 @@ public class TestSegmentService {
         List<OcelotSegment> segments = new ArrayList<>();
         segments.add(new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("source"))
-                .target(new SimpleSegmentVariant("target"))
-                .originalTarget(new SimpleSegmentVariant("original_target"))
+                .source("source")
+                .target("target")
+                .originalTarget("original_target")
                 .build());
 
         assertTrue(segmentService.getNumSegments() == 0);
@@ -82,9 +82,9 @@ public class TestSegmentService {
         LanguageQualityIssue lqi = RulesTestHelpers.lqi("omission", 85);
         OcelotSegment seg = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant("source"))
-                .target(new SimpleSegmentVariant("target"))
-                .originalTarget(new SimpleSegmentVariant("original_target"))
+                .source("source")
+                .target("target")
+                .originalTarget("original_target")
                 .build();
         seg.addLQI(lqi);
 

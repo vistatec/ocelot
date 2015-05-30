@@ -12,8 +12,6 @@ import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 public abstract class BaseSegmentVariant implements SegmentVariant {
 
-    protected abstract List<SegmentAtom> getAtoms();
-
     protected abstract void setAtoms(List<SegmentAtom> atoms);
 
     List<SegmentAtom> getAtomsForRange(int start, int length) {

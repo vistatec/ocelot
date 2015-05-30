@@ -66,8 +66,8 @@ public class TestBaseSegment {
         int id = nextSegmentId++;
         return new SimpleSegment.Builder()
                 .segmentNumber(id)
-                .source(new SimpleSegmentVariant("source"))
-                .target(new SimpleSegmentVariant("target"))
+                .source("source")
+                .target("target")
                 .build();
     }
 }

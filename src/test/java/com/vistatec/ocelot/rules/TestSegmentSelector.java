@@ -59,39 +59,39 @@ public class TestSegmentSelector {
         // - 1 seg with no sq, no filter
         segPlain = new SimpleSegment.Builder()
                 .segmentNumber(1)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
 
         // - 1 seg with [some] sq
         segSQ = new SimpleSegment.Builder()
                 .segmentNumber(2)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .stateQualifier(StateQualifier.ID)
                 .build();
 
         // - 1 seg with no sq, filter A
         segA = new SimpleSegment.Builder()
                 .segmentNumber(3)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         segA.addAllLQI(Collections.singletonList(lqi("omission", 85)));
 
         // - 1 seg with no sq, filter B
         segB = new SimpleSegment.Builder()
                 .segmentNumber(4)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .build();
         segB.addAllLQI(Collections.singletonList(lqi("terminology", 85)));
 
         // - 1 seg with [some] sq, filter A
         segSQ_A = new SimpleSegment.Builder()
                 .segmentNumber(5)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .stateQualifier(StateQualifier.ID)
                 .build();
         segSQ_A.addAllLQI(Collections.singletonList(lqi("omission", 85)));
@@ -99,8 +99,8 @@ public class TestSegmentSelector {
         // - 1 seg with [some] sq, filter B
         segSQ_B = new SimpleSegment.Builder()
                 .segmentNumber(6)
-                .source(new SimpleSegmentVariant(""))
-                .target(new SimpleSegmentVariant(""))
+                .source("")
+                .target("")
                 .stateQualifier(StateQualifier.ID)
                 .build();
         segSQ_B.addAllLQI(Collections.singletonList(lqi("terminology", 85)));

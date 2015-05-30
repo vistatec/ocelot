@@ -31,11 +31,13 @@ package com.vistatec.ocelot;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FileDialog;
 import java.awt.Font;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
@@ -43,12 +45,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -88,6 +93,21 @@ import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
 
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.vistatec.ocelot.di.OcelotModule;
+import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.view.ProvenanceProfileView;
+import com.vistatec.ocelot.plugins.PluginManagerView;
+import com.vistatec.ocelot.rules.FilterView;
+import com.vistatec.ocelot.rules.QuickAddView;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.view.SegmentAttributeView;
+import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.gui.TmGuiManager;
+import com.vistatec.ocelot.ui.ODialogPanel;
+
 /**
  * Main UI Thread class. Handles menu and file operations
  *
@@ -106,15 +126,19 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     private JMenuItem menuPlugins;
     private JCheckBoxMenuItem menuTgtDiff;
     private JMenuItem menuColumns;
+    private JMenuItem menuConfigTm;
+    private JMenuItem menuSaveAsTmx;
 
     private OcelotToolBar toolBar;
     
     private JFrame mainframe;
     private JSplitPane mainSplitPane;
     private JSplitPane segAttrSplitPane;
+    private JSplitPane tmConcordanceSplitPane;
     private SegmentAttributeView segmentAttrView;
     private DetailView itsDetailView;
     private SegmentView segmentView;
+    private TmGuiManager tmGuiManager;
 
     private final String platformOS;
     private boolean useNativeUI = false;
@@ -129,6 +153,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         this.ocelotScope = ocelotScope;
         this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
         this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
+        this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
+        this.eventQueue.registerListener(tmGuiManager);
         eventQueue.registerListener(ocelotApp);
 
         platformOS = System.getProperty("os.name");
@@ -149,13 +175,14 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     private Component setupMainPane(SegmentView segView,
             SegmentAttributeView segAttrView, DetailView detailView) throws IOException, InstantiationException, IllegalAccessException {
-        Dimension segSize = new Dimension(500, 500);
+//        Dimension segSize = new Dimension(500, 500);
 
         segmentView = segView;
-        segmentView.setMinimumSize(segSize);
+        //Commented this line in order to let the vertical split panel divider to be freely moved.
+//        segmentView.setMinimumSize(segSize);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                setupSegAttrDetailPanes(segAttrView, detailView), segmentView);
+                setupSegAttrDetailPanes(segAttrView, detailView), setupSegmentTmPanes());
         mainSplitPane.setOneTouchExpandable(true);
 
         return mainSplitPane;
@@ -176,6 +203,25 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         segAttrSplitPane.setOneTouchExpandable(true);
 
         return segAttrSplitPane;
+    }
+    
+    private Component setupSegmentTmPanes(){
+    	
+    	tmConcordanceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tmGuiManager.getTmPanel(), segmentView);
+    	tmConcordanceSplitPane.setOneTouchExpandable(true);
+    	tmConcordanceSplitPane.addContainerListener(new ContainerListener() {
+			
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+				
+			}
+			
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				tmConcordanceSplitPane.setDividerLocation(0.3);				
+			}
+		});
+    	return tmConcordanceSplitPane;
     }
 
     public void setMainTitle(String sourceTitle) {
@@ -214,6 +260,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                     setMainTitle(saveFile.getName());
                 }
             }
+        } else if (e.getSource().equals(menuSaveAsTmx)){
+        	tmGuiManager.saveAsTmx(mainframe);
         } else if (e.getSource() == this.menuSave) {
             save(ocelotApp.getOpenFile());
         } else if (e.getSource() == this.menuTgtDiff) {
@@ -221,6 +269,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         }
         else if (e.getSource() == this.menuColumns) {
             showModelessDialog(new ColumnSelector(segmentView.getTableModel()), "Configure Columns");
+        } else if (e.getSource() == this.menuConfigTm){
+        	eventQueue.post(new ConfigTmRequestEvent(mainframe));
         }
     }
 
@@ -235,12 +285,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         if (sourceFile != null) {
             try {
                 ocelotApp.openFile(sourceFile, detectVersion);
-                eventQueue.post(new OpenFileEvent(sourceFile.getName()));
                 this.setMainTitle(sourceFile.getName());
                 segmentView.reloadTable();
 
                 this.menuSave.setEnabled(true);
                 this.menuSaveAs.setEnabled(true);
+                this.menuSaveAsTmx.setEnabled(true);
                 this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
                 this.toolBar.setSourceFont(segmentView.getSourceFont());
                 this.toolBar.setTargetFont(segmentView.getTargetFont());
@@ -366,6 +416,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
                 Event.SHIFT_MASK | getPlatformKeyMask()));
         menuFile.add(menuSaveAs);
 
+        menuSaveAsTmx = new JMenuItem("Save As tmx");
+        menuSaveAsTmx.setEnabled(false);
+        menuSaveAsTmx.addActionListener(this);
+        //TODO add accelerator
+        menuFile.add(menuSaveAsTmx);
+        
         menuProv = new JMenuItem("Profile");
         menuProv.addActionListener(this);
         menuProv.setAccelerator(
@@ -386,6 +442,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         menuColumns = new JMenuItem("Configure Columns");
         menuColumns.addActionListener(this);
         menuView.add(menuColumns);
+        menuConfigTm = new JMenuItem("Configure TM");
+        menuConfigTm.addActionListener(this);
+        menuView.add(menuConfigTm);
 
         menuFilter = new JMenu("Filter");
         menuBar.add(menuFilter);
@@ -462,6 +521,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         // Display the window
         mainframe.pack();
         mainframe.setVisible(true);
+        tmConcordanceSplitPane.setDividerLocation(0.4);
+        
     }
 
     void showModelessDialog(ODialogPanel panel, String title) {
@@ -584,5 +645,4 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         }
 
     }
-
 }

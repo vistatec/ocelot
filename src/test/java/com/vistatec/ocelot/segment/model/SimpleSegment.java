@@ -55,7 +55,9 @@ public class SimpleSegment extends BaseSegment {
 
     public static class Builder {
         private int segmentNumber;
-        private SegmentVariant source, target, originalTarget;
+        private final SimpleSegmentVariant.Builder source = new SimpleSegmentVariant.Builder();
+        private final SimpleSegmentVariant.Builder target = new SimpleSegmentVariant.Builder();
+        private SimpleSegmentVariant.Builder originalTarget;
         private StateQualifier stateQualifier;
 
         public Builder segmentNumber(int segNum) {
@@ -63,18 +65,32 @@ public class SimpleSegment extends BaseSegment {
             return this;
         }
 
-        public Builder source(SegmentVariant source) {
-            this.source = source;
+        public SimpleSegmentVariant.Builder source() {
+            return this.source;
+        }
+
+        public Builder source(String sourcePlainText) {
+            this.source.text(sourcePlainText);
             return this;
         }
 
-        public Builder target(SegmentVariant target) {
-            this.target = target;
+        public SimpleSegmentVariant.Builder target() {
+            return this.target;
+        }
+
+        public Builder target(String targetPlainText) {
+            this.target.text(targetPlainText);
             return this;
         }
 
-        public Builder originalTarget(SegmentVariant originalTarget) {
-            this.originalTarget = originalTarget;
+        public SimpleSegmentVariant.Builder originalTarget() {
+            this.originalTarget = new SimpleSegmentVariant.Builder();
+            return this.originalTarget;
+        }
+
+        public Builder originalTarget(String originalTargetPlainText) {
+            this.originalTarget = new SimpleSegmentVariant.Builder();
+            this.originalTarget.text(originalTargetPlainText);
             return this;
         }
 
@@ -84,8 +100,8 @@ public class SimpleSegment extends BaseSegment {
         }
 
         public SimpleSegment build() {
-            return new SimpleSegment(segmentNumber, source, target,
-                    originalTarget, stateQualifier);
+            return new SimpleSegment(segmentNumber, source.build(), target.build(),
+                    originalTarget == null ? null : originalTarget.build(), stateQualifier);
         }
     }
 }

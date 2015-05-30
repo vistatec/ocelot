@@ -44,8 +44,11 @@ import java.net.URI;
 import java.util.List;
 
 import com.google.common.eventbus.EventBus;
-import com.vistatec.ocelot.config.ConfigsForProvTesting;
-import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Resources;
+import com.vistatec.ocelot.config.OcelotConfigService;
+import com.vistatec.ocelot.config.TestProvenanceConfig;
+import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
@@ -82,8 +85,10 @@ public class TestOkapiXLIFF12Writer {
         File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
         File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
 
-        XliffService xliffService = new OkapiXliffService(new ProvenanceConfig(
-                new ConfigsForProvTesting("revPerson=q", null)), eventQueue);
+        ByteSource testLoad = Resources.asByteSource(
+                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
+        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
         List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
@@ -109,8 +114,10 @@ public class TestOkapiXLIFF12Writer {
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
         // Note that we need non-null provenance to be added, so we supply
         // a dummy revPerson value
-        XliffService xliffService = new OkapiXliffService(new ProvenanceConfig(
-                new ConfigsForProvTesting("revPerson=q", null)), eventQueue);
+        ByteSource testLoad = Resources.asByteSource(
+                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
+        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();

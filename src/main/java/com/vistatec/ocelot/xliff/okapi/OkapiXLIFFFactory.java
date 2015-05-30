@@ -44,7 +44,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
+import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.xliff.XLIFFFactory;
 import com.vistatec.ocelot.xliff.XLIFFParser;
@@ -101,11 +101,11 @@ public class OkapiXLIFFFactory implements XLIFFFactory {
 
     @Override
     public XLIFFWriter newXLIFFWriter(XLIFFParser parser,
-            ProvenanceConfig config, OcelotEventQueue eventQueue) {
+            UserProvenance userProvenance, OcelotEventQueue eventQueue) {
         if (parser instanceof OkapiXLIFF12Parser) {
-            return new OkapiXLIFF12Writer((OkapiXLIFF12Parser) parser, config, eventQueue);
+            return new OkapiXLIFF12Writer((OkapiXLIFF12Parser) parser, userProvenance, eventQueue);
         } else if (parser instanceof OkapiXLIFF20Parser) {
-            return new OkapiXLIFF20Writer((OkapiXLIFF20Parser) parser, config, eventQueue);
+            return new OkapiXLIFF20Writer((OkapiXLIFF20Parser) parser, userProvenance, eventQueue);
         } else {
             throw new IllegalArgumentException("Unrecognized XLIFF parser version!");
         }

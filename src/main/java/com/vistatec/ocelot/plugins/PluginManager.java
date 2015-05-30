@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.plugins;
 
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.AppConfig;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -60,6 +59,9 @@ import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.ConfigTransferService;
+
 /**
  * Detect, install, and instantiate any available plugin classes.
  * 
@@ -76,13 +78,13 @@ public class PluginManager implements OcelotEventQueueListener {
         private HashMap<SegmentPlugin, Boolean> segPlugins;
         private ClassLoader classLoader;
         private File pluginDir;
-        protected AppConfig appConfig;
+        private final ConfigService cfgService;
 	
-	public PluginManager(AppConfig appConfig, File pluginDir) {
+	public PluginManager(ConfigService cfgService, File pluginDir) {
             this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
             this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
+            this.cfgService = cfgService;
             this.pluginDir = pluginDir;
-            this.appConfig = appConfig;
 	}
 
         public File getPluginDir() {
@@ -128,7 +130,7 @@ public class PluginManager implements OcelotEventQueueListener {
             return enabled;
         }
 
-        public void setEnabled(Plugin plugin, boolean enabled) {
+        public void setEnabled(Plugin plugin, boolean enabled) throws ConfigTransferService.TransferException {
             if (plugin instanceof ITSPlugin) {
                 ITSPlugin itsPlugin = (ITSPlugin) plugin;
                 itsPlugins.put(itsPlugin, enabled);
@@ -136,7 +138,7 @@ public class PluginManager implements OcelotEventQueueListener {
                 SegmentPlugin segPlugin = (SegmentPlugin) plugin;
                 segPlugins.put(segPlugin, enabled);
             }
-            appConfig.savePluginEnabled(plugin, enabled);
+            cfgService.savePluginEnabled(plugin, enabled);
         }
 
         /**
@@ -277,7 +279,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				@SuppressWarnings("unchecked")
 				Class<? extends ITSPlugin> c = (Class<ITSPlugin>)Class.forName(s, false, classLoader);
 				ITSPlugin plugin = c.newInstance();
-				itsPlugins.put(plugin, appConfig.wasPluginEnabled(plugin));
+				itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			}
 			catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
@@ -293,7 +295,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				@SuppressWarnings("unchecked")
 				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>)Class.forName(s, false, classLoader);
 				SegmentPlugin plugin = c.newInstance();
-				segPlugins.put(plugin, appConfig.wasPluginEnabled(plugin));
+				segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			}
 			catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?

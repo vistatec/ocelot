@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.xliff.XLIFFFactory;
 import com.vistatec.ocelot.xliff.XLIFFParser;
@@ -42,6 +41,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.xliff.okapi.OkapiXLIFFFactory;
@@ -55,11 +55,11 @@ public class OkapiXliffService implements XliffService {
     private XLIFFParser xliffParser;
     private XLIFFWriter segmentWriter;
 
-    private final ProvenanceConfig provConfig;
+    private final ConfigService cfgService;
     private final OcelotEventQueue eventQueue;
 
-    public OkapiXliffService(ProvenanceConfig provConfig, OcelotEventQueue eventQueue) {
-        this.provConfig = provConfig;
+    public OkapiXliffService(ConfigService cfgService, OcelotEventQueue eventQueue) {
+        this.cfgService = cfgService;
         this.eventQueue = eventQueue;
     }
 
@@ -74,7 +74,8 @@ public class OkapiXliffService implements XliffService {
         List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
 
         xliffParser = newParser;
-        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser, provConfig, eventQueue);
+        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
+                cfgService.getUserProvenance(), eventQueue);
         return xliffSegments;
     }
 

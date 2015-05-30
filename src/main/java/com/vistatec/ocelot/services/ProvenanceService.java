@@ -1,35 +1,34 @@
 package com.vistatec.ocelot.services;
 
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.events.UserProfileSaveEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
-import java.io.IOException;
-
 import com.google.inject.Inject;
+import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.ConfigTransferService;
 
 /**
  * Handle provenance related functionality.
  */
 public class ProvenanceService implements OcelotEventQueueListener {
     private final OcelotEventQueue eventQueue;
-    private final ProvenanceConfig provConfig;
+    private final ConfigService cfgService;
 
     @Inject
-    public ProvenanceService(OcelotEventQueue eventQueue, ProvenanceConfig provConfig) {
+    public ProvenanceService(OcelotEventQueue eventQueue, ConfigService cfgService) {
         this.eventQueue = eventQueue;
-        this.provConfig = provConfig;
+        this.cfgService = cfgService;
     }
 
     @Subscribe
     public void saveUserProvenance(UserProfileSaveEvent profileSave) {
         try {
-            provConfig.save(profileSave.getProfile());
+            cfgService.saveUserProvenance(profileSave.getProfile());
             this.eventQueue.post(profileSave.new Success());
 
-        } catch (IOException ex) {
+        } catch (ConfigTransferService.TransferException ex) {
             this.eventQueue.post(profileSave.new Failure(
                     "Failed to save user provenance. Check logs for details",
                     ex));

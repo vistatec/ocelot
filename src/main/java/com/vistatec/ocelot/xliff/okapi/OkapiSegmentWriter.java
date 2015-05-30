@@ -28,7 +28,6 @@
  */
 package com.vistatec.ocelot.xliff.okapi;
 
-import com.vistatec.ocelot.config.ProvenanceConfig;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -63,16 +62,15 @@ import net.sf.okapi.common.skeleton.ISkeletonWriter;
  */
 public abstract class OkapiSegmentWriter {
     public abstract void updateSegment(OcelotSegment seg);
-    private ProvenanceConfig provConfig;
+    private final UserProvenance userProvenance;
     private final OcelotEventQueue eventQueue;
 
-    public OkapiSegmentWriter(ProvenanceConfig provConfig, OcelotEventQueue eventQueue) {
-        this.provConfig = provConfig;
+    public OkapiSegmentWriter(UserProvenance userProvenance, OcelotEventQueue eventQueue) {
+        this.userProvenance = userProvenance;
         this.eventQueue = eventQueue;
     }
 
     public ITSProvenanceAnnotations addOcelotProvenance(OcelotSegment seg) {
-        UserProvenance userProvenance = provConfig.getUserProvenance();
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
         for (Provenance prov : seg.getProvenance()) {
             String revPerson = prov.getRevPerson();
