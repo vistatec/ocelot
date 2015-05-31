@@ -29,7 +29,12 @@ public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
         if(o != null){
         	renderTextPane.setVariant(segVariant, false);
         	renderTextPane.setBackground(comp.getBackground());
-        	renderTextPane.setForeground(jtable.getForeground());
+            if (isSelected) {
+                renderTextPane.setForeground(comp.getForeground());
+            }
+            else {
+                renderTextPane.setForeground(jtable.getForeground());
+            }
         }
 
             renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
