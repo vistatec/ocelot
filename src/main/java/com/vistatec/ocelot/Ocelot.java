@@ -31,13 +31,11 @@ package com.vistatec.ocelot;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FileDialog;
 import java.awt.Font;
-import java.awt.FocusTraversalPolicy;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.Toolkit;
@@ -53,7 +51,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -80,7 +79,6 @@ import org.xml.sax.SAXException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
-import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
@@ -91,22 +89,8 @@ import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
-
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.view.ProvenanceProfileView;
-import com.vistatec.ocelot.plugins.PluginManagerView;
-import com.vistatec.ocelot.rules.FilterView;
-import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.view.SegmentAttributeView;
-import com.vistatec.ocelot.segment.view.SegmentView;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
-import com.vistatec.ocelot.ui.ODialogPanel;
 
 /**
  * Main UI Thread class. Handles menu and file operations
@@ -175,11 +159,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
 
     private Component setupMainPane(SegmentView segView,
             SegmentAttributeView segAttrView, DetailView detailView) throws IOException, InstantiationException, IllegalAccessException {
-//        Dimension segSize = new Dimension(500, 500);
 
         segmentView = segView;
-        //Commented this line in order to let the vertical split panel divider to be freely moved.
-//        segmentView.setMinimumSize(segSize);
 
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 setupSegAttrDetailPanes(segAttrView, detailView), setupSegmentTmPanes());
@@ -500,7 +481,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);
-//        mainframe.setLayout(new BorderLayout());
         //This default close operation let us handle the application exit.
         mainframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainframe.addWindowListener(new WindowAdapter() {
@@ -519,10 +499,27 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
         mainframe.getContentPane().add(this, BorderLayout.CENTER);
 
         // Display the window
+        Dimension userWindowSize = getUserDefinedWindowSize();
+        if (userWindowSize != null) {
+            mainframe.setMinimumSize(userWindowSize);
+        }
         mainframe.pack();
         mainframe.setVisible(true);
         tmConcordanceSplitPane.setDividerLocation(0.4);
-        
+    }
+
+    private Dimension getUserDefinedWindowSize() {
+        String val = System.getProperty("ocelot.windowSize");
+        if (val == null) {
+            return null;
+        }
+        Matcher m = Pattern.compile("(\\d+)x(\\d+)").matcher(val);
+        if (m.matches()) {
+            LOG.info("Using user-defined window size " + val);
+            return new Dimension(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2)));
+        }
+        LOG.warn("Ignoring unparsable ocelot.windowSize value '" + val + "'");
+        return null;
     }
 
     void showModelessDialog(ODialogPanel panel, String title) {
