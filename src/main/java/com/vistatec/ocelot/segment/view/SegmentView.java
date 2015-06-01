@@ -646,15 +646,21 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected, boolean hasFocus, int row, int col) {
+        public Component getTableCellRendererComponent(JTable jtable, Object obj, boolean isSelected,
+                                                       boolean hasFocus, int row, int col) {
             Integer segNum = (Integer) obj;
             OcelotSegment seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(row));
 
-            Color background = getSegmentColor(seg);
-            background = background != null ? background :
-                    isSelected ?
-                        seg.isEditable() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY
-                        : jtable.getBackground();
+            // The Segment # column is color-coded based on the state-qualifier information,
+            // but other integers are not.
+            SegmentViewColumn columnType = segmentTableModel.getColumn(col);
+            Color background = columnType == SegmentViewColumn.SegNum ?
+                                                getSegmentColor(seg) : null;
+            if (background == null) {
+                background = isSelected ?
+                            seg.isEditable() ? jtable.getSelectionBackground() : Color.LIGHT_GRAY
+                            : jtable.getBackground();
+            }
 
             Color foreground = seg.isEditable()
                     ? isSelected ? jtable.getSelectionForeground() : jtable.getForeground()
