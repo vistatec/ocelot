@@ -14,21 +14,21 @@ import com.vistatec.ocelot.segment.view.SegmentTextCell;
 public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
 
     /** The serial version UID. */
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.vistatec.ocelot.tm.gui.match.AlternateRowsColorRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
-	 */
+    /*
+     * (non-Javadoc)
+     * @see com.vistatec.ocelot.tm.gui.match.AlternateRowsColorRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
+     */
 	@Override
     public Component getTableCellRendererComponent(JTable jtable, Object o,
         boolean isSelected, boolean hasFocus, int row, int col) {
         Component comp = super.getTableCellRendererComponent(jtable, o, isSelected, hasFocus, row, col);
-    	SegmentTextCell renderTextPane = new SegmentTextCell();
+        SegmentTextCell renderTextPane = new SegmentTextCell();
         SegmentVariant segVariant = (SegmentVariant)o;
         if(o != null){
-        	renderTextPane.setVariant(segVariant, false);
-        	renderTextPane.setBackground(comp.getBackground());
+            renderTextPane.setVariant(segVariant, false);
+            renderTextPane.setBackground(comp.getBackground());
             if (isSelected) {
                 renderTextPane.setForeground(comp.getForeground());
             }
@@ -37,9 +37,8 @@ public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
             }
         }
 
-            renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
-        
-            
+        renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());
+
         return renderTextPane;
     }
 }
