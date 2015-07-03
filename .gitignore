@@ -2,6 +2,7 @@ Version.java
 bin
 doc
 tags
+*.csv
 .DS_Store
 .classpath
 .project
