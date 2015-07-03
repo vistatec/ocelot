@@ -6,6 +6,7 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -85,6 +86,9 @@ public class TmGuiMatchController {
 		} catch (IOException e) {
 			Logger.getLogger(TmGuiMatchController.class).trace(
 					"Error while retrieving fuzzy matches.", e);
+		}
+		if(matches != null){
+			Collections.sort(matches, new TmMatchComparator());
 		}
 		return matches;
 	}
@@ -167,6 +171,7 @@ public class TmGuiMatchController {
 		if (!selectedSegment.equals(currSelectedSegment)) {
 			this.currSelectedSegment = selectedSegment;
 			if (translationsPanel != null) {
+				selectTranslationsTab();
 				translationsPanel.setLoading();
 				List<TmMatch> translations = getFuzzyMatches(selectedSegment
 						.getSource().getAtoms());
@@ -239,5 +244,31 @@ public class TmGuiMatchController {
 	public void selectConcordanceTab() {
 		tmPanel.setSelectedComponent(concordancePanel.getAttachedComponent());
 	}
+	
+	/**
+	 * Selects the translations panel tab.
+	 */
+	public void selectTranslationsTab(){
+		tmPanel.setSelectedComponent(translationsPanel.getAttachedComponent());
+	}
 
+}
+
+/**
+ * Comparator class for TmMatch objects. 
+ */
+class TmMatchComparator implements Comparator<TmMatch>{
+
+	@Override
+	public int compare(TmMatch o1, TmMatch o2) {
+		
+		int comp = 0;
+		if(o1.getMatchScore() > o2.getMatchScore()){
+			comp = -1;
+		} else if (o1.getMatchScore() < o2.getMatchScore()){
+			comp = 1;
+		}
+		return comp;
+	}
+	
 }
