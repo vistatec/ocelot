@@ -4,8 +4,18 @@ public class LinkEnrichment extends Enrichment  {
     
     public final static String ENRICHMENT_TYPE = "link"; 
 
-    public LinkEnrichment(String nifOffsetString) {
+    private String url;
+    
+    private String value;
+    
+    public LinkEnrichment(String nifOffsetString, String url, String value) {
         super(nifOffsetString);
+        this.url = url;
+        this.value = value;
+    }
+    
+    public LinkEnrichment(String nifOffsetString, String url) {
+    	this(nifOffsetString, url, "");
     }
 
     @Override
@@ -26,4 +36,18 @@ public class LinkEnrichment extends Enrichment  {
         return ENRICHMENT_TYPE;
     }
 
+    
+    public String getUrl(){
+    	return url;
+    }
+    
+    public String getValue(){
+    	return value;
+    }
+    
+    @Override
+    public String toString() {
+    
+    	return url + " " + value;
+    }
 }

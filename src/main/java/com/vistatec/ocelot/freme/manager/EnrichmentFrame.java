@@ -32,6 +32,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.EntityEnrichment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
@@ -53,7 +54,7 @@ public class EnrichmentFrame extends JDialog implements Runnable, ActionListener
 
     private Point position;
 
-    public EnrichmentFrame(final FragmentVariant fragment, final Window owner,
+    public EnrichmentFrame(final BaseSegmentVariant fragment, final Window owner,
             final Point position) {
 
         super(owner);
@@ -61,7 +62,7 @@ public class EnrichmentFrame extends JDialog implements Runnable, ActionListener
         this.position = position;
     }
 
-    public EnrichmentFrame(final FragmentVariant fragment, final Window owner) {
+    public EnrichmentFrame(final BaseSegmentVariant fragment, final Window owner) {
         this(fragment, owner, null);
     }
 
@@ -115,7 +116,7 @@ public class EnrichmentFrame extends JDialog implements Runnable, ActionListener
         return panel;
     }
 
-    private void buildLabels(FragmentVariant fragment) {
+    private void buildLabels(BaseSegmentVariant fragment) {
 
         Collections.sort(fragment.getEnirchments(), new EnrichmentComparator());
         labels = new ArrayList<JLabel>();
@@ -278,7 +279,8 @@ class EnrichedLabel extends JLabel implements ActionListener, MouseListener {
 
     public void addEnrichment(final Enrichment enrichment) {
 
-        if (enrichments == null) {
+        
+    	if (enrichments == null) {
             enrichments = new ArrayList<Enrichment>();
         }
         enrichments.add(enrichment);
@@ -289,7 +291,6 @@ class EnrichedLabel extends JLabel implements ActionListener, MouseListener {
         if (endIndex == -1 || endIndex < enrichment.getOffsetEndIdx()) {
             endIndex = enrichment.getOffsetEndIdx();
         }
-
     }
 
     @Override
@@ -435,5 +436,11 @@ class EnrichedLabel extends JLabel implements ActionListener, MouseListener {
     public void mouseExited(MouseEvent e) {
 
     }
+    
+    public static void main(String[] args) {
+		
+    	String str = "After spending the day seeing the sights around Bray, get a good nights sleep in one of the area s popular bed-and-breakfasts, hotels or short-stay apartments. If you’re looking for a warm welcome and a good nights sleep check out the amenities at the Royal Hotel and Merrill Leisure Club, the Martello Hotel, and the popular Esplanade Hotel Bray.&lt;/p>";
+    	System.out.println(str.length());
+	}
 
 }

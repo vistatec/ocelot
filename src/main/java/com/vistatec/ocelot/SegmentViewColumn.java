@@ -1,10 +1,13 @@
 package com.vistatec.ocelot;
 
+import javax.swing.ImageIcon;
+
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 public enum SegmentViewColumn {
     SegNum("#", "Segment Number", true, Integer.class, false, -1),
+//    Freme("F", "Freme", false, ImageIcon.class, false, -1),
     Source("Source", "Source", true, SegmentVariant.class, false, -1),
     Target("Target", "Target", true, SegmentVariant.class, false, -1),
     Original("Original Target", "Original Target", true, SegmentVariant.class, false, -1),

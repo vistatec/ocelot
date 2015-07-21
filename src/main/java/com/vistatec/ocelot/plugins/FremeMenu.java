@@ -14,7 +14,7 @@ public class FremeMenu extends JMenu  {
 
     private FremeEServiceMenuItem mnuEEntityService;
 
-    // private FremeEServiceMenuItem mnuELinkService;
+     private FremeEServiceMenuItem mnuELinkService;
     //
     // private FremeEServiceMenuItem mnuETerminologyService;
     //
@@ -35,6 +35,10 @@ public class FremeMenu extends JMenu  {
         mnuEEntityService.addItemListener(listener);
         add(mnuEEntityService);
 
+        mnuELinkService = new FremeEServiceMenuItem("e-Link", FremePlugin.ELINK_SERVICE);
+        mnuELinkService.setSelected(true);
+        mnuELinkService.addItemListener(listener);
+        add(mnuELinkService);
         // mnuELinkService = new
         // FremeEServiceMenuItem(FremePlugin.ELINK_SERVICE);
         // mnuELinkService.setSelected(true);

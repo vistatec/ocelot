@@ -63,9 +63,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.SegmentVariantSelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.freme.manager.EnrichmentFrame;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
@@ -74,7 +76,6 @@ import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
 import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.view.SegmentTableModel;
 import com.vistatec.ocelot.services.SegmentService;
@@ -257,47 +258,61 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
     }
 
     @Subscribe
+    public void enrichmentViewRequest(EnrichmentViewEvent e){
+    	try{
+    	EnrichmentFrame enrichFrame = new EnrichmentFrame(e.getVariant(), null);
+    	SwingUtilities.invokeLater(enrichFrame);
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
+    }
+    
+    @Subscribe
     public void handleSegmentVariantSelected(SegmentVariantSelectionEvent e) {
-
-        if (e.getSegmentVariant() instanceof FragmentVariant) {
-            FragmentVariant fragment = (FragmentVariant) e.getSegmentVariant();
-            if (!fragment.isEnriched()) {
-                for (FremePlugin fremePlugin : fremePlugins.keySet()) {
-                    try {
-                        List<Enrichment> enrichments = fremePlugin
-                                .enrichContent(fragment.getDisplayText());
-                        fragment.setEnrichments(enrichments);
-                        fragment.setEnriched(true);
-                        if (enrichments != null && !enrichments.isEmpty()) {
-                            EnrichmentFrame enrichFrame = new EnrichmentFrame(
-                                    fragment, null);
-                            SwingUtilities.invokeLater(enrichFrame);
-                        }
-                    } catch (FremeEnrichmentException e1) {
-                        LOG.error(
-                                "Freme plugin '"
-                                        + fremePlugin.getPluginName()
-                                        + "' threw an exception on segment variant selection",
-                                e);
-                    }
-                }
-            }
-        }
+//    	try{
+//        if (e.getSegmentVariant() instanceof FragmentVariant) {
+//            FragmentVariant fragment = (FragmentVariant) e.getSegmentVariant();
+//            if (!fragment.isEnriched()) {
+//                for (FremePlugin fremePlugin : fremePlugins.keySet()) {
+//                    try {
+//                        List<Enrichment> enrichments = fremePlugin
+//                                .enrichContent(fragment.getDisplayText());
+//                        fragment.setEnrichments(enrichments);
+//                        fragment.setEnriched(true);
+////                        if (enrichments != null && !enrichments.isEmpty()) {
+////                            EnrichmentFrame enrichFrame = new EnrichmentFrame(
+////                                    fragment, null);
+////                            SwingUtilities.invokeLater(enrichFrame);
+////                        }
+//                    } catch (FremeEnrichmentException e1) {
+//                    	e1.printStackTrace();
+//                    	LOG.error(
+//                                "Freme plugin '"
+//                                        + fremePlugin.getPluginName()
+//                                        + "' threw an exception on segment variant selection",
+//                                e1);
+//                    }
+//                }
+//            }
+//        }
+//    	}catch(Exception ex){
+//    		ex.printStackTrace();
+//    	}
     }
 
-    public void blablabla(final SegmentTableModel segmentModel) {
-
-        if (fremePlugins != null) {
-            FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
-            ExecutorService executor = Executors.newCachedThreadPool();
-            for (int i = 0; i < segmentModel.getRowCount(); i++) {
-                Runnable enricher = new SegmentEnricher(fremePlugin,
-                        segmentModel, i);
-                executor.execute(enricher);
-            }
-            executor.shutdown();
-        }
-    }
+//    public void blablabla(final SegmentTableModel segmentModel) {
+//
+//        if (fremePlugins != null) {
+//            FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
+//            ExecutorService executor = Executors.newCachedThreadPool();
+//            for (int i = 0; i < segmentModel.getRowCount(); i++) {
+//                Runnable enricher = new SegmentEnricher(fremePlugin,
+//                        segmentModel, i);
+//                executor.execute(enricher);
+//            }
+//            executor.shutdown();
+//        }
+//    }
 
     public void notifyOpenFile(String filename) {
         for (SegmentPlugin segPlugin : segPlugins.keySet()) {
@@ -572,6 +587,33 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 
         return fremeMenu;
     }
+
+	public void notifySegments(List<OcelotSegment> segments, OcelotEventQueue eventQueue) {
+		
+		if(fremePlugins != null ){
+			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet().iterator().next();
+			if(fremeEntry.getValue()){
+				FremePluginManager manager = new FremePluginManager(fremeEntry.getKey(), eventQueue);
+				manager.enrich(segments);
+			}
+		}
+		
+		//TODO check if freme plugin is enabled
+		//TODO enrich all segments
+	}
+
+	public List<JMenuItem> getFremeCtxMenuItems() {
+		List<JMenuItem > items = null;
+		if(fremePlugins != null ) {
+			items = new ArrayList<JMenuItem>();
+			JMenuItem item = new JMenuItem("View Enrichments");
+			//TODO ADD LISTENER
+			if(!fremePlugins.entrySet().iterator().next().getValue()){
+				item.setEnabled(false);
+			}
+		}
+		return items;
+	}
 }
 
 class SegmentEnricher implements Runnable {
@@ -597,14 +639,16 @@ class SegmentEnricher implements Runnable {
             FragmentVariant source = (FragmentVariant) segmentModel.getValueAt(
                     row, segmentModel.getSegmentSourceColumnIndex());
             if (source != null) {
-                plugin.enrichContent(source.getDisplayText());
+                List<Enrichment> enrichments = plugin.enrichContent(source.getDisplayText());
+                source.setEnrichments(enrichments);
                 source.setEnriched(true);
             }
             FragmentVariant target = (FragmentVariant) segmentModel.getValueAt(
                     row, segmentModel.getSegmentTargetColumnIndex());
             if (target != null && !target.getDisplayText().isEmpty()) {
-                plugin.enrichContent(target.getDisplayText());
+            	List<Enrichment> enrichments = plugin.enrichContent(target.getDisplayText());
                 target.setEnriched(true);
+                target.setEnrichments(enrichments);
             }
             segmentModel.fireTableRowsUpdated(row, row);
         } catch (FremeEnrichmentException e) {

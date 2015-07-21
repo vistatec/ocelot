@@ -11,7 +11,7 @@ public interface FremePlugin extends Plugin {
     
     public int EENTITY_SERVICE = 0;
     
-//    int ELINK_SERVICE = 1;
+    public int ELINK_SERVICE = 1;
 //    
 //    int ETERMINOLOGY = 2;
 //    

@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.segment.view;
 
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
@@ -36,6 +37,7 @@ import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.QuickAddEvent;
+import com.vistatec.ocelot.events.RefreshSegmentView;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
@@ -401,6 +403,18 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
         this.enabledTargetDiff = enabled;
         reloadTable();
     }
+    
+    @Subscribe
+    public void updateSegmentView(RefreshSegmentView event){
+    	try{
+    	synchronized (segmentTableModel) {
+    		
+    		segmentTableModel.fireTableCellUpdated(event.getSegmentNumber() - 1, segmentTableModel.getIndexForColumn(SegNum));
+		}
+    	} catch(Exception e){
+    		e.printStackTrace();
+    	}
+    }
 
     @Subscribe
     public void addQuickAdd(QuickAddEvent event) {
@@ -569,8 +583,8 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
                     ? isSelected ? jtable.getSelectionForeground() : jtable.getForeground()
                     : Color.GRAY;
              
-            if (((FragmentVariant) seg.getSource()).isEnriched()
-                    && (((FragmentVariant) seg.getTarget()).isEnriched()
+            if (seg.getSource() instanceof BaseSegmentVariant && ((BaseSegmentVariant) seg.getSource()).isEnriched()
+                    && (((BaseSegmentVariant) seg.getTarget()).isEnriched()
                             || seg.getTarget().getDisplayText() == null || seg
                             .getTarget().getDisplayText().isEmpty())) {
                 foreground = Color.red;
@@ -793,15 +807,22 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
         public void displayContextMenu(MouseEvent e) {
         	
             OcelotSegment seg = null;
+            BaseSegmentVariant variant = null;
             int r = sourceTargetTable.rowAtPoint(e.getPoint());
             if (r >= 0 && r < sourceTargetTable.getRowCount()) {
                 sourceTargetTable.setRowSelectionInterval(r, r);
                 seg = segmentTableModel.getSegment(r);
-           
         	}
+            int c = sourceTargetTable.columnAtPoint(e.getPoint());
+            if(c == segmentTableModel.getIndexForColumn(Source)){
+            	variant = (BaseSegmentVariant) seg.getSource();
+            } else if (c == segmentTableModel.getIndexForColumn(Target)){
+            	variant = (BaseSegmentVariant) seg.getTarget();
+            }
 
             if (seg != null) {
-                ContextMenu menu = new ContextMenu(seg, eventQueue);
+            	
+                ContextMenu menu = new ContextMenu(seg, variant, eventQueue);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }

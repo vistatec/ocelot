@@ -28,14 +28,8 @@
  */
 package com.vistatec.ocelot.segment.model.okapi;
 
-import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.CodeAtom;
-import com.vistatec.ocelot.segment.model.Enrichment;
-import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.TextAtom;
-
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import net.sf.okapi.lib.xliff2.core.Fragment;
@@ -49,6 +43,13 @@ import net.sf.okapi.lib.xliff2.renderer.XLIFFFragmentRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.Enrichment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
+
 /**
  * XLIFF 2.0 segment variant, implemented using the Okapi XLIFF 2.0 library Fragment.
  */
@@ -57,9 +58,11 @@ public class FragmentVariant extends BaseSegmentVariant {
     private List<SegmentAtom> segmentAtoms;
     private boolean isTarget;
     private int protectedContentId = 0;
-    private boolean enriched;
+//    private boolean enriched;
     //TODO add enrichment tags
-    private List<Enrichment> enrichments;
+//    private List<Enrichment> enrichments;
+//    private Map<Integer, CodeAtom> codeAtomsMap;
+    
 
     public FragmentVariant(Segment okapiSegment, boolean isTarget) {
         this.isTarget = isTarget;
@@ -198,35 +201,76 @@ public class FragmentVariant extends BaseSegmentVariant {
         return isTarget;
     }
     
-    public void setEnrichments(final List<Enrichment> enrichments ){
-        this.enrichments = enrichments;
-    }
+//    public void setEnrichments(final List<Enrichment> enrichments ){
+//        this.enrichments = enrichments;
+//    	if(enrichments != null){
+//                String fragDisplayText = getTextForEnrichment();
+//                clearTextAtoms();
+//                int startIndex = 0;
+//                EnrichedAtom lastEnrichedAtom = null;
+//                TextAtom textAtom = null;
+////                if(codeAtomsMap.containsKey(startIndex)){
+////                	segmentAtoms.add(codeAtomsMap.remove(startIndex));
+////                }
+//                for (Enrichment e : enrichments) {
+//                	
+//                    if (lastEnrichedAtom != null
+//                            && lastEnrichedAtom.containsOffset(e
+//                                    .getOffsetStartIdx())) {
+//                    	lastEnrichedAtom.addEnrichment(e);
+//                        if (startIndex < e.getOffsetEndIdx()) {
+//                            startIndex = e.getOffsetEndIdx();
+//                        }
+//                    } else {
+//                    	textAtom = new TextAtom(fragDisplayText.substring(startIndex,
+//                                e.getOffsetStartIdx()));
+//                        segmentAtoms.add(textAtom);
+//                        lastEnrichedAtom = new EnrichedAtom(fragDisplayText.substring(e.getOffsetStartIdx(),
+//                                e.getOffsetEndIdx()));
+//                        lastEnrichedAtom.addEnrichment(e);
+//                        segmentAtoms.add(lastEnrichedAtom);
+//                        startIndex = e.getOffsetEndIdx();
+//                    }
+//                }
+//                if (startIndex < fragDisplayText.length()) {
+//                	segmentAtoms.add(new TextAtom(fragDisplayText.substring(startIndex)));
+//                }
+//            }
+//    }
     
-    public void addEnrichment(final Enrichment enrichment){
-        if(enrichment != null){
-            if(enrichments == null){
-                enrichments = new ArrayList<Enrichment>();
-            }
-            enrichments.add(enrichment);
-        }
-    }
+//    private String getTextForEnrichment(){
+//    	
+//    	StringBuilder text = new StringBuilder();
+//    	codeAtomsMap = new HashMap<Integer, CodeAtom>();
+//    	for(SegmentAtom atom: segmentAtoms){
+//    		if(atom instanceof CodeAtom){
+//    			codeAtomsMap.put(text.length(), (CodeAtom)atom);
+//    		} else {
+//    			text.append(atom.getData());
+//    		}
+//    	}
+//    	return text.toString();
+//    }
+//    
+//    private void clearTextAtoms(){
+//    	List<TextAtom> textAtoms = new ArrayList<TextAtom>();
+//    	for(SegmentAtom atom: getAtoms()){
+//    		if(atom instanceof TextAtom){
+//    			textAtoms.add((TextAtom)atom);
+//    		}
+//    	}
+//    	segmentAtoms.removeAll(textAtoms);
+//    }
     
-    public void addEnrichmentList(final List<Enrichment> enrichmentList){
-        if(enrichmentList != null){
-            if(enrichments == null){
-                enrichments = new ArrayList<Enrichment>();
-            }
-            enrichments.addAll(enrichmentList);
-        }
-    }
     
-    public boolean isEnriched(){
-        return enriched;
-    }
     
-    public void setEnriched(final boolean enriched){
-        this.enriched = enriched;
-    }
+//    public boolean isEnriched(){
+//        return enriched;
+//    }
+//    
+//    public void setEnriched(final boolean enriched){
+//        this.enriched = enriched;
+//    }
     
     @Override
     public FragmentVariant createEmptyTarget() {
@@ -244,7 +288,41 @@ public class FragmentVariant extends BaseSegmentVariant {
         this.segmentAtoms = copy.copyAtoms();
     }
 
-    public List<Enrichment> getEnirchments() {
-        return enrichments;
+//    public List<Enrichment> getEnirchments() {
+//        return enrichments;
+//    }
+    
+    @Override
+    public List<String> getStyleData(boolean verbose) {
+        ArrayList<String> textToStyle = new ArrayList<String>();
+
+        for (SegmentAtom atom : getAtoms()) {
+            if (atom instanceof CodeAtom && verbose) {
+                textToStyle.add(((CodeAtom)atom).getVerboseData());
+            }
+            else {
+                textToStyle.add(atom.getData());
+            }
+            System.out.println(atom.getData());
+            textToStyle.add(atom.getTextStyle());
+        }
+        return textToStyle;
     }
 }
+
+class EnrichmentComparator implements Comparator<Enrichment> {
+
+    @Override
+    public int compare(Enrichment o1, Enrichment o2) {
+
+        int comparison = 0;
+        if (o1.getOffsetStartIdx() < o2.getOffsetStartIdx()) {
+            comparison = -1;
+        } else if (o1.getOffsetStartIdx() > o2.getOffsetStartIdx()) {
+            comparison = 1;
+        }
+        return comparison;
+    }
+
+}
+

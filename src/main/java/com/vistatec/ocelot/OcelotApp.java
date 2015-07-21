@@ -32,16 +32,19 @@ import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.EditDistanceReportService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
@@ -64,7 +67,8 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
-
+    private final EditDistanceReportService editDistService;
+    
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
 
@@ -77,6 +81,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
+        this.editDistService = new EditDistanceReportService(segmentService);
     }
 
     public File getOpenFile() {
@@ -106,6 +111,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         segmentService.setSegments(segments);
 
         this.pluginManager.notifyOpenFile(openFile.getName());
+        this.pluginManager.notifySegments(segments, eventQueue);
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
@@ -132,6 +138,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
         xliffService.save(saveFile);
         this.fileDirty = false;
+        editDistService.createEditDistanceReport(saveFile.getName());
         pluginManager.notifySaveFile(filename);
     }
 
@@ -175,4 +182,59 @@ public class OcelotApp implements OcelotEventQueueListener {
         menues.add(pluginManager.getFremeMenu());
         return menues;
     }
+    
+    
+    public List<JMenuItem> getPluginCtxMenuItems(){
+    	
+    	return pluginManager.getFremeCtxMenuItems();
+    }
+    
+    public static void main(String[] args) {
+		
+    	try {
+    		File file = new File("C:\\Users\\Martab\\editDistance.csv");
+			FileWriter writer = new FileWriter(file);
+			
+			writer.append("File Name");
+			writer.append(",");
+			writer.append("blabla.xlif");
+			writer.append("\n");
+			//COLUMNS
+			writer.append("Seg#");
+			writer.append(",");
+			writer.append("Edit Distance");
+			writer.append("\n");
+			
+			//DATA
+			writer.append("1");
+			writer.append(",");
+			writer.append("9");
+			writer.append("\n");
+			
+			writer.append("2");
+			writer.append(",");
+			writer.append("0");
+			writer.append("\n");
+			
+			writer.append("3");
+			writer.append(",");
+			writer.append("10");
+			writer.append("\n");
+			
+			writer.append("");
+			writer.append(",");
+			writer.append("TOTAL");
+			writer.append("\n");
+			writer.append("");
+			writer.append(",");
+			writer.append("19");
+			writer.append("\n");
+			
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

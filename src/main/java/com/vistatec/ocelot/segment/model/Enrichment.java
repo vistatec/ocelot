@@ -4,7 +4,7 @@ import java.awt.Image;
 
 public abstract class Enrichment {
 
-    private static final String NIF_OFFSET_STRING = "#char=";
+    private static final String NIF_OFFSET_STRING = "char=";
 
     protected int offsetStartIdx;
 
