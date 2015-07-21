@@ -32,6 +32,7 @@ import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.EditDistanceReportService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 
@@ -62,6 +63,8 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
+    
+    private final EditDistanceReportService editDistService;
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
@@ -75,6 +78,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
+        editDistService = new EditDistanceReportService(segmentService);
     }
 
     public File getOpenFile() {
@@ -130,6 +134,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
         xliffService.save(saveFile);
         this.fileDirty = false;
+        editDistService.createEditDistanceReport(saveFile.getName());
         pluginManager.notifySaveFile(filename);
     }
 
