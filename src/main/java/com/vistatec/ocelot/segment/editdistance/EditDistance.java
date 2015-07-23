@@ -28,14 +28,14 @@
  */
 package com.vistatec.ocelot.segment.editdistance;
 
-import com.vistatec.ocelot.segment.view.SegmentTextCell;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 
 import name.fraser.neil.plaintext.diff_match_patch;
 import name.fraser.neil.plaintext.diff_match_patch.Diff;
+
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.view.SegmentTextCell;
 
 /**
  * Calculate the insertion/deletion difference between the target and target
