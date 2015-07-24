@@ -336,17 +336,41 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
      * Exit handler.  This should prompt to save unsaved data.
      */
     private void handleApplicationExit() {
-        if (ocelotApp.isFileDirty()) {
-            int rv = JOptionPane.showConfirmDialog(this,
-                    "You have unsaved changes. Would you like to save before exiting?",
-                    "Save Unsaved Changes",
-                    JOptionPane.YES_NO_OPTION);
-            if (rv == JOptionPane.YES_OPTION) {
-                save(ocelotApp.getOpenFile());
-            }
-        }
-        mainframe.dispose();
+    	if (ocelotApp.isFileDirty()) {
+			int option = JOptionPane
+			        .showConfirmDialog(
+			                mainframe,
+			                "You have unsaved changes. Would you like to save before exiting?",
+			                "Save Unsaved Changes",
+			                JOptionPane.YES_NO_CANCEL_OPTION);
+			try {
+				if (option == JOptionPane.YES_OPTION) {
+					ocelotApp.saveFile(ocelotApp.getOpenFile());
+
+					quitOcelot();
+				} else if (option == JOptionPane.NO_OPTION) {
+					quitOcelot();
+				}
+			} catch (OcelotApp.ErrorAlertException ex) {
+				alertUser(ex.title, ex.body);
+
+			} catch (Exception ex) {
+				LOG.error("Failed to save file: '"
+				        + ocelotApp.getOpenFile().getName() + "'", ex);
+			}
+		} else {
+			quitOcelot();
+		}
     }
+    
+    /**
+     * Quits Ocelot.
+     */
+    private void quitOcelot() {
+		mainframe.dispose();
+		mainframe.setVisible(false);
+		System.exit(0);
+	}
 
     /**
      * Set menu mnemonics for non-Mac platforms.  (Mnemonics
@@ -477,10 +501,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener, KeyEvent
     @Override
     public void run() {
         mainframe = new JFrame(APPNAME);
-        mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainframe.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 // TODO: cleanup
+            	handleApplicationExit();
             }
         });
 

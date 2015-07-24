@@ -46,14 +46,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -64,20 +61,17 @@ import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.events.EnrichmentViewEvent;
+import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
-import com.vistatec.ocelot.events.SegmentVariantSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.freme.manager.EnrichmentFrame;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
-import com.vistatec.ocelot.segment.model.Enrichment;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
-import com.vistatec.ocelot.segment.view.SegmentTableModel;
 import com.vistatec.ocelot.services.SegmentService;
 
 /**
@@ -89,573 +83,503 @@ import com.vistatec.ocelot.services.SegmentService;
  * singletons.
  */
 public class PluginManager implements OcelotEventQueueListener, ItemListener {
-    private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
-    private List<String> itsPluginClassNames = new ArrayList<String>();
-    private List<String> segPluginClassNames = new ArrayList<String>();
-    private List<String> fremePluginClassNames = new ArrayList<String>();
-    private HashMap<ITSPlugin, Boolean> itsPlugins;
-    private HashMap<SegmentPlugin, Boolean> segPlugins;
-    private HashMap<FremePlugin, Boolean> fremePlugins;
-    private JMenu fremeMenu;
-    private ClassLoader classLoader;
-    private File pluginDir;
-    private final ConfigService cfgService;
+	private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
+	private List<String> itsPluginClassNames = new ArrayList<String>();
+	private List<String> segPluginClassNames = new ArrayList<String>();
+	private List<String> fremePluginClassNames = new ArrayList<String>();
+	private HashMap<ITSPlugin, Boolean> itsPlugins;
+	private HashMap<SegmentPlugin, Boolean> segPlugins;
+	private HashMap<FremePlugin, Boolean> fremePlugins;
+	private JMenu fremeMenu;
+	private FremePluginManager fremeManager;
+	private ClassLoader classLoader;
+	private File pluginDir;
+	private final ConfigService cfgService;
 
-    public PluginManager(ConfigService cfgService, File pluginDir) {
-        this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
-        this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
-        this.fremePlugins = new HashMap<FremePlugin, Boolean>();
-        this.cfgService = cfgService;
-        this.pluginDir = pluginDir;
-    }
-
-    public File getPluginDir() {
-        return this.pluginDir;
-    }
-
-    public void setPluginDir(File pluginDir) {
-        this.pluginDir = pluginDir;
-    }
-
-    public Set<Plugin> getPlugins() {
-        Set<Plugin> plugins = new HashSet<Plugin>();
-        Set<? extends Plugin> itsPlugins = getITSPlugins();
-        Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
-        Set<? extends Plugin> fremePlugins = getFremePlugins();
-        plugins.addAll(itsPlugins);
-        plugins.addAll(segmentPlugins);
-        plugins.addAll(fremePlugins);
-        return plugins;
-    }
-
-    /**
-     * Get a list of available ITS plugin instances.
-     */
-    public Set<ITSPlugin> getITSPlugins() {
-        return this.itsPlugins.keySet();
-    }
-
-    public Set<SegmentPlugin> getSegmentPlugins() {
-        return this.segPlugins.keySet();
-    }
-
-    public Set<FremePlugin> getFremePlugins() {
-        return this.fremePlugins.keySet();
-    }
-
-    /**
-     * Return if the plugin should receive data from the workbench.
-     */
-    public boolean isEnabled(Plugin plugin) {
-        boolean enabled = false;
-        if (plugin instanceof ITSPlugin) {
-            ITSPlugin itsPlugin = (ITSPlugin) plugin;
-            enabled = itsPlugins.get(itsPlugin);
-        } else if (plugin instanceof SegmentPlugin) {
-            SegmentPlugin segPlugin = (SegmentPlugin) plugin;
-            enabled = segPlugins.get(segPlugin);
-        } else if (plugin instanceof FremePlugin) {
-            FremePlugin fremePlugin = (FremePlugin) plugin;
-            enabled = fremePlugins.get(fremePlugin);
-        }
-        return enabled;
-    }
-
-    public void setEnabled(Plugin plugin, boolean enabled)
-            throws ConfigTransferService.TransferException {
-        if (plugin instanceof ITSPlugin) {
-            ITSPlugin itsPlugin = (ITSPlugin) plugin;
-            itsPlugins.put(itsPlugin, enabled);
-        } else if (plugin instanceof SegmentPlugin) {
-            SegmentPlugin segPlugin = (SegmentPlugin) plugin;
-            segPlugins.put(segPlugin, enabled);
-        } else if (plugin instanceof FremePlugin) {
-            FremePlugin fremePlugin = (FremePlugin) plugin;
-            fremePlugins.put(fremePlugin, enabled);
-            fremeMenu.setEnabled(enabled);
-        }
-        cfgService.savePluginEnabled(plugin, enabled);
-    }
-
-    /**
-     * Return the set of all {@link ITSPlugin} that are currently enabled.
-     * 
-     * @return set of enabled plugins
-     */
-    public Set<ITSPlugin> getEnabledITSPlugins() {
-        Set<ITSPlugin> enabled = new HashSet<ITSPlugin>();
-        for (ITSPlugin plugin : getITSPlugins()) {
-            if (isEnabled(plugin)) {
-                enabled.add(plugin);
-            }
-        }
-        return enabled;
-    }
-
-    /**
-     * ITSPlugin handler for exporting LQI/Provenance metadata of segments.
-     * 
-     * @param sourceLang
-     * @param targetLang
-     * @param segmentService
-     */
-    public void exportData(String sourceLang, String targetLang,
-            SegmentService segmentService) {
-        for (int row = 0; row < segmentService.getNumSegments(); row++) {
-            OcelotSegment seg = segmentService.getSegment(row);
-            List<LanguageQualityIssue> lqi = seg.getLQI();
-            List<Provenance> prov = seg.getProvenance();
-            for (ITSPlugin plugin : getEnabledITSPlugins()) {
-                try {
-                    plugin.sendLQIData(sourceLang, targetLang, seg, lqi);
-                    plugin.sendProvData(sourceLang, targetLang, seg, prov);
-                } catch (Exception e) {
-                    LOG.error("ITS Plugin '" + plugin.getPluginName()
-                            + "' threw an exception on ITS metadata export", e);
-                }
-            }
-        }
-    }
-
-    /**
-     * SegmentPlugin handler for beginning a target segment edit.
-     * 
-     * @param event
-     */
-    @Subscribe
-    public void notifySegmentTargetEnter(SegmentTargetEnterEvent event) {
-        OcelotSegment seg = event.getSegment();
-        for (SegmentPlugin segPlugin : segPlugins.keySet()) {
-            if (isEnabled(segPlugin)) {
-                try {
-                    segPlugin.onSegmentTargetEnter(seg);
-                } catch (Exception e) {
-                    LOG.error("Segment plugin '" + segPlugin.getPluginName()
-                            + "' threw an exception on segment target enter", e);
-                }
-            }
-        }
-    }
-
-    /**
-     * SegmentPlugin handler for finishing a target segment edit.
-     * 
-     * @param event
-     */
-    @Subscribe
-    public void notifySegmentTargetExit(SegmentTargetExitEvent event) {
-        OcelotSegment seg = event.getSegment();
-        for (SegmentPlugin segPlugin : segPlugins.keySet()) {
-            if (isEnabled(segPlugin)) {
-                try {
-                    segPlugin.onSegmentTargetExit(seg);
-                } catch (Exception e) {
-                    LOG.error("Segment plugin '" + segPlugin.getPluginName()
-                            + "' threw an exception on segment target exit", e);
-                }
-            }
-        }
-    }
-
-    @Subscribe
-    public void enrichmentViewRequest(EnrichmentViewEvent e){
-    	try{
-    	EnrichmentFrame enrichFrame = new EnrichmentFrame(e.getVariant(), null);
-    	SwingUtilities.invokeLater(enrichFrame);
-    	}catch(Exception ex){
-    		ex.printStackTrace();
-    	}
-    }
-    
-    @Subscribe
-    public void handleSegmentVariantSelected(SegmentVariantSelectionEvent e) {
-//    	try{
-//        if (e.getSegmentVariant() instanceof FragmentVariant) {
-//            FragmentVariant fragment = (FragmentVariant) e.getSegmentVariant();
-//            if (!fragment.isEnriched()) {
-//                for (FremePlugin fremePlugin : fremePlugins.keySet()) {
-//                    try {
-//                        List<Enrichment> enrichments = fremePlugin
-//                                .enrichContent(fragment.getDisplayText());
-//                        fragment.setEnrichments(enrichments);
-//                        fragment.setEnriched(true);
-////                        if (enrichments != null && !enrichments.isEmpty()) {
-////                            EnrichmentFrame enrichFrame = new EnrichmentFrame(
-////                                    fragment, null);
-////                            SwingUtilities.invokeLater(enrichFrame);
-////                        }
-//                    } catch (FremeEnrichmentException e1) {
-//                    	e1.printStackTrace();
-//                    	LOG.error(
-//                                "Freme plugin '"
-//                                        + fremePlugin.getPluginName()
-//                                        + "' threw an exception on segment variant selection",
-//                                e1);
-//                    }
-//                }
-//            }
-//        }
-//    	}catch(Exception ex){
-//    		ex.printStackTrace();
-//    	}
-    }
-
-//    public void blablabla(final SegmentTableModel segmentModel) {
-//
-//        if (fremePlugins != null) {
-//            FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
-//            ExecutorService executor = Executors.newCachedThreadPool();
-//            for (int i = 0; i < segmentModel.getRowCount(); i++) {
-//                Runnable enricher = new SegmentEnricher(fremePlugin,
-//                        segmentModel, i);
-//                executor.execute(enricher);
-//            }
-//            executor.shutdown();
-//        }
-//    }
-
-    public void notifyOpenFile(String filename) {
-        for (SegmentPlugin segPlugin : segPlugins.keySet()) {
-            if (isEnabled(segPlugin)) {
-                try {
-                    segPlugin.onFileOpen(filename);
-                } catch (Exception e) {
-                    LOG.error("Segment plugin '" + segPlugin.getPluginName()
-                            + "' threw an exception on file open", e);
-                }
-            }
-        }
-    }
-
-    public void notifySaveFile(String filename) {
-        for (SegmentPlugin segPlugin : segPlugins.keySet()) {
-            if (isEnabled(segPlugin)) {
-                try {
-                    segPlugin.onFileSave(filename);
-                } catch (Exception e) {
-                    LOG.error("Segment plugin '" + segPlugin.getPluginName()
-                            + "' threw an exception on file save", e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Search the default directory for plugins. Equivalent to
-     * <code>discover(getPluginDir())</code>.
-     * 
-     * @throws IOException
-     */
-    public void discover() throws IOException {
-        discover(getPluginDir());
-    }
-
-    /**
-     * Search the provided directory for any JAR files containing valid plugin
-     * classes. Instantiate and configure any such classes.
-     * 
-     * @param pluginDirectory
-     * @throws IOException
-     *             if something goes wrong reading the directory
-     */
-    public void discover(File pluginDirectory) throws IOException {
-        if (!pluginDirectory.isDirectory()) {
-            return;
-        }
-
-        File[] jarFiles = pluginDirectory.listFiles(new JarFilenameFilter());
-
-        installClassLoader(jarFiles);
-
-        for (File f : jarFiles) {
-            scanJar(f);
-        }
-
-        for (String s : itsPluginClassNames) {
-            try {
-                @SuppressWarnings("unchecked")
-                Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class
-                        .forName(s, false, classLoader);
-                ITSPlugin plugin = c.newInstance();
-                itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-            } catch (ClassNotFoundException e) {
-                // XXX Shouldn't happen?
-                System.out.println("Warning: " + e.getMessage());
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        for (String s : segPluginClassNames) {
-            try {
-                @SuppressWarnings("unchecked")
-                Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class
-                        .forName(s, false, classLoader);
-                SegmentPlugin plugin = c.newInstance();
-                segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-            } catch (ClassNotFoundException e) {
-                // XXX Shouldn't happen?
-                System.out.println("Warning: " + e.getMessage());
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-        for (String s : fremePluginClassNames) {
-            try {
-                @SuppressWarnings("unchecked")
-                Class<? extends FremePlugin> c = (Class<FremePlugin>) Class
-                        .forName(s, false, classLoader);
-                FremePlugin plugin = c.newInstance();
-                fremePlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-            } catch (ClassNotFoundException e) {
-                // XXX Shouldn't happen?
-                System.out.println("Warning: " + e.getMessage());
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void installClassLoader(File[] jarFiles) throws IOException {
-        final List<URL> pluginJarURLs = new ArrayList<URL>();
-        for (File file : jarFiles) {
-            // Make sure that this is actually a real jar
-            if (!isValidJar(file)) {
-                continue;
-            }
-            // TODO - this may break when the path contains whitespace
-            URL url = file.toURI().toURL();
-            pluginJarURLs.add(url);
-        }
-
-        classLoader = AccessController
-                .doPrivileged(new PrivilegedAction<URLClassLoader>() {
-                    public URLClassLoader run() {
-                        return new URLClassLoader(pluginJarURLs
-                                .toArray(new URL[pluginJarURLs.size()]), Thread
-                                .currentThread().getContextClassLoader());
-                    }
-                });
-    }
-
-    void scanJar(final File file) {
-        try {
-            Enumeration<JarEntry> e = new JarFile(file).entries();
-            while (e.hasMoreElements()) {
-                JarEntry entry = e.nextElement();
-                String name = entry.getName();
-                if (name.endsWith(".class")) {
-                    name = convertFileNameToClass(name);
-                    try {
-                        Class<?> clazz = Class
-                                .forName(name, false, classLoader);
-                        // Skip non-instantiable classes
-                        if (clazz.isInterface()
-                                || Modifier.isAbstract(clazz.getModifiers())) {
-                            continue;
-                        }
-                        if (ITSPlugin.class.isAssignableFrom(clazz)) {
-                            // It's a plugin! Just store the name for now
-                            // since we will need to reinstantiate it later with
-                            // the
-                            // real classloader (I think)
-                            if (itsPluginClassNames.contains(name)) {
-                                // TODO: log this
-                                System.out
-                                        .println("Warning: found multiple implementations of plugin class "
-                                                + name);
-                            } else {
-                                itsPluginClassNames.add(name);
-                            }
-                        } else if (SegmentPlugin.class.isAssignableFrom(clazz)) {
-                            // It's a plugin! Just store the name for now
-                            // since we will need to reinstantiate it later with
-                            // the
-                            // real classloader (I think)
-                            if (segPluginClassNames.contains(name)) {
-                                // TODO: log this
-                                System.out
-                                        .println("Warning: found multiple implementations of plugin class "
-                                                + name);
-                            } else {
-                                segPluginClassNames.add(name);
-                            }
-                        } else if (FremePlugin.class.isAssignableFrom(clazz)) {
-                            // It's a plugin! Just store the name for now
-                            // since we will need to reinstantiate it later with
-                            // the
-                            // real classloader (I think)
-                            if (fremePluginClassNames.contains(name)) {
-                                // TODO: log this
-                                System.out
-                                        .println("Warning: found multiple implementations of plugin class "
-                                                + name);
-                            } else {
-                                fremePluginClassNames.add(name);
-                            }
-                        }
-                    } catch (ClassNotFoundException ex) {
-                        // XXX shouldn't happen?
-                        System.out.println("Warning: " + ex.getMessage());
-                    }
-                }
-            }
-        } catch (IOException e) {
-            // XXX Log this and continue
-            e.printStackTrace();
-        }
-    }
-
-    private boolean isValidJar(File f) throws IOException {
-        JarInputStream is = new JarInputStream(new FileInputStream(f));
-        boolean rv = (is.getNextEntry() != null);
-        is.close();
-        return rv;
-    }
-
-    // Convert file name to a java class name
-    private String convertFileNameToClass(String filename) {
-        String s = filename.substring(0, filename.length() - 6);
-        return s.replace('/', '.');
-    }
-
-    static class JarFilenameFilter implements FilenameFilter {
-        @Override
-        public boolean accept(File dir, String filename) {
-            if (filename == null || filename.equals("")) {
-                return false;
-            }
-            int i = filename.lastIndexOf('.');
-            if (i == -1) {
-                return false;
-            }
-            String s = filename.substring(i);
-            return s.equalsIgnoreCase(".jar");
-        }
-    }
-
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-        FremeEServiceMenuItem menuItem = (FremeEServiceMenuItem) e
-                .getItemSelectable();
-        try {
-            if (fremePlugins != null) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
-                            .entrySet()) {
-                        if (fremePlugin.getValue()) {
-                            fremePlugin.getKey().turnOnService(
-                                    menuItem.getServiceType());
-                        }
-                    }
-                } else {
-                    for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
-                            .entrySet()) {
-                        if (fremePlugin.getValue()) {
-                            fremePlugin.getKey().turnOffService(
-                                    menuItem.getServiceType());
-                        }
-                    }
-                }
-            }
-        } catch (UnknownServiceException exc) {
-            LOG.trace("Error while turning on/off the service with type: "
-                    + menuItem.getServiceType(), exc);
-            JOptionPane.showMessageDialog(null,
-                    "An error has occurred while turning on/off the service.",
-                    "Freme e-Service", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public JMenu getFremeMenu() {
-
-        if (fremePlugins != null) {
-            fremeMenu = new FremeMenu(this);
-            boolean enableMenu = false;
-            for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
-                    .entrySet()) {
-                if (fremePlugin.getValue()) {
-                    enableMenu = true;
-                    break;
-                }
-            }
-            fremeMenu.setEnabled(enableMenu);
-        }
-
-        return fremeMenu;
-    }
-
-	public void notifySegments(List<OcelotSegment> segments, OcelotEventQueue eventQueue) {
-		
-		if(fremePlugins != null ){
-			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet().iterator().next();
-			if(fremeEntry.getValue()){
-				FremePluginManager manager = new FremePluginManager(fremeEntry.getKey(), eventQueue);
-				manager.enrich(segments);
-			}
-		}
-		
-		//TODO check if freme plugin is enabled
-		//TODO enrich all segments
+	public PluginManager(ConfigService cfgService, File pluginDir,
+	        OcelotEventQueue eventQueue) {
+		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
+		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
+		this.fremePlugins = new HashMap<FremePlugin, Boolean>();
+		this.fremeManager = new FremePluginManager(eventQueue);
+		this.cfgService = cfgService;
+		this.pluginDir = pluginDir;
 	}
 
-	public List<JMenuItem> getFremeCtxMenuItems() {
-		List<JMenuItem > items = null;
-		if(fremePlugins != null ) {
-			items = new ArrayList<JMenuItem>();
-			JMenuItem item = new JMenuItem("View Enrichments");
-			//TODO ADD LISTENER
-			if(!fremePlugins.entrySet().iterator().next().getValue()){
-				item.setEnabled(false);
+	public File getPluginDir() {
+		return this.pluginDir;
+	}
+
+	public void setPluginDir(File pluginDir) {
+		this.pluginDir = pluginDir;
+	}
+
+	public Set<Plugin> getPlugins() {
+		Set<Plugin> plugins = new HashSet<Plugin>();
+		Set<? extends Plugin> itsPlugins = getITSPlugins();
+		Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
+		Set<? extends Plugin> fremePlugins = getFremePlugins();
+		plugins.addAll(itsPlugins);
+		plugins.addAll(segmentPlugins);
+		plugins.addAll(fremePlugins);
+		return plugins;
+	}
+
+	/**
+	 * Get a list of available ITS plugin instances.
+	 */
+	public Set<ITSPlugin> getITSPlugins() {
+		return this.itsPlugins.keySet();
+	}
+
+	public Set<SegmentPlugin> getSegmentPlugins() {
+		return this.segPlugins.keySet();
+	}
+
+	public Set<FremePlugin> getFremePlugins() {
+		return this.fremePlugins.keySet();
+	}
+
+	/**
+	 * Return if the plugin should receive data from the workbench.
+	 */
+	public boolean isEnabled(Plugin plugin) {
+		boolean enabled = false;
+		if (plugin instanceof ITSPlugin) {
+			ITSPlugin itsPlugin = (ITSPlugin) plugin;
+			enabled = itsPlugins.get(itsPlugin);
+		} else if (plugin instanceof SegmentPlugin) {
+			SegmentPlugin segPlugin = (SegmentPlugin) plugin;
+			enabled = segPlugins.get(segPlugin);
+		} else if (plugin instanceof FremePlugin) {
+			FremePlugin fremePlugin = (FremePlugin) plugin;
+			enabled = fremePlugins.get(fremePlugin);
+		}
+		return enabled;
+	}
+
+	public void setEnabled(Plugin plugin, boolean enabled)
+	        throws ConfigTransferService.TransferException {
+		if (plugin instanceof ITSPlugin) {
+			ITSPlugin itsPlugin = (ITSPlugin) plugin;
+			itsPlugins.put(itsPlugin, enabled);
+		} else if (plugin instanceof SegmentPlugin) {
+			SegmentPlugin segPlugin = (SegmentPlugin) plugin;
+			segPlugins.put(segPlugin, enabled);
+		} else if (plugin instanceof FremePlugin) {
+			FremePlugin fremePlugin = (FremePlugin) plugin;
+			fremePlugins.put(fremePlugin, enabled);
+			if (fremeMenu != null) {
+				fremeMenu.setEnabled(enabled);
+				if (enabled) {
+					enrichSegments();
+				}
 			}
 		}
-		return items;
+		cfgService.savePluginEnabled(plugin, enabled);
 	}
-}
 
-class SegmentEnricher implements Runnable {
+	/**
+	 * Return the set of all {@link ITSPlugin} that are currently enabled.
+	 * 
+	 * @return set of enabled plugins
+	 */
+	public Set<ITSPlugin> getEnabledITSPlugins() {
+		Set<ITSPlugin> enabled = new HashSet<ITSPlugin>();
+		for (ITSPlugin plugin : getITSPlugins()) {
+			if (isEnabled(plugin)) {
+				enabled.add(plugin);
+			}
+		}
+		return enabled;
+	}
 
-    private SegmentTableModel segmentModel;
+	/**
+	 * ITSPlugin handler for exporting LQI/Provenance metadata of segments.
+	 * 
+	 * @param sourceLang
+	 * @param targetLang
+	 * @param segmentService
+	 */
+	public void exportData(String sourceLang, String targetLang,
+	        SegmentService segmentService) {
+		for (int row = 0; row < segmentService.getNumSegments(); row++) {
+			OcelotSegment seg = segmentService.getSegment(row);
+			List<LanguageQualityIssue> lqi = seg.getLQI();
+			List<Provenance> prov = seg.getProvenance();
+			for (ITSPlugin plugin : getEnabledITSPlugins()) {
+				try {
+					plugin.sendLQIData(sourceLang, targetLang, seg, lqi);
+					plugin.sendProvData(sourceLang, targetLang, seg, prov);
+				} catch (Exception e) {
+					LOG.error("ITS Plugin '" + plugin.getPluginName()
+					        + "' threw an exception on ITS metadata export", e);
+				}
+			}
+		}
+	}
 
-    private FremePlugin plugin;
+	/**
+	 * SegmentPlugin handler for beginning a target segment edit.
+	 * 
+	 * @param event
+	 */
+	@Subscribe
+	public void notifySegmentTargetEnter(SegmentTargetEnterEvent event) {
+		OcelotSegment seg = event.getSegment();
+		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+			if (isEnabled(segPlugin)) {
+				try {
+					segPlugin.onSegmentTargetEnter(seg);
+				} catch (Exception e) {
+					LOG.error("Segment plugin '" + segPlugin.getPluginName()
+					        + "' threw an exception on segment target enter", e);
+				}
+			}
+		}
+	}
 
-    private int row;
+	/**
+	 * SegmentPlugin handler for finishing a target segment edit.
+	 * 
+	 * @param event
+	 */
+	@Subscribe
+	public void notifySegmentTargetExit(SegmentTargetExitEvent event) {
+		OcelotSegment seg = event.getSegment();
+		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+			if (isEnabled(segPlugin)) {
+				try {
+					segPlugin.onSegmentTargetExit(seg);
+				} catch (Exception e) {
+					LOG.error("Segment plugin '" + segPlugin.getPluginName()
+					        + "' threw an exception on segment target exit", e);
+				}
+			}
+		}
+	}
 
-    public SegmentEnricher(final FremePlugin plugin,
-            final SegmentTableModel segmentModel, final int row) {
+	@Subscribe
+	public void enrichmentViewRequest(EnrichmentViewEvent e) {
+		try {
+			EnrichmentFrame enrichFrame = new EnrichmentFrame(e.getVariant(),
+			        null);
+			SwingUtilities.invokeLater(enrichFrame);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 
-        this.plugin = plugin;
-        this.segmentModel = segmentModel;
-        this.row = row;
-    }
+	public void notifyOpenFile(String filename) {
+		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+			if (isEnabled(segPlugin)) {
+				try {
+					segPlugin.onFileOpen(filename);
+				} catch (Exception e) {
+					LOG.error("Segment plugin '" + segPlugin.getPluginName()
+					        + "' threw an exception on file open", e);
+				}
+			}
+		}
+	}
 
-    @Override
-    public void run() {
+	public void notifySaveFile(String filename) {
+		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
+			if (isEnabled(segPlugin)) {
+				try {
+					segPlugin.onFileSave(filename);
+				} catch (Exception e) {
+					LOG.error("Segment plugin '" + segPlugin.getPluginName()
+					        + "' threw an exception on file save", e);
+				}
+			}
+		}
+	}
 
-        try {
-            FragmentVariant source = (FragmentVariant) segmentModel.getValueAt(
-                    row, segmentModel.getSegmentSourceColumnIndex());
-            if (source != null) {
-                List<Enrichment> enrichments = plugin.enrichContent(source.getDisplayText());
-                source.setEnrichments(enrichments);
-                source.setEnriched(true);
-            }
-            FragmentVariant target = (FragmentVariant) segmentModel.getValueAt(
-                    row, segmentModel.getSegmentTargetColumnIndex());
-            if (target != null && !target.getDisplayText().isEmpty()) {
-            	List<Enrichment> enrichments = plugin.enrichContent(target.getDisplayText());
-                target.setEnriched(true);
-                target.setEnrichments(enrichments);
-            }
-            segmentModel.fireTableRowsUpdated(row, row);
-        } catch (FremeEnrichmentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+	/**
+	 * Search the default directory for plugins. Equivalent to
+	 * <code>discover(getPluginDir())</code>.
+	 * 
+	 * @throws IOException
+	 */
+	public void discover() throws IOException {
+		discover(getPluginDir());
+	}
 
-        // at the end
-    }
+	/**
+	 * Search the provided directory for any JAR files containing valid plugin
+	 * classes. Instantiate and configure any such classes.
+	 * 
+	 * @param pluginDirectory
+	 * @throws IOException
+	 *             if something goes wrong reading the directory
+	 */
+	public void discover(File pluginDirectory) throws IOException {
+		if (!pluginDirectory.isDirectory()) {
+			return;
+		}
+
+		File[] jarFiles = pluginDirectory.listFiles(new JarFilenameFilter());
+
+		installClassLoader(jarFiles);
+
+		for (File f : jarFiles) {
+			scanJar(f);
+		}
+
+		for (String s : itsPluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class
+				        .forName(s, false, classLoader);
+				ITSPlugin plugin = c.newInstance();
+				itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for (String s : segPluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class
+				        .forName(s, false, classLoader);
+				SegmentPlugin plugin = c.newInstance();
+				segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		for (String s : fremePluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends FremePlugin> c = (Class<FremePlugin>) Class
+				        .forName(s, false, classLoader);
+				FremePlugin plugin = c.newInstance();
+				fremePlugins.put(plugin, false);
+				setEnabled(plugin, cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void installClassLoader(File[] jarFiles) throws IOException {
+		final List<URL> pluginJarURLs = new ArrayList<URL>();
+		for (File file : jarFiles) {
+			// Make sure that this is actually a real jar
+			if (!isValidJar(file)) {
+				continue;
+			}
+			// TODO - this may break when the path contains whitespace
+			URL url = file.toURI().toURL();
+			pluginJarURLs.add(url);
+		}
+
+		classLoader = AccessController
+		        .doPrivileged(new PrivilegedAction<URLClassLoader>() {
+			        public URLClassLoader run() {
+				        return new URLClassLoader(pluginJarURLs
+				                .toArray(new URL[pluginJarURLs.size()]), Thread
+				                .currentThread().getContextClassLoader());
+			        }
+		        });
+	}
+
+	void scanJar(final File file) {
+		try {
+			Enumeration<JarEntry> e = new JarFile(file).entries();
+			while (e.hasMoreElements()) {
+				JarEntry entry = e.nextElement();
+				String name = entry.getName();
+				if (name.endsWith(".class")) {
+					name = convertFileNameToClass(name);
+					try {
+						Class<?> clazz = Class
+						        .forName(name, false, classLoader);
+						// Skip non-instantiable classes
+						if (clazz.isInterface()
+						        || Modifier.isAbstract(clazz.getModifiers())) {
+							continue;
+						}
+						if (ITSPlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin! Just store the name for now
+							// since we will need to reinstantiate it later with
+							// the
+							// real classloader (I think)
+							if (itsPluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
+							} else {
+								itsPluginClassNames.add(name);
+							}
+						} else if (SegmentPlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin! Just store the name for now
+							// since we will need to reinstantiate it later with
+							// the
+							// real classloader (I think)
+							if (segPluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
+							} else {
+								segPluginClassNames.add(name);
+							}
+						} else if (FremePlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin! Just store the name for now
+							// since we will need to reinstantiate it later with
+							// the
+							// real classloader (I think)
+							if (fremePluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
+							} else {
+								fremePluginClassNames.add(name);
+							}
+						}
+					} catch (ClassNotFoundException ex) {
+						// XXX shouldn't happen?
+						System.out.println("Warning: " + ex.getMessage());
+					}
+				}
+			}
+		} catch (IOException e) {
+			// XXX Log this and continue
+			e.printStackTrace();
+		}
+	}
+
+	private boolean isValidJar(File f) throws IOException {
+		JarInputStream is = new JarInputStream(new FileInputStream(f));
+		boolean rv = (is.getNextEntry() != null);
+		is.close();
+		return rv;
+	}
+
+	// Convert file name to a java class name
+	private String convertFileNameToClass(String filename) {
+		String s = filename.substring(0, filename.length() - 6);
+		return s.replace('/', '.');
+	}
+
+	static class JarFilenameFilter implements FilenameFilter {
+		@Override
+		public boolean accept(File dir, String filename) {
+			if (filename == null || filename.equals("")) {
+				return false;
+			}
+			int i = filename.lastIndexOf('.');
+			if (i == -1) {
+				return false;
+			}
+			String s = filename.substring(i);
+			return s.equalsIgnoreCase(".jar");
+		}
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		FremeEServiceMenuItem menuItem = (FremeEServiceMenuItem) e
+		        .getItemSelectable();
+		try {
+			if (fremePlugins != null) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
+					        .entrySet()) {
+						if (fremePlugin.getValue()) {
+							fremePlugin.getKey().turnOnService(
+							        menuItem.getServiceType());
+						}
+					}
+				} else {
+					for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
+					        .entrySet()) {
+						if (fremePlugin.getValue()) {
+							fremePlugin.getKey().turnOffService(
+							        menuItem.getServiceType());
+						}
+					}
+				}
+			}
+		} catch (UnknownServiceException exc) {
+			LOG.trace("Error while turning on/off the service with type: "
+			        + menuItem.getServiceType(), exc);
+			JOptionPane.showMessageDialog(null,
+			        "An error has occurred while turning on/off the service.",
+			        "Freme e-Service", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	public JMenu getFremeMenu() {
+
+		if (fremePlugins != null) {
+			fremeMenu = new FremeMenu(this);
+			boolean enableMenu = false;
+			for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
+			        .entrySet()) {
+				if (fremePlugin.getValue()) {
+					enableMenu = true;
+					break;
+				}
+			}
+			fremeMenu.setEnabled(enableMenu);
+		}
+
+		return fremeMenu;
+	}
+
+	public void enrichSegments(List<OcelotSegment> segments) {
+
+		fremeManager.setSegments(segments);
+		enrichSegments();
+	}
+
+	private void enrichSegments() {
+
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
+			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
+			        .iterator().next();
+			if (fremeEntry.getValue()) {
+				fremeManager.enrich(fremeEntry.getKey());
+			}
+		}
+	}
+
+	@Subscribe
+	public void segmentEdit(SegmentEditEvent e) {
+		if (e.getSegment().getTarget() instanceof BaseSegmentVariant) {
+			enrichVariant((BaseSegmentVariant) e.getSegment().getTarget(), e
+			        .getSegment().getSegmentNumber());
+		}
+	}
+
+	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber) {
+
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
+			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
+			        .iterator().next();
+			if (fremeEntry.getValue()) {
+				fremeManager
+				        .enrich(fremeEntry.getKey(), variant, segmentNumber);
+			}
+		}
+	}
+
 }

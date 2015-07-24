@@ -28,40 +28,10 @@
  */
 package com.vistatec.ocelot.segment.view;
 
-import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ItsSelectionEvent;
-import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.LQISelectionEvent;
-import com.vistatec.ocelot.events.QuickAddEvent;
-import com.vistatec.ocelot.events.RefreshSegmentView;
-import com.vistatec.ocelot.events.SegmentEditEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
-import com.vistatec.ocelot.events.SegmentTargetExitEvent;
-import com.vistatec.ocelot.events.SegmentTargetResetEvent;
-import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
-import com.vistatec.ocelot.events.SegmentVariantSelectionEvent;
-import com.vistatec.ocelot.ContextMenu;
-import com.vistatec.ocelot.SegmentViewColumn;
-import com.vistatec.ocelot.TextContextMenu;
-
-import static com.vistatec.ocelot.SegmentViewColumn.*;
-
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
-import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
-import com.vistatec.ocelot.rules.NullITSMetadata;
-import com.vistatec.ocelot.rules.SegmentSelector;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.rules.RuleListener;
-import com.vistatec.ocelot.rules.StateQualifier;
+import static com.vistatec.ocelot.SegmentViewColumn.Original;
+import static com.vistatec.ocelot.SegmentViewColumn.SegNum;
+import static com.vistatec.ocelot.SegmentViewColumn.Source;
+import static com.vistatec.ocelot.SegmentViewColumn.Target;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -104,8 +74,38 @@ import javax.swing.text.BadLocationException;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.TextContextMenu;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.QuickAddEvent;
+import com.vistatec.ocelot.events.RefreshSegmentView;
+import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
+import com.vistatec.ocelot.events.SegmentTargetExitEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
+import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
+import com.vistatec.ocelot.events.SegmentVariantSelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.rules.DataCategoryFlag;
+import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
+import com.vistatec.ocelot.rules.NullITSMetadata;
+import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.rules.RuleListener;
+import com.vistatec.ocelot.rules.SegmentSelector;
+import com.vistatec.ocelot.rules.StateQualifier;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -379,7 +379,7 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
         if (seg != null) {
             int colIndex = sourceTargetTable.getSelectedColumn();
             SegmentViewColumn col = segmentTableModel.getColumn(colIndex);
-            if (col.isFlagColumn()) {
+            if (col != null && col.isFlagColumn()) {
                 ITSMetadata its = ruleConfig.getTopDataCategory(seg, col.getFlagIndex());
                 if (its != null) {
                     eventQueue.post(new ItsSelectionEvent(its));

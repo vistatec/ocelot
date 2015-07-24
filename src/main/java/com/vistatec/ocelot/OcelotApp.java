@@ -111,7 +111,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         segmentService.setSegments(segments);
 
         this.pluginManager.notifyOpenFile(openFile.getName());
-        this.pluginManager.notifySegments(segments, eventQueue);
+        this.pluginManager.enrichSegments(segments);
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
@@ -183,58 +183,4 @@ public class OcelotApp implements OcelotEventQueueListener {
         return menues;
     }
     
-    
-    public List<JMenuItem> getPluginCtxMenuItems(){
-    	
-    	return pluginManager.getFremeCtxMenuItems();
-    }
-    
-    public static void main(String[] args) {
-		
-    	try {
-    		File file = new File("C:\\Users\\Martab\\editDistance.csv");
-			FileWriter writer = new FileWriter(file);
-			
-			writer.append("File Name");
-			writer.append(",");
-			writer.append("blabla.xlif");
-			writer.append("\n");
-			//COLUMNS
-			writer.append("Seg#");
-			writer.append(",");
-			writer.append("Edit Distance");
-			writer.append("\n");
-			
-			//DATA
-			writer.append("1");
-			writer.append(",");
-			writer.append("9");
-			writer.append("\n");
-			
-			writer.append("2");
-			writer.append(",");
-			writer.append("0");
-			writer.append("\n");
-			
-			writer.append("3");
-			writer.append(",");
-			writer.append("10");
-			writer.append("\n");
-			
-			writer.append("");
-			writer.append(",");
-			writer.append("TOTAL");
-			writer.append("\n");
-			writer.append("");
-			writer.append(",");
-			writer.append("19");
-			writer.append("\n");
-			
-			writer.flush();
-			writer.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }

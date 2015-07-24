@@ -105,15 +105,15 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
 	
 	private void createEnrichmentMenuItem(){
 		
-		viewEnrichments = new JMenuItem("View Enrichments");
-		viewEnrichments.addActionListener(this);
 		if (variant != null && variant instanceof BaseSegmentVariant
-				&& ((BaseSegmentVariant) variant).isEnriched()) {
-			viewEnrichments.setEnabled(true);
-		} else {
-			viewEnrichments.setEnabled(false);
+		        && ((BaseSegmentVariant) variant).isEnriched()) {
+			viewEnrichments = new JMenuItem("View Enrichments");
+			viewEnrichments.addActionListener(this);
+			// viewEnrichments.setEnabled(true);
+			// } else {
+			// viewEnrichments.setEnabled(false);
+			add(viewEnrichments);
 		}
-		add(viewEnrichments);
 	}
 
 	@Override
