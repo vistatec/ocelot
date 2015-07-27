@@ -50,6 +50,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -72,7 +73,6 @@ import org.apache.log4j.PropertyConfigurator;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.vistatec.ocelot.OcelotApp.ErrorAlertException;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -156,6 +156,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 		add(setupMainPane(segView, segAttrView, detailView));
 	}
+	
 
 	private Component setupMainPane(SegmentView segView,
 	        SegmentAttributeView segAttrView, DetailView detailView)
@@ -475,6 +476,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuPlugins = new JMenuItem("Plugins");
 		menuPlugins.addActionListener(this);
 		menuExtensions.add(menuPlugins);
+		
+		List<JMenu> pluginMenuList = ocelotApp.getPluginMenuList();
+		for(JMenu menu: pluginMenuList){
+			menuExtensions.add(menu);
+		}
 
 		menuHelp = new JMenu("Help");
 		menuBar.add(menuHelp);

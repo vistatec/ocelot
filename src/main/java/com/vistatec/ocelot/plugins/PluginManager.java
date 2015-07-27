@@ -28,25 +28,8 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
-import com.vistatec.ocelot.events.SegmentTargetExitEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.services.SegmentService;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -54,13 +37,35 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
+import com.vistatec.ocelot.events.SegmentTargetExitEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.plugins.ReportPlugin.ReportException;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.SegmentService;
 
 /**
  * Detect, install, and instantiate any available plugin classes.
@@ -74,8 +79,10 @@ public class PluginManager implements OcelotEventQueueListener {
 	private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
 	private List<String> itsPluginClassNames = new ArrayList<String>();
 	private List<String> segPluginClassNames = new ArrayList<String>();
+	private List<String> reportPluginClassNames = new ArrayList<String>();
 	private HashMap<ITSPlugin, Boolean> itsPlugins;
 	private HashMap<SegmentPlugin, Boolean> segPlugins;
+	private HashMap<ReportPlugin, Boolean> reportPlugins;
 	private ClassLoader classLoader;
 	private File pluginDir;
 	private final ConfigService cfgService;
@@ -83,6 +90,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	public PluginManager(ConfigService cfgService, File pluginDir) {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
+		this.reportPlugins = new HashMap<ReportPlugin, Boolean>();
 		this.cfgService = cfgService;
 		this.pluginDir = pluginDir;
 	}
@@ -99,8 +107,10 @@ public class PluginManager implements OcelotEventQueueListener {
 		Set<Plugin> plugins = new HashSet<Plugin>();
 		Set<? extends Plugin> itsPlugins = getITSPlugins();
 		Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
+		Set<? extends Plugin> reportPlugins = getReportPlugins();
 		plugins.addAll(itsPlugins);
 		plugins.addAll(segmentPlugins);
+		plugins.addAll(reportPlugins);
 		return plugins;
 	}
 
@@ -115,6 +125,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		return this.segPlugins.keySet();
 	}
 
+	public Set<ReportPlugin> getReportPlugins() {
+		return this.reportPlugins.keySet();
+	}
 
 	/**
 	 * Return if the plugin should receive data from the workbench.
@@ -127,18 +140,24 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof SegmentPlugin) {
 			SegmentPlugin segPlugin = (SegmentPlugin) plugin;
 			enabled = segPlugins.get(segPlugin);
+		} else if (plugin instanceof ReportPlugin) {
+			ReportPlugin reportPlugin = (ReportPlugin) plugin;
+			enabled = reportPlugins.get(reportPlugin);
 		}
 		return enabled;
 	}
 
 	public void setEnabled(Plugin plugin, boolean enabled)
-			throws ConfigTransferService.TransferException {
+	        throws ConfigTransferService.TransferException {
 		if (plugin instanceof ITSPlugin) {
 			ITSPlugin itsPlugin = (ITSPlugin) plugin;
 			itsPlugins.put(itsPlugin, enabled);
 		} else if (plugin instanceof SegmentPlugin) {
 			SegmentPlugin segPlugin = (SegmentPlugin) plugin;
 			segPlugins.put(segPlugin, enabled);
+		} else if (plugin instanceof ReportPlugin) {
+			ReportPlugin reportPlugin = (ReportPlugin) plugin;
+			reportPlugins.put(reportPlugin, enabled);
 		}
 		cfgService.savePluginEnabled(plugin, enabled);
 	}
@@ -166,7 +185,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	 * @param segmentService
 	 */
 	public void exportData(String sourceLang, String targetLang,
-			SegmentService segmentService) {
+	        SegmentService segmentService) {
 		for (int row = 0; row < segmentService.getNumSegments(); row++) {
 			OcelotSegment seg = segmentService.getSegment(row);
 			List<LanguageQualityIssue> lqi = seg.getLQI();
@@ -177,7 +196,7 @@ public class PluginManager implements OcelotEventQueueListener {
 					plugin.sendProvData(sourceLang, targetLang, seg, prov);
 				} catch (Exception e) {
 					LOG.error("ITS Plugin '" + plugin.getPluginName()
-							+ "' threw an exception on ITS metadata export", e);
+					        + "' threw an exception on ITS metadata export", e);
 				}
 			}
 		}
@@ -197,7 +216,7 @@ public class PluginManager implements OcelotEventQueueListener {
 					segPlugin.onSegmentTargetEnter(seg);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-							+ "' threw an exception on segment target enter", e);
+					        + "' threw an exception on segment target enter", e);
 				}
 			}
 		}
@@ -217,22 +236,26 @@ public class PluginManager implements OcelotEventQueueListener {
 					segPlugin.onSegmentTargetExit(seg);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-							+ "' threw an exception on segment target exit", e);
+					        + "' threw an exception on segment target exit", e);
 				}
 			}
 		}
 	}
 
-	public void notifyOpenFile(String filename) {
+	public void notifyOpenFile(String filename, List<OcelotSegment> segments) {
 		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
 			if (isEnabled(segPlugin)) {
 				try {
 					segPlugin.onFileOpen(filename);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-							+ "' threw an exception on file open", e);
+					        + "' threw an exception on file open", e);
 				}
 			}
+		}
+		if(isReportPluginEnabled()){
+			ReportPlugin reportPlugin = reportPlugins.keySet().iterator().next();
+			reportPlugin.onOpenFile(filename, segments);
 		}
 	}
 
@@ -243,7 +266,7 @@ public class PluginManager implements OcelotEventQueueListener {
 					segPlugin.onFileSave(filename);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-							+ "' threw an exception on file save", e);
+					        + "' threw an exception on file save", e);
 				}
 			}
 		}
@@ -284,7 +307,7 @@ public class PluginManager implements OcelotEventQueueListener {
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class
-						.forName(s, false, classLoader);
+				        .forName(s, false, classLoader);
 				ITSPlugin plugin = c.newInstance();
 				itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -299,9 +322,24 @@ public class PluginManager implements OcelotEventQueueListener {
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class
-						.forName(s, false, classLoader);
+				        .forName(s, false, classLoader);
 				SegmentPlugin plugin = c.newInstance();
 				segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for (String s : reportPluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends ReportPlugin> c = (Class<ReportPlugin>) Class
+				        .forName(s, false, classLoader);
+				ReportPlugin plugin = c.newInstance();
+				reportPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
 				System.out.println("Warning: " + e.getMessage());
@@ -325,13 +363,13 @@ public class PluginManager implements OcelotEventQueueListener {
 		}
 
 		classLoader = AccessController
-				.doPrivileged(new PrivilegedAction<URLClassLoader>() {
-					public URLClassLoader run() {
-						return new URLClassLoader(pluginJarURLs
-								.toArray(new URL[pluginJarURLs.size()]), Thread
-								.currentThread().getContextClassLoader());
-					}
-				});
+		        .doPrivileged(new PrivilegedAction<URLClassLoader>() {
+			        public URLClassLoader run() {
+				        return new URLClassLoader(pluginJarURLs
+				                .toArray(new URL[pluginJarURLs.size()]), Thread
+				                .currentThread().getContextClassLoader());
+			        }
+		        });
 	}
 
 	void scanJar(final File file) {
@@ -344,10 +382,10 @@ public class PluginManager implements OcelotEventQueueListener {
 					name = convertFileNameToClass(name);
 					try {
 						Class<?> clazz = Class
-								.forName(name, false, classLoader);
+						        .forName(name, false, classLoader);
 						// Skip non-instantiable classes
 						if (clazz.isInterface()
-								|| Modifier.isAbstract(clazz.getModifiers())) {
+						        || Modifier.isAbstract(clazz.getModifiers())) {
 							continue;
 						}
 						if (ITSPlugin.class.isAssignableFrom(clazz)) {
@@ -358,12 +396,12 @@ public class PluginManager implements OcelotEventQueueListener {
 							if (itsPluginClassNames.contains(name)) {
 								// TODO: log this
 								System.out
-										.println("Warning: found multiple implementations of plugin class "
-												+ name);
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
 							} else {
 								itsPluginClassNames.add(name);
 							}
-						} 
+						}
 						if (SegmentPlugin.class.isAssignableFrom(clazz)) {
 							// It's a plugin! Just store the name for now
 							// since we will need to reinstantiate it later with
@@ -372,10 +410,24 @@ public class PluginManager implements OcelotEventQueueListener {
 							if (segPluginClassNames.contains(name)) {
 								// TODO: log this
 								System.out
-										.println("Warning: found multiple implementations of plugin class "
-												+ name);
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
 							} else {
 								segPluginClassNames.add(name);
+							}
+						}
+						if (ReportPlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin! Just store the name for now
+							// since we will need to reinstantiate it later with
+							// the
+							// real classloader (I think)
+							if (reportPluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
+							} else {
+								reportPluginClassNames.add(name);
 							}
 						}
 					} catch (ClassNotFoundException ex) {
@@ -403,6 +455,10 @@ public class PluginManager implements OcelotEventQueueListener {
 		return s.replace('/', '.');
 	}
 
+	public void generateReports() {
+
+	}
+
 	static class JarFilenameFilter implements FilenameFilter {
 		@Override
 		public boolean accept(File dir, String filename) {
@@ -416,5 +472,34 @@ public class PluginManager implements OcelotEventQueueListener {
 			String s = filename.substring(i);
 			return s.equalsIgnoreCase(".jar");
 		}
+	}
+
+	public List<JMenu> getPluginMenuList(){
+		
+		List<JMenu> menuList = new ArrayList<JMenu>();
+		if(isReportPluginEnabled()){
+			JMenu reportMenu = new JMenu("Reports");
+			JMenuItem generateMenuItem = new JMenuItem("Generate Reports");
+			generateMenuItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+	                    reportPlugins.keySet().iterator().next().generateReport(null);
+                    } catch (ReportException e1) {
+	                    // TODO Auto-generated catch block
+	                    e1.printStackTrace();
+                    }
+				}
+			});
+			reportMenu.add(generateMenuItem);
+			menuList.add(reportMenu);
+		}
+		return menuList;
+	}
+	
+	public boolean isReportPluginEnabled() {
+		return reportPlugins != null && !reportPlugins.isEmpty()
+		        && reportPlugins.entrySet().iterator().next().getValue();
 	}
 }
