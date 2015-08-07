@@ -100,8 +100,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private static Logger LOG = Logger.getLogger(Ocelot.class);
 
 	private JMenuBar menuBar;
-	private JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp,
-	        menuTools;
+	private JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
 	        menuSave, menuSaveAs, menuQuickAdd;
 	private JMenuItem menuPlugins;
@@ -437,6 +436,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuColumns = new JMenuItem("Configure Columns");
 		menuColumns.addActionListener(this);
 		menuView.add(menuColumns);
+		
+		menuConfigTm = new JMenuItem("Configure TM");
+		menuConfigTm.addActionListener(this);
+		menuView.add(menuConfigTm);
 
 		menuFilter = new JMenu("Filter");
 		menuBar.add(menuFilter);
@@ -456,19 +459,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuBar.add(segmentMenu.getMenu());
 		this.eventQueue.registerListener(segmentMenu);
 
-		menuTools = new JMenu("Tools");
-		menuBar.add(menuTools);
-
-		JMenu reportSubMenu = new JMenu("Reports");
-		menuTools.add(reportSubMenu);
-
-		menuTimeCaptureReport = new JMenuItem("Time-capture Report");
-		menuTimeCaptureReport.addActionListener(this);
-		reportSubMenu.add(menuTimeCaptureReport);
-
-		menuConfigTm = new JMenuItem("Configure TM");
-		menuConfigTm.addActionListener(this);
-		menuTools.add(menuConfigTm);
 
 		menuExtensions = new JMenu("Extensions");
 		menuBar.add(menuExtensions);
