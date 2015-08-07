@@ -192,7 +192,7 @@ public class TestOkapiTmManager {
     }
 
     static RootConfig setupNewForeignDataDir() throws IOException, URISyntaxException {
-        File packageDir = new File(TestOkapiTmManager.class.getResource("").toURI());
+        File packageDir = new File(TestOkapiTmManager.class.getResource("/").toURI());
 
         final String newTmName = "new";
         File newTmx = new File(TestOkapiTmManager.class.getResource("simple_tm.tmx").toURI());
