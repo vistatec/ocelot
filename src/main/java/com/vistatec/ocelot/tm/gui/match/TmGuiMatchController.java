@@ -5,24 +5,34 @@ import java.awt.Container;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
+import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.resource.TextContainer;
+import net.sf.okapi.common.resource.TextFragment;
+import net.sf.okapi.tm.pensieve.common.TmHit;
+import net.sf.okapi.tm.pensieve.common.TranslationUnit;
+import net.sf.okapi.tm.pensieve.common.TranslationUnitVariant;
 
 import org.apache.log4j.Logger;
 
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TranslationEnrichment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmService;
+import com.vistatec.ocelot.tm.okapi.PensieveTmMatch;
 
 /**
  * This class stands over all graphic processes pertaining the TM match
@@ -170,6 +180,27 @@ public class TmGuiMatchController {
 				translationsPanel.setLoading();
 				List<TmMatch> translations = getFuzzyMatches(selectedSegment
 						.getSource().getAtoms());
+				if(selectedSegment.getSource() instanceof BaseSegmentVariant){
+					TranslationEnrichment transEnrich = ((BaseSegmentVariant)selectedSegment.getSource()).getTranslationEnrichment();
+					if(transEnrich != null){
+						TmHit hit = new TmHit();
+						TranslationUnit tu = new TranslationUnit();
+						TextFragment fragment = new TextFragment(transEnrich.getTranslation());
+						TranslationUnitVariant tuVariant = new TranslationUnitVariant(new LocaleId(transEnrich.getLanguage()), fragment);
+						tu.setTarget(tuVariant);
+						tuVariant = new TranslationUnitVariant(null, new TextFragment(selectedSegment.getSource().getDisplayText()));
+						tu.setSource(tuVariant);
+						hit.setTu(tu);
+						hit.setScore(100f);
+						TmMatch fremeMatch = new PensieveTmMatch("FREME e-Translation", hit);
+						
+						if(translations == null){
+							translations = new ArrayList<TmMatch>();
+						}
+						translations.add(0, fremeMatch);
+					}
+					
+				}
 				translationsPanel.setTranslationSearchResults(translations);
 			}
 		}

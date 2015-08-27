@@ -36,17 +36,19 @@ public class BalloonTip extends JDialog implements ActionListener {
 
     //
     public BalloonTip(Window owner, Component component, int x, int y) {
-        super(owner);
+        super();
         setModal(true);
         this.x = x;
         this.y = y;
         this.component = component;
+        setUndecorated(true);
+        
         // TODO Auto-generated constructor stub
     }
 
     public void makeUI() {
 
-        setUndecorated(true);
+//        setUndecorated(true);
         // setOpacity(0.1f);
         // panel.setOpaque(true);
         setBackground(new Color(0, 0, 0, 0));

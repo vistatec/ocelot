@@ -303,7 +303,6 @@ public class FragmentVariant extends BaseSegmentVariant {
             else {
                 textToStyle.add(atom.getData());
             }
-            System.out.println(atom.getData());
             textToStyle.add(atom.getTextStyle());
         }
         return textToStyle;

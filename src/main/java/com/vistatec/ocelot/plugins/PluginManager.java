@@ -28,12 +28,17 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import java.awt.Frame;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -363,7 +368,8 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 				@SuppressWarnings("unchecked")
 				Class<? extends FremePlugin> c = (Class<FremePlugin>) Class
 				        .forName(s, false, classLoader);
-				FremePlugin plugin = c.newInstance();
+				Constructor<? extends FremePlugin> constructor = c.getDeclaredConstructor(String.class);
+				FremePlugin plugin =  constructor.newInstance(pluginDir.getAbsolutePath());
 				fremePlugins.put(plugin, false);
 				setEnabled(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -530,7 +536,17 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	public JMenu getFremeMenu() {
 
 		if (fremePlugins != null) {
-			fremeMenu = new FremeMenu(this);
+			ActionListener listener = new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(fremePlugins != null ){
+						Window containerWindow = SwingUtilities.getWindowAncestor(fremeMenu);
+						fremePlugins.keySet().iterator().next().configureServiceChain(containerWindow);
+					}
+				}
+			};
+			fremeMenu = new FremeMenu(this, listener);
 			boolean enableMenu = false;
 			for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
 			        .entrySet()) {
@@ -551,6 +567,22 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 		enrichSegments();
 	}
 
+	
+	public void setSourceAndTargetLangs(String sourceLang, String targetLang){
+		
+		if(fremePlugins != null){
+			int dashIdx = sourceLang.indexOf("-");
+			if(dashIdx != -1){
+				sourceLang = sourceLang.substring(0, dashIdx);
+			}
+			dashIdx = targetLang.indexOf("-");
+			if(dashIdx != -1){
+				targetLang = targetLang.substring(0, dashIdx);
+			}
+			fremePlugins.keySet().iterator().next().setSourceAndTargetLanguages(sourceLang, targetLang);
+		}
+	}
+	
 	private void enrichSegments() {
 
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
@@ -566,20 +598,21 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	public void segmentEdit(SegmentEditEvent e) {
 		if (e.getSegment().getTarget() instanceof BaseSegmentVariant) {
 			enrichVariant((BaseSegmentVariant) e.getSegment().getTarget(), e
-			        .getSegment().getSegmentNumber());
+			        .getSegment().getSegmentNumber(), true);
 		}
 	}
 
-	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber) {
+	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber, boolean target) {
 
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
 			        .iterator().next();
 			if (fremeEntry.getValue()) {
 				fremeManager
-				        .enrich(fremeEntry.getKey(), variant, segmentNumber);
+				        .enrich(fremeEntry.getKey(), variant, segmentNumber, target);
 			}
 		}
 	}
+
 
 }

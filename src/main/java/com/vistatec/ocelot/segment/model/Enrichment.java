@@ -89,11 +89,15 @@ public abstract class Enrichment {
     }
     
     
-    protected abstract String getTagType();
+    public abstract String getTagType();
     
-    protected abstract String getTag();
+    public abstract String getTag();
     
     public abstract String getType();
+    
+    public abstract String getTagValue();
+    
+    public abstract String getMarkerTag();
     
     public void setDisabled(final boolean disabled){
         this.disabled = disabled;

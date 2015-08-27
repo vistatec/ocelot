@@ -1,82 +1,85 @@
 package com.vistatec.ocelot.plugins;
 
+import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
-public class FremeMenu extends JMenu  {
+public class FremeMenu extends JMenu {
 
-    /**
+	/**
      * 
      */
-    private static final long serialVersionUID = -5852190101662320008L;
+	private static final long serialVersionUID = -5852190101662320008L;
 
-    private FremeEServiceMenuItem mnuEEntityService;
+	private FremeEServiceMenuItem mnuEEntityService;
 
-     private FremeEServiceMenuItem mnuELinkService;
-    //
-    // private FremeEServiceMenuItem mnuETerminologyService;
-    //
-    // private FremeEServiceMenuItem mnuETranslationService;
+	private FremeEServiceMenuItem mnuELinkService;
+	//
+	private FremeEServiceMenuItem mnuETerminologyService;
 
-    public FremeMenu(final ItemListener listener ) {
+	private FremeEServiceMenuItem mnuETranslationService;
+	
+	private JMenuItem mnuConfigPipeline;
 
-        super("Freme e-Services");
-        init(listener);
+	public FremeMenu(final ItemListener itemListener, final ActionListener actionListener) {
 
-    }
+		super("Freme e-Services");
+		init(itemListener, actionListener);
 
-    private void init( final ItemListener listener) {
+	}
 
-        mnuEEntityService = new FremeEServiceMenuItem("e-Entity",
-                FremePlugin.EENTITY_SERVICE);
-        mnuEEntityService.setSelected(true);
-        mnuEEntityService.addItemListener(listener);
-        add(mnuEEntityService);
+	private void init(final ItemListener listener, ActionListener actionListener) {
 
-        mnuELinkService = new FremeEServiceMenuItem("e-Link", FremePlugin.ELINK_SERVICE);
-        mnuELinkService.setSelected(true);
-        mnuELinkService.addItemListener(listener);
-        add(mnuELinkService);
-        // mnuELinkService = new
-        // FremeEServiceMenuItem(FremePlugin.ELINK_SERVICE);
-        // mnuELinkService.setSelected(true);
-        // mnuELinkService.addItemListener(listener);
-        // add(mnuELinkService);
+		mnuEEntityService = new FremeEServiceMenuItem("e-Entity",
+		        FremePlugin.EENTITY_SERVICE);
+		mnuEEntityService.setSelected(true);
+		mnuEEntityService.addItemListener(listener);
+		add(mnuEEntityService);
 
-        // mnuETerminologyService = new
-        // FremeEServiceMenuItem(FremePlugin.ETERMINOLOGY);
-        // mnuETerminologyService.setSelected(true);
-        // mnuETerminologyService.addItemListener(listener);
-        // add(mnuETerminologyService);
+		mnuELinkService = new FremeEServiceMenuItem("e-Link",
+		        FremePlugin.ELINK_SERVICE);
+		mnuELinkService.setSelected(true);
+		mnuELinkService.addItemListener(listener);
+		add(mnuELinkService);
 
-        // mnuETranslationService = new
-        // FremeEServiceMenuItem(FremePlugin.ETRANSLATION);
-        // mnuETranslationService.setSelected(true);
-        // mnuETranslationService.addItemListener(listener);
-        // add(mnuETranslationService);
-    }
+		mnuETerminologyService = new FremeEServiceMenuItem("e-Terminology",
+		        FremePlugin.ETERMINOLOGY);
+		mnuETerminologyService.setSelected(true);
+		mnuETerminologyService.addItemListener(listener);
+		add(mnuETerminologyService);
 
+		 mnuETranslationService = new
+		 FremeEServiceMenuItem("e-Translation", FremePlugin.ETRANSLATION);
+		 mnuETranslationService.setSelected(true);
+		 mnuETranslationService.addItemListener(listener);
+		 add(mnuETranslationService);
+		 
+		 mnuConfigPipeline = new JMenuItem("Freme Pipeline Configuration");
+		 mnuConfigPipeline.addActionListener(actionListener);
+		 add(mnuConfigPipeline);
+	}
 
 }
 
 class FremeEServiceMenuItem extends JCheckBoxMenuItem {
 
-    /**
+	/**
    * 
    */
-    private static final long serialVersionUID = 7464098022306114511L;
+	private static final long serialVersionUID = 7464098022306114511L;
 
-    private int serviceType;
+	private int serviceType;
 
-    public FremeEServiceMenuItem(final String text, final int serviceType) {
+	public FremeEServiceMenuItem(final String text, final int serviceType) {
 
-        super(text);
-        this.serviceType = serviceType;
-    }
+		super(text);
+		this.serviceType = serviceType;
+	}
 
-    public int getServiceType() {
-        return serviceType;
-    }
+	public int getServiceType() {
+		return serviceType;
+	}
 }

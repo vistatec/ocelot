@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.plugins;
 
-import java.io.InputStream;
+import java.awt.Window;
 import java.util.List;
 
 import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
@@ -13,18 +13,25 @@ public interface FremePlugin extends Plugin {
     
     public int ELINK_SERVICE = 1;
 //    
-//    int ETERMINOLOGY = 2;
-//    
-//    int ETRANSLATION = 3;
+    public int ETERMINOLOGY = 2;
     
-    void configureServiceChain(int[] services);
+    public int ETRANSLATION = 3;
+    
+    void configureServiceChain(Window ocelotMainFrame);
     
     void turnOnService(final int serviceType) throws UnknownServiceException;
     
     void turnOffService(final int serviceType) throws UnknownServiceException;
     
-    List<Enrichment> enrichContent(final String plainText) throws FremeEnrichmentException;
+    List<Enrichment> enrichSourceContent(final String plainText) throws FremeEnrichmentException;
     
-    List<Enrichment> enrichContent(final InputStream inputContent) throws FremeEnrichmentException;
+    List<Enrichment> enrichTargetContent(final String plainText) throws FremeEnrichmentException;
+//    
+//    List<Enrichment> enrichContent(final InputStream inputContent) throws FremeEnrichmentException;
     
+//    public void enrichContent(final OcelotSegment segment)
+//	        throws FremeEnrichmentException;
+    
+    public void setSourceAndTargetLanguages(String sourceLanguage, String targetLanguage); 
+
 }

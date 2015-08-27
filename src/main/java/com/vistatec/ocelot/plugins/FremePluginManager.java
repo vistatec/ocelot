@@ -24,7 +24,7 @@ public class FremePluginManager {
 
 	/** The logger for this class. */
 	private final Logger logger = Logger.getLogger(FremePluginManager.class);
-	
+
 	/** Ideal segments number per call. */
 	private static final int SEGNUM_PER_CALL = 20;
 
@@ -108,11 +108,11 @@ public class FremePluginManager {
 	 *            the segment number.
 	 */
 	public void enrich(FremePlugin fremePlugin, BaseSegmentVariant variant,
-	        int segNumber) {
+	        int segNumber, boolean target) {
 		if (!variant.isEnriched()) {
 			logger.info("Enriching variant for segment " + segNumber + "...");
 			VariantWrapper wrapper = new VariantWrapper(variant,
-			        variant.getDisplayText(), segNumber);
+			        variant.getDisplayText(), segNumber, target);
 			if (wrapper.getText() != null && !wrapper.getText().isEmpty()) {
 				executor.execute(new FremeEnricher(
 				        new VariantWrapper[] { wrapper }, fremePlugin,
@@ -163,7 +163,7 @@ public class FremePluginManager {
 					if (text != null && !text.isEmpty()) {
 						fragments.add(new VariantWrapper(
 						        (BaseSegmentVariant) segment.getSource(), text,
-						        segment.getSegmentNumber()));
+						        segment.getSegmentNumber(), false));
 					}
 				}
 				if (segment.getTarget() != null
@@ -173,7 +173,7 @@ public class FremePluginManager {
 					if (text != null && !text.isEmpty()) {
 						fragments.add(new VariantWrapper(
 						        (BaseSegmentVariant) segment.getTarget(), text,
-						        segment.getSegmentNumber()));
+						        segment.getSegmentNumber(), true));
 					}
 				}
 			}
@@ -217,21 +217,29 @@ class VariantWrapper {
 	/** The owner segment number. */
 	private int segNumber;
 
+	private boolean target;
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param variant the variant
-	 * @param text the text
-	 * @param segNumber the segment number
+	 * @param variant
+	 *            the variant
+	 * @param text
+	 *            the text
+	 * @param segNumber
+	 *            the segment number
 	 */
-	public VariantWrapper(BaseSegmentVariant variant, String text, int segNumber) {
+	public VariantWrapper(BaseSegmentVariant variant, String text,
+	        int segNumber, boolean target) {
 		this.variant = variant;
 		this.text = text;
 		this.segNumber = segNumber;
+		this.target = target;
 	}
 
 	/**
 	 * Gets the variant.
+	 * 
 	 * @return the variant.
 	 */
 	public BaseSegmentVariant getVariant() {
@@ -240,6 +248,7 @@ class VariantWrapper {
 
 	/**
 	 * Gets the text.
+	 * 
 	 * @return the text.
 	 */
 	public String getText() {
@@ -248,10 +257,15 @@ class VariantWrapper {
 
 	/**
 	 * Gets the segment number.
+	 * 
 	 * @return the segment number.
 	 */
 	public int getSegNumber() {
 		return segNumber;
+	}
+
+	public boolean isTarget() {
+		return target;
 	}
 
 }
@@ -263,7 +277,7 @@ class FremeEnricher implements Runnable {
 
 	/** The logger for this class. */
 	private final Logger logger = Logger.getLogger(FremeEnricher.class);
-	
+
 	/** The array of variants. */
 	private VariantWrapper[] variants;
 
@@ -275,9 +289,13 @@ class FremeEnricher implements Runnable {
 
 	/**
 	 * Constructor.
-	 * @param variants the array of variants to be enriched.
-	 * @param fremePlugin the FREME plugin
-	 * @param eventQueue the event queue
+	 * 
+	 * @param variants
+	 *            the array of variants to be enriched.
+	 * @param fremePlugin
+	 *            the FREME plugin
+	 * @param eventQueue
+	 *            the event queue
 	 */
 	public FremeEnricher(final VariantWrapper[] variants,
 	        FremePlugin fremePlugin, OcelotEventQueue eventQueue) {
@@ -288,6 +306,7 @@ class FremeEnricher implements Runnable {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -297,8 +316,14 @@ class FremeEnricher implements Runnable {
 			logger.debug("Enriching " + variants.length + " variants");
 			for (VariantWrapper frag : variants) {
 				if (frag != null) {
-					List<Enrichment> enrichments = fremePlugin
-					        .enrichContent(frag.getText());
+					List<Enrichment> enrichments = null;
+					if (frag.isTarget()) {
+						enrichments = fremePlugin.enrichTargetContent(frag
+						        .getText());
+					} else {
+						enrichments = fremePlugin.enrichSourceContent(frag
+						        .getText());
+					}
 					frag.getVariant().setEnrichments(enrichments);
 					frag.getVariant().setEnriched(true);
 					eventQueue

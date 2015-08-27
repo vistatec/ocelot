@@ -15,6 +15,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	private boolean enriched;
 
 	private List<Enrichment> enrichments;
+	
+	private TranslationEnrichment transEnrichment;
 
 	protected abstract void setAtoms(List<SegmentAtom> atoms);
 
@@ -288,6 +290,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	}
 
 	public void setEnrichments(List<Enrichment> enrichments) {
+		checkTranslation(enrichments);
+		enrichments.remove(transEnrichment);
 		this.enrichments = enrichments;
 	}
 
@@ -296,7 +300,11 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
             if(enrichments == null){
                 enrichments = new ArrayList<Enrichment>();
             }
-            enrichments.add(enrichment);
+            if(enrichment.getType().equals(TranslationEnrichment.ENRICHMENT_TYPE)){
+            	this.transEnrichment = (TranslationEnrichment) enrichment;
+            } else {
+            	enrichments.add(enrichment);
+            }
         }
     }
     
@@ -305,7 +313,37 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
             if(enrichments == null){
                 enrichments = new ArrayList<Enrichment>();
             }
+            checkTranslation(enrichmentList);
+            enrichmentList.remove(transEnrichment);
             enrichments.addAll(enrichmentList);
         }
+    }
+    
+    private void checkTranslation(final List<Enrichment> enrichmentList){
+		if (enrichmentList != null) {
+			for (Enrichment enrich : enrichmentList) {
+				if (enrich != null && enrich.getType().equals(
+				        TranslationEnrichment.ENRICHMENT_TYPE)) {
+					this.transEnrichment = (TranslationEnrichment) enrich;
+					break;
+				}
+			}
+		}
+    }
+    
+    
+    
+    public TranslationEnrichment getTranslationEnrichment(){
+    	
+//    	TranslationEnrichment transEnrichment = null;
+//    	if(enrichments != null){
+//    		for(Enrichment enrich: enrichments){
+//    			if(enrich.getType().equals("translation")) {
+//    				transEnrichment = (TranslationEnrichment)enrich;
+//    				break;
+//    			}
+//    		}
+//    	}
+    	return transEnrichment;
     }
 }

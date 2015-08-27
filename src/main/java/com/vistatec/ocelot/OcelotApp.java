@@ -35,6 +35,9 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.EditDistanceReportService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.freme.EnrichmentAnnotationManager;
+import com.vistatec.ocelot.xliff.freme.FremeXliff1_2Parser;
+import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -112,6 +115,7 @@ public class OcelotApp implements OcelotEventQueueListener {
 
         this.pluginManager.notifyOpenFile(openFile.getName());
         this.pluginManager.enrichSegments(segments);
+        this.pluginManager.setSourceAndTargetLangs( xliffService.getSourceLang(), xliffService.getTargetLang());
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
@@ -136,7 +140,11 @@ public class OcelotApp implements OcelotEventQueueListener {
                         "The file " + filename + " can not be saved, because the directory is not writeable.");
             }
         }
+//        EnrichmentAnnotationManager manager = new EnrichmentAnnotationManager();
+//        manager.insertEnrichmentAnnotations(segmentService);
         xliffService.save(saveFile);
+        XliffFremeAnnotationManager manager = new XliffFremeAnnotationManager();
+        manager.saveAnnotations(saveFile, segmentService);
         this.fileDirty = false;
         editDistService.createEditDistanceReport(saveFile.getName());
         pluginManager.notifySaveFile(filename);

@@ -19,10 +19,13 @@ public class EnrichmentTableModel extends DefaultTableModel {
     public static final int BUTTON_COL = 0;
 
     private List<Enrichment> model;
+    
+    private boolean descrColEditable;
 
-    public EnrichmentTableModel(List<Enrichment> model) {
+    public EnrichmentTableModel(List<Enrichment> model, boolean descrColEditable) {
 
         this.model = model;
+        this.descrColEditable = descrColEditable;
     }
 
     @Override
@@ -102,7 +105,7 @@ public class EnrichmentTableModel extends DefaultTableModel {
     
     @Override
     public boolean isCellEditable(int row, int column) {
-        return column == BUTTON_COL;
+        return column == BUTTON_COL || (descrColEditable && column == DESCRIPTION_COL);
     }
 
     public void addEnrichment(final Enrichment enrichment) {
