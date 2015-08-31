@@ -78,7 +78,6 @@ import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.plugins.PluginManagerView;
-import com.vistatec.ocelot.report.OcelotReportsGenerator;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -108,7 +107,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private JMenuItem menuColumns;
 	private JMenuItem menuConfigTm;
 	private JMenuItem menuSaveAsTmx;
-	private JMenuItem menuTimeCaptureReport;
 
 	private JFrame mainframe;
 	private JSplitPane mainSplitPane;
@@ -265,10 +263,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			        "Configure Columns");
 		} else if (e.getSource() == this.menuConfigTm) {
 			eventQueue.post(new ConfigTmRequestEvent(mainframe));
-		} else if (e.getSource() == this.menuTimeCaptureReport) {
-			OcelotReportsGenerator reportGenerator = new OcelotReportsGenerator(
-			        mainframe);
-			reportGenerator.generateTimeCaptureReports();
 		}
 	}
 
