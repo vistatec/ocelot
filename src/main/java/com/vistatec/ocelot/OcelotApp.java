@@ -187,7 +187,10 @@ public class OcelotApp implements OcelotEventQueueListener {
     public List<JMenu> getPluginMenues(){
         
         List<JMenu> menues = new ArrayList<JMenu>();
-        menues.add(pluginManager.getFremeMenu());
+        JMenu fremeMenu = pluginManager.getFremeMenu();
+        if(fremeMenu != null){
+        	menues.add(fremeMenu);
+        }
         return menues;
     }
     

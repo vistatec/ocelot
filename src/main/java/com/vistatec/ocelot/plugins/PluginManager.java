@@ -535,7 +535,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 
 	public JMenu getFremeMenu() {
 
-		if (fremePlugins != null) {
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			ActionListener listener = new ActionListener() {
 				
 				@Override
@@ -570,7 +570,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	
 	public void setSourceAndTargetLangs(String sourceLang, String targetLang){
 		
-		if(fremePlugins != null){
+		if(fremePlugins != null && !fremePlugins.isEmpty()){
 			int dashIdx = sourceLang.indexOf("-");
 			if(dashIdx != -1){
 				sourceLang = sourceLang.substring(0, dashIdx);
