@@ -4,7 +4,7 @@
 
   <groupId>com.vistatec</groupId>
   <artifactId>Ocelot</artifactId>
-  <version>1.5-SNAPSHOT</version>
+  <version>2.0-rc1</version>
   <packaging>jar</packaging>
 
   <name>Ocelot</name>
@@ -12,8 +12,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <okapi.version>0.27-SNAPSHOT</okapi.version>
-    <okapi.xliff2.version>1.0-SNAPSHOT</okapi.xliff2.version>
+    <okapi.version>0.28</okapi.version>
+    <okapi.xliff2.version>1.0.1</okapi.xliff2.version>
   </properties>
   
   <repositories>
@@ -35,7 +35,7 @@
     <repository>
         <id>okapi-xliff</id>
         <name>okapi-xliff-repository</name>
-        <url>http://repository-okapi-xliff.forge.cloudbees.com/snapshot/</url>
+        <url>http://repository-okapi-xliff.forge.cloudbees.com/release/</url>
     </repository>
   </repositories>
 
