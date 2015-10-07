@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.enrichment.TranslationEnrichment;
 import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 public abstract class BaseSegmentVariant implements SegmentVariant {
@@ -300,7 +302,7 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
             if(enrichments == null){
                 enrichments = new ArrayList<Enrichment>();
             }
-            if(enrichment.getType().equals(TranslationEnrichment.ENRICHMENT_TYPE)){
+            if(enrichment.getType().equals(Enrichment.TRANSLATION_TYPE)){
             	this.transEnrichment = (TranslationEnrichment) enrichment;
             } else {
             	enrichments.add(enrichment);
@@ -323,7 +325,7 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 		if (enrichmentList != null) {
 			for (Enrichment enrich : enrichmentList) {
 				if (enrich != null && enrich.getType().equals(
-				        TranslationEnrichment.ENRICHMENT_TYPE)) {
+				        Enrichment.TRANSLATION_TYPE)) {
 					this.transEnrichment = (TranslationEnrichment) enrich;
 					break;
 				}

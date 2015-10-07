@@ -28,29 +28,17 @@
  */
 package com.vistatec.ocelot.xliff.okapi;
 
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.model.Provenance;
-
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.xliff.XLIFFParser;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-
-import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
-import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
-import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-
 import net.sf.okapi.lib.xliff2.core.MTag;
-
 import net.sf.okapi.lib.xliff2.core.Part;
 import net.sf.okapi.lib.xliff2.core.StartXliffData;
 import net.sf.okapi.lib.xliff2.core.Tag;
@@ -63,6 +51,17 @@ import net.sf.okapi.lib.xliff2.its.Provenances;
 import net.sf.okapi.lib.xliff2.reader.Event;
 import net.sf.okapi.lib.xliff2.reader.XLIFFReader;
 
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.freme.EnrichmentConverterXLIFF20;
+
 /**
  * Parse XLIFF 2.0 file for use in the workbench.
  */
@@ -72,7 +71,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
     private Map<Integer, Integer> segmentEventMapping;
     private int documentSegmentNum;
     private String sourceLang, targetLang;
-
+    private EnrichmentConverterXLIFF20 enrichmentConverter;
+    
     public List<Event> getEvents() {
         return this.events;
     }
@@ -107,20 +107,25 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                 if (xliffElement.getTargetLanguage() != null) {
                     this.targetLang = xliffElement.getTargetLanguage();
                 }
+                enrichmentConverter = new EnrichmentConverterXLIFF20(sourceLang, targetLang);
 
             } else if (event.isUnit()) {
                 Unit unit = event.getUnit();
                 for (Part unitPart : unit) {
                     if (unitPart.isSegment()) {
+                    	List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getSource());
+                    	List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getTarget());
                         net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
                                 (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
-                        segments.add(convertPartToSegment(okapiSegment, segmentUnitPartIndex++));
+                        OcelotSegment segment = convertPartToSegment(okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments);
+                        segments.add(segment);
                         this.segmentUnitParts.add(okapiSegment);
                     }
                 }
             }
 
         }
+        reader.close();
         return segments;
     }
 
@@ -131,7 +136,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
      * @return Segment - Ocelot Segment
      * @throws MalformedURLException
      */
-    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex) throws MalformedURLException {
+    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
         //TODO: load original target from file
         OkapiSegment seg = new OkapiSegment.Builder()
@@ -142,6 +147,15 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                 .build();
         seg.addAllLQI(parseLqiData(unitPart));
         seg.addAllProvenance(parseProvData(unitPart));
+        if(sourceEnrichments != null && !sourceEnrichments.isEmpty() && seg.getSource() != null && seg.getSource() instanceof BaseSegmentVariant){
+        	((BaseSegmentVariant)seg.getSource()).setEnrichments(sourceEnrichments);
+        	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
+        }
+        if(targetEnrichments != null && !targetEnrichments.isEmpty() && seg.getTarget() != null && seg.getTarget() instanceof BaseSegmentVariant){
+        	((BaseSegmentVariant)seg.getTarget()).setEnrichments(targetEnrichments);
+        	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
+        }
+        enrichmentConverter.convertEnrichments2ITSMetadata(seg);
         return seg;
     }
 

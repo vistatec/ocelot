@@ -3,6 +3,7 @@ package com.vistatec.ocelot.segment.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.view.SegmentTextCell;
 
 public class EnrichedAtom extends TextAtom  {

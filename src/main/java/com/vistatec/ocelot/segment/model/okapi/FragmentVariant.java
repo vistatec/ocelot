@@ -45,10 +45,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.CodeAtom;
-import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.TextAtom;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 
 /**
  * XLIFF 2.0 segment variant, implemented using the Okapi XLIFF 2.0 library Fragment.

@@ -37,6 +37,8 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.view.LanguageQualityIssueTableView;
 import com.vistatec.ocelot.its.view.OtherITSTableView;
+import com.vistatec.ocelot.its.view.TermsTableView;
+import com.vistatec.ocelot.its.view.TextAnalysisTableView;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.view.ProvenanceTableView;
 import com.vistatec.ocelot.its.stats.view.ITSDocStatsTableView;
@@ -58,6 +60,8 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
+    protected TextAnalysisTableView taTableView;
+    protected TermsTableView termTableView;
 
     @Inject
     public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsTableView docStatsView) {
@@ -73,10 +77,19 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
         addTab("Prov", provTableView);
         eventQueue.registerListener(provTableView);
 
+        taTableView = new TextAnalysisTableView();
+        eventQueue.registerListener(taTableView);
+        addTab("Text-Analysis", taTableView);
+        
+        termTableView = new TermsTableView();
+        eventQueue.registerListener(termTableView);
+        addTab("Terms", termTableView);
+
         itsTableView = new OtherITSTableView();
         eventQueue.registerListener(itsTableView);
         addTab("Other ITS", itsTableView);
         eventQueue.registerListener(itsTableView);
+        
 
         // Deselect metadata to allow reselection for detail view after switching tabs.
         addChangeListener(new ChangeListener() {

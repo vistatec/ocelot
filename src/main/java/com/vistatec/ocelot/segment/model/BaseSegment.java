@@ -35,6 +35,8 @@ import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.TerminologyMetaData;
+import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
 
 /**
@@ -56,6 +58,8 @@ public abstract class BaseSegment implements OcelotSegment {
 
     protected final List<LanguageQualityIssue> lqiList = new ArrayList<>();
     protected final List<Provenance> provList = new ArrayList<>();
+    protected final List<TextAnalysisMetaData> taList = new ArrayList<TextAnalysisMetaData>();
+    protected final List<TerminologyMetaData> termList = new ArrayList<TerminologyMetaData>();
     private boolean addedOcelotProvenance = false;
     protected final List<OtherITSMetadata> otherITSList = new ArrayList<>();
 
@@ -201,9 +205,45 @@ public abstract class BaseSegment implements OcelotSegment {
     public void setOcelotProvenance(boolean flag) {
         addedOcelotProvenance = flag;
     }
-
+    
 
     @Override
+    public List<TextAnalysisMetaData> getTextAnalysis() {
+	    return taList;
+    }
+
+	@Override
+    public void addTextAnalysis(TextAnalysisMetaData ta) {
+	    taList.add(ta);
+	    
+    }
+
+	@Override
+    public void addAllTextAnalysis(List<TextAnalysisMetaData> tas) {
+		if(tas != null){
+			taList.addAll(tas);
+		}
+    }
+	
+	public java.util.List<TerminologyMetaData> getTerms() {
+		return termList;
+	}
+	
+	@Override
+	public void addTerm(TerminologyMetaData term) {
+		termList.add(term);
+	}
+	
+	@Override
+	public void addAllTerms(List<TerminologyMetaData> terms) {
+		
+		if(terms != null){
+			termList.addAll(terms);
+		}
+	}
+	
+
+	@Override
     public List<OtherITSMetadata> getOtherITSMetadata() {
         return this.otherITSList;
     }
@@ -219,6 +259,8 @@ public abstract class BaseSegment implements OcelotSegment {
         its.addAll(lqiList);
         its.addAll(provList);
         its.addAll(otherITSList);
+        its.addAll(taList);
+        its.addAll(termList);
         return its;
     }
 

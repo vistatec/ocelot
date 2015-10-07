@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -33,414 +32,459 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.Enrichment;
-import com.vistatec.ocelot.segment.model.EntityEnrichment;
-import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.model.TextAtom;
-import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 
-public class EnrichmentFrame extends JDialog implements Runnable, ActionListener {
+/**
+ * Frame displaying enriched words highlighted in the text.
+ */
+public class EnrichmentFrame extends JDialog implements Runnable,
+        ActionListener {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -1930402687244966333L;
+	/** The serial version UID. */
+	private static final long serialVersionUID = -1930402687244966333L;
 
-    private JButton btnClose;
+	/** The close button. */
+	private JButton btnClose;
 
-//    private JButton btnCancel;
+	/** The list of labels. */
+	private List<JLabel> labels;
 
-    private List<JLabel> labels;
+	/** The location where the frame is displayed. */
+	private Point position;
 
-    private Point position;
+	/**
+	 * Constructor.
+	 * 
+	 * @param fragment
+	 *            the Ocelot fragment.
+	 * @param owner
+	 *            the owner window.
+	 * @param position
+	 *            the position.
+	 */
+	public EnrichmentFrame(final BaseSegmentVariant fragment,
+	        final Window owner, final Point position) {
 
-    public EnrichmentFrame(final BaseSegmentVariant fragment, final Window owner,
-            final Point position) {
+		super(owner);
+		buildLabels(fragment);
+		this.position = position;
+	}
 
-        super(owner);
-        buildLabels(fragment);
-        this.position = position;
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param fragment
+	 *            the Ocelot fragment.
+	 * @param owner
+	 *            the owner window.
+	 */
+	public EnrichmentFrame(final BaseSegmentVariant fragment, final Window owner) {
+		this(fragment, owner, null);
+	}
 
-    public EnrichmentFrame(final BaseSegmentVariant fragment, final Window owner) {
-        this(fragment, owner, null);
-    }
+	private Component makeMainPanel() {
 
-    private Component makeMainPanel() {
+		JTextPane textPane = new JTextPane();
 
-        JTextPane textPane = new JTextPane();
-        
-        JScrollPane scrollPane = new JScrollPane(textPane);
-        scrollPane.setPreferredSize(new Dimension(400,200));
-        textPane.setEditable(false);
-        StyledDocument styleDoc = textPane.getStyledDocument();
-        Style def = StyleContext.getDefaultStyleContext().getStyle(
-                StyleContext.DEFAULT_STYLE);
-        Style regular = styleDoc.addStyle("regular", def);
-        Style text =styleDoc.addStyle("regular", def);
-        JLabel sampleLabel = new JLabel();
-        StyleConstants.setFontSize(text, sampleLabel.getFont().getSize());
-        StyleConstants.setFontFamily(text, sampleLabel.getFont().getFamily());
-        StyleConstants.setBold(text, true);
-        Style labelStyle = styleDoc.addStyle("label", regular);
-        
-        try {
-            for (JLabel label : labels) {
-                if(label instanceof EnrichedLabel){
-                StyleConstants.setComponent(labelStyle, label);
-                styleDoc.insertString(styleDoc.getLength(), " ",
-                        labelStyle);
-                } else {
-                    styleDoc.insertString(styleDoc.getLength(), label.getText(),
-                            text);
-                }
-            }
-        } catch (BadLocationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return scrollPane;
+		JScrollPane scrollPane = new JScrollPane(textPane);
+		scrollPane.setPreferredSize(new Dimension(400, 200));
+		textPane.setEditable(false);
+		StyledDocument styleDoc = textPane.getStyledDocument();
+		Style def = StyleContext.getDefaultStyleContext().getStyle(
+		        StyleContext.DEFAULT_STYLE);
+		Style regular = styleDoc.addStyle("regular", def);
+		Style text = styleDoc.addStyle("regular", def);
+		JLabel sampleLabel = new JLabel();
+		StyleConstants.setFontSize(text, sampleLabel.getFont().getSize());
+		StyleConstants.setFontFamily(text, sampleLabel.getFont().getFamily());
+		StyleConstants.setBold(text, true);
+		Style labelStyle = styleDoc.addStyle("label", regular);
 
-    }
+		try {
+			for (JLabel label : labels) {
+				if (label instanceof EnrichedLabel) {
+					StyleConstants.setComponent(labelStyle, label);
+					styleDoc.insertString(styleDoc.getLength(), " ", labelStyle);
+				} else {
+					styleDoc.insertString(styleDoc.getLength(),
+					        label.getText(), text);
+				}
+			}
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return scrollPane;
 
-    private Component makeBottomPanel() {
+	}
 
-        btnClose = new JButton("Close");
-        btnClose.addActionListener(this);
-//        btnCancel = new JButton("Cancel");
-//        btnCancel.addActionListener(this);
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        panel.add(btnClose);
-//        panel.add(btnCancel);
-        return panel;
-    }
+	/**
+	 * Makes the bottom panel.
+	 * 
+	 * @return the bottom panel
+	 */
+	private Component makeBottomPanel() {
 
-    private void buildLabels(BaseSegmentVariant fragment) {
+		btnClose = new JButton("Close");
+		btnClose.addActionListener(this);
+		JPanel panel = new JPanel();
+		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		panel.add(btnClose);
+		return panel;
+	}
 
-        Collections.sort(fragment.getEnirchments(), new EnrichmentComparator());
-        labels = new ArrayList<JLabel>();
-        if (fragment.getEnirchments() != null) {
-            JLabel label = null;
-            String fragDisplayText = fragment.getDisplayText();
-            int startIndex = 0;
-            EnrichedLabel lastEnrichedLabel = null;
-            for (Enrichment e : fragment.getEnirchments()) {
-                if (lastEnrichedLabel != null
-                        && lastEnrichedLabel.containsOffset(e
-                                .getOffsetStartIdx())) {
-                    lastEnrichedLabel.addEnrichment(e);
-                    if (startIndex < e.getOffsetEndIdx()) {
-                        startIndex = e.getOffsetEndIdx();
-                    }
-                } else {
-                    label = new JLabel(fragDisplayText.substring(startIndex,
-                            e.getOffsetStartIdx()));
-                    labels.add(label);
-                    lastEnrichedLabel = new EnrichedLabel(
-                            fragDisplayText.substring(e.getOffsetStartIdx(),
-                                    e.getOffsetEndIdx()));
-                    lastEnrichedLabel.addEnrichment(e);
-                    labels.add(lastEnrichedLabel);
-                    startIndex = e.getOffsetEndIdx();
-                }
-            }
-            if (startIndex < fragDisplayText.length()) {
-                labels.add(new JLabel(fragDisplayText.substring(startIndex)));
-            }
-        }
-    }
+	/**
+	 * Builds the labels from the text and the enrichments retrieved by the
+	 * Ocelot fragment.
+	 * 
+	 * @param fragment
+	 *            the Ocelot fragments.
+	 */
+	private void buildLabels(BaseSegmentVariant fragment) {
 
-    @Override
-    public void run() {
+		Collections.sort(fragment.getEnirchments(), new EnrichmentComparator());
+		labels = new ArrayList<JLabel>();
+		if (fragment.getEnirchments() != null) {
+			JLabel label = null;
+			String fragDisplayText = fragment.getDisplayText();
+			int startIndex = 0;
+			EnrichedLabel lastEnrichedLabel = null;
+			for (Enrichment e : fragment.getEnirchments()) {
+				if (lastEnrichedLabel != null
+				        && lastEnrichedLabel.containsOffset(e
+				                .getOffsetStartIdx())) {
+					lastEnrichedLabel.addEnrichment(e);
+					if (startIndex < e.getOffsetEndIdx()) {
+						startIndex = e.getOffsetEndIdx();
+					}
+				} else {
+					label = new JLabel(fragDisplayText.substring(startIndex,
+					        e.getOffsetStartIdx()));
+					labels.add(label);
+					lastEnrichedLabel = new EnrichedLabel(
+					        fragDisplayText.substring(e.getOffsetStartIdx(),
+					                e.getOffsetEndIdx()));
+					lastEnrichedLabel.addEnrichment(e);
+					labels.add(lastEnrichedLabel);
+					startIndex = e.getOffsetEndIdx();
+				}
+			}
+			if (startIndex < fragDisplayText.length()) {
+				labels.add(new JLabel(fragDisplayText.substring(startIndex)));
+			}
+		}
+	}
 
-        setTitle("Enrichment");
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        add(makeMainPanel());
-        add(makeBottomPanel(), BorderLayout.SOUTH);
-        pack();
-        if (position != null) {
-            setLocation(position);
-        } else {
-            setLocationRelativeTo(getOwner());
-        }
-        setVisible(true);
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
+	@Override
+	public void run() {
 
-    public static void main(String[] args) {
+		setTitle("Enrichment");
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		add(makeMainPanel());
+		add(makeBottomPanel(), BorderLayout.SOUTH);
+		pack();
+		if (position != null) {
+			setLocation(position);
+		} else {
+			setLocationRelativeTo(getOwner());
+		}
+		setVisible(true);
+	}
 
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        SegmentAtom atom = new TextAtom("Welcome to Dublin! dfhgsd jh dsjfsjfg sjdgf sudgfsjkgfkjwge fkwjgef wkejfg wejgf wekjfg wejfgwejhgf lwjkef kjweg flwkjeg fl");
-        List<SegmentAtom> atoms = new ArrayList<SegmentAtom>();
-        atoms.add(atom);
-        FragmentVariant fragment = new FragmentVariant(atoms, false);
-        Enrichment enrich = new EntityEnrichment(
-                "http://127.0.0.1:9995/spotlight#char=11,17",
-                "http://dbpedia.org/resource/Dublin");
-        fragment.addEnrichment(enrich);
-        EnrichmentFrame enrichFrame = new EnrichmentFrame(fragment, frame);
-        SwingUtilities.invokeLater(enrichFrame);
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        
-        close();
-        
-    }
+		close();
 
-    private void close() {
+	}
 
-        setVisible(false);
-        dispose();
-    }
+	/**
+	 * Closes the frame.
+	 */
+	private void close() {
+
+		setVisible(false);
+		dispose();
+	}
 
 }
 
+/**
+ * Comparator for enrichments.
+ */
 class EnrichmentComparator implements Comparator<Enrichment> {
 
-    @Override
-    public int compare(Enrichment o1, Enrichment o2) {
+	@Override
+	public int compare(Enrichment o1, Enrichment o2) {
 
-        int comparison = 0;
-        if (o1.getOffsetStartIdx() < o2.getOffsetStartIdx()) {
-            comparison = -1;
-        } else if (o1.getOffsetStartIdx() > o2.getOffsetStartIdx()) {
-            comparison = 1;
-        }
-        return comparison;
-    }
+		int comparison = 0;
+		if (o1.getOffsetStartIdx() < o2.getOffsetStartIdx()) {
+			comparison = -1;
+		} else if (o1.getOffsetStartIdx() > o2.getOffsetStartIdx()) {
+			comparison = 1;
+		}
+		return comparison;
+	}
 
 }
 
+/**
+ * Label containing an enriched text.
+ */
 class EnrichedLabel extends JLabel implements ActionListener, MouseListener {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -8815906147011864508L;
+	/** The serial version UID. */
+	private static final long serialVersionUID = -8815906147011864508L;
 
-    private String plainText;
+	/** The plain text assigned to this label. */
+	private String plainText;
 
-    private List<Enrichment> enrichments;
+	/** The enrichments assigned to this label. */
+	private List<Enrichment> enrichments;
 
-    private int startIndex;
+	/** The start index for this label within the whole fragment text. */
+	private int startIndex;
 
-    private int endIndex;
+	/** The end index for this label within the whole fragment text. */
+	private int endIndex;
 
-    private boolean disabled;
+	/**
+	 * States if this label is disabled: an enriched label is disabled if and
+	 * only if all the assigned enrichments are disabled.
+	 */
+	private boolean disabled;
 
-    private BalloonTip tip;
+	/** The balloon tip displayed for this label. */
+	private BalloonTip tip;
 
-    private int type;
+	/**
+	 * Constructor.
+	 * 
+	 * @param text
+	 *            the text for this label.
+	 */
+	public EnrichedLabel(final String text) {
 
+		this.plainText = text;
+		startIndex = -1;
+		endIndex = -1;
+		initialize();
 
-    public EnrichedLabel(final String text) {
+	}
 
-        this.plainText = text;
-        startIndex = -1;
-        endIndex = -1;
-        // this.url = url;
-        initialize();
+	/**
+	 * Initializes the label.
+	 */
+	private void initialize() {
 
-    }
+		String enrichedText = "<html><font color=\"blue\"><u><b>" + plainText
+		        + "</b></u></font></html>";
+		FontMetrics metrics = getFontMetrics(getFont());
+		final int width = metrics.charsWidth(plainText.toCharArray(), 0,
+		        plainText.length());
+		setMaximumSize(new Dimension(width, getHeight()));
+		setMinimumSize(new Dimension(width, getHeight()));
+		setAlignmentY(0.85f);
+		setText(enrichedText);
+		setCursor(new Cursor(Cursor.HAND_CURSOR));
+		addMouseListener(this);
+	}
 
-    private void initialize() {
+	/**
+	 * Adds an enrichment to this label.
+	 * 
+	 * @param enrichment
+	 *            the enrichment.
+	 */
+	public void addEnrichment(final Enrichment enrichment) {
 
-//        Map<TextAttribute, ?> attributes = getFont().getAttributes();
-//        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-//        setFont(getFont().deriveFont(Font.BOLD));
-//        setFont(getFont().deriveFont());
-        String enrichedText = "<html><font color=\"blue\"><u><b>" + plainText
-                + "</b></u></font></html>";
-        FontMetrics metrics = getFontMetrics(getFont());
-        final int width = metrics.charsWidth(plainText.toCharArray(), 0,
-                plainText.length());
-        setMaximumSize(new Dimension(width, getHeight()));
-        setMinimumSize(new Dimension(width, getHeight()));
-//        setBorder(new LineBorder(Color.red));
-        setAlignmentY(0.85f);
-        setText(enrichedText);
-        // setToolTipText(url);
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addMouseListener(this);
-        // addMouseListener(new MouseAdapter() {
-        //
-        // @Override
-        // public void mouseClicked(MouseEvent e) {
-        //
-        // }
-        //
-        // });
-    }
+		if (enrichments == null) {
+			enrichments = new ArrayList<Enrichment>();
+		}
+		enrichments.add(enrichment);
+		if (startIndex == -1 || startIndex > enrichment.getOffsetStartIdx()) {
+			startIndex = enrichment.getOffsetStartIdx();
+		}
 
-    public void addEnrichment(final Enrichment enrichment) {
+		if (endIndex == -1 || endIndex < enrichment.getOffsetEndIdx()) {
+			endIndex = enrichment.getOffsetEndIdx();
+		}
+	}
 
-        
-    	if (enrichments == null) {
-            enrichments = new ArrayList<Enrichment>();
-        }
-        enrichments.add(enrichment);
-        if (startIndex == -1 || startIndex > enrichment.getOffsetStartIdx()) {
-            startIndex = enrichment.getOffsetStartIdx();
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
 
-        if (endIndex == -1 || endIndex < enrichment.getOffsetEndIdx()) {
-            endIndex = enrichment.getOffsetEndIdx();
-        }
-    }
+		if (!disabled) {
+			disabled = true;
+			String enrichedText = "<html><font color=\"gray\"><u>" + plainText
+			        + "</u></font></html>";
+			setText(enrichedText);
+		} else {
+			disabled = false;
+			String enrichedText = "<html><font color=\"blue\"><u><b>"
+			        + plainText + "</b></u></font></html>";
+			setText(enrichedText);
+		}
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+	}
 
-        if (!disabled) {
-            disabled = true;
-            String enrichedText = "<html><font color=\"gray\"><u>" + plainText
-                    + "</u></font></html>";
-            setText(enrichedText);
-        } else {
-            disabled = false;
-            String enrichedText = "<html><font color=\"blue\"><u><b>"
-                    + plainText + "</b></u></font></html>";
-            setText(enrichedText);
-        }
+	/**
+	 * Checks if this label is disabled.
+	 * 
+	 * @return <code>true</code> if the label is disabled; <code>false</code>
+	 *         otherwise
+	 */
+	public boolean isDisabled() {
+		return disabled;
+	}
 
-    }
+	/**
+	 * Checks if this label contains a specific offset index.
+	 * 
+	 * @param offestStartIdx
+	 *            the offset index.
+	 * @return <code>true</code> if it contains this index; <code>false</code>
+	 *         otherwise
+	 */
+	public boolean containsOffset(final int offestStartIdx) {
 
-    public boolean isDisabled() {
-        return disabled;
-    }
+		return offestStartIdx >= startIndex && offestStartIdx <= endIndex;
+	}
 
-    public boolean containsOffset(final int offestStartIdx) {
+	/**
+	 * Handles the event the mouse has been clicked over this label: the balloon
+	 * tool tip gets opened.
+	 * 
+	 * @param e
+	 *            the mouse event
+	 */
+	private void handleMouseClicked(MouseEvent e) {
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			final Window ancestor = SwingUtilities.getWindowAncestor(this);
+			tip = new BalloonTip(SwingUtilities.getWindowAncestor(ancestor),
+			        getDescriptionComponent(), getLocationOnScreen().x
+			                + getWidth() / 2, getLocationOnScreen().y
+			                + getHeight());
+			SwingUtilities.invokeLater(new Runnable() {
 
-        return offestStartIdx >= startIndex && offestStartIdx <= endIndex;
-    }
+				@Override
+				public void run() {
+					tip.makeUI();
+					updateLabelStatus();
 
-    private void handleMouseClicked(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-//            if (Desktop.isDesktopSupported()) {
-//                try {
-//                    Desktop.getDesktop().browse(new URI(url));
-//                } catch (IOException e1) {
-//                    e1.printStackTrace();
-//                } catch (URISyntaxException e1) {
-//                    e1.printStackTrace();
-//                }
-//            }
-            final Window ancestor = SwingUtilities.getWindowAncestor(this);
-            tip = new BalloonTip(
-                    SwingUtilities.getWindowAncestor(ancestor),
-                    getDescriptionComponent(), getLocationOnScreen().x
-                            + getWidth() / 2, getLocationOnScreen().y
-                            + getHeight());
-            SwingUtilities.invokeLater(new Runnable() {
+				}
+			});
+		}
+	}
 
-                @Override
-                public void run() {
-                    tip.makeUI();
-                    updateLabelStatus();
+	/**
+	 * Gets the description component to be displayed within the balloon tool
+	 * tip.
+	 * 
+	 * @return the description component to be displayed within the balloon tool
+	 *         tip.
+	 */
+	public Component getDescriptionComponent() {
 
-                }
-            });
-//        } else if (e.getButton() == MouseEvent.BUTTON3) {
-//            contextMenu.show(
-//                    EnrichedLabel.this,
-//                    EnrichedLabel.this.getLocation().x,
-//                    EnrichedLabel.this.getLocation().y
-//                            + EnrichedLabel.this.getHeight());
-        }
-    }
+		return new EnrichmentDetailsPanel(enrichments, SystemColor.info);
 
-    public Component getDescriptionComponent() {
+	}
 
-        return new EnrichmentDetailsPanel(enrichments, SystemColor.info);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+	 */
+	@Override
+	public void mouseClicked(MouseEvent e) {
 
-    }
+		handleMouseClicked(e);
+	}
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
+	 */
+	@Override
+	public void mousePressed(MouseEvent e) {
+		handleMouseClicked(e);
 
-//        tooltipTimer.stop();
-        handleMouseClicked(e);
-    }
+	}
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-//        tooltipTimer.stop();
-        handleMouseClicked(e);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
+	 */
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// does nothing.
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
+	 */
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// does nothing
+	}
 
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        // TODO Auto-generated method stub
+	/**
+	 * Updates the status of the label depending on the status of the embedded
+	 * enrichments.
+	 */
+	private void updateLabelStatus() {
 
-    }
+		boolean newValue = true;
+		for (Enrichment e : enrichments) {
+			if (!e.isDisabled()) {
+				newValue = false;
+			}
+		}
+		if (newValue != disabled) {
+			disabled = newValue;
+			if (disabled) {
+				String enrichedText = "<html><font color=\"gray\"><u>"
+				        + plainText + "</u></font></html>";
+				setText(enrichedText);
+			} else {
+				String enrichedText = "<html><font color=\"blue\"><u><b>"
+				        + plainText + "</b></u></font></html>";
+				setText(enrichedText);
+			}
+		}
 
-    @Override
-    public void mouseEntered(MouseEvent e) {
-//        final Window ancestor = SwingUtilities.getWindowAncestor(this);
-//        tooltipTimer = new Timer(1000, new ActionListener() {
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//
-//                tooltipTimer.stop();
-//                tip = new BalloonTip(
-//                        SwingUtilities.getWindowAncestor(ancestor),
-//                        getDescriptionComponent(), getLocationOnScreen().x
-//                                + getWidth() / 2, getLocationOnScreen().y
-//                                + getHeight());
-//                SwingUtilities.invokeLater(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        tip.makeUI();
-//                        updateLabelStatus();
-//
-//                    }
-//                });
-//            }
-//        });
-//        tooltipTimer.start();
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
+	 */
+	@Override
+	public void mouseExited(MouseEvent e) {
 
-    private void updateLabelStatus() {
-
-        boolean newValue = true;
-        for (Enrichment e : enrichments) {
-            if (!e.isDisabled()) {
-                newValue = false;
-            }
-        }
-        if (newValue != disabled) {
-            disabled = newValue;
-            if (disabled) {
-                String enrichedText = "<html><font color=\"gray\"><u>"
-                        + plainText + "</u></font></html>";
-                setText(enrichedText);
-            } else {
-                String enrichedText = "<html><font color=\"blue\"><u><b>"
-                        + plainText + "</b></u></font></html>";
-                setText(enrichedText);
-            }
-        }
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
-    
-    public static void main(String[] args) {
-		
-    	String str = "After spending the day seeing the sights around Bray, get a good nights sleep in one of the area s popular bed-and-breakfasts, hotels or short-stay apartments. If you’re looking for a warm welcome and a good nights sleep check out the amenities at the Royal Hotel and Merrill Leisure Club, the Martello Hotel, and the popular Esplanade Hotel Bray.&lt;/p>";
-    	System.out.println(str.length());
+		//does nothing
 	}
 
 }

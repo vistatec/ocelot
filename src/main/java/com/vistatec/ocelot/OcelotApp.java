@@ -28,26 +28,13 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.rules.QuickAdd;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.services.EditDistanceReportService;
-import com.vistatec.ocelot.services.SegmentService;
-import com.vistatec.ocelot.services.XliffService;
-import com.vistatec.ocelot.xliff.freme.EnrichmentAnnotationManager;
-import com.vistatec.ocelot.xliff.freme.FremeXliff1_2Parser;
-import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationManager;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
@@ -58,6 +45,14 @@ import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.rules.QuickAdd;
+import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.EditDistanceReportService;
+import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
 
 /**
  * Main Ocelot application context.
@@ -143,8 +138,8 @@ public class OcelotApp implements OcelotEventQueueListener {
 //        EnrichmentAnnotationManager manager = new EnrichmentAnnotationManager();
 //        manager.insertEnrichmentAnnotations(segmentService);
         xliffService.save(saveFile);
-        XliffFremeAnnotationManager manager = new XliffFremeAnnotationManager();
-        manager.saveAnnotations(saveFile, segmentService);
+        XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
+        annotationWriter.saveAnnotations(saveFile, segmentService);
         this.fileDirty = false;
         editDistService.createEditDistanceReport(saveFile.getName());
         pluginManager.notifySaveFile(filename);

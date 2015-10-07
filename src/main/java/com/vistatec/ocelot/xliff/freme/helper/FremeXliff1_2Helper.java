@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.xliff.freme;
+package com.vistatec.ocelot.xliff.freme.helper;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

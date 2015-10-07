@@ -3,6 +3,7 @@ package com.vistatec.ocelot.plugins;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,10 +12,12 @@ import org.apache.log4j.Logger;
 
 import com.vistatec.ocelot.events.RefreshSegmentView;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.model.EnrichmentMetaData;
 import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.Enrichment;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.xliff.freme.EnrichmentConverter;
 
 /**
  * Class managing calls to the FREME Plugin. It provides a pool of threads
@@ -91,7 +94,7 @@ public class FremePluginManager {
 			}
 			for (int i = 0; i < fragmentsArrays.length; i++) {
 				executor.execute(new FremeEnricher(fragmentsArrays[i],
-				        fremePlugin, eventQueue));
+				        fremePlugin, eventQueue, segments));
 			}
 		}
 
@@ -116,7 +119,7 @@ public class FremePluginManager {
 			if (wrapper.getText() != null && !wrapper.getText().isEmpty()) {
 				executor.execute(new FremeEnricher(
 				        new VariantWrapper[] { wrapper }, fremePlugin,
-				        eventQueue));
+				        eventQueue, segments));
 			}
 		}
 	}
@@ -287,6 +290,8 @@ class FremeEnricher implements Runnable {
 	/** The event queue. */
 	private OcelotEventQueue eventQueue;
 
+	private List<OcelotSegment> segments;
+
 	/**
 	 * Constructor.
 	 * 
@@ -298,10 +303,12 @@ class FremeEnricher implements Runnable {
 	 *            the event queue
 	 */
 	public FremeEnricher(final VariantWrapper[] variants,
-	        FremePlugin fremePlugin, OcelotEventQueue eventQueue) {
+	        FremePlugin fremePlugin, OcelotEventQueue eventQueue,
+	        List<OcelotSegment> segments) {
 		this.variants = variants;
 		this.fremePlugin = fremePlugin;
 		this.eventQueue = eventQueue;
+		this.segments = segments;
 	}
 
 	/*
@@ -317,15 +324,25 @@ class FremeEnricher implements Runnable {
 			for (VariantWrapper frag : variants) {
 				if (frag != null) {
 					List<Enrichment> enrichments = null;
+					String sourceTarget = null;
 					if (frag.isTarget()) {
 						enrichments = fremePlugin.enrichTargetContent(frag
 						        .getText());
+						sourceTarget = EnrichmentMetaData.TARGET;
 					} else {
 						enrichments = fremePlugin.enrichSourceContent(frag
 						        .getText());
+						sourceTarget = EnrichmentMetaData.SOURCE;
 					}
 					frag.getVariant().setEnrichments(enrichments);
 					frag.getVariant().setEnriched(true);
+					OcelotSegment segment = findSegmentBySegNumber(frag
+					        .getSegNumber());
+					if (segment != null) {
+						EnrichmentConverter.convertEnrichment2ITSMetaData(
+						        segment, frag.getVariant(), sourceTarget);
+					}
+
 					eventQueue
 					        .post(new RefreshSegmentView(frag.getSegNumber()));
 				}
@@ -333,6 +350,27 @@ class FremeEnricher implements Runnable {
 		} catch (FremeEnrichmentException e) {
 			logger.error("Error while enriching the variants", e);
 		}
+	}
+
+	/**
+	 * Finds the segment having the specified segment number.
+	 * 
+	 * @param segNum
+	 *            the segment number.
+	 * @return the Ocelot segment.
+	 */
+	private OcelotSegment findSegmentBySegNumber(int segNum) {
+
+		OcelotSegment segment = null;
+		Iterator<OcelotSegment> segmIt = segments.iterator();
+		OcelotSegment currSegm = null;
+		while (segmIt.hasNext() && segment == null) {
+			currSegm = segmIt.next();
+			if (currSegm.getSegmentNumber() == segNum) {
+				segment = currSegm;
+			}
+		}
+		return segment;
 	}
 
 }
