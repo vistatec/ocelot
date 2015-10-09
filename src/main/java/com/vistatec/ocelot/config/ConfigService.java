@@ -2,8 +2,10 @@ package com.vistatec.ocelot.config;
 
 import java.util.List;
 
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.PluginConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 import com.vistatec.ocelot.plugins.Plugin;
 
 /**
@@ -36,4 +38,9 @@ public interface ConfigService {
     public void saveTmDataDir(TmManagement.TmConfig config, String tmDataDir) throws ConfigTransferService.TransferException;
 
     public TmManagement.TmConfig createNewTmConfig(String tmName, boolean enabled, String tmDataDir) throws ConfigTransferService.TransferException;
+    
+    public TmConfig createNewTmConfig(String tmName, boolean enabled, String tmDataDir,
+	        List<String> tmxFiles) throws TransferException;
+    
+    public TmManagement.TmConfig createNewTmConfig(String tmName, boolean enabled, List<String> tmxFiles) throws ConfigTransferService.TransferException;
 }

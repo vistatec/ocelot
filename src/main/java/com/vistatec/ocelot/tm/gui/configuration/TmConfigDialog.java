@@ -9,6 +9,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -21,9 +22,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.border.BevelBorder;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableColumn;
 
 import com.vistatec.ocelot.Ocelot;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
 import com.vistatec.ocelot.ui.TooltipCellRenderer;
@@ -378,6 +381,46 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 			close();
 		}
 	}
+	
+	private void addTm(){
+		
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setMultiSelectionEnabled(true);
+//		fileChooser.setFileSelectionMode(mode);
+		fileChooser.setFileFilter(new FileFilter() {
+			
+			@Override
+			public String getDescription() {
+				return ".tmx, .TMX (Translation Memory eXchange)";
+			}
+			
+			@Override
+			public boolean accept(File f) {
+				return f.isDirectory() || f.getName().toLowerCase().endsWith(".tmx");
+			}
+		});
+		fileChooser.setDialogTitle("Add tmx files");
+		int option = fileChooser.showOpenDialog(this);
+		if(option == JFileChooser.APPROVE_OPTION){
+			File[] selectedFiles = fileChooser.getSelectedFiles();
+			if(selectedFiles.length == 0){
+				File selFile = fileChooser.getSelectedFile();
+				if(selFile != null){
+					selectedFiles = new File[1];
+					selectedFiles[0] = selFile;
+				}
+			}
+			try {
+	            controller.createNewTm(selectedFiles);
+            } catch (IOException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+            } catch (TransferException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+            }
+		}
+	}
 
 	/**
 	 * Manages the events triggered by buttons defined in the dialog.
@@ -392,7 +435,8 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		JButton sourceBtn = (JButton) e.getSource();
 		if (btnAdd.equals(sourceBtn)) {
 			// add button pressed
-			controller.opentAddTmDialog();
+//			controller.opentAddTmDialog();
+			addTm();
 		} else if (btnSave.equals(sourceBtn)) {
 			// save button pressed
 			save();

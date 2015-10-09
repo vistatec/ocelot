@@ -5,11 +5,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.PluginConfig;
-
 import com.vistatec.ocelot.config.xml.ProvenanceConfig;
+import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement.TmConfig.TmxFiles;
 import com.vistatec.ocelot.plugins.Plugin;
 
 /**
@@ -151,4 +153,37 @@ public class OcelotConfigService implements ConfigService {
         cfgXservice.save(config);
         return newTmConfig;
     }
+    
+    public TmConfig createNewTmConfig(String tmName, boolean enabled, String tmDataDir,
+	        List<String> tmxFiles) throws TransferException {
+		TmManagement.TmConfig newTmConfig = new TmManagement.TmConfig();
+		newTmConfig.setTmName(tmName);
+		newTmConfig.setEnabled(enabled);
+		newTmConfig.setTmDataDir(tmDataDir);
+		if (tmxFiles != null) {
+			TmxFiles tmxFilesConf = new TmxFiles();
+			tmxFilesConf.setTmxFile(tmxFiles);
+			newTmConfig.setTmxFiles(tmxFilesConf);
+		}
+		config.getTmManagement().getTms().add(newTmConfig);
+		cfgXservice.save(config);
+		return newTmConfig;
+	}
+    
+
+	@Override
+	public TmConfig createNewTmConfig(String tmName, boolean enabled,
+	        List<String> tmxFiles) throws TransferException {
+		TmManagement.TmConfig newTmConfig = new TmManagement.TmConfig();
+		newTmConfig.setTmName(tmName);
+		newTmConfig.setEnabled(enabled);
+		if (tmxFiles != null) {
+			TmxFiles tmxFilesConf = new TmxFiles();
+			tmxFilesConf.setTmxFile(tmxFiles);
+			newTmConfig.setTmxFiles(tmxFilesConf);
+		}
+		config.getTmManagement().getTms().add(newTmConfig);
+		cfgXservice.save(config);
+		return newTmConfig;
+	}
 }

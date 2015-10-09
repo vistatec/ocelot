@@ -41,6 +41,16 @@ public interface TmManager {
      * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
      */
     public void initializeNewTm(String tmName, File tmDataDir) throws IOException, ConfigTransferService.TransferException;
+    
+    /**
+     * Perform all functionality required to setup a new TM for usage by the
+     * TmManager and by a {@link TmService}
+     * @param tmName - Label for the new TM
+     * @param tmFiles - list of initial files to load in TM
+     * @throws IOException
+     * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
+     */
+    public void initializeNewTm(String tmName, File[] tmFiles) throws IOException, ConfigTransferService.TransferException;
 
     public void deleteTm(String tmName) throws IOException, ConfigTransferService.TransferException;
 

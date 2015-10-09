@@ -65,7 +65,7 @@ public class TmGuiMatchController {
 	 *            the Ocelot event queue.
 	 */
 	public TmGuiMatchController(final TmService tmService,
-			final OcelotEventQueue eventQueue) {
+	        final OcelotEventQueue eventQueue) {
 
 		this.tmService = tmService;
 		this.eventQueue = eventQueue;
@@ -85,9 +85,9 @@ public class TmGuiMatchController {
 			Collections.shuffle(matches);
 		} catch (IOException e) {
 			Logger.getLogger(TmGuiMatchController.class).trace(
-					"Error while retrieving fuzzy matches.", e);
+			        "Error while retrieving fuzzy matches.", e);
 		}
-		if(matches != null){
+		if (matches != null) {
 			Collections.sort(matches, new TmMatchComparator());
 		}
 		return matches;
@@ -101,20 +101,20 @@ public class TmGuiMatchController {
 	 * @return the segments matching the concordance string.
 	 */
 	public List<TmMatch> getConcordanceMatches(
-			List<SegmentAtom> currentSelection) {
+	        List<SegmentAtom> currentSelection) {
 
 		List<TmMatch> matches = null;
 		try {
 			matches = tmService.getConcordanceMatches(currentSelection);
 		} catch (IOException e) {
 			Logger.getLogger(TmGuiMatchController.class).trace(
-					"Error while retrieving concordance search matches.", e);
+			        "Error while retrieving concordance search matches.", e);
 			JOptionPane
-					.showMessageDialog(
-							concordancePanel.getAttachedComponent(),
-							"An error has occured while finding concordance search matches.",
-							"Concordance Search Error",
-							JOptionPane.ERROR_MESSAGE);
+			        .showMessageDialog(
+			                concordancePanel.getAttachedComponent(),
+			                "An error has occured while finding concordance search matches.",
+			                "Concordance Search Error",
+			                JOptionPane.ERROR_MESSAGE);
 		}
 		return matches;
 	}
@@ -153,9 +153,9 @@ public class TmGuiMatchController {
 
 		if (currSelectedSegment != null) {
 			SegmentVariant textContainerVariant = new TextContainerVariant(
-					new TextContainer(newTarget.getDisplayText()));
+			        new TextContainer(newTarget.getDisplayText()));
 			eventQueue.post(new SegmentTargetUpdateFromMatchEvent(
-					currSelectedSegment, textContainerVariant));
+			        currSelectedSegment, textContainerVariant));
 		}
 	}
 
@@ -174,14 +174,16 @@ public class TmGuiMatchController {
 				selectTranslationsTab();
 				translationsPanel.setLoading();
 				List<TmMatch> translations = getFuzzyMatches(selectedSegment
-						.getSource().getAtoms());
+				        .getSource().getAtoms());
 				translationsPanel.setTranslationSearchResults(translations);
 			}
 		}
 	}
 
 	/**
-	 * Gets the tabbed pane containing the translations panel and the concordance search panel.
+	 * Gets the tabbed pane containing the translations panel and the
+	 * concordance search panel.
+	 * 
 	 * @return the TM tabbed pane
 	 */
 	public Component getTmPanel() {
@@ -202,7 +204,10 @@ public class TmGuiMatchController {
 
 			/*
 			 * (non-Javadoc)
-			 * @see java.awt.event.ContainerListener#componentRemoved(java.awt.event.ContainerEvent)
+			 * 
+			 * @see
+			 * java.awt.event.ContainerListener#componentRemoved(java.awt.event
+			 * .ContainerEvent)
 			 */
 			@Override
 			public void componentRemoved(ContainerEvent e) {
@@ -216,7 +221,10 @@ public class TmGuiMatchController {
 
 			/*
 			 * (non-Javadoc)
-			 * @see java.awt.event.ContainerListener#componentAdded(java.awt.event.ContainerEvent)
+			 * 
+			 * @see
+			 * java.awt.event.ContainerListener#componentAdded(java.awt.event
+			 * .ContainerEvent)
 			 */
 			@Override
 			public void componentAdded(ContainerEvent e) {
@@ -232,6 +240,7 @@ public class TmGuiMatchController {
 
 	/**
 	 * Gets the tabbed panel.
+	 * 
 	 * @return the tabbed panel
 	 */
 	public Component getTabbedContainer() {
@@ -242,33 +251,43 @@ public class TmGuiMatchController {
 	 * Selects the concordance search tab.
 	 */
 	public void selectConcordanceTab() {
-		tmPanel.setSelectedComponent(concordancePanel.getAttachedComponent());
+		try {
+			tmPanel.setSelectedComponent(concordancePanel
+			        .getAttachedComponent());
+		} catch (IllegalArgumentException e) {
+			// the translation panel has been detached. It's not contained an
+		}
 	}
-	
+
 	/**
 	 * Selects the translations panel tab.
 	 */
-	public void selectTranslationsTab(){
-		tmPanel.setSelectedComponent(translationsPanel.getAttachedComponent());
+	public void selectTranslationsTab() {
+		try {
+			tmPanel.setSelectedComponent(translationsPanel
+			        .getAttachedComponent());
+		} catch (IllegalArgumentException e) {
+			// the translation panel has been detached. It's not contained an
+		}
 	}
 
 }
 
 /**
- * Comparator class for TmMatch objects. 
+ * Comparator class for TmMatch objects.
  */
-class TmMatchComparator implements Comparator<TmMatch>{
+class TmMatchComparator implements Comparator<TmMatch> {
 
 	@Override
 	public int compare(TmMatch o1, TmMatch o2) {
-		
+
 		int comp = 0;
-		if(o1.getMatchScore() > o2.getMatchScore()){
+		if (o1.getMatchScore() > o2.getMatchScore()) {
 			comp = -1;
-		} else if (o1.getMatchScore() < o2.getMatchScore()){
+		} else if (o1.getMatchScore() < o2.getMatchScore()) {
 			comp = 1;
 		}
 		return comp;
 	}
-	
+
 }

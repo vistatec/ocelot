@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
 import com.vistatec.ocelot.tm.TmMatch;
@@ -45,6 +47,8 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 	/** The scroll panel containing the table. */
 	private JScrollPane scrollPanel;
 
+	private TableCellEditor targetEditor;
+	
 	/**
 	 * The info panel displayed while loading matches or when the research
 	 * produces no results.
@@ -149,6 +153,9 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 		scoreCol.setCellRenderer(new MatchScoreRenderer());
 		scoreCol.setPreferredWidth(50);
 		scoreCol.setMaxWidth(50);
+		TableColumn targetCol = matchesTable.getColumnModel().getColumn(tableModel.getTargetColumnIdx());
+		targetEditor = new ReadOnlyCellEditor();
+		targetCol.setCellEditor(targetEditor);
 
 	}
 
@@ -226,6 +233,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 
 				@Override
 				public void run() {
+					targetEditor.stopCellEditing();
 					tableModel.setModel(matches);
 					scrollPanel.setViewportView(matchesTable);
 					scrollPanel.repaint();
@@ -237,6 +245,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 
 				@Override
 				public void run() {
+					targetEditor.stopCellEditing();
 					infoPanel.removeAll();
 					infoPanel.add(lblNoResults);
 					infoPanel.repaint();

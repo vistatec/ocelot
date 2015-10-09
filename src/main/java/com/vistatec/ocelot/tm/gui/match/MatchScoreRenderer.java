@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  * Table cell renderer for numeric values. It highlight the value with different
  * colors depending on the interval where the value falls.
  */
-public class MatchScoreRenderer extends DefaultTableCellRenderer {
+public class MatchScoreRenderer extends AlternateRowsColorRenderer {
 
 	/** serial version UID. */
 	private static final long serialVersionUID = -8959470309220918429L;
@@ -35,7 +35,7 @@ public class MatchScoreRenderer extends DefaultTableCellRenderer {
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
 
-		JLabel comp = (JLabel) super.getTableCellRendererComponent(table,
+		Component comp = super.getTableCellRendererComponent(table,
 				value, isSelected, hasFocus, row, column);
 		JTextPane textPane = new JTextPane();
 		textPane.setBackground(comp.getBackground());
