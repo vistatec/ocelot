@@ -109,8 +109,8 @@ public class OcelotApp implements OcelotEventQueueListener {
         segmentService.setSegments(segments);
 
         this.pluginManager.notifyOpenFile(openFile.getName());
-        this.pluginManager.enrichSegments(segments);
         this.pluginManager.setSourceAndTargetLangs( xliffService.getSourceLang(), xliffService.getTargetLang());
+        this.pluginManager.enrichSegments(segments);
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;

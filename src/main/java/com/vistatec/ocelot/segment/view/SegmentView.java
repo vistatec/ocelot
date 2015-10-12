@@ -408,9 +408,11 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
     public void updateSegmentView(RefreshSegmentView event){
 		try {
 			synchronized (segmentTableModel) {
-				segmentTableModel.fireTableRowsUpdated(
-				        event.getSegmentNumber() - 1,
-				        event.getSegmentNumber() - 1);
+				if (segmentTableModel.getRowCount() > 0) {
+					segmentTableModel.fireTableRowsUpdated(
+					        event.getSegmentNumber() - 1,
+					        event.getSegmentNumber() - 1);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

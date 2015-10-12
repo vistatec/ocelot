@@ -75,7 +75,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 						// all the annotations from this code have been
 						// translated to enrichments.
 						// the code must be removed
-						if (openingCode.getGenericAnnotations().size() == 0) {
+						if (openingCode.getGenericAnnotations() == null || openingCode.getGenericAnnotations().size() == 0) {
 							codesToRemove.add(openingCode);
 						}
 						break;
@@ -84,7 +84,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 						Code code = part.getContent().getCodes().get(index);
 						// check annotations in the closing code.
 						manageClosingCodeAnnots(code, openingCode);
-						if (code.getGenericAnnotations().size() == 0) {
+						if (code.getGenericAnnotations() == null || code.getGenericAnnotations().size() == 0) {
 							codesToRemove.add(code);
 						}
 						// update end index for all current enrichments.

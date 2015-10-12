@@ -7,9 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.SwingWorker;
 
 import org.apache.log4j.Logger;
 
+import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
 import com.vistatec.ocelot.events.RefreshSegmentView;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.EnrichmentMetaData;
@@ -96,6 +100,8 @@ public class FremePluginManager {
 				executor.execute(new FremeEnricher(fragmentsArrays[i],
 				        fremePlugin, eventQueue, segments));
 			}
+			WaitingThread waitingThread = new WaitingThread(executor, segments, eventQueue);
+			waitingThread.start();
 		}
 
 	}
@@ -182,6 +188,36 @@ public class FremePluginManager {
 			}
 		}
 		return fragments;
+	}
+
+}
+
+class WaitingThread extends Thread {
+
+	private ExecutorService executor;
+
+	private List<OcelotSegment> segments;
+
+	private OcelotEventQueue eventQueue;
+
+	public WaitingThread(ExecutorService executor,
+	        List<OcelotSegment> segments, OcelotEventQueue eventQueue) {
+		this.eventQueue = eventQueue;
+		this.executor = executor;
+		this.segments = segments;
+	}
+
+	@Override
+	public void run() {
+
+		executor.shutdown();
+		try {
+	        executor.awaitTermination(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
 	}
 
 }
@@ -347,6 +383,7 @@ class FremeEnricher implements Runnable {
 					        .post(new RefreshSegmentView(frag.getSegNumber()));
 				}
 			}
+
 		} catch (FremeEnrichmentException e) {
 			logger.error("Error while enriching the variants", e);
 		}
