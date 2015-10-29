@@ -41,8 +41,14 @@ public class DocumentTreeHelper {
 	private static void removeChildrenNode(Node node) {
 
 		NodeList children = node.getChildNodes();
+		List<Node> childrenToRemove = new ArrayList<Node>();
 		for (int i = 0; i < children.getLength(); i++) {
-			node.removeChild(children.item(i));
+//			node.removeChild(children.item(i));
+			
+			childrenToRemove.add(children.item(i));
+		}
+		for( Node child: childrenToRemove){
+			node.removeChild(child);
 		}
 	}
 
@@ -72,6 +78,6 @@ public class DocumentTreeHelper {
 		public void setParent(Node parent) {
 			this.parent = parent;
 		}
-
+		
 	}
 }

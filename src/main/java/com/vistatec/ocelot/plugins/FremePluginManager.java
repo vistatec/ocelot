@@ -218,6 +218,17 @@ class WaitingThread extends Thread {
 	        e.printStackTrace();
         }
 		eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
+		System.out.println("-----------------------------------");
+		System.out.println("---------ENRICHED SEGMENTS---------");
+		System.out.println("-----------------------------------");
+		int count = 0;
+		for(OcelotSegment segment: segments){
+			if(((BaseSegmentVariant)segment.getSource()).isEnriched() && ((BaseSegmentVariant)segment.getTarget()).isEnriched() ){
+				System.out.println(segment.getSegmentNumber());
+				count++;
+			}
+		}
+		System.out.println("TOTAL: " + count);
 	}
 
 }

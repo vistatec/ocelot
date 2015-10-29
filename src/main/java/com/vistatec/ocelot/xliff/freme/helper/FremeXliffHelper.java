@@ -3,21 +3,34 @@ package com.vistatec.ocelot.xliff.freme.helper;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public interface FremeXliffHelper {
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.SegmentService;
 
-	public String getUnitNodeName();
+public abstract class FremeXliffHelper {
 
-	public int getSegmentNumber(String unitId);
+	public abstract String getUnitNodeName();
+
+	public int getSegmentNumber(String unitId, SegmentService segService) {
+		
+		int segNumber = -1;
+		for(int i = 0; i<segService.getNumSegments(); i++){
+			if(segService.getSegment(i).getTuId().equals(unitId)){
+				segNumber = segService.getSegment(i).getSegmentNumber();
+				break;
+			}
+		}
+		return segNumber;
+	}
 	
-	public String getUnitId(String segmentNumber);
+	public String getUnitId(OcelotSegment segment){return null;}
 	
-	public Element getSourceElement(Element unitElement);
+	public abstract Element getSourceElement(Element unitElement);
 	
-	public Element getTargetElement(Element unitElement);
+	public abstract Element getTargetElement(Element unitElement);
 	
-	public String getUnitId(Element unitElement);
+	public abstract String getUnitId(Element unitElement);
 	
-	public void insertLinkNode(Element unitElement, Node linkNode);
+	public abstract void insertLinkNode(Element unitElement, Node linkNode);
 	
-	public String getTypeAttribute();
+	public abstract String getTypeAttribute();
 }

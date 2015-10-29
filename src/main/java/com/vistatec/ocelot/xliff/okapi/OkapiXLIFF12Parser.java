@@ -224,7 +224,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		        .target(new TextContainerVariant(tgtTu))
 		        .originalTarget(
 		                oriTgtTu != null ? new TextContainerVariant(oriTgtTu)
-		                        : null);
+		                        : null).tuId(tu.getId());
 
 		Property stateQualifier = tgtTu.getProperty("state-qualifier");
 		if (stateQualifier != null) {

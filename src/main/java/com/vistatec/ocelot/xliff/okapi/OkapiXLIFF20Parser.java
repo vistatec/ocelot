@@ -117,7 +117,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
                     	List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getTarget());
                         net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
                                 (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
-                        OcelotSegment segment = convertPartToSegment(okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments);
+                        OcelotSegment segment = convertPartToSegment(okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId());
                         segments.add(segment);
                         this.segmentUnitParts.add(okapiSegment);
                     }
@@ -136,15 +136,16 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
      * @return Segment - Ocelot Segment
      * @throws MalformedURLException
      */
-    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments) throws MalformedURLException {
+    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments, String unitId) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
         //TODO: load original target from file
-        OkapiSegment seg = new OkapiSegment.Builder()
-                .segmentNumber(documentSegmentNum++)
-                .eventNumber(segmentUnitPartIndex)
-                .source(new FragmentVariant(unitPart, false))
-                .target(new FragmentVariant(unitPart, true))
-                .build();
+		OkapiSegment seg = new OkapiSegment.Builder()
+				.segmentNumber(documentSegmentNum++)
+				.eventNumber(segmentUnitPartIndex)
+				.source(new FragmentVariant(unitPart, false))
+				.target(new FragmentVariant(unitPart, true))
+				.tuId(unitId)
+				.build();
         seg.addAllLQI(parseLqiData(unitPart));
         seg.addAllProvenance(parseProvData(unitPart));
         if(sourceEnrichments != null && !sourceEnrichments.isEmpty() && seg.getSource() != null && seg.getSource() instanceof BaseSegmentVariant){

@@ -12,24 +12,25 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/** The term: the enriched part of the text. */
 	private String term;
-	
+
 	/** The found term in the source language. */
 	private String termSource;
-	
+
 	/** The found term in the target langueage. */
 	private String termTarget;
-	
+
 	/** The sense of the term. */
 	private String sense;
-	
+
 	/** The term confidence. */
 	private Double confidence;
-	
+
 	/** The term annotators ref. */
 	private String annotatorsRef;
 
 	/**
 	 * Gets the term.
+	 * 
 	 * @return the term.
 	 */
 	public String getTerm() {
@@ -38,7 +39,9 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Sets the term.
-	 * @param term the term.
+	 * 
+	 * @param term
+	 *            the term.
 	 */
 	public void setTerm(String term) {
 		this.term = term;
@@ -46,6 +49,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Gets the term in the source language.
+	 * 
 	 * @return the term in the source language.
 	 */
 	public String getTermSource() {
@@ -54,7 +58,9 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Sets the term in the source language.
-	 * @param termSource the term in the source language.
+	 * 
+	 * @param termSource
+	 *            the term in the source language.
 	 */
 	public void setTermSource(String termSource) {
 		this.termSource = termSource;
@@ -62,6 +68,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Gets the term in the target language.
+	 * 
 	 * @return the term in the target language.
 	 */
 	public String getTermTarget() {
@@ -70,7 +77,9 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Sets the term in the target language.
-	 * @param termTarget the term in the target language.
+	 * 
+	 * @param termTarget
+	 *            the term in the target language.
 	 */
 	public void setTermTarget(String termTarget) {
 		this.termTarget = termTarget;
@@ -78,6 +87,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Gets the sense.
+	 * 
 	 * @return the sense.
 	 */
 	public String getSense() {
@@ -86,7 +96,9 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Sets the sense.
-	 * @param sense the sense.
+	 * 
+	 * @param sense
+	 *            the sense.
 	 */
 	public void setSense(String sense) {
 		this.sense = sense;
@@ -94,6 +106,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Gets the term confidence.
+	 * 
 	 * @return the term confidence.
 	 */
 	public Double getConfidence() {
@@ -102,7 +115,9 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Sets the term confidence.
-	 * @param confidence the term confidence.
+	 * 
+	 * @param confidence
+	 *            the term confidence.
 	 */
 	public void setConfidence(Double confidence) {
 		this.confidence = confidence;
@@ -110,6 +125,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Gets the annotators ref.
+	 * 
 	 * @return the annotators ref.
 	 */
 	public String getAnnotatorsRef() {
@@ -118,7 +134,9 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/**
 	 * Sets the annotators ref.
-	 * @param annotatorsRef the annotators ref.
+	 * 
+	 * @param annotatorsRef
+	 *            the annotators ref.
 	 */
 	public void setAnnotatorsRef(String annotatorsRef) {
 		this.annotatorsRef = annotatorsRef;
@@ -156,6 +174,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -164,7 +183,10 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 		if (obj instanceof TerminologyMetaData) {
 			TerminologyMetaData metaData = (TerminologyMetaData) obj;
 			retValue = this.getTerm().equals(metaData.getTerm())
-			        && this.termSource.equals(metaData.getTermSource());
+					&& (this.termSource != null && this.termSource
+							.equals(metaData.getTermSource())
+									|| (this.termSource == null && metaData
+											.getTermSource() == null));
 		} else {
 			retValue = super.equals(obj);
 		}
@@ -173,6 +195,7 @@ public class TerminologyMetaData extends EnrichmentMetaData {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override

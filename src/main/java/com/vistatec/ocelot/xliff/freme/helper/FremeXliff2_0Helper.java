@@ -4,7 +4,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class FremeXliff2_0Helper implements FremeXliffHelper {
+public class FremeXliff2_0Helper extends FremeXliffHelper {
 
 	private static final String UNIT_NODE_NAME = "unit";
 
@@ -23,15 +23,15 @@ public class FremeXliff2_0Helper implements FremeXliffHelper {
 		return UNIT_NODE_NAME;
 	}
 
-	@Override
-	public int getSegmentNumber(String unitId) {
-		return Integer.parseInt(unitId);
-	}
-
-	@Override
-	public String getUnitId(String segmentNumber) {
-		return segmentNumber;
-	}
+//	@Override
+//	public int getSegmentNumber(String unitId) {
+//		return Integer.parseInt(unitId);
+//	}
+//
+//	@Override
+//	public String getUnitId(String segmentNumber) {
+//		return segmentNumber;
+//	}
 
 	private Element getSegmentElement(Element unitElement) {
 		NodeList nodes = unitElement.getChildNodes();
