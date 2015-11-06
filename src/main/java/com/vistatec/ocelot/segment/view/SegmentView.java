@@ -553,6 +553,10 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
 
     public class IntegerRenderer extends JLabel implements TableCellRenderer {
         private static final long serialVersionUID = 1L;
+        
+        private final Color enrichedColor = new Color(5, 169, 71);
+        
+        private final Color sentToFremeColor = Color.red;
 
         public IntegerRenderer() {
             setOpaque(true);
@@ -590,7 +594,10 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
                     && (((BaseSegmentVariant) seg.getTarget()).isEnriched()
                             || seg.getTarget().getDisplayText() == null || seg
                             .getTarget().getDisplayText().isEmpty())) {
-                foreground = Color.red;
+                foreground = enrichedColor;
+            } else if (seg.getSource() instanceof BaseSegmentVariant && ((BaseSegmentVariant) seg.getSource()).isSentToFreme()
+                    && (((BaseSegmentVariant) seg.getTarget()).isSentToFreme())){
+            	foreground = sentToFremeColor;
             }
                     
             setHorizontalAlignment(JLabel.LEFT);

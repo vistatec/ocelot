@@ -81,6 +81,7 @@ public class FremePluginManager {
 			logger.info("Enriching Ocelot segments...");
 			List<VariantWrapper> fragments = getFragments(segments);
 			Collections.sort(fragments, new FragmentsComparator());
+			List<VariantWrapper> fragmentsToDelete = new ArrayList<VariantWrapper>();
 			int threadNum = findThreadNum(fragments.size());
 			VariantWrapper[][] fragmentsArrays = new VariantWrapper[threadNum][(int) Math
 			        .ceil((double) fragments.size() / threadNum)];
@@ -92,10 +93,20 @@ public class FremePluginManager {
 					if (i + arrayIdx < fragments.size()) {
 						fragmentsArrays[arrayIdx][j] = fragments.get(i
 						        + arrayIdx);
+						fragmentsToDelete.add(fragments.get(i
+						        + arrayIdx));
 					}
 				}
 				j++;
 			}
+			System.out.println("Fragments size = " + fragments.size());
+			int count = 0;
+			for(int i = 0; i<fragmentsArrays.length; i++){
+				count += fragmentsArrays[i].length;
+			}
+			System.out.println("Total fragments for FREME = " + count);
+			fragments.removeAll(fragmentsToDelete);
+			System.out.println(fragments.size());
 			for (int i = 0; i < fragmentsArrays.length; i++) {
 				executor.execute(new FremeEnricher(fragmentsArrays[i],
 				        fremePlugin, eventQueue, segments));
@@ -372,6 +383,7 @@ class FremeEnricher implements Runnable {
 				if (frag != null) {
 					List<Enrichment> enrichments = null;
 					String sourceTarget = null;
+					frag.getVariant().setSentToFreme(true);
 					if (frag.isTarget()) {
 						enrichments = fremePlugin.enrichTargetContent(frag
 						        .getText());

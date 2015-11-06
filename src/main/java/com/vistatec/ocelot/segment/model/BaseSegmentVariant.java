@@ -15,6 +15,8 @@ import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 public abstract class BaseSegmentVariant implements SegmentVariant {
 
 	private boolean enriched;
+	
+	private boolean sentToFreme;
 
 	private List<Enrichment> enrichments;
 	
@@ -287,6 +289,14 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 		this.enriched = enriched;
 	}
 
+	public void setSentToFreme(boolean sentToFreme){
+		this.sentToFreme = sentToFreme;
+	}
+	
+	public boolean isSentToFreme(){
+		return sentToFreme;
+	}
+	
 	public List<Enrichment> getEnirchments() {
 		return enrichments;
 	}
