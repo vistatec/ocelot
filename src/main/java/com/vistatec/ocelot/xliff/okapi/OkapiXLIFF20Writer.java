@@ -36,32 +36,23 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.xliff.XLIFFWriter;
-
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import com.vistatec.ocelot.events.ProvenanceAddEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
-import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
-import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-
+import net.sf.okapi.lib.xliff2.Const;
+import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
+import net.sf.okapi.lib.xliff2.changeTracking.Item;
+import net.sf.okapi.lib.xliff2.changeTracking.Revision;
+import net.sf.okapi.lib.xliff2.changeTracking.Revisions;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Part;
 import net.sf.okapi.lib.xliff2.core.Segment;
 import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.TagType;
+import net.sf.okapi.lib.xliff2.core.Unit;
 import net.sf.okapi.lib.xliff2.its.IITSItem;
-
 import net.sf.okapi.lib.xliff2.its.ITSItems;
 import net.sf.okapi.lib.xliff2.its.ITSWriter;
 import net.sf.okapi.lib.xliff2.its.LocQualityIssue;
@@ -69,10 +60,25 @@ import net.sf.okapi.lib.xliff2.its.LocQualityIssues;
 import net.sf.okapi.lib.xliff2.its.Provenances;
 import net.sf.okapi.lib.xliff2.reader.Event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
+
 /**
  * Write out XLIFF 2.0 files.
  */
 public class OkapiXLIFF20Writer implements XLIFFWriter {
+	
     private final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
     private final OkapiXLIFF20Parser parser;
     private final UserProvenance userProvenance;
@@ -93,11 +99,11 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
             LOG.error("Failed to find Okapi Unit Part associated with segment #"+okapiSeg.getSegmentNumber());
 
         } else if (unitPart.isSegment()) {
-            //TODO: set ori target
             if (okapiSeg.hasOriginalTarget()) {
                 FragmentVariant targetFrag = (FragmentVariant) okapiSeg.getTarget();
                 Fragment updatedOkapiFragment = targetFrag.getUpdatedOkapiFragment(unitPart.getTarget());
                 unitPart.setTarget(updatedOkapiFragment);
+                manageRevision(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()), unitPart, parser.getTargetVersion(okapiSeg.eventNum));
             }
 
             updateITSLQIAnnotations(unitPart, okapiSeg);
@@ -118,7 +124,83 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
         }
     }
 
-    /**
+    private void manageRevision(Event event, Segment unitPart, TargetVersion nextVersion) {
+
+    	if(event.isUnit()){
+    		Unit unit =  event.getUnit();
+    		Item item = null;
+    		Date now = new Date();
+    		if(!unit.hasChangeTrack()){
+    			ChangeTrack changeTrack = new ChangeTrack();
+    			unit.setChangeTrack(changeTrack);
+    			Revisions revisions = createTargetRevisions(nextVersion.getVersion());
+    			changeTrack.addRevisions(revisions);
+    			Revision revision = createCurrentRevision(nextVersion.getVersion(), parser.getRevisionDateFormatter().format(now));
+    			revisions.add(revision);
+    			item = new Item();
+    			item.setProperty(Item.PROPERTY_CONTENT_VALUE);
+    			revision.addItem(item);
+    		} else {
+    			Revisions targetRevisions = null;
+    			for(Revisions revs: unit.getChangeTrack().getRevisionsList()){
+    				if(revs.getAppliesTo().equals(Const.ELEM_TARGET)){
+    					targetRevisions = revs;
+    					break;
+    				}
+    			}
+    			if(targetRevisions == null){
+    				targetRevisions = createTargetRevisions(nextVersion.getVersion());
+    				unit.getChangeTrack().addRevisions(targetRevisions);
+    			}
+    			Revision currentRevision = null;
+    			for(Revision rev: targetRevisions){
+    				if(rev.getVersion().equals(nextVersion.getVersion())){
+    					currentRevision = rev;
+    					break;
+    				}
+    			}
+    			if(currentRevision == null){
+    				currentRevision = createCurrentRevision(nextVersion.getVersion(), parser.getRevisionDateFormatter().format(now));
+    				targetRevisions.add(currentRevision);
+    				targetRevisions.setCurrentVersion(nextVersion.getVersion());
+    			}
+    			for(Item currItem: currentRevision.getItems()){
+    				if(currItem.getProperty().equals(Item.PROPERTY_CONTENT_VALUE)){
+    					item = currItem;
+    					break;
+    				}
+    			}
+    			if(item == null){
+    				item = new Item();
+    				item.setProperty(Item.PROPERTY_CONTENT_VALUE);
+    				currentRevision.addItem(item);
+    			}
+    		}
+    		item.setFragment(unitPart.getTarget());
+    		nextVersion.setUpdated(true);
+    		
+    	}
+    }
+    
+    private Revisions createTargetRevisions(String version){
+    	
+    	Revisions targetRevisions = new Revisions();
+    	targetRevisions.setAppliesTo(Const.ELEM_TARGET);
+    	targetRevisions.setCurrentVersion(version);
+    	return targetRevisions;
+    }
+    
+    private Revision createCurrentRevision(String version, String date){
+    	
+    	Revision revision = new Revision();
+		revision.setVersion(version);
+		revision.setDatetime(date);
+		revision.setItems(new ArrayList<Item>());
+		return revision;
+    }
+    
+
+	/**
      * Records the Ocelot ITS Provenance record to the Okapi segment
      * representation used when saving the file using the Okapi XLIFF 2.0 writer.
      * @param unitPart - Okapi representation of the segment to annotate
@@ -265,6 +347,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
         outputFile.write(tmp.toString());
         outputFile.flush();
         outputFile.close();
+        parser.updateTargetVersions();
     }
 
 }
