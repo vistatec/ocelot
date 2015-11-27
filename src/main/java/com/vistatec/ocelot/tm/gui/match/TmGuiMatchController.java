@@ -16,6 +16,7 @@ import net.sf.okapi.common.resource.TextContainer;
 
 import org.apache.log4j.Logger;
 
+import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -178,6 +179,15 @@ public class TmGuiMatchController {
 				translationsPanel.setTranslationSearchResults(translations);
 			}
 		}
+	}
+	
+	public void sendStartEditingEvent(){
+		
+		eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.START_EDITING));
+	}
+	
+	public void sendStopEditingEvent(){
+		eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.STOP_EDITING));
 	}
 
 	/**

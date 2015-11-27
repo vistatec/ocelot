@@ -8,6 +8,7 @@ public enum SegmentViewColumn {
     Source("Source", "Source", true, SegmentVariant.class, false, -1),
     Target("Target", "Target", true, SegmentVariant.class, false, -1),
     Original("Original Target", "Original Target", true, SegmentVariant.class, false, -1),
+    Notes("Notes", "Notes", true, String.class, false, -1),
     EditDistance("Δ", "Edit Distance (Δ)", false, Integer.class, false, -1),
     Flag1("", "Flag #1", true, ITSMetadata.class, true, 0),
     Flag2("", "Flag #2", true, ITSMetadata.class, true, 1),

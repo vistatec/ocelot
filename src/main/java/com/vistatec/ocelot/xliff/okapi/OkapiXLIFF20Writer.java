@@ -71,6 +71,7 @@ import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
 
@@ -105,7 +106,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
                 unitPart.setTarget(updatedOkapiFragment);
                 manageRevision(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()), unitPart, parser.getTargetVersion(okapiSeg.eventNum));
             }
-
+            
             updateITSLQIAnnotations(unitPart, okapiSeg);
 
             if (!haveAddedOcelotProvAnnotation(unitPart, okapiSeg)) {
@@ -123,8 +124,53 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
             LOG.error("Failed to update Unit Part for segment #"+okapiSeg.getSegmentNumber());
         }
     }
+    
+    
 
-    private void manageRevision(Event event, Segment unitPart, TargetVersion nextVersion) {
+    private void updateNotes(Event segmentEvent, OkapiSegment okapiSeg) {
+	    
+    	if(segmentEvent.isUnit()){
+    		Unit unit = segmentEvent.getUnit();
+    		Note ocelotNote = null;
+    		if(okapiSeg.getNotes() != null){
+    			ocelotNote = okapiSeg.getNotes().getOcelotNote();
+    		}
+    		if(ocelotNote != null){
+    			net.sf.okapi.lib.xliff2.core.Note okapiNote = findOcelotNoteInUnit(unit);
+    			//CASE 1 - note created for this segment
+    			if(okapiNote == null){
+    				okapiNote = new net.sf.okapi.lib.xliff2.core.Note(ocelotNote.getContent());
+    				okapiNote.setId(ocelotNote.getId());
+    				unit.addNote(okapiNote);
+    				//CASE 2 - note changed for this segment	
+    			} else {
+    				okapiNote.setText(ocelotNote.getContent());
+    			}
+    		} else {
+    			net.sf.okapi.lib.xliff2.core.Note okapiNote = findOcelotNoteInUnit(unit);
+    			//CASE 3 - note deleted for this segment
+    			if(okapiNote != null){
+    				unit.getNotes().remove(okapiNote);
+    			}
+    		}
+    	}
+    }
+    
+    private net.sf.okapi.lib.xliff2.core.Note findOcelotNoteInUnit(Unit unit ){
+    	
+    	net.sf.okapi.lib.xliff2.core.Note note = null;
+    	if(unit.getNotes() != null){
+    		for(net.sf.okapi.lib.xliff2.core.Note currNote: unit.getNotes()){
+    			if(currNote.getId().startsWith(Note.OCELOT_ID_PREFIX)){
+    				note = currNote;
+    				break;
+    			}
+    		}
+    	}
+    	return note;
+    }
+    
+	private void manageRevision(Event event, Segment unitPart, TargetVersion nextVersion) {
 
     	if(event.isUnit()){
     		Unit unit =  event.getUnit();
@@ -349,5 +395,14 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
         outputFile.close();
         parser.updateTargetVersions();
     }
+
+	@Override
+	public void updateNotes(OcelotSegment seg) {
+
+		OkapiSegment okapiSeg = (OkapiSegment) seg;
+		updateNotes(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()),
+		        okapiSeg);
+
+	}
 
 }

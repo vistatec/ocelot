@@ -48,6 +48,7 @@ import net.sf.okapi.lib.xliff2.changeTracking.Revision;
 import net.sf.okapi.lib.xliff2.changeTracking.Revisions;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
+import net.sf.okapi.lib.xliff2.core.Note;
 import net.sf.okapi.lib.xliff2.core.Part;
 import net.sf.okapi.lib.xliff2.core.StartXliffData;
 import net.sf.okapi.lib.xliff2.core.Tag;
@@ -66,6 +67,7 @@ import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.segment.model.okapi.OcelotRevision;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.xliff.XLIFFParser;
@@ -137,6 +139,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 							setTargetRevisions(unit, okapiSegment,
 							        ocelotSegment);
 						}
+						readNotes(unit, ocelotSegment);
 						segments.add(ocelotSegment);
 						this.segmentUnitParts.add(okapiSegment);
 					}
@@ -146,6 +149,22 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		}
 		return segments;
 	}
+
+	private void readNotes(Unit unit, OcelotSegment ocelotSegment) {
+
+		if(unit.getNoteCount() > 0){
+			
+			com.vistatec.ocelot.segment.model.okapi.Note ocelotNote = null;
+			Notes ocelotNotes = new Notes();
+			for(Note okapiNote: unit.getNotes()){
+				ocelotNote = new com.vistatec.ocelot.segment.model.okapi.Note();
+				ocelotNote.setContent(okapiNote.getText());
+				ocelotNote.setId(okapiNote.getId());
+				ocelotNotes.add(ocelotNote);
+			}
+			ocelotSegment.setNotes(ocelotNotes);
+		}
+    }
 
 	/**
 	 * Sets the revisions of the target for this segment if a

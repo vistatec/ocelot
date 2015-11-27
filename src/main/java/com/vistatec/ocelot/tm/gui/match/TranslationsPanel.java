@@ -137,7 +137,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 		matchesTable.setModel(tableModel);
 		// Make the table react to the ALT+R keystroke.
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK),
+				KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK),
 				"replaceTarget");
 		matchesTable.getActionMap().put("replaceTarget",
 				new ReplaceTargetAction());

@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <okapi.version>0.27-SNAPSHOT</okapi.version>
-    <okapi.xliff2.version>1.0-SNAPSHOT</okapi.xliff2.version>
+    <okapi.xliff2.version>1.0.1</okapi.xliff2.version>
   </properties>
   
   <repositories>

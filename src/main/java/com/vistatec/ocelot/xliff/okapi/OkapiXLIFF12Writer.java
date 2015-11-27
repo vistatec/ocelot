@@ -102,6 +102,11 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
             textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
             provAnns.setData(rwRef);
             textUnit.setAnnotation(provAnns);
+            if(textUnit.getProperty("note") != null){
+            	textUnit.setProperty(new Property("note", textUnit.getProperty("note").getValue() + "\n---\n" + "new Note"));
+            } else {
+            	textUnit.setProperty(new Property("note", "New Note"));
+            }
 
             if (okapiSeg.hasOriginalTarget()) {
                 // Make sure the Okapi Event is aware that the target has changed.
@@ -231,5 +236,11 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
             dp.setSkeleton(newSkel);
         }
         return dp;
+    }
+
+	@Override
+    public void updateNotes(OcelotSegment seg) {
+	    // TODO Auto-generated method stub
+	    
     }
 }

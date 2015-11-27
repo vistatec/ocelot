@@ -43,6 +43,7 @@ import javax.xml.stream.XMLStreamException;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.xliff.okapi.OkapiXLIFFFactory;
 
@@ -65,7 +66,13 @@ public class OkapiXliffService implements XliffService {
 
     @Subscribe
     public void updateSegment(SegmentEditEvent e) {
-        segmentWriter.updateSegment(e.getSegment());
+			segmentWriter.updateSegment(e.getSegment());
+    }
+    
+
+    @Subscribe
+    public void updateNotes(SegmentNoteEditEvent e ) {
+    	segmentWriter.updateNotes(e.getSegment());
     }
 
     @Override

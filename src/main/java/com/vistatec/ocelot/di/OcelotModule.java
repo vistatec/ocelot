@@ -25,6 +25,7 @@ import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
+import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
@@ -66,6 +67,7 @@ public class OcelotModule extends AbstractModule {
         TmService tmService = null;
         TmPenalizer penalizer = null;
         TmGuiManager tmGuiManager = null;
+        LQIGridController lqiGridController = null;
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
@@ -93,9 +95,10 @@ public class OcelotModule extends AbstractModule {
             penalizer = new SimpleTmPenalizer(tmManager);
             tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, cfgService);
             tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, cfgService);
-
             
-
+            lqiGridController = new LQIGridController((OcelotConfigService)cfgService, eventQueue);
+            eventQueue.registerListener(lqiGridController);
+            bind(LQIGridController.class).toInstance(lqiGridController);
         } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
