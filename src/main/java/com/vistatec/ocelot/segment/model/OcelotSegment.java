@@ -113,10 +113,12 @@ public interface OcelotSegment {
     public List<TextAnalysisMetaData> getTextAnalysis();
     public void addTextAnalysis(TextAnalysisMetaData ta);
     public void addAllTextAnalysis(List<TextAnalysisMetaData> tas);
+    public void removeTextAnalysis(TextAnalysisMetaData ta);
     
     public List<TerminologyMetaData> getTerms();
     public void addTerm(TerminologyMetaData term);
     public void addAllTerms(List<TerminologyMetaData> terms);
+    public void removeTerm(TerminologyMetaData term);
     
     /**
      * Return whether the segment has already gotten the Ocelot provenance

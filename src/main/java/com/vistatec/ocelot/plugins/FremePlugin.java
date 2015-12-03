@@ -1,5 +1,6 @@
 package com.vistatec.ocelot.plugins;
 
+import java.awt.Component;
 import java.awt.Window;
 import java.util.List;
 
@@ -63,7 +64,7 @@ public interface FremePlugin extends Plugin {
 	 *             text.
 	 */
 	List<Enrichment> enrichSourceContent(final String plainText)
-	        throws FremeEnrichmentException;
+			throws FremeEnrichmentException;
 
 	/**
 	 * Enriches the text from the target.
@@ -76,7 +77,7 @@ public interface FremePlugin extends Plugin {
 	 *             text.
 	 */
 	List<Enrichment> enrichTargetContent(final String plainText)
-	        throws FremeEnrichmentException;
+			throws FremeEnrichmentException;
 
 	/**
 	 * Sets the source and the target languages.
@@ -87,6 +88,13 @@ public interface FremePlugin extends Plugin {
 	 *            the target language.
 	 */
 	public void setSourceAndTargetLanguages(String sourceLanguage,
-	        String targetLanguage);
+			String targetLanguage);
+
+	/**
+	 * Gets the Entity Categories filter panel.
+	 * 
+	 * @return the Entity categories filter panel.
+	 */
+	public Component getCategoryFilterPanel();
 
 }

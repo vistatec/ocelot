@@ -359,36 +359,54 @@ public class LinkEnrichment extends Enrichment {
 		Resource resource = model.createResource(referenceEntity);
 		if (entityName != null) {
 			model.add(resource, model.createProperty(entityName.getPropName()),
-			        entityName.getValue());
+					entityName.getValue());
 		}
 		if (shortDescription != null) {
 			model.add(resource,
-			        model.createProperty(shortDescription.getPropName()),
-			        shortDescription.getValue());
+					model.createProperty(shortDescription.getPropName()),
+					shortDescription.getValue());
 		}
 		if (longDescription != null) {
 			model.add(resource,
-			        model.createProperty(longDescription.getPropName()),
-			        longDescription.getValue());
+					model.createProperty(longDescription.getPropName()),
+					longDescription.getValue());
 		}
 		if (imageURL != null) {
 			model.add(resource, model.createProperty(imageURL.getPropName()),
-			        imageURL.getValue());
+					imageURL.getValue());
 		}
 		if (homePage != null) {
 			model.add(resource, model.createProperty(homePage.getPropName()),
-			        homePage.getValue());
+					homePage.getValue());
 		}
 		if (wikiPage != null) {
 			model.add(resource, model.createProperty(wikiPage.getPropName()),
-			        wikiPage.getValue());
+					wikiPage.getValue());
 		}
 		if (infoList != null) {
 			for (LinkInfoData info : infoList) {
 				model.add(resource, model.createProperty(info.getPropName()),
-				        info.getValue());
+						info.getValue());
 			}
 		}
 		return model;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+
+		if (obj instanceof LinkEnrichment) {
+			return referenceEntity
+					.equals(((LinkEnrichment) obj).referenceEntity)
+					&& offsetStartIdx == ((LinkEnrichment) obj).offsetStartIdx
+					&& offsetEndIdx == ((LinkEnrichment) obj).offsetEndIdx;
+		} else {
+			return super.equals(obj);
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * referenceEntity.hashCode() * offsetStartIdx * offsetEndIdx;
 	}
 }

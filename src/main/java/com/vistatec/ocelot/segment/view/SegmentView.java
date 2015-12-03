@@ -54,6 +54,7 @@ import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -77,6 +78,7 @@ import org.apache.log4j.Logger;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
@@ -121,7 +123,8 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
     private TableColumnModel tableColumnModel;
     protected TableRowSorter<SegmentTableModel> sort;
     private boolean enabledTargetDiff = true;
-
+    private OcelotApp ocelotApp;
+    
     protected RuleConfiguration ruleConfig;
     private final OcelotEventQueue eventQueue;
     
@@ -129,12 +132,13 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
 
     @Inject
     public SegmentView(OcelotEventQueue eventQueue, SegmentTableModel segmentTableModel,
-            RuleConfiguration ruleConfig) throws IOException, InstantiationException,
+            RuleConfiguration ruleConfig, OcelotApp ocelotApp) throws IOException, InstantiationException,
             InstantiationException, IllegalAccessException {
         this.eventQueue = eventQueue;
         this.segmentTableModel = segmentTableModel;
         this.ruleConfig = ruleConfig;
         this.ruleConfig.addRuleListener(this);
+        this.ocelotApp = ocelotApp;
         UIManager.put("Table.focusCellHighlightBorder", BorderFactory.createLineBorder(Color.BLUE, 2));
         initializeTable();
     }
@@ -412,6 +416,8 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
 					segmentTableModel.fireTableRowsUpdated(
 					        event.getSegmentNumber() - 1,
 					        event.getSegmentNumber() - 1);
+				} else {
+					segmentTableModel.fireTableDataChanged();
 				}
 			}
 		} catch (Exception e) {
@@ -824,15 +830,23 @@ public class SegmentView extends JScrollPane implements RuleListener, OcelotEven
                 seg = segmentTableModel.getSegment(r);
         	}
             int c = sourceTargetTable.columnAtPoint(e.getPoint());
+            boolean target = false;
             if(c == segmentTableModel.getIndexForColumn(Source)){
             	variant = (BaseSegmentVariant) seg.getSource();
             } else if (c == segmentTableModel.getIndexForColumn(Target)){
             	variant = (BaseSegmentVariant) seg.getTarget();
+            	target = true;
             }
 
             if (seg != null) {
             	
                 ContextMenu menu = new ContextMenu(seg, variant, eventQueue);
+                List<JMenuItem> pluginsItems = ocelotApp.getSegmentContexPluginMenues(seg, variant, target);
+                if(pluginsItems != null){
+                	for(JMenuItem item: pluginsItems){
+                		menu.add(item);
+                	}
+                }
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }

@@ -3,6 +3,8 @@ package com.vistatec.ocelot.its.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import riotcmd.trig;
+
 import com.vistatec.ocelot.rules.DataCategoryField;
 
 /**
@@ -118,6 +120,17 @@ public class TextAnalysisMetaData extends EnrichmentMetaData {
 	 */
 	public void setTaAnnotatorsRef(String taAnnotatorsRef) {
 		this.taAnnotatorsRef = taAnnotatorsRef;
+	}
+
+	/**
+	 * Checks if this meta data is empty.
+	 * 
+	 * @return <code>true</code> if it is empty; <code>false</code> otherwise.
+	 */
+	public boolean isEmpty() {
+
+		return taIdentRef == null && taAnnotatorsRef == null
+				&& taClassRef == null && taConfidence == null;
 	}
 
 	/*

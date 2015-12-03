@@ -1,6 +1,7 @@
 package com.vistatec.ocelot.segment.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,7 +19,7 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	
 	private boolean sentToFreme;
 
-	private List<Enrichment> enrichments;
+	private Set<Enrichment> enrichments;
 	
 	private TranslationEnrichment transEnrichment;
 
@@ -297,11 +298,11 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 		return sentToFreme;
 	}
 	
-	public List<Enrichment> getEnirchments() {
+	public Set<Enrichment> getEnirchments() {
 		return enrichments;
 	}
 
-	public void setEnrichments(List<Enrichment> enrichments) {
+	public void setEnrichments(Set<Enrichment> enrichments) {
 		checkTranslation(enrichments);
 		enrichments.remove(transEnrichment);
 		this.enrichments = enrichments;
@@ -310,7 +311,7 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	public void addEnrichment(final Enrichment enrichment){
         if(enrichment != null){
             if(enrichments == null){
-                enrichments = new ArrayList<Enrichment>();
+                enrichments = new HashSet<Enrichment>();
             }
             if(enrichment.getType().equals(Enrichment.TRANSLATION_TYPE)){
             	this.transEnrichment = (TranslationEnrichment) enrichment;
@@ -323,7 +324,7 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
     public void addEnrichmentList(final List<Enrichment> enrichmentList){
         if(enrichmentList != null){
             if(enrichments == null){
-                enrichments = new ArrayList<Enrichment>();
+                enrichments = new HashSet<Enrichment>();
             }
             checkTranslation(enrichmentList);
             enrichmentList.remove(transEnrichment);
@@ -331,7 +332,7 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
         }
     }
     
-    private void checkTranslation(final List<Enrichment> enrichmentList){
+    private void checkTranslation(final Collection<Enrichment> enrichmentList){
 		if (enrichmentList != null) {
 			for (Enrichment enrich : enrichmentList) {
 				if (enrich != null && enrich.getType().equals(
@@ -344,6 +345,13 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
     }
     
     
+    public void clearEnrichments(){
+    	
+    	sentToFreme = false;
+    	enriched = false;
+    	enrichments = null;
+    	transEnrichment = null;
+    }
     
     public TranslationEnrichment getTranslationEnrichment(){
     	

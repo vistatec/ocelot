@@ -3,6 +3,7 @@ package com.vistatec.ocelot.xliff.freme;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -317,7 +318,7 @@ public abstract class EnrichmentConverter {
 	public static void convertEnrichment2ITSMetaData(OcelotSegment segment,
 	        BaseSegmentVariant variant, String segmentPart) {
 
-		List<Enrichment> variantEnrichments = variant.getEnirchments();
+		Set<Enrichment> variantEnrichments = variant.getEnirchments();
 		if (variantEnrichments != null) {
 			String sourceText = variant.getDisplayText();
 			TextAnalysisMetaData taAnnot = null;
@@ -337,7 +338,55 @@ public abstract class EnrichmentConverter {
 					termAnnot = createTermMetaData(
 					        (TerminologyEnrichment) enrich, sourceText,
 					        segmentPart);
-					segment.addTerm(termAnnot);
+					if(!segment.getTerms().contains(termAnnot)){
+						segment.addTerm(termAnnot);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Removes from the segment all the metadata related to enrichments.
+	 * @param segment the segment
+	 * @param variant the variant
+	 */
+	public static void removeEnrichmentMetaData(OcelotSegment segment,
+			BaseSegmentVariant variant) {
+
+		if (variant.getEnirchments() != null) {
+			for (Enrichment enrich : variant.getEnirchments()) {
+				String sourceText = variant.getDisplayText();
+				TerminologyMetaData termAnnot = null;
+				TextAnalysisMetaData taAnnot = null;
+				if (enrich.getType().equals(Enrichment.ENTITY_TYPE)) {
+					taAnnot = createTaMetaData((EntityEnrichment) enrich,
+					        sourceText, null);
+					TextAnalysisMetaData existingMetaData = findTaMetaData(
+					        taAnnot.getEntity(), segment.getTextAnalysis());
+					if(existingMetaData != null){
+						if(taAnnot.getTaAnnotatorsRef() != null){
+							existingMetaData.setTaAnnotatorsRef(null);
+						}
+						if(taAnnot.getTaClassRef() != null){
+							existingMetaData.setTaClassRef(null);
+						}
+						if(taAnnot.getTaConfidence() != null){
+							existingMetaData.setTaConfidence(null);
+						}
+						if(taAnnot.getTaIdentRef()  != null){
+							existingMetaData.setTaIdentRef(null);
+						}
+						if(existingMetaData.isEmpty()){
+							segment.removeTextAnalysis(existingMetaData);
+						}
+					}
+				} else if (enrich.getType().equals(Enrichment.TERMINOLOGY_TYPE)) {
+					termAnnot = createTermMetaData(
+					        (TerminologyEnrichment) enrich, sourceText,
+					        null);
+					segment.removeTerm(termAnnot);
+					
 				}
 			}
 		}

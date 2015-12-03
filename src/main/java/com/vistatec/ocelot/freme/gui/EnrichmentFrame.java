@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.freme.manager;
+package com.vistatec.ocelot.freme.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -142,14 +142,15 @@ public class EnrichmentFrame extends JDialog implements Runnable,
 	 */
 	private void buildLabels(BaseSegmentVariant fragment) {
 
-		Collections.sort(fragment.getEnirchments(), new EnrichmentComparator());
 		labels = new ArrayList<JLabel>();
 		if (fragment.getEnirchments() != null) {
+			List<Enrichment> fragEnrichments = new ArrayList<>(fragment.getEnirchments());
+			Collections.sort(fragEnrichments, new EnrichmentComparator());
 			JLabel label = null;
 			String fragDisplayText = fragment.getDisplayText();
 			int startIndex = 0;
 			EnrichedLabel lastEnrichedLabel = null;
-			for (Enrichment e : fragment.getEnirchments()) {
+			for (Enrichment e : fragEnrichments) {
 				if (lastEnrichedLabel != null
 				        && lastEnrichedLabel.containsOffset(e
 				                .getOffsetStartIdx())) {

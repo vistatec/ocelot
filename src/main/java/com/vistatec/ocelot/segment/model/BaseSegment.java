@@ -225,6 +225,15 @@ public abstract class BaseSegment implements OcelotSegment {
 		}
     }
 	
+	@Override
+	public void removeTextAnalysis(TextAnalysisMetaData ta) {
+	
+		if(taList != null && ta != null){
+			taList.remove(ta);
+		}
+	}
+	
+	@Override
 	public java.util.List<TerminologyMetaData> getTerms() {
 		return termList;
 	}
@@ -242,6 +251,13 @@ public abstract class BaseSegment implements OcelotSegment {
 		}
 	}
 	
+	@Override
+	public void removeTerm(TerminologyMetaData term) {
+		
+		if(termList != null && term != null){
+			termList.remove(term);
+		}
+	}
 
 	@Override
     public List<OtherITSMetadata> getOtherITSMetadata() {

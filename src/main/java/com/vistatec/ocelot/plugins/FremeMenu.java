@@ -16,6 +16,12 @@ public class FremeMenu extends JMenu {
 	/** The serial version UID. */
 	private static final long serialVersionUID = -5852190101662320008L;
 
+	public static final int CONFIG_MENU = 0;
+	
+	public static final int FILTER_MENU = 1;
+	
+	public static final int ENRICH_MENU = 2;
+	
 	/** The entity service menu item. */
 	private FremeEServiceMenuItem mnuEEntityService;
 
@@ -27,9 +33,15 @@ public class FremeMenu extends JMenu {
 
 	/** The link service menu item. */
 	private FremeEServiceMenuItem mnuETranslationService;
+	
+	/** The Entity Categories Filter menu item. */
+	private FremeMenuItem mnuViewCatFilter;
 
 	/** The configure pipeline menu item. */
-	private JMenuItem mnuConfigPipeline;
+	private FremeMenuItem mnuConfigPipeline;
+	
+	/** The Enrich menu item. */
+	private FremeMenuItem mnuEnrich;
 
 	/**
 	 * Constructor.
@@ -82,11 +94,41 @@ public class FremeMenu extends JMenu {
 		mnuETranslationService.addItemListener(itemListener);
 		add(mnuETranslationService);
 
-		mnuConfigPipeline = new JMenuItem("Freme Pipeline Configuration");
+		mnuViewCatFilter = new FremeMenuItem("Entity Categories Filter", FILTER_MENU);
+		mnuViewCatFilter.addActionListener(actionListener);
+		add(mnuViewCatFilter);
+		
+		mnuEnrich = new FremeMenuItem("Enrich Segments", ENRICH_MENU);
+		mnuEnrich.addActionListener(actionListener);
+		add(mnuEnrich);
+		
+		mnuConfigPipeline = new FremeMenuItem("Freme Pipeline Configuration", CONFIG_MENU);
 		mnuConfigPipeline.addActionListener(actionListener);
 		add(mnuConfigPipeline);
 	}
+	
+	public void setEnrichMenuEnabled(boolean enabled){
+		
+		mnuEnrich.setEnabled(enabled);
+	}
 
+}
+
+class FremeMenuItem extends JMenuItem {
+
+	private static final long serialVersionUID = 2853253514750283163L;
+	
+	private int mnuType;
+	
+	public FremeMenuItem(String text, int mnuType) {
+		super(text);
+		this.mnuType = mnuType;
+	}
+	
+	public int getMenuType(){
+		return mnuType;
+	}
+	
 }
 
 /**

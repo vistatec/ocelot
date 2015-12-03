@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.freme.manager;
+package com.vistatec.ocelot.freme.gui;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;

@@ -28,12 +28,6 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import java.awt.Frame;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -56,7 +50,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 import javax.swing.JMenu;
-import javax.swing.JOptionPane;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
@@ -65,16 +59,16 @@ import org.slf4j.LoggerFactory;
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
 import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.freme.manager.EnrichmentFrame;
+import com.vistatec.ocelot.freme.gui.EnrichmentFrame;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
@@ -87,7 +81,7 @@ import com.vistatec.ocelot.services.SegmentService;
  * themselves are instantiated immediately and are treated like stateful
  * singletons.
  */
-public class PluginManager implements OcelotEventQueueListener, ItemListener {
+public class PluginManager implements OcelotEventQueueListener {
 	private static Logger LOG = LoggerFactory.getLogger(PluginManager.class);
 	private List<String> itsPluginClassNames = new ArrayList<String>();
 	private List<String> segPluginClassNames = new ArrayList<String>();
@@ -95,14 +89,13 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	private HashMap<ITSPlugin, Boolean> itsPlugins;
 	private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private HashMap<FremePlugin, Boolean> fremePlugins;
-	private JMenu fremeMenu;
 	private FremePluginManager fremeManager;
 	private ClassLoader classLoader;
 	private File pluginDir;
 	private final ConfigService cfgService;
 
 	public PluginManager(ConfigService cfgService, File pluginDir,
-	        OcelotEventQueue eventQueue) {
+			OcelotEventQueue eventQueue) {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
 		this.fremePlugins = new HashMap<FremePlugin, Boolean>();
@@ -164,7 +157,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	}
 
 	public void setEnabled(Plugin plugin, boolean enabled)
-	        throws ConfigTransferService.TransferException {
+			throws ConfigTransferService.TransferException {
 		if (plugin instanceof ITSPlugin) {
 			ITSPlugin itsPlugin = (ITSPlugin) plugin;
 			itsPlugins.put(itsPlugin, enabled);
@@ -174,11 +167,8 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 		} else if (plugin instanceof FremePlugin) {
 			FremePlugin fremePlugin = (FremePlugin) plugin;
 			fremePlugins.put(fremePlugin, enabled);
-			if (fremeMenu != null) {
-				fremeMenu.setEnabled(enabled);
-				if (enabled) {
-					enrichSegments();
-				}
+			if (fremeManager.getFremeMenu(fremePlugin) != null) {
+				fremeManager.setFremeMenuEnabled(enabled);
 			}
 		}
 		cfgService.savePluginEnabled(plugin, enabled);
@@ -207,7 +197,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	 * @param segmentService
 	 */
 	public void exportData(String sourceLang, String targetLang,
-	        SegmentService segmentService) {
+			SegmentService segmentService) {
 		for (int row = 0; row < segmentService.getNumSegments(); row++) {
 			OcelotSegment seg = segmentService.getSegment(row);
 			List<LanguageQualityIssue> lqi = seg.getLQI();
@@ -218,7 +208,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 					plugin.sendProvData(sourceLang, targetLang, seg, prov);
 				} catch (Exception e) {
 					LOG.error("ITS Plugin '" + plugin.getPluginName()
-					        + "' threw an exception on ITS metadata export", e);
+							+ "' threw an exception on ITS metadata export", e);
 				}
 			}
 		}
@@ -238,7 +228,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 					segPlugin.onSegmentTargetEnter(seg);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on segment target enter", e);
+							+ "' threw an exception on segment target enter", e);
 				}
 			}
 		}
@@ -258,7 +248,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 					segPlugin.onSegmentTargetExit(seg);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on segment target exit", e);
+							+ "' threw an exception on segment target exit", e);
 				}
 			}
 		}
@@ -268,7 +258,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	public void enrichmentViewRequest(EnrichmentViewEvent e) {
 		try {
 			EnrichmentFrame enrichFrame = new EnrichmentFrame(e.getVariant(),
-			        null);
+					null);
 			SwingUtilities.invokeLater(enrichFrame);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -282,7 +272,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 					segPlugin.onFileOpen(filename);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on file open", e);
+							+ "' threw an exception on file open", e);
 				}
 			}
 		}
@@ -295,7 +285,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 					segPlugin.onFileSave(filename);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on file save", e);
+							+ "' threw an exception on file save", e);
 				}
 			}
 		}
@@ -336,7 +326,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class
-				        .forName(s, false, classLoader);
+						.forName(s, false, classLoader);
 				ITSPlugin plugin = c.newInstance();
 				itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -351,7 +341,7 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class
-				        .forName(s, false, classLoader);
+						.forName(s, false, classLoader);
 				SegmentPlugin plugin = c.newInstance();
 				segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -367,9 +357,11 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends FremePlugin> c = (Class<FremePlugin>) Class
-				        .forName(s, false, classLoader);
-				Constructor<? extends FremePlugin> constructor = c.getDeclaredConstructor(String.class);
-				FremePlugin plugin =  constructor.newInstance(pluginDir.getAbsolutePath());
+						.forName(s, false, classLoader);
+				Constructor<? extends FremePlugin> constructor = c
+						.getDeclaredConstructor(String.class);
+				FremePlugin plugin = constructor.newInstance(pluginDir
+						.getAbsolutePath());
 				fremePlugins.put(plugin, false);
 				setEnabled(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -395,13 +387,13 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 		}
 
 		classLoader = AccessController
-		        .doPrivileged(new PrivilegedAction<URLClassLoader>() {
-			        public URLClassLoader run() {
-				        return new URLClassLoader(pluginJarURLs
-				                .toArray(new URL[pluginJarURLs.size()]), Thread
-				                .currentThread().getContextClassLoader());
-			        }
-		        });
+				.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+					public URLClassLoader run() {
+						return new URLClassLoader(pluginJarURLs
+								.toArray(new URL[pluginJarURLs.size()]), Thread
+								.currentThread().getContextClassLoader());
+					}
+				});
 	}
 
 	void scanJar(final File file) {
@@ -414,10 +406,10 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 					name = convertFileNameToClass(name);
 					try {
 						Class<?> clazz = Class
-						        .forName(name, false, classLoader);
+								.forName(name, false, classLoader);
 						// Skip non-instantiable classes
 						if (clazz.isInterface()
-						        || Modifier.isAbstract(clazz.getModifiers())) {
+								|| Modifier.isAbstract(clazz.getModifiers())) {
 							continue;
 						}
 						if (ITSPlugin.class.isAssignableFrom(clazz)) {
@@ -428,8 +420,8 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 							if (itsPluginClassNames.contains(name)) {
 								// TODO: log this
 								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+										.println("Warning: found multiple implementations of plugin class "
+												+ name);
 							} else {
 								itsPluginClassNames.add(name);
 							}
@@ -441,8 +433,8 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 							if (segPluginClassNames.contains(name)) {
 								// TODO: log this
 								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+										.println("Warning: found multiple implementations of plugin class "
+												+ name);
 							} else {
 								segPluginClassNames.add(name);
 							}
@@ -454,8 +446,8 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 							if (fremePluginClassNames.contains(name)) {
 								// TODO: log this
 								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+										.println("Warning: found multiple implementations of plugin class "
+												+ name);
 							} else {
 								fremePluginClassNames.add(name);
 							}
@@ -500,96 +492,62 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 		}
 	}
 
-	@Override
-	public void itemStateChanged(ItemEvent e) {
-		FremeEServiceMenuItem menuItem = (FremeEServiceMenuItem) e
-		        .getItemSelectable();
-		try {
-			if (fremePlugins != null) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
-					        .entrySet()) {
-						if (fremePlugin.getValue()) {
-							fremePlugin.getKey().turnOnService(
-							        menuItem.getServiceType());
-						}
-					}
-				} else {
-					for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
-					        .entrySet()) {
-						if (fremePlugin.getValue()) {
-							fremePlugin.getKey().turnOffService(
-							        menuItem.getServiceType());
-						}
-					}
-				}
-			}
-		} catch (UnknownServiceException exc) {
-			LOG.trace("Error while turning on/off the service with type: "
-			        + menuItem.getServiceType(), exc);
-			JOptionPane.showMessageDialog(null,
-			        "An error has occurred while turning on/off the service.",
-			        "Freme e-Service", JOptionPane.ERROR_MESSAGE);
-		}
-	}
-
 	public JMenu getFremeMenu() {
 
+		JMenu fremeMenu = null;
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
-			ActionListener listener = new ActionListener() {
-				
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if(fremePlugins != null ){
-						Window containerWindow = SwingUtilities.getWindowAncestor(fremeMenu);
-						fremePlugins.keySet().iterator().next().configureServiceChain(containerWindow);
-					}
-				}
-			};
-			fremeMenu = new FremeMenu(this, listener);
-			boolean enableMenu = false;
-			for (Entry<FremePlugin, Boolean> fremePlugin : fremePlugins
-			        .entrySet()) {
-				if (fremePlugin.getValue()) {
-					enableMenu = true;
-					break;
-				}
-			}
-			fremeMenu.setEnabled(enableMenu);
-		}
-
+			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
+			fremeMenu = fremeManager.getFremeMenu(fremePlugin);
+			fremeMenu.setEnabled(fremePlugins.get(fremePlugin));
+		}	
 		return fremeMenu;
+	}
+
+	@Subscribe
+	public void handleEnrichingStartedStoppedEvent(
+			EnrichingStartedStoppedEvent event) {
+
+		fremeManager
+				.setEnriching(event.getAction() == EnrichingStartedStoppedEvent.STARTED);
+		FremeMenu fremeMenu = (FremeMenu) fremeManager
+				.getFremeMenu(fremePlugins.keySet().iterator().next());
+		if (fremeMenu != null) {
+			((FremeMenu) fremeMenu)
+					.setEnrichMenuEnabled(event.getAction() == EnrichingStartedStoppedEvent.STOPPED);
+		}
+		fremeManager
+				.setContextMenuItemEnabled(event.getAction() == EnrichingStartedStoppedEvent.STOPPED);
 	}
 
 	public void enrichSegments(List<OcelotSegment> segments) {
 
 		fremeManager.setSegments(segments);
-		enrichSegments();
+		enrichSegments(FremePluginManager.OVERRIDE_ENRICHMENTS);
 	}
 
-	
-	public void setSourceAndTargetLangs(String sourceLang, String targetLang){
-		
-		if(fremePlugins != null && !fremePlugins.isEmpty()){
+	public void setSourceAndTargetLangs(String sourceLang, String targetLang) {
+
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			int dashIdx = sourceLang.indexOf("-");
-			if(dashIdx != -1){
+			if (dashIdx != -1) {
 				sourceLang = sourceLang.substring(0, dashIdx);
 			}
 			dashIdx = targetLang.indexOf("-");
-			if(dashIdx != -1){
+			if (dashIdx != -1) {
 				targetLang = targetLang.substring(0, dashIdx);
 			}
-			fremePlugins.keySet().iterator().next().setSourceAndTargetLanguages(sourceLang, targetLang);
+			fremePlugins.keySet().iterator().next()
+					.setSourceAndTargetLanguages(sourceLang, targetLang);
 		}
 	}
-	
-	private void enrichSegments() {
+
+	private void enrichSegments(int action) {
 
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
-			        .iterator().next();
+					.iterator().next();
 			if (fremeEntry.getValue()) {
-				fremeManager.enrich(fremeEntry.getKey());
+				fremeManager.enrich(fremeEntry.getKey(), action);
 			}
 		}
 	}
@@ -598,21 +556,37 @@ public class PluginManager implements OcelotEventQueueListener, ItemListener {
 	public void segmentEdit(SegmentEditEvent e) {
 		if (e.getSegment().getTarget() instanceof BaseSegmentVariant) {
 			enrichVariant((BaseSegmentVariant) e.getSegment().getTarget(), e
-			        .getSegment().getSegmentNumber(), true);
+					.getSegment().getSegmentNumber(), true,
+					FremePluginManager.OVERRIDE_ENRICHMENTS);
 		}
 	}
 
-	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber, boolean target) {
+	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber,
+			boolean target, int action) {
 
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
-			        .iterator().next();
+					.iterator().next();
 			if (fremeEntry.getValue()) {
-				fremeManager
-				        .enrich(fremeEntry.getKey(), variant, segmentNumber, target);
+				fremeManager.enrich(fremeEntry.getKey(), variant,
+						segmentNumber, target, action);
 			}
 		}
 	}
 
+	public List<JMenuItem> getSegmentContextMenuItems(
+			final OcelotSegment segment, final BaseSegmentVariant variant,
+			final boolean target) {
+
+		List<JMenuItem> items = new ArrayList<JMenuItem>();
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
+			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
+			if (fremePlugins.get(fremePlugin)) {
+				items = fremeManager.getSegmentContextMenuItems(fremePlugin,
+						segment, variant, target);
+			}
+		}
+		return items;
+	}
 
 }

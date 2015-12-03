@@ -19,7 +19,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/** The annotators ref value. */
 	private final static String ITS_ANNOTATORS_REF_VALUE = "text-analysis|"
-	        + ITS_ANNOTATORS_REF_VALUE_STR;
+			+ ITS_ANNOTATORS_REF_VALUE_STR;
 
 	/** The marker tag. */
 	private final static String MARKER_TAG = "mrk";
@@ -62,6 +62,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/**
 	 * Gets the entity URL>
+	 * 
 	 * @return the entity URL>
 	 */
 	public String getEntityURL() {
@@ -70,6 +71,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTagType()
 	 */
 	@Override
@@ -79,6 +81,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTag()
 	 */
 	@Override
@@ -88,6 +91,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -98,6 +102,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/**
 	 * Gets the annotators ref attribute.
+	 * 
 	 * @return the annotators ref attribute.
 	 */
 	public String getAnnotatorsRefAttribute() {
@@ -106,6 +111,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/**
 	 * Gets the annotators ref value.
+	 * 
 	 * @return the annotators ref value.
 	 */
 	public String getAnnotatorsRefValue() {
@@ -115,13 +121,15 @@ public class EntityEnrichment extends Enrichment {
 			annotator = DEFAULT_ANNOTATOR;
 		}
 		annotatorRef = ITS_ANNOTATORS_REF_VALUE.replace(
-		        ITS_ANNOTATORS_REF_VALUE_STR, annotator);
+				ITS_ANNOTATORS_REF_VALUE_STR, annotator);
 		return annotatorRef;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTagValue()
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTagValue()
 	 */
 	@Override
 	public String getTagValue() {
@@ -130,7 +138,9 @@ public class EntityEnrichment extends Enrichment {
 
 	/**
 	 * Sets the annotator ref value.
-	 * @param annotator the annotator.
+	 * 
+	 * @param annotator
+	 *            the annotator.
 	 */
 	public void setAnnotatorRef(String annotator) {
 
@@ -139,6 +149,7 @@ public class EntityEnrichment extends Enrichment {
 
 	/**
 	 * Gets the annotators ref value.
+	 * 
 	 * @return the annotators ref value.
 	 */
 	public String getAnnotatorRef() {
@@ -148,13 +159,28 @@ public class EntityEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getMarkerTag()
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.segment.model.enrichment.Enrichment#getMarkerTag()
 	 */
 	@Override
 	public String getMarkerTag() {
 		return MARKER_TAG;
 	}
 
-}
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof EntityEnrichment) {
+			return entityURL.equals(((EntityEnrichment) obj).getEntityURL())
+					&& offsetStartIdx == ((EntityEnrichment) obj).offsetStartIdx
+					&& offsetEndIdx == ((EntityEnrichment) obj).offsetEndIdx;
+		} else {
+			return super.equals(obj);
+		}
+	}
 
-	
+	@Override
+	public int hashCode() {
+		return 31 * entityURL.hashCode() * offsetStartIdx * offsetEndIdx;
+	}
+}

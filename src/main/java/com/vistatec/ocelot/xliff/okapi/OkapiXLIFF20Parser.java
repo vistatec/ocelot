@@ -34,6 +34,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -149,11 +150,11 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
         seg.addAllLQI(parseLqiData(unitPart));
         seg.addAllProvenance(parseProvData(unitPart));
         if(sourceEnrichments != null && !sourceEnrichments.isEmpty() && seg.getSource() != null && seg.getSource() instanceof BaseSegmentVariant){
-        	((BaseSegmentVariant)seg.getSource()).setEnrichments(sourceEnrichments);
+        	((BaseSegmentVariant)seg.getSource()).setEnrichments(new HashSet<Enrichment>(sourceEnrichments));
         	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
         }
         if(targetEnrichments != null && !targetEnrichments.isEmpty() && seg.getTarget() != null && seg.getTarget() instanceof BaseSegmentVariant){
-        	((BaseSegmentVariant)seg.getTarget()).setEnrichments(targetEnrichments);
+        	((BaseSegmentVariant)seg.getTarget()).setEnrichments(new HashSet<Enrichment>(targetEnrichments));
         	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
         }
         enrichmentConverter.convertEnrichments2ITSMetadata(seg);

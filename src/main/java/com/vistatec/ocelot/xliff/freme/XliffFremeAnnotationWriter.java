@@ -253,11 +253,12 @@ public class XliffFremeAnnotationWriter {
 			BaseSegmentVariant variant) {
 		if (variant != null && variant.getEnirchments() != null
 				&& !variant.getEnirchments().isEmpty()) {
-			Collections.sort(variant.getEnirchments(),
+			List<Enrichment> varEnrichments = new ArrayList<Enrichment>(variant.getEnirchments());
+			Collections.sort(varEnrichments,
 					new EnrichmentComparator());
 			Map<Integer, Integer> termEnrichmentsMap = new HashMap<Integer, Integer>();
 			List<Enrichment> tripleEnrichments = new ArrayList<Enrichment>();
-			for (Enrichment enrichment : variant.getEnirchments()) {
+			for (Enrichment enrichment : varEnrichments) {
 				if (!enrichment.isDisabled()) {
 					if (enrichment.getType().equals(Enrichment.ENTITY_TYPE)) {
 						writeEntityEnrichment(unitElement, variantElement,

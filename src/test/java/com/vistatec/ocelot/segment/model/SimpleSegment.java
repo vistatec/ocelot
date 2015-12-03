@@ -59,7 +59,7 @@ public class SimpleSegment extends BaseSegment {
         private final SimpleSegmentVariant.Builder target = new SimpleSegmentVariant.Builder();
         private SimpleSegmentVariant.Builder originalTarget;
         private StateQualifier stateQualifier;
-
+        
         public Builder segmentNumber(int segNum) {
             this.segmentNumber = segNum;
             return this;
@@ -93,6 +93,7 @@ public class SimpleSegment extends BaseSegment {
             this.originalTarget.text(originalTargetPlainText);
             return this;
         }
+        
 
         public Builder stateQualifier(StateQualifier stateQualifier) {
             this.stateQualifier = stateQualifier;
@@ -104,4 +105,10 @@ public class SimpleSegment extends BaseSegment {
                     originalTarget == null ? null : originalTarget.build(), stateQualifier);
         }
     }
+
+	@Override
+	public String getTuId() {
+		return null;
+	}
+
 }
