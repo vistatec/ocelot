@@ -655,10 +655,10 @@ class FremeEnricher implements Runnable {
 	@Override
 	public void run() {
 
-		try {
-			logger.debug("Enriching " + variants.length + " variants");
-			for (VariantWrapper frag : variants) {
-				if (frag != null) {
+		logger.debug("Enriching " + variants.length + " variants");
+		for (VariantWrapper frag : variants) {
+			if (frag != null) {
+				try {
 					List<Enrichment> enrichments = null;
 					String sourceTarget = null;
 					frag.getVariant().setSentToFreme(true);
@@ -681,14 +681,16 @@ class FremeEnricher implements Runnable {
 								segment, frag.getVariant(), sourceTarget);
 					}
 
+				} catch (FremeEnrichmentException e) {
+					logger.error("Error while enriching the variant "
+							+ frag.getVariant().getDisplayText(), e);
+				} finally {
 					eventQueue
-							.post(new RefreshSegmentView(frag.getSegNumber()));
+					.post(new RefreshSegmentView(frag.getSegNumber()));
 				}
 			}
-
-		} catch (FremeEnrichmentException e) {
-			logger.error("Error while enriching the variants", e);
 		}
+
 	}
 
 	/**
