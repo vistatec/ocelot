@@ -155,7 +155,7 @@ public class EnrichmentTableModel extends DefaultTableModel {
 	@Override
 	public boolean isCellEditable(int row, int column) {
 		return column == BUTTON_COL
-		        || (descrColEditable && column == DESCRIPTION_COL);
+				|| (descrColEditable && column == DESCRIPTION_COL);
 	}
 
 	/**
@@ -172,6 +172,22 @@ public class EnrichmentTableModel extends DefaultTableModel {
 			}
 			model.add(enrichment);
 		}
+	}
+
+	/**
+	 * Gets the enrichment lying at a specific row.
+	 * 
+	 * @param row
+	 *            the row.
+	 * @return the enrichment.
+	 */
+	public Enrichment getEnrichmentAtRow(int row) {
+
+		Enrichment enrich = null;
+		if (model != null && row < model.size()) {
+			enrich = model.get(row);
+		}
+		return enrich;
 	}
 
 }

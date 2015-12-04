@@ -287,11 +287,27 @@ public class EnrichmentDetailsPanel extends JScrollPane {
 	 * @param enrich
 	 *            the enrichment.
 	 */
-	private void addToTerminologyPanel(TerminologyEnrichment enrich) {
+	private void addToTerminologyPanel(final TerminologyEnrichment enrich) {
 
 		if (terminologyPanel == null) {
-			termModel = new EnrichmentTableModel(null, false);
+			termModel = new EnrichmentTableModel(null, true);
 			termTable = new JTable(termModel);
+			ActionListener listener = new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int selRow = termTable.getSelectedRow();
+					if(selRow != -1){
+						TerminologyEnrichment selEnrichment = (TerminologyEnrichment) termModel.getEnrichmentAtRow(selRow);
+						TerminologyEnrichmentFrame termFrame = new TerminologyEnrichmentFrame( SwingUtilities
+								.windowForComponent(EnrichmentDetailsPanel.this), selEnrichment);
+						termFrame.open();
+					}
+				}
+			};
+			termTable.setDefaultRenderer(String.class, new LinkRenderer(true));
+			TableColumn column = termTable.getColumnModel().getColumn(1);
+			column.setCellEditor(new LinkEditor(listener, true));
 			terminologyPanel = buildDetailPanel(TERMINOLOGY_ICON_NAME,
 			        termTable);
 		}

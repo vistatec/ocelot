@@ -30,6 +30,9 @@ public class TerminologyEnrichment extends Enrichment {
 	/** The sense. */
 	private String sense;
 
+	/** The term definition. */
+	private String definition;
+
 	/** The source term. */
 	private String sourceTerm;
 
@@ -67,14 +70,17 @@ public class TerminologyEnrichment extends Enrichment {
 	 *            the target term.
 	 * @param sense
 	 *            the sense.
+	 * @param definition
+	 *            the definition           
 	 */
 	public TerminologyEnrichment(String nifOffsetString, String sourceTerm,
-	        String targetTerm, String sense) {
+			String targetTerm, String sense, String definition) {
 
 		super(Enrichment.TERMINOLOGY_TYPE, nifOffsetString);
 		this.sourceTerm = sourceTerm;
 		this.targetTerm = targetTerm;
 		this.sense = sense;
+		this.definition = definition;
 	}
 
 	/**
@@ -88,25 +94,29 @@ public class TerminologyEnrichment extends Enrichment {
 	 *            the target term
 	 * @param sense
 	 *            the sense
+	 * @param definition
+	 *            the definition
 	 * @param termTriples
 	 *            the term triples
 	 * @param termInfoRef
 	 *            the term info ref
 	 */
 	public TerminologyEnrichment(String nifOffsetString, String sourceTerm,
-	        String targetTerm, String sense, List<Statement> termTriples,
-	        String termInfoRef) {
+			String targetTerm, String sense, String defintion,
+			List<Statement> termTriples, String termInfoRef) {
 
 		super(Enrichment.TERMINOLOGY_TYPE, nifOffsetString);
 		this.sourceTerm = sourceTerm;
 		this.targetTerm = targetTerm;
 		this.sense = sense;
+		this.definition = defintion;
 		this.termTriples = termTriples;
 		this.termInfoRef = termInfoRef;
 	}
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTagType()
 	 */
 	@Override
@@ -116,6 +126,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTag()
 	 */
 	@Override
@@ -125,6 +136,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Gets the sense.
+	 * 
 	 * @return the sense.
 	 */
 	public String getSense() {
@@ -133,14 +145,36 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Sets the sense.
-	 * @param sense the sense.
+	 * 
+	 * @param sense
+	 *            the sense.
 	 */
 	public void setSense(String sense) {
 		this.sense = sense;
 	}
 
 	/**
+	 * Gets the definition.
+	 * 
+	 * @return the definition.
+	 */
+	public String getDefinition() {
+		return definition;
+	}
+
+	/**
+	 * Sets the definition.
+	 * 
+	 * @param definition
+	 *            the definition.
+	 */
+	public void setDefinition(String definition) {
+		this.definition = definition;
+	}
+
+	/**
 	 * Gets the source term.
+	 * 
 	 * @return the source term.
 	 */
 	public String getSourceTerm() {
@@ -149,7 +183,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Sets the source term.
-	 * @param sourceTerm the source term.
+	 * 
+	 * @param sourceTerm
+	 *            the source term.
 	 */
 	public void setSourceTerm(String sourceTerm) {
 		this.sourceTerm = sourceTerm;
@@ -157,6 +193,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Gets the target term.
+	 * 
 	 * @return the target term.
 	 */
 	public String getTargetTerm() {
@@ -165,7 +202,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Sets the target term.
-	 * @param targetTerm the target term.
+	 * 
+	 * @param targetTerm
+	 *            the target term.
 	 */
 	public void setTargetTerm(String targetTerm) {
 		this.targetTerm = targetTerm;
@@ -173,6 +212,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Gets the annotator.
+	 * 
 	 * @return the annotator.
 	 */
 	public String getAnnotator() {
@@ -181,7 +221,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Sets the annotator.
-	 * @param annotator the annotator.
+	 * 
+	 * @param annotator
+	 *            the annotator.
 	 */
 	public void setAnnotator(String annotator) {
 		this.annotator = annotator;
@@ -189,6 +231,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Gets the annotrators ref value.
+	 * 
 	 * @return the annotrators ref value.
 	 */
 	public String getAnnotatorsRefValue() {
@@ -201,7 +244,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Sets the term triples list.
-	 * @param termTriples the term triples list.
+	 * 
+	 * @param termTriples
+	 *            the term triples list.
 	 */
 	public void setTermTriples(List<Statement> termTriples) {
 		this.termTriples = termTriples;
@@ -209,6 +254,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Gets the term triples list.
+	 * 
 	 * @return the term triples list.
 	 */
 	public List<Statement> getTermTriples() {
@@ -217,7 +263,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Sets the term info ref.
-	 * @param termInfoRef the term info ref.
+	 * 
+	 * @param termInfoRef
+	 *            the term info ref.
 	 */
 	public void setTermInfoRef(String termInfoRef) {
 		this.termInfoRef = termInfoRef;
@@ -225,6 +273,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/**
 	 * Get the term info ref.
+	 * 
 	 * @return the term info ref.
 	 */
 	public String getTermInfoRef() {
@@ -233,6 +282,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -245,15 +295,16 @@ public class TerminologyEnrichment extends Enrichment {
 			descrString.append(" - Target: ");
 			descrString.append(targetTerm);
 		}
-		if (sense != null) {
-			descrString.append(" - Sense: ");
-			descrString.append(sense);
-		}
+//		if (sense != null) {
+//			descrString.append(" - Sense: ");
+//			descrString.append(sense);
+//		}
 		return descrString.toString();
 	}
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -264,11 +315,11 @@ public class TerminologyEnrichment extends Enrichment {
 			TerminologyEnrichment enrich = (TerminologyEnrichment) obj;
 			if (sourceTerm != null) {
 				retValue = sourceTerm.equals(enrich.getSourceTerm())
-				        && (targetTerm == null
-				                && enrich.getTargetTerm() == null || (targetTerm
-				                    .equals(enrich.getTargetTerm())))
-				        && (sense == null && enrich.getSense() == null || (sense
-				                .equals(enrich.getSense())));
+						&& (targetTerm == null
+								&& enrich.getTargetTerm() == null || (targetTerm
+									.equals(enrich.getTargetTerm())))
+						&& (sense == null && enrich.getSense() == null || (sense
+								.equals(enrich.getSense())));
 			} else {
 				retValue = super.equals(obj);
 			}
@@ -280,6 +331,7 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -296,7 +348,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTagValue()
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.segment.model.enrichment.Enrichment#getTagValue()
 	 */
 	@Override
 	public String getTagValue() {
@@ -305,7 +359,9 @@ public class TerminologyEnrichment extends Enrichment {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.vistatec.ocelot.segment.model.enrichment.Enrichment#getMarkerTag()
+	 * 
+	 * @see
+	 * com.vistatec.ocelot.segment.model.enrichment.Enrichment#getMarkerTag()
 	 */
 	@Override
 	public String getMarkerTag() {
