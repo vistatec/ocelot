@@ -152,6 +152,15 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 		        .setHeaderRenderer(
 		                new ColorHeaderCellRenderer(lqiTable.getBackground(),
 		                        lqiTable.getGridColor()));
+		int catWeightColIdx = lqiTableModel.getErrorCatWeightColumn();
+		if(catWeightColIdx > -1){
+			lqiTable.getTableHeader()
+	        .getColumnModel()
+	        .getColumn(catWeightColIdx)
+	        .setHeaderRenderer(
+	                new ColorHeaderCellRenderer(lqiTable.getBackground(),
+	                        lqiTable.getGridColor()));
+		}
 
 		ColorCellRenderer centerRenderer = new ColorCellRenderer(
 		        lqiTable.getBackground());
@@ -168,6 +177,13 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 		                new TextAreaColorCellRenderer(lqiTable.getBackground()));
 		lqiTable.getColumnModel().getColumn(lqiTableModel.getCommentColumn())
 		        .setCellEditor(new TextAreaTableCellEditor());
+		if(catWeightColIdx > -1){
+			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellRenderer(centerRenderer);
+		}
+//		lqiTable.getColumnModel()
+//		        .getColumn(lqiTableModel.getErrorCatWeightColumn())
+//		        .setCellRenderer(
+//		                new ColorCellRenderer(lqiTable.getBackground()));
 		LQIGridButtonEditor buttonEditor = new LQIGridButtonEditor(
 		        gridButtonAction);
 		lqiTable.getColumnModel()

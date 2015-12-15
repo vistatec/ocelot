@@ -33,13 +33,16 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import net.sf.okapi.lib.xliff2.Const;
 import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
@@ -317,6 +320,17 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		}
 
 		return ocelotLqiList;
+	}
+	
+
+  public static void main(String[] args) {
+		
+  	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+  	Date date = new Date();
+  	Calendar calendar = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-8:00"));
+  	calendar.set(2016, 2, 22, 14, 54);
+  	System.out.println(dateFormat.format(calendar.getTime()));
+  	
 	}
 
 	private List<LanguageQualityIssue> convertOkapiToOcelotLqiData(

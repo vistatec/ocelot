@@ -1,6 +1,7 @@
 package com.vistatec.ocelot.lqi.gui;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -17,27 +18,50 @@ public class LQIGridTableModel extends AbstractTableModel {
 	/** Serial version UID. */
 	private static final long serialVersionUID = -1813995821444213075L;
 
-	/** Error category column index. */
-	private static final int ERROR_CAT_COLUMN = 0;
+//	/** Error category column index. */
+//	private static final int ERROR_CAT_COLUMN = 0;
+//
+//	/** The error category weight column index. */
+//	private static final int ERROR_CAT_WEIGHT_COLUMN = 1;
+//
+//	/** Minor severity column index. */
+//	private static final int MINOR_COLUMN = 2;
+//
+//	/** Serious severity column index. */
+//	private static final int SERIOUS_COLUMN = 3;
+//
+//	/** Critical severity column index. */
+//	private static final int CRITICAL_COLUMN = 4;
+//
+//	/** Comment column index. */
+//	private static final int COMMENT_COLUMN = 5;
 
-	/** Minor severity column index. */
-	private static final int MINOR_COLUMN = 1;
+	private enum Column {
+		ERROR_CAT("Error Category"), ERROR_WEIGHT("Weight"), MINOR_SCORE(
+		        "Minor ($SCORE$)"), SERIOUS_SCORE("Serious ($SCORE$)"), CRITICAL_SCORE(
+		        "Critical ($SCORE$)"), COMMENT("Comment");
 
-	/** Serious severity column index. */
-	private static final int SERIOUS_COLUMN = 2;
+		private String name;
 
-	/** Critical severity column index. */
-	private static final int CRITICAL_COLUMN = 3;
-
-	/** Comment column index. */
-	private static final int COMMENT_COLUMN = 4;
+		private Column(String name) {
+			this.name = name;
+		}
+		
+		public String getName(){
+			return name;
+		}
+	}
 
 	/** String to be replaced with the actual score value in the column names. */
 	private static final String ERROR_SCORE_REPLACE_STRING = "$SCORE$";
 
-	/** Column names. */
-	private final String[] columnNames = { "Error Category", "Minor ($SCORE$)",
-	        "Serious ($SCORE$)", "Critical ($SCORE$)", "Comment" };
+//	/** Column names. */
+//	private final String[] columnNames = { "Error Category", "Weight",
+//	        "Minor ($SCORE$)", "Serious ($SCORE$)", "Critical ($SCORE$)",
+//	        "Comment" };
+
+//	private Map<Integer, Boolean> enabledColumns;
+	private EnumMap<Column, Boolean> enabledColumns;
 
 	/** The LQI grid object. */
 	private LQIGrid lqiGridObj;
@@ -65,6 +89,22 @@ public class LQIGridTableModel extends AbstractTableModel {
 	public LQIGridTableModel(final LQIGrid lqiGridObj, final int mode) {
 		this.lqiGridObj = lqiGridObj;
 		this.mode = mode;
+		initColumns();
+	}
+
+	private void changedMode() {
+		enabledColumns.put(Column.ERROR_WEIGHT,
+		        mode == LQIGridDialog.CONFIG_MODE);
+		fireTableStructureChanged();
+	}
+
+	private void initColumns() {
+
+		enabledColumns = new EnumMap<Column, Boolean>(Column.class);
+		for (Column c: Column.values()) {
+			enabledColumns.put(c, true);
+		}
+		changedMode();
 	}
 
 	/*
@@ -89,36 +129,75 @@ public class LQIGridTableModel extends AbstractTableModel {
 	@Override
 	public int getColumnCount() {
 
-		return columnNames.length;
+		int count = 0;
+		for (Column c: Column.values()) {
+			if (enabledColumns.get(c)) {
+				count++;
+			}
+		}
+		return count;
 	}
 
+	private Column getColumn(int colIndex){
+		
+		Column column = null;
+		int count = 0;
+		for(Column c: Column.values()){
+			if(enabledColumns.get(c)){
+				if(count == colIndex){
+					column = c;
+					break;
+				}
+				count++;
+			}
+		}
+		return column;
+	}
+	
+	private int getColumnIndex(Column column){
+		
+		int colIndex = -1;
+		if(enabledColumns.get(column)){
+			for(Column col: Column.values()){
+				if(enabledColumns.get(col)){
+					colIndex++;
+				}
+				if(col.equals(column)){
+					break;
+				}
+			}
+		}
+		return colIndex;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
 	 */
 	@Override
-	public String getColumnName(int column) {
+	public String getColumnName(int colIndex) {
 		String colName = null;
-		if (column < columnNames.length) {
-			switch (column) {
-			case MINOR_COLUMN:
-				colName = columnNames[column].replace(
+		Column col = getColumn(colIndex);
+		if(col != null){
+			switch (col) {
+			case MINOR_SCORE:
+				colName = col.getName().replace(
 				        ERROR_SCORE_REPLACE_STRING,
 				        String.valueOf(lqiGridObj.getMinorScore()));
 				break;
-			case CRITICAL_COLUMN:
-				colName = columnNames[column].replace(
+			case CRITICAL_SCORE:
+				colName = col.getName().replace(
 				        ERROR_SCORE_REPLACE_STRING,
 				        String.valueOf(lqiGridObj.getCriticalScore()));
 				break;
-			case SERIOUS_COLUMN:
-				colName = columnNames[column].replace(
+			case SERIOUS_SCORE:
+				colName = col.getName().replace(
 				        ERROR_SCORE_REPLACE_STRING,
 				        String.valueOf(lqiGridObj.getSeriousScore()));
 				break;
 			default:
-				colName = columnNames[column];
+				colName = col.getName();
 				break;
 			}
 		}
@@ -139,24 +218,27 @@ public class LQIGridTableModel extends AbstractTableModel {
 
 			LQIErrorCategory errorCat = lqiGridObj.getErrorCategories().get(
 			        rowIndex);
-			switch (columnIndex) {
-			case CRITICAL_COLUMN:
+			Column col = getColumn(columnIndex);
+			if(col != null){
+			switch (col) {
+			case CRITICAL_SCORE:
 				retValue = errorCat.getCriticalShortcut();
 				break;
-			case ERROR_CAT_COLUMN:
+			case ERROR_CAT:
 				retValue = errorCat.getName();
 				break;
-			case MINOR_COLUMN:
+			case MINOR_SCORE:
 				retValue = errorCat.getMinorShortcut();
 				break;
-			case SERIOUS_COLUMN:
+			case SERIOUS_SCORE:
 				retValue = errorCat.getSeriousShortcut();
 				break;
-			case COMMENT_COLUMN:
+			case COMMENT:
 				retValue = errorCat.getComment();
 				break;
 			default:
 				break;
+			}
 			}
 		}
 		return retValue;
@@ -176,21 +258,25 @@ public class LQIGridTableModel extends AbstractTableModel {
 
 			LQIErrorCategory errorCat = lqiGridObj.getErrorCategories().get(
 			        rowIndex);
-			if (columnIndex == ERROR_CAT_COLUMN) {
-				if (aValue != null && !((String) aValue).isEmpty()
-				        && !errorCat.getName().equals((String) aValue)) {
-					TableCellEvent event = new TableCellEvent(
-					        errorCat.getName(), aValue, rowIndex, columnIndex);
-					errorCat.setName((String) aValue);
-					if (cellListeners != null) {
-						for (TableCellListener listener : cellListeners) {
-							listener.cellValueChanged(event);
+			Column col = getColumn(columnIndex);
+			if (col != null) {
+				if (col.equals(Column.ERROR_CAT)) {
+					if (aValue != null && !((String) aValue).isEmpty()
+					        && !errorCat.getName().equals((String) aValue)) {
+						TableCellEvent event = new TableCellEvent(
+						        errorCat.getName(), aValue, rowIndex,
+						        columnIndex);
+						errorCat.setName((String) aValue);
+						if (cellListeners != null) {
+							for (TableCellListener listener : cellListeners) {
+								listener.cellValueChanged(event);
+							}
 						}
+						changed = true;
 					}
-					changed = true;
+				} else if (col.equals(Column.COMMENT)) {
+					errorCat.setComment((String) aValue);
 				}
-			} else if (columnIndex == COMMENT_COLUMN) {
-				errorCat.setComment((String) aValue);
 			}
 		}
 	}
@@ -203,8 +289,9 @@ public class LQIGridTableModel extends AbstractTableModel {
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 
-		return (mode == LQIGridDialog.ISSUES_ANNOTS_MODE && columnIndex != ERROR_CAT_COLUMN)
-		        || (mode == LQIGridDialog.CONFIG_MODE && columnIndex != COMMENT_COLUMN);
+		Column col = getColumn(columnIndex);
+		return col != null && (mode == LQIGridDialog.ISSUES_ANNOTS_MODE && !col.equals(Column.ERROR_CAT))
+		        || (mode == LQIGridDialog.CONFIG_MODE && !col.equals(Column.COMMENT));
 	}
 
 	/**
@@ -231,7 +318,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @return the minor score column index.
 	 */
 	public int getMinorScoreColumn() {
-		return MINOR_COLUMN;
+		return getColumnIndex(Column.MINOR_SCORE);
 	}
 
 	/**
@@ -240,7 +327,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @return the serious score column index.
 	 */
 	public int getSeriousScoreColumn() {
-		return SERIOUS_COLUMN;
+		return getColumnIndex(Column.SERIOUS_SCORE);
 	}
 
 	/**
@@ -249,7 +336,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @return the critical score column index.
 	 */
 	public int getCriticalScoreColumn() {
-		return CRITICAL_COLUMN;
+		return getColumnIndex(Column.CRITICAL_SCORE);
 	}
 
 	/**
@@ -258,7 +345,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @return the error category column index.
 	 */
 	public int getErrorCategoryColumn() {
-		return ERROR_CAT_COLUMN;
+		return getColumnIndex(Column.ERROR_CAT);
 	}
 
 	/**
@@ -267,9 +354,13 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @return the comment column index.
 	 */
 	public int getCommentColumn() {
-		return COMMENT_COLUMN;
+		return getColumnIndex(Column.COMMENT);
 	}
 
+	public int getErrorCatWeightColumn(){
+		return getColumnIndex(Column.ERROR_WEIGHT);
+	}
+	
 	/**
 	 * Gets the severity score for a specific severity column.
 	 * 
@@ -280,18 +371,21 @@ public class LQIGridTableModel extends AbstractTableModel {
 	public int getScoreForColumn(int column) {
 
 		int score = 0;
-		switch (column) {
-		case CRITICAL_COLUMN:
-			score = lqiGridObj.getCriticalScore();
-			break;
-		case MINOR_COLUMN:
-			score = lqiGridObj.getMinorScore();
-			break;
-		case SERIOUS_COLUMN:
-			score = lqiGridObj.getSeriousScore();
-			break;
-		default:
-			break;
+		Column col = getColumn(column);
+		if (col != null) {
+			switch (col) {
+			case CRITICAL_SCORE:
+				score = lqiGridObj.getCriticalScore();
+				break;
+			case MINOR_SCORE:
+				score = lqiGridObj.getMinorScore();
+				break;
+			case SERIOUS_SCORE:
+				score = lqiGridObj.getSeriousScore();
+				break;
+			default:
+				break;
+			}
 		}
 		return score;
 	}
@@ -305,27 +399,30 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 *            the severity column index.
 	 */
 	public void setScoreForColumn(int score, int column) {
-		switch (column) {
-		case CRITICAL_COLUMN:
-			if (score != lqiGridObj.getCriticalScore()) {
-				lqiGridObj.setCriticalScore(score);
-				changed = true;
+		Column col = getColumn(column);
+		if (col != null) {
+			switch (col) {
+			case CRITICAL_SCORE:
+				if (score != lqiGridObj.getCriticalScore()) {
+					lqiGridObj.setCriticalScore(score);
+					changed = true;
+				}
+				break;
+			case MINOR_SCORE:
+				if (score != lqiGridObj.getMinorScore()) {
+					lqiGridObj.setMinorScore(score);
+					changed = true;
+				}
+				break;
+			case SERIOUS_SCORE:
+				if (score != lqiGridObj.getSeriousScore()) {
+					lqiGridObj.setSeriousScore(score);
+					changed = true;
+				}
+				break;
+			default:
+				break;
 			}
-			break;
-		case MINOR_COLUMN:
-			if (score != lqiGridObj.getMinorScore()) {
-				lqiGridObj.setMinorScore(score);
-				changed = true;
-			}
-			break;
-		case SERIOUS_COLUMN:
-			if (score != lqiGridObj.getSeriousScore()) {
-				lqiGridObj.setSeriousScore(score);
-				changed = true;
-			}
-			break;
-		default:
-			break;
 		}
 	}
 
@@ -339,9 +436,9 @@ public class LQIGridTableModel extends AbstractTableModel {
 	public String getSeverityNameForColumn(int severityColumn) {
 
 		String severityName = "";
-		if (severityColumn != ERROR_CAT_COLUMN
-		        && severityColumn < columnNames.length) {
-			severityName = columnNames[severityColumn].replace("("
+		Column col = getColumn(severityColumn);
+		if (col != null && !col.equals(Column.ERROR_CAT) ) {
+			severityName = col.getName().replace("("
 			        + ERROR_SCORE_REPLACE_STRING + ")", "");
 		}
 		return severityName;
@@ -367,30 +464,35 @@ public class LQIGridTableModel extends AbstractTableModel {
 			LQIErrorCategory errorCat = lqiGridObj.getErrorCategories()
 			        .get(row);
 			LQIShortCut newShortCut = new LQIShortCut(keyCode, modifiers);
-			switch (column) {
-			case CRITICAL_COLUMN:
-				if (errorCat.getCriticalShortcut() == null
-				        || !errorCat.getCriticalShortcut().equals(newShortCut)) {
-					errorCat.setCriticalShortcut(newShortCut);
-					changed = true;
+			Column col = getColumn(column);
+			if(col != null){
+				switch (col) {
+				case CRITICAL_SCORE:
+					if (errorCat.getCriticalShortcut() == null
+					        || !errorCat.getCriticalShortcut().equals(
+					                newShortCut)) {
+						errorCat.setCriticalShortcut(newShortCut);
+						changed = true;
+					}
+					break;
+				case MINOR_SCORE:
+					if (errorCat.getMinorShortcut() == null
+					        || !errorCat.getMinorShortcut().equals(newShortCut)) {
+						errorCat.setMinorShortcut(newShortCut);
+						changed = true;
+					}
+					break;
+				case SERIOUS_SCORE:
+					if (errorCat.getSeriousShortcut() == null
+					        || !errorCat.getSeriousShortcut().equals(
+					                newShortCut)) {
+						errorCat.setSeriousShortcut(newShortCut);
+						changed = true;
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			case MINOR_COLUMN:
-				if (errorCat.getMinorShortcut() == null
-				        || !errorCat.getMinorShortcut().equals(newShortCut)) {
-					errorCat.setMinorShortcut(newShortCut);
-					changed = true;
-				}
-				break;
-			case SERIOUS_COLUMN:
-				if (errorCat.getSeriousShortcut() == null
-				        || !errorCat.getSeriousShortcut().equals(newShortCut)) {
-					errorCat.setSeriousShortcut(newShortCut);
-					changed = true;
-				}
-				break;
-			default:
-				break;
 			}
 			fireTableCellUpdated(row, column);
 		}
@@ -404,6 +506,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 */
 	public void setMode(int mode) {
 		this.mode = mode;
+		changedMode();
 	}
 
 	/**
@@ -470,7 +573,6 @@ public class LQIGridTableModel extends AbstractTableModel {
 		return newErrorCat;
 
 	}
-
 
 	/**
 	 * Deletes a specific row.
@@ -604,7 +706,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 			if (lqiGridObj.getErrorCategories().get(i).getName()
 			        .equals(category)) {
 				lqiGridObj.getErrorCategories().get(i).setComment("");
-				fireTableCellUpdated(i, COMMENT_COLUMN);
+				fireTableCellUpdated(i, getColumnIndex(Column.COMMENT));
 				break;
 			}
 		}

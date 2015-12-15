@@ -417,7 +417,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		repaint();
 		mode = ISSUES_ANNOTS_MODE;
 		tableHelper.getLqiTableModel().setMode(mode);
-
+		tableHelper.configureTable(getGridButtonAction());
+		setTableSize();
 	}
 
 	/**
@@ -437,6 +438,9 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		repaint();
 		mode = CONFIG_MODE;
 		tableHelper.getLqiTableModel().setMode(mode);
+		tableHelper.configureTable(getGridButtonAction());
+		setTableSize();
+		
 
 	}
 
