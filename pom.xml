@@ -33,9 +33,14 @@
       <url>http://repository-okapi.forge.cloudbees.com/snapshot/</url>
     </repository>
     <repository>
-        <id>okapi-xliff</id>
-        <name>okapi-xliff-repository</name>
+        <id>okapi-xliff-snapshot</id>
+        <name>okapi-xliff-repository snapshot</name>
         <url>http://repository-okapi-xliff.forge.cloudbees.com/snapshot/</url>
+    </repository>
+    <repository>
+        <id>okapi-xliff-release</id>
+        <name>okapi-xliff-repository release</name>
+        <url>http://repository-okapi-xliff.forge.cloudbees.com/release/</url>
     </repository>
   </repositories>
 
