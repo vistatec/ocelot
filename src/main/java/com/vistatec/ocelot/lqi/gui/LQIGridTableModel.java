@@ -219,26 +219,31 @@ public class LQIGridTableModel extends AbstractTableModel {
 			LQIErrorCategory errorCat = lqiGridObj.getErrorCategories().get(
 			        rowIndex);
 			Column col = getColumn(columnIndex);
-			if(col != null){
-			switch (col) {
-			case CRITICAL_SCORE:
-				retValue = errorCat.getCriticalShortcut();
-				break;
-			case ERROR_CAT:
-				retValue = errorCat.getName();
-				break;
-			case MINOR_SCORE:
-				retValue = errorCat.getMinorShortcut();
-				break;
-			case SERIOUS_SCORE:
-				retValue = errorCat.getSeriousShortcut();
-				break;
-			case COMMENT:
-				retValue = errorCat.getComment();
-				break;
-			default:
-				break;
-			}
+			if (col != null) {
+				switch (col) {
+				case CRITICAL_SCORE:
+					retValue = errorCat.getCriticalShortcut();
+					break;
+				case ERROR_CAT:
+					retValue = errorCat.getName();
+					break;
+				case MINOR_SCORE:
+					retValue = errorCat.getMinorShortcut();
+					break;
+				case SERIOUS_SCORE:
+					retValue = errorCat.getSeriousShortcut();
+					break;
+				case COMMENT:
+					retValue = errorCat.getComment();
+					break;
+				case ERROR_WEIGHT:
+					if (errorCat.getWeight() > 0) {
+						retValue = errorCat.getWeight();
+					}
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		return retValue;
@@ -276,6 +281,10 @@ public class LQIGridTableModel extends AbstractTableModel {
 					}
 				} else if (col.equals(Column.COMMENT)) {
 					errorCat.setComment((String) aValue);
+				} else if(col.equals(Column.ERROR_WEIGHT)) {
+					String weigthString = (String)aValue;
+					errorCat.setWeight(Float.parseFloat(weigthString));
+					changed = true;
 				}
 			}
 		}

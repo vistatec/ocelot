@@ -11,18 +11,20 @@ public class LQIErrorCategory {
 	private LQIShortCut seriousShortcut;
 	private LQIShortCut criticalShortcut;
 	private String comment;
+	private float weight;
 
 	public LQIErrorCategory() {
 	}
 
 	public LQIErrorCategory(final String name) {
 
-		this(name, null, null, null);
+		this(name, 0f, null, null, null);
 	}
 
-	public LQIErrorCategory(final String name, final LQIShortCut minorShortcut,
+	public LQIErrorCategory(final String name, final float weight, final LQIShortCut minorShortcut,
 	        final LQIShortCut seriousShortcut, final LQIShortCut criticalShortcut) {
 		this.name = name;
+		this.weight = weight;
 		this.minorShortcut = minorShortcut;
 		this.criticalShortcut = criticalShortcut;
 		this.seriousShortcut = seriousShortcut;
@@ -67,11 +69,19 @@ public class LQIErrorCategory {
 	public String getComment(){
 		return comment;
 	}
+	
+	public float getWeight() {
+		return weight;
+	}
+
+	public void setWeight(float weight) {
+		this.weight = weight;
+	}
 
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
 
-		return new LQIErrorCategory(name, minorShortcut, seriousShortcut,
+		return new LQIErrorCategory(name, weight, minorShortcut, seriousShortcut,
 		        criticalShortcut);
 
 	}

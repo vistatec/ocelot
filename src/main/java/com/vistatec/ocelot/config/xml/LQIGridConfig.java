@@ -62,6 +62,7 @@ public class LQIGridConfig {
 		private Shortcut serious;
 		private Shortcut critical;
 		private int position;
+		private float weight;
 		
 		@XmlElement
 		public String getName() {
@@ -104,15 +105,17 @@ public class LQIGridConfig {
 			this.critical = critical;
 		}
 		
+		@XmlElement
+		public float getWeight() {
+			 return weight;
+		}
+		
+		public void setWeight(float weight) {
+			this.weight = weight;
+		}
+		
 	}
 	
-//	public static class Shortcuts {
-//		
-//		
-//		
-		
-//		
-//	}
 	
 	public static class Shortcut{
 		

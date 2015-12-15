@@ -17,7 +17,6 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.gui.LQIGridDialog;
-import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
@@ -63,16 +62,16 @@ public class LQIGridController implements OcelotEventQueueListener {
 	public void saveLQIGridConfiguration(LQIGrid lqiGrid)
 	        throws TransferException {
 
-		// try {
-		configService.saveLQIConfig(lqiGrid);
-		// } catch (TransferException e) {
-		// logger.error("Error while saving the LQI grid configuration.", e);
-		// JOptionPane
-		// .showMessageDialog(
-		// ocelotMainFrame,
-		// "An error has occurred while saving the LQI grid configuration",
-		// "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
-		// }
+		try {
+			configService.saveLQIConfig(lqiGrid);
+		} catch (TransferException e) {
+			logger.error("Error while saving the LQI grid configuration.", e);
+			JOptionPane
+			        .showMessageDialog(
+			                ocelotMainFrame,
+			                "An error has occurred while saving the LQI grid configuration",
+			                "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	public LQIGrid readLQIGridConfiguration() {

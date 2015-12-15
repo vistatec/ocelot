@@ -43,6 +43,9 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 
 	/** LQI grid table Comment column width constant. */
 	private static final int COMMENT_COLUMN_WITDH = 250;
+	
+	/** LQI grid table Weight column width constant. */
+	private static final int WEIGHT_COLUMN_WIDTH = 60;
 
 	/** The LQI grid table. */
 	private JTable lqiTable;
@@ -160,6 +163,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 	        .setHeaderRenderer(
 	                new ColorHeaderCellRenderer(lqiTable.getBackground(),
 	                        lqiTable.getGridColor()));
+			
 		}
 
 		ColorCellRenderer centerRenderer = new ColorCellRenderer(
@@ -179,6 +183,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 		        .setCellEditor(new TextAreaTableCellEditor());
 		if(catWeightColIdx > -1){
 			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellRenderer(centerRenderer);
+			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellEditor(new FloatCellEditor());
 		}
 //		lqiTable.getColumnModel()
 //		        .getColumn(lqiTableModel.getErrorCatWeightColumn())
@@ -205,21 +210,39 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 		lqiTable.getColumnModel()
 		        .getColumn(lqiTableModel.getCriticalScoreColumn())
 		        .setCellEditor(buttonEditor);
-		for (int i = 0; i < lqiTable.getColumnCount() - 1; i++) {
-			lqiTable.getColumnModel().getColumn(i).setWidth(COLUMN_WITDH);
-			lqiTable.getColumnModel().getColumn(i).setMinWidth(COLUMN_WITDH);
+		for (int i = 0; i < lqiTable.getColumnCount(); i++) {
+			if (i != lqiTableModel.getErrorCatWeightColumn() && i != lqiTableModel.getCommentColumn()) {
+				lqiTable.getColumnModel().getColumn(i).setWidth(COLUMN_WITDH);
+				lqiTable.getColumnModel().getColumn(i)
+				        .setMinWidth(COLUMN_WITDH);
+			}
 		}
 		lqiTable.getColumnModel().getColumn(lqiTableModel.getCommentColumn())
 		        .setWidth(COMMENT_COLUMN_WITDH);
 		lqiTable.getColumnModel().getColumn(lqiTableModel.getCommentColumn())
 		        .setMinWidth(COMMENT_COLUMN_WITDH);
+		if (lqiTableModel.getErrorCatWeightColumn() != -1) {
+			lqiTable.getColumnModel()
+			        .getColumn(lqiTableModel.getErrorCatWeightColumn())
+			        .setWidth(WEIGHT_COLUMN_WIDTH);
+			lqiTable.getColumnModel()
+			        .getColumn(lqiTableModel.getErrorCatWeightColumn())
+			        .setMinWidth(WEIGHT_COLUMN_WIDTH);
+		}
 
 	}
 
+	
 	public int getTableWidth() {
-
-		return COLUMN_WITDH * (lqiTable.getColumnCount() - 1)
-		        + COMMENT_COLUMN_WITDH;
+		
+		int weightColWidth = 0;
+		int normalColCount = lqiTable.getColumnCount() - 1;
+		if(lqiTableModel.getErrorCatWeightColumn() != -1){
+			weightColWidth = WEIGHT_COLUMN_WIDTH;
+			normalColCount = lqiTable.getColumnCount() - 2;
+		}
+		return COLUMN_WITDH * (normalColCount)
+		        + COMMENT_COLUMN_WITDH + weightColWidth; 
 	}
 
 	/**

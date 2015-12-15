@@ -212,6 +212,7 @@ public class OcelotConfigService implements ConfigService {
 					errorCat = lqiGrid.getErrorCategories().get(i);
 					configCategory = new LQIGridConfig.LQICategory();
 					configCategory.setName(errorCat.getName());
+					configCategory.setWeight(errorCat.getWeight());
 					configCategory.setPosition(i);
 					if (errorCat.getMinorShortcut() != null) {
 						Shortcut minor = new Shortcut();
@@ -260,6 +261,7 @@ public class OcelotConfigService implements ConfigService {
 				LQIErrorCategory errCat = null;
 				for (LQICategory cat : confLqiGrid.getLqiCategories()) {
 					errCat = new LQIErrorCategory(cat.getName());
+					errCat.setWeight(cat.getWeight());
 					if (cat.getMinor() != null) {
 						errCat.setMinorShortcut(new LQIShortCut(cat.getMinor()
 						        .getKeyCode(), cat.getMinor().getModifiers()));
