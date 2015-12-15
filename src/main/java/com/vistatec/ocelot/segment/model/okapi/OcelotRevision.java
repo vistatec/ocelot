@@ -5,7 +5,6 @@ import java.util.Date;
 
 import net.sf.okapi.lib.xliff2.changeTracking.Item;
 import net.sf.okapi.lib.xliff2.changeTracking.Revision;
-import net.sf.okapi.lib.xliff2.core.Fragment;
 
 import com.ibm.icu.text.SimpleDateFormat;
 
@@ -30,11 +29,11 @@ public class OcelotRevision {
 	/** The date and time when this revision has been created. */
 	private String datetime;
 
-//	/** The display text for this revision. */
-//	private String text;
+	/** The display text for this revision. */
+	private String text;
 
-	/** The fragment for this revision. */
-	private Fragment fragment;
+//	/** The fragment for this revision. */
+//	private Fragment fragment;
 
 	public OcelotRevision() {
 	    // TODO Auto-generated constructor stub
@@ -45,8 +44,8 @@ public class OcelotRevision {
 		version = okapiRevision.getVersion();
 //		author = okapiRevision.getAuthor();
 		datetime = okapiRevision.getDatetime();
-//		text = item.getText();
-		fragment = item.getFragment();
+		text = item.getText();
+//		fragment = item.getFragment();
     }
 	
 	/**
@@ -139,43 +138,43 @@ public class OcelotRevision {
 		}
 	}
 
+	/**
+	 * Gets the revision text.
+	 * 
+	 * @return the revision text.
+	 */
+	public String getText() {
+		return text;
+	}
+
+	/**
+	 * Sets the revision text.
+	 * 
+	 * @param text
+	 *            the revision text.
+	 */
+	public void setText(String text) {
+		this.text = text;
+	}
+
 //	/**
-//	 * Gets the revision text.
+//	 * Gets the fragment for this revision.
 //	 * 
-//	 * @return the revision text.
+//	 * @return the fragment for this revision.
 //	 */
-//	public String getText() {
-//		return text;
+//	public Fragment getFragment() {
+//		return fragment;
 //	}
 //
 //	/**
-//	 * Sets the revision text.
+//	 * Sets the fragment for this revision.
 //	 * 
-//	 * @param text
-//	 *            the revision text.
+//	 * @param fragment
+//	 *            the fragment for this revision.
 //	 */
-//	public void setText(String text) {
-//		this.text = text;
+//	public void setFragment(Fragment fragment) {
+//		this.fragment = fragment;
 //	}
-
-	/**
-	 * Gets the fragment for this revision.
-	 * 
-	 * @return the fragment for this revision.
-	 */
-	public Fragment getFragment() {
-		return fragment;
-	}
-
-	/**
-	 * Sets the fragment for this revision.
-	 * 
-	 * @param fragment
-	 *            the fragment for this revision.
-	 */
-	public void setFragment(Fragment fragment) {
-		this.fragment = fragment;
-	}
 
 //	public static void main(String[] args) {
 //

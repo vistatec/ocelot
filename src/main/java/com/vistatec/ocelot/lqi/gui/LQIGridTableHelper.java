@@ -185,10 +185,6 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellRenderer(centerRenderer);
 			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellEditor(new FloatCellEditor());
 		}
-//		lqiTable.getColumnModel()
-//		        .getColumn(lqiTableModel.getErrorCatWeightColumn())
-//		        .setCellRenderer(
-//		                new ColorCellRenderer(lqiTable.getBackground()));
 		LQIGridButtonEditor buttonEditor = new LQIGridButtonEditor(
 		        gridButtonAction);
 		lqiTable.getColumnModel()

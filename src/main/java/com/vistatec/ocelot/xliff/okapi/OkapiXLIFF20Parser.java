@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
 import net.sf.okapi.lib.xliff2.changeTracking.Item;
 import net.sf.okapi.lib.xliff2.changeTracking.Revision;
 import net.sf.okapi.lib.xliff2.changeTracking.Revisions;
+import net.sf.okapi.lib.xliff2.core.CTag;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Note;
@@ -69,6 +71,8 @@ import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.TextAtom;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.segment.model.okapi.OcelotRevision;
@@ -186,7 +190,10 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		if (unit.hasChangeTrack()) {
 			List<OcelotRevision> ocelotRevisions = new ArrayList<OcelotRevision>();
 			Revisions targetRevisions = null;
-			for (Revisions revs : unit.getChangeTrack().getRevisionsList()) {
+			Iterator<Revisions> revsIt = unit.getChangeTrack().iterator();
+			Revisions revs = null;
+			while (revsIt.hasNext()) {
+				revs = revsIt.next();
 				if (revs.getAppliesTo().equals(Const.ELEM_TARGET)) {
 					targetRevisions = revs;
 					break;
@@ -194,7 +201,10 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 			}
 			if (targetRevisions != null) {
 				for (Revision rev : targetRevisions) {
-					for (Item currItem : rev.getItems()) {
+					Iterator<Item> itemsIt = rev.iterator();
+					Item currItem = null;
+					while (itemsIt.hasNext()) {
+						currItem = itemsIt.next();
 						if (currItem.getProperty().equals(
 						        Item.PROPERTY_CONTENT_VALUE)) {
 							ocelotRevisions.add(new OcelotRevision(rev,
@@ -205,17 +215,19 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 			} else if (!ocelotSegment.getTarget().getDisplayText().isEmpty()) {
 				targetRevisions = createRevisionsForTarget(okapiSegment
 				        .getTarget());
-				unit.getChangeTrack().addRevisions(targetRevisions);
+				unit.getChangeTrack().add(targetRevisions);
 				ocelotRevisions.add(new OcelotRevision(targetRevisions.get(0),
-				        targetRevisions.get(0).getItems().get(0)));
+				        targetRevisions.get(0).get(0)));
 			}
 			if (!ocelotRevisions.isEmpty()) {
 				Collections.sort(ocelotRevisions,
 				        new OcelotRevisionComparator());
 				if (ocelotRevisions.size() > 1) {
-					ocelotSegment.setOriginalTarget(new FragmentVariant(
-					        ocelotRevisions.get(ocelotRevisions.size() - 1)
-					                .getFragment(), true));
+					List<SegmentAtom> atoms = new ArrayList<SegmentAtom>();
+					TextAtom origTrgtAtom = new TextAtom(ocelotRevisions.get(ocelotRevisions.size() - 1).getText());
+					atoms.add(origTrgtAtom);
+					FragmentVariant origTargetVar = new FragmentVariant(atoms, true);
+					ocelotSegment.setOriginalTarget(origTargetVar);
 				}
 				
 				int nextVersion = 1;
@@ -236,13 +248,13 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 						break;
 					}
 				}
-				if(!currRev.getFragment().getPlainText().equals(okapiSegment.getTarget().getPlainText())) {
+				if(!currRev.getText().equals(okapiSegment.getTarget().getPlainText())) {
 					Item currTargetItem = new Item(Item.PROPERTY_CONTENT_VALUE);
-					currTargetItem.setFragment(okapiSegment.getTarget());
+					currTargetItem.setText(okapiSegment.getTarget().getPlainText());
 					Revision revision = new Revision();
 					revision.setVersion(TargetVersion.VERSION_PREFIX + nextVersion++);
 					revision.setDatetime(dateFormatter.format(new Date()));
-					revision.addItem(currTargetItem);
+					revision.add(currTargetItem);
 					targetRevisions.add(revision);
 					targetRevisions.setCurrentVersion(revision.getVersion());
 				}
@@ -254,7 +266,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		} else if (!ocelotSegment.getTarget().getDisplayText().isEmpty()) {
 			ChangeTrack changeTrack = new ChangeTrack();
 			unit.setChangeTrack(changeTrack);
-			changeTrack.addRevisions(createRevisionsForTarget(okapiSegment
+			changeTrack.add(createRevisionsForTarget(okapiSegment
 			        .getTarget()));
 			targetVersions.add(new TargetVersion(TargetVersion.VERSION_PREFIX + "2"));
 		} else {
@@ -274,8 +286,9 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		revision.setVersion(TargetVersion.VERSION_PREFIX + "1");
 		revisions.add(revision);
 		Item item = new Item(Item.PROPERTY_CONTENT_VALUE);
-		item.setFragment(target);
-		revision.addItem(item);
+		item.setText(getFragmentPlainText(target));
+		System.out.println("Item: " + item.getText());
+		revision.add(item);
 		return revisions;
 	}
 
@@ -454,6 +467,59 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	
 	public SimpleDateFormat getRevisionDateFormatter(){
 		return dateFormatter;
+	}
+	
+	public String getFragmentPlainText(Fragment fragment ){
+		
+		StringBuilder plainText = new StringBuilder();
+		String ctext = fragment.getCodedText();
+		for ( int i=0; i<ctext.length(); i++ ) {
+			char ch = ctext.charAt(i);
+			switch (ch) {
+			case Fragment.CODE_OPENING:
+			case Fragment.CODE_CLOSING:
+			case Fragment.CODE_STANDALONE:
+			case Fragment.MARKER_OPENING: 
+			case Fragment.MARKER_CLOSING:
+			case Fragment.PCONT_STANDALONE:
+				i++;
+				break;
+
+			case '\r':
+				plainText.append("&#13;"); // Literal
+				break;
+			case '<':
+				plainText.append("&lt;");
+				break;
+			case '&':
+				plainText.append("&amp;");
+				break;
+			case '\n':
+			case '\t':
+				plainText.append(ch);
+				break;
+			default:
+				if (( ch > 0x001F ) && ( ch < 0xD800 )) {
+					// Valid char (most frequent) 
+					plainText.append(ch);
+				}
+				else if ( Character.isHighSurrogate(ch) ) {
+					plainText.append(Character.toChars(ctext.codePointAt(i)));
+					i++;
+				}
+				else if (( ch < 0x0020 )
+					|| (( ch > 0xD7FF ) && ( ch < 0xE000 ))
+					|| ( ch == 0xFFFE )
+					|| ( ch == 0xFFFF )) {
+						// Invalid characters
+					plainText.append(String.format("<cp hex=\"%04X\"/>", (int)ch));
+				}
+				break;
+			}
+			
+		}
+		
+		return plainText.toString();
 	}
 }
 

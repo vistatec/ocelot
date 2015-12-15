@@ -36,8 +36,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import net.sf.okapi.lib.xliff2.Const;
@@ -180,15 +180,18 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     			ChangeTrack changeTrack = new ChangeTrack();
     			unit.setChangeTrack(changeTrack);
     			Revisions revisions = createTargetRevisions(nextVersion.getVersion());
-    			changeTrack.addRevisions(revisions);
+    			changeTrack.add(revisions);
     			Revision revision = createCurrentRevision(nextVersion.getVersion(), parser.getRevisionDateFormatter().format(now));
     			revisions.add(revision);
     			item = new Item();
     			item.setProperty(Item.PROPERTY_CONTENT_VALUE);
-    			revision.addItem(item);
+    			revision.add(item);
     		} else {
     			Revisions targetRevisions = null;
-    			for(Revisions revs: unit.getChangeTrack().getRevisionsList()){
+    			Iterator<Revisions> revsIt = unit.getChangeTrack().iterator();
+    			Revisions revs = null;
+    			while(revsIt.hasNext()) {
+    				revs = revsIt.next();
     				if(revs.getAppliesTo().equals(Const.ELEM_TARGET)){
     					targetRevisions = revs;
     					break;
@@ -196,7 +199,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     			}
     			if(targetRevisions == null){
     				targetRevisions = createTargetRevisions(nextVersion.getVersion());
-    				unit.getChangeTrack().addRevisions(targetRevisions);
+    				unit.getChangeTrack().add(targetRevisions);
     			}
     			Revision currentRevision = null;
     			for(Revision rev: targetRevisions){
@@ -210,7 +213,10 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     				targetRevisions.add(currentRevision);
     				targetRevisions.setCurrentVersion(nextVersion.getVersion());
     			}
-    			for(Item currItem: currentRevision.getItems()){
+    			Iterator<Item> itemsIt = currentRevision.iterator();
+    			Item currItem = null;
+    			while(itemsIt.hasNext()){
+    				currItem = itemsIt.next();
     				if(currItem.getProperty().equals(Item.PROPERTY_CONTENT_VALUE)){
     					item = currItem;
     					break;
@@ -219,10 +225,11 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     			if(item == null){
     				item = new Item();
     				item.setProperty(Item.PROPERTY_CONTENT_VALUE);
-    				currentRevision.addItem(item);
+    				currentRevision.add(item);
     			}
     		}
-    		item.setFragment(unitPart.getTarget());
+    		item.setText(unitPart.getTarget().toString());
+    		System.out.println("Item: " + item.getText());
     		nextVersion.setUpdated(true);
     		
     	}
@@ -241,7 +248,6 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     	Revision revision = new Revision();
 		revision.setVersion(version);
 		revision.setDatetime(date);
-		revision.setItems(new ArrayList<Item>());
 		return revision;
     }
     
