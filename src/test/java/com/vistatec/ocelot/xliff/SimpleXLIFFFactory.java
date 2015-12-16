@@ -55,6 +55,10 @@ public class SimpleXLIFFFactory implements XLIFFFactory {
             }
 
             @Override
+            public void updateNotes(OcelotSegment seg) {
+            }
+
+            @Override
             public void save(File file) throws IOException,
                     UnsupportedEncodingException {
             }
