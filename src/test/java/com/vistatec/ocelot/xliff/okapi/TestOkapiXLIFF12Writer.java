@@ -29,18 +29,23 @@
 package com.vistatec.ocelot.xliff.okapi;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.custommonkey.xmlunit.XMLTestCase;
 import org.junit.*;
 import org.w3c.dom.Document;
 
 import static org.junit.Assert.*;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.google.common.eventbus.EventBus;
@@ -61,7 +66,7 @@ import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
 
-public class TestOkapiXLIFF12Writer {
+public class TestOkapiXLIFF12Writer extends XMLTestCase {
     private final OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
 
     @Test
@@ -111,11 +116,26 @@ public class TestOkapiXLIFF12Writer {
         checkValidXML(roundtripXliffAndAddLQI("/test.xlf"));
     }
 
+    @Test
+    public void testDontWriteEmptyProvenance() throws Exception {
+        File f = roundtripXliffAndAddLQI("/test.xlf", "test_empty_provenance.xml");
+        try (Reader r = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+             Reader goldReader = new InputStreamReader(getClass().getResourceAsStream("/gold/lqi_no_provenance.xlf"),
+                                     StandardCharsets.UTF_8)) {
+            assertXMLEqual(goldReader, r);
+        }
+        f.delete();
+    }
+
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
+        return roundtripXliffAndAddLQI(resourceName, "test_load_provenance.xml");
+    }
+
+    private File roundtripXliffAndAddLQI(String resourceName, String provenanceConfig) throws Exception {
         // Note that we need non-null provenance to be added, so we supply
         // a dummy revPerson value
         ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+                TestProvenanceConfig.class.getResource(provenanceConfig));
         OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);

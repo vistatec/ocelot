@@ -99,9 +99,12 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
             updateITSLQIAnnotations(textUnit, okapiSeg, rwRef);
 
             ITSProvenanceAnnotations provAnns = addOcelotProvenance(okapiSeg);
-            textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
-            provAnns.setData(rwRef);
-            textUnit.setAnnotation(provAnns);
+            if (provAnns.getAllAnnotations().size() > 0) {
+                textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
+                provAnns.setData(rwRef);
+                textUnit.setAnnotation(provAnns);
+            }
+
             if(textUnit.getProperty("note") != null){
             	textUnit.setProperty(new Property("note", textUnit.getProperty("note").getValue() + "\n---\n" + "new Note"));
             } else {
