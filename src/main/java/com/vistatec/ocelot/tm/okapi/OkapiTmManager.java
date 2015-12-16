@@ -81,17 +81,29 @@ public class OkapiTmManager implements TmManager {
 		// File tmDataDir = new File(tmConfig.getTmDataDir());
 		// if (!tmDataDir.exists() || !tmDataDir.isDirectory() ||
 		// tmDataDir.listFiles().length <= 0) {
-		if (!checkTmExists(tmConfig)) {
-			deleteTm(tmConfig.getTmName());
-			return false;
+//		if (!checkTmExists(tmConfig)) {
+//			deleteTm(tmConfig.getTmName());
+//			return false;
+//
+//		} else {
+//			File pensieve = getDefaultPensieveDir(tmConfig.getTmName());
+//			if (!pensieve.exists()) {
+//				regenerateTm(tmConfig.getTmName());
+//			}
+//			return true;
+//		}
+		File tmDataDir = new File(tmConfig.getTmDataDir());
+        if (!tmDataDir.exists() || !tmDataDir.isDirectory() || tmDataDir.listFiles().length <= 0) {
+            deleteTm(tmConfig.getTmName());
+            return false;
 
-		} else {
-			File pensieve = getDefaultPensieveDir(tmConfig.getTmName());
-			if (!pensieve.exists()) {
-				regenerateTm(tmConfig.getTmName());
-			}
-			return true;
-		}
+        } else {
+            File pensieve = getDefaultPensieveDir(tmConfig.getTmName());
+            if (!pensieve.exists()) {
+                regenerateTm(tmConfig.getTmName());
+            }
+            return true;
+        }
 	}
 
 	private boolean checkTmExists(TmConfig tm) {
