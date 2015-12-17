@@ -9,7 +9,7 @@
             </trans-unit>
         </body>
         </file><its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" xmlns:okp="okapi-framework:xliff-extensions" version="2.0" xml:id="RW1">
-<its:locQualityIssue locQualityIssueEnabled="no" locQualityIssueSeverity="90" locQualityIssueType="omission" okp:lqiType="OTHER" okp:lqiPos="0 -1 0 -1"/>
+<its:locQualityIssue locQualityIssueSeverity="90" locQualityIssueType="omission" okp:lqiType="OTHER" okp:lqiPos="0 -1 0 -1"/>
 </its:locQualityIssues>
 <its:provenanceRecords xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="RW1"><its:provenanceRecord revPerson="A" revOrg="B" provRef="C"/></its:provenanceRecords>
 </xliff>

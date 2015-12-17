@@ -113,9 +113,9 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         try (Reader r = new InputStreamReader(new FileInputStream(output), StandardCharsets.UTF_8);
                 Reader goldReader = new InputStreamReader(getClass().getResourceAsStream(goldResourceName),
                                         StandardCharsets.UTF_8)) {
-               assertXMLEqual(goldReader, r);
-           }
-           output.delete();
+           assertXMLEqual(goldReader, r);
+       }
+       output.delete();
     }
     
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
