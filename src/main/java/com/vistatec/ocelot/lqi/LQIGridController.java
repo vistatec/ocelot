@@ -33,6 +33,8 @@ public class LQIGridController implements OcelotEventQueueListener {
 	private OcelotSegment selectedSegment;
 
 	private boolean ocelotEditing;
+	
+	private LQIGridDialog gridDialog;
 
 	public LQIGridController(final OcelotConfigService configService,
 	        final OcelotEventQueue eventQueue) {
@@ -54,7 +56,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 
 	public void displayLQIGrid() {
 
-		LQIGridDialog gridDialog = new LQIGridDialog(ocelotMainFrame, this,
+		gridDialog = new LQIGridDialog(ocelotMainFrame, this,
 		        readLQIGridConfiguration());
 		SwingUtilities.invokeLater(gridDialog);
 	}
@@ -73,6 +75,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 			                "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
+	
 
 	public LQIGrid readLQIGridConfiguration() {
 
@@ -113,10 +116,40 @@ public class LQIGridController implements OcelotEventQueueListener {
 		return ocelotEditing;
 	}
 
-	public void createNewLQI(LanguageQualityIssue lqi) {
+	/**
+	 * Creates a new LQI issue.
+	 * 
+	 * @param category
+	 *            the LQI category
+	 * @param severity
+	 *            the issue severity.
+	 */
+	public void createNewLqi(String category, double severity) {
 
-		if (selectedSegment != null) {
-			eventQueue.post(new LQIAdditionEvent(lqi, selectedSegment));
-		}
+		
+		if (gridDialog == null || gridDialog.canCreateIssue()) {
+			String comment = null;
+			if(gridDialog != null){
+				comment = gridDialog.getCommentForCategory(category);
+			}
+			LanguageQualityIssue lqi = new LanguageQualityIssue();
+			lqi.setSeverity(severity);
+			lqi.setType(category);
+			lqi.setComment(comment);
+			System.out.println("-------- Create LQI " + lqi.toString() + " - "
+			        + lqi.getSeverity() + " - " + comment );
+			if (selectedSegment != null) {
+				eventQueue.post(new LQIAdditionEvent(lqi, selectedSegment));
+			}
+			if(comment != null){
+				gridDialog.clearCommentCellForCategory(category);
+			}
+		} 
 	}
+	
+	public void close() {
+		
+		gridDialog.dispose();
+		gridDialog = null;
+    }
 }

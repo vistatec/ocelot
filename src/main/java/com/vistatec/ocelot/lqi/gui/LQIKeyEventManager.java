@@ -10,7 +10,25 @@ import com.vistatec.ocelot.lqi.model.LQIGrid;
 
 public class LQIKeyEventManager {
 
+	private static LQIKeyEventManager instance;
+	
 	private List<LQIKeyEventHandler> keyEventHandlers;
+	
+	private LQIKeyEventManager() {
+		
+    }
+	
+	public static LQIKeyEventManager getInstance() {
+		
+		if(instance == null){
+			instance = new LQIKeyEventManager();
+		}
+		return instance;
+	}
+	
+	public static void destroy(){
+		instance = null;
+	}
 	
 	public void addKeyEventHandler(LQIKeyEventHandler keyEventHandler) {
 		

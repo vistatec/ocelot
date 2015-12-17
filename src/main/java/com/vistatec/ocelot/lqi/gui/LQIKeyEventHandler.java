@@ -1,7 +1,6 @@
 package com.vistatec.ocelot.lqi.gui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -10,10 +9,10 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 
+import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory.LQIShortCut;
@@ -25,7 +24,7 @@ import com.vistatec.ocelot.lqi.model.LQIGrid;
 public class LQIKeyEventHandler {
 
 	/** The LQI grid dialog. */
-	private LQIGridDialog lqiGridDialog;
+	private LQIGridController lqiGridController;
 
 	/** The root pane that should listen to key events. */
 	private JRootPane rootPane;
@@ -38,20 +37,10 @@ public class LQIKeyEventHandler {
 	 * @param rootPane
 	 *            the root pane listening to key events.
 	 */
-	public LQIKeyEventHandler(final LQIGridDialog lqiGridDialog, JRootPane rootPane) {
+	public LQIKeyEventHandler(final LQIGridController lqiGridController, JRootPane rootPane) {
 
-		this.lqiGridDialog = lqiGridDialog;
+		this.lqiGridController = lqiGridController;
 		this.rootPane = rootPane;
-		getInputMap().put(KeyStroke.getKeyStroke('A', KeyEvent.CTRL_DOWN_MASK), "testAction");
-		Action testAction = new AbstractAction() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(lqiGridDialog, "Test!");
-			}
-		};
-		rootPane.getActionMap().put("testAction", testAction);
-
 	}
 
 	/**
@@ -332,8 +321,7 @@ public class LQIKeyEventHandler {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			lqiGridDialog.createNewLqi(categoryName, severityScore,
-			        lqiGridDialog.getCommentForCategory(categoryName));
+			lqiGridController.createNewLqi(categoryName, severityScore);
 		}
 
 		public void setCategoryName(String categoryName) {

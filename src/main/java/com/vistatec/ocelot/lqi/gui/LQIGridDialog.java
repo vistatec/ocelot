@@ -26,7 +26,6 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
@@ -101,8 +100,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	/** The helper object for table management. */
 	private LQIGridTableHelper tableHelper;
 
-	/** Keyboard events manager. */
-	private LQIKeyEventManager keyEventManager;
+	private LQIKeyEventHandler lqiGridKeyEventHandler;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -145,19 +144,18 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 */
 	private void init() {
 
-		keyEventManager = new LQIKeyEventManager();
-		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(this, ((JFrame)getOwner()).getRootPane());
-		LQIKeyEventHandler lqiGridKeyEventHandler = new LQIKeyEventHandler(this, getRootPane());
-		keyEventManager.addKeyEventHandler(ocelotKeyEventHandler);
-		keyEventManager.addKeyEventHandler(lqiGridKeyEventHandler);
-		keyEventManager.load(lqiGrid);
-		tableHelper = new LQIGridTableHelper(keyEventManager);
+//		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(controller, ((JFrame)getOwner()).getRootPane());
+		lqiGridKeyEventHandler = new LQIKeyEventHandler(controller, getRootPane());
+//		keyEventManager.addKeyEventHandler(ocelotKeyEventHandler);
+		LQIKeyEventManager.getInstance().addKeyEventHandler(lqiGridKeyEventHandler);
+		lqiGridKeyEventHandler.load(lqiGrid);
+		tableHelper = new LQIGridTableHelper();
 		String title = TITLE;
 		if (mode == CONFIG_MODE) {
 			title = title + TITLE_CONF_SUFFIX;
 		}
 		setTitle(title);
-		// setResizable(false);
+		setResizable(false);
 		add(getCenterComponent(), BorderLayout.CENTER);
 		add(getBottomComponent(), BorderLayout.SOUTH);
 		// pack();
@@ -238,14 +236,15 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 					                tableHelper.getLqiTableModel()
 					                        .getErrorCategoryColumn())
 					        .toString();
-					Object commentObj = tableHelper.getLqiTable().getValueAt(
-					        button.getCategoryRow(),
-					        tableHelper.getLqiTableModel().getCommentColumn());
-					String comment = null;
-					if (commentObj != null) {
-						comment = commentObj.toString();
-					}
-					createNewLqi(categoryName, severity, comment);
+//					Object commentObj = tableHelper.getLqiTable().getValueAt(
+//					        button.getCategoryRow(),
+//					        tableHelper.getLqiTableModel().getCommentColumn());
+//					String comment = null;
+//					if (commentObj != null) {
+//						comment = commentObj.toString();
+//					}
+//					createNewLqi(categoryName, severity, comment);
+					controller.createNewLqi(categoryName, severity);
 				} else if (mode == CONFIG_MODE) {
 
 					LQIErrorCategory selErrorCat = tableHelper
@@ -287,29 +286,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		return tableHelper.isReservedShortcut(keyCode, modifiers);
 	}
 
-	/**
-	 * Creates a new LQI issue.
-	 * 
-	 * @param category
-	 *            the LQI category
-	 * @param severity
-	 *            the issue severity.
-	 */
-	public void createNewLqi(String category, double severity, String comment) {
-
-		if (mode == ISSUES_ANNOTS_MODE && !isEditing()) {
-			LanguageQualityIssue lqi = new LanguageQualityIssue();
-			lqi.setSeverity(severity);
-			lqi.setType(category);
-			lqi.setComment(comment);
-			System.out.println("-------- Create LQI " + lqi.toString() + " - "
-			        + lqi.getSeverity() + " - " + comment );
-			controller.createNewLQI(lqi);
-			clearCommentCellForCategory(category);
-		} 
-	}
-
-	private void clearCommentCellForCategory(String category) {
+	public void clearCommentCellForCategory(String category) {
 		
 		tableHelper.getLqiTableModel().clearCommentForCategory(category);
     }
@@ -538,6 +515,11 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 	}
 	
+	public boolean canCreateIssue(){
+		
+		return mode == ISSUES_ANNOTS_MODE && !isEditing();
+	}
+	
 	private boolean isEditing(){
 		return tableHelper.getLqiTable().getEditingColumn() == tableHelper.getLqiTableModel().getCommentColumn() || controller.isOcelotEditing();
 //		return tableHelper.getLqiTable().getColumnModel().getColumn(tableHelper.getLqiTableModel().getCommentColumn()).getCellEditor().
@@ -592,9 +574,9 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 */
 	private void close() {
 
-		keyEventManager.removeActions(lqiGrid);
+		lqiGridKeyEventHandler.removeActions(lqiGrid);
 		setVisible(false);
-		dispose();
+		controller.close();
 	}
 
 	/**

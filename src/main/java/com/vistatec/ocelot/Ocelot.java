@@ -82,6 +82,8 @@ import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
+import com.vistatec.ocelot.lqi.gui.LQIKeyEventHandler;
+import com.vistatec.ocelot.lqi.gui.LQIKeyEventManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.rules.QuickAddView;
@@ -525,7 +527,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 		initializeMenuBar();
 		mainframe.getContentPane().add(this);
-
+		
+		//adding LQI Key listener
+		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(lqiGridController, mainframe.getRootPane());
+		LQIKeyEventManager.getInstance().addKeyEventHandler(ocelotKeyEventHandler);
+		LQIKeyEventManager.getInstance().load(lqiGridController.readLQIGridConfiguration());
 		// Display the window
 		mainframe.pack();
 		mainframe.setVisible(true);
@@ -536,6 +542,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	}
 
 	private void quitOcelot() {
+		LQIKeyEventManager.destroy();
 		mainframe.dispose();
 		mainframe.setVisible(false);
 		System.exit(0);

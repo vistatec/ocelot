@@ -65,8 +65,8 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 	 * @param keyEventManager
 	 *            the keyboard event manager.
 	 */
-	public LQIGridTableHelper(LQIKeyEventManager keyEventManager) {
-		this.keyEventManager = keyEventManager;
+	public LQIGridTableHelper() {
+		this.keyEventManager = LQIKeyEventManager.getInstance();
 	}
 
 	/**
