@@ -1,7 +1,5 @@
 package com.vistatec.ocelot.tm.okapi;
 
-import com.vistatec.ocelot.tm.TmManager;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,6 +8,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import net.sf.okapi.tm.pensieve.seeker.PensieveSeeker;
+import net.sf.okapi.tm.pensieve.writer.PensieveWriter;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -23,10 +24,8 @@ import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.tm.TmManager;
 import com.vistatec.ocelot.tm.TmTmxWriter;
-
-import net.sf.okapi.tm.pensieve.seeker.PensieveSeeker;
-import net.sf.okapi.tm.pensieve.writer.PensieveWriter;
 
 /**
  * Use Okapi Pensieve to perform functionality expected of a {@link TmManager}.
@@ -51,7 +50,7 @@ public class OkapiTmManager implements TmManager {
 	        ConfigTransferService.TransferException {
 		Set<String> configuredTms = new HashSet<>();
 
-		List<TmManagement.TmConfig> tms = this.cfgService.getTms();
+		List<TmConfig> tms = new ArrayList<TmManagement.TmConfig>(this.cfgService.getTms());
 		for (TmManagement.TmConfig tm : tms) {
 			if (verifyExistingTm(tm)) {
 				configuredTms.add(tm.getTmName());

@@ -189,10 +189,10 @@ public class TmConfigDialog extends JDialog implements Runnable, ActionListener 
 		separator = new JSeparator(JSeparator.VERTICAL);
 		separator.setPreferredSize(new Dimension(2, 20));
 		topButtonPanel.add(separator);
-		topButtonPanel.add(btnChangeDir);
-		separator = new JSeparator(JSeparator.VERTICAL);
-		separator.setPreferredSize(new Dimension(2, 20));
-		topButtonPanel.add(separator);
+//		topButtonPanel.add(btnChangeDir);
+//		separator = new JSeparator(JSeparator.VERTICAL);
+//		separator.setPreferredSize(new Dimension(2, 20));
+//		topButtonPanel.add(separator);
 		topButtonPanel.add(btnRemove);
 		return topButtonPanel;
 	}
