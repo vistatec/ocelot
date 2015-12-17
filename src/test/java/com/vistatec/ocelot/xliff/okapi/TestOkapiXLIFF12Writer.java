@@ -34,16 +34,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.junit.*;
-import org.w3c.dom.Document;
-
-import static org.junit.Assert.*;
-
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -71,17 +63,12 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
 
     @Test
     public void testWriteITSNamespace() throws Exception {
-        // Methodology:
-        // - Open no-its-namespace.xlf
-        // - Add an LQI
-        // - Write it out
-        // Load the file and verify that it's valid XML
-        checkValidXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"));
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"), "/gold/no-its-namespace.xlf");
     }
 
     /**
      * The actual unittest for OC-21.  This modifies a segment, saves the file,
-     * re-opens it and modifies it again, then verifies that the XML is valid.
+     * re-opens it and modifies it again, then verifies that the XML is correct.
      * (In OC-21, the ITS namespace is written out multiple times, rendering the
      * file invalid.)
      */
@@ -108,25 +95,29 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         eventQueue.post(new LQIRemoveEvent(lqi, segments.get(0)));
 
         // Write it back out
-        checkValidXML(saveXliffToTemp(xliffService));
+        checkAgainstGoldXML(saveXliffToTemp(xliffService), "/gold/multiple-its-namespace.xlf");
     }
 
     @Test
     public void testDontWriteRedundantITSNamespaceInXLIFFElement() throws Exception {
-        checkValidXML(roundtripXliffAndAddLQI("/test.xlf"));
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/test.xlf"), "/gold/redundant-its-namespace.xlf");
     }
 
     @Test
     public void testDontWriteEmptyProvenance() throws Exception {
-        File f = roundtripXliffAndAddLQI("/test.xlf", "test_empty_provenance.xml");
-        try (Reader r = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
-             Reader goldReader = new InputStreamReader(getClass().getResourceAsStream("/gold/lqi_no_provenance.xlf"),
-                                     StandardCharsets.UTF_8)) {
-            assertXMLEqual(goldReader, r);
-        }
-        f.delete();
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/test.xlf", "test_empty_provenance.xml"),
+                            "/gold/lqi_no_provenance.xlf");
     }
 
+    private void checkAgainstGoldXML(File output, String goldResourceName) throws Exception {
+        try (Reader r = new InputStreamReader(new FileInputStream(output), StandardCharsets.UTF_8);
+                Reader goldReader = new InputStreamReader(getClass().getResourceAsStream(goldResourceName),
+                                        StandardCharsets.UTF_8)) {
+               assertXMLEqual(goldReader, r);
+           }
+           output.delete();
+    }
+    
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
         return roundtripXliffAndAddLQI(resourceName, "test_load_provenance.xml");
     }
@@ -157,21 +148,5 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         File temp = File.createTempFile("ocelot", ".xlf");
         service.save(temp);
         return temp;
-    }
-
-    private void checkValidXML(File f) throws ParserConfigurationException {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        docFactory.setNamespaceAware(true);
-        DocumentBuilder builder = docFactory.newDocumentBuilder();
-        try {
-            Document doc = builder.parse(f);
-            assertNotNull(doc);
-        }
-        catch (Exception e) {
-            fail("Failed to parse roundtripped XLIFF: " + e.getMessage());
-        }
-        finally {
-            f.delete();
-        }
     }
 }
