@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -21,6 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
+import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.gui.AbstractDetachableTmPanel;
 
@@ -136,7 +138,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 		matchesTable.setModel(tableModel);
 		// Make the table react to the ALT+R keystroke.
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK ),
+				KeyStroke.getKeyStroke(KeyEvent.VK_R, Ocelot.getPlatformKeyMask() ),
 				"replaceTarget");
 		matchesTable.getActionMap().put("replaceTarget",
 				new ReplaceTargetAction());
@@ -252,5 +254,4 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 			});
 		}
 	}
-
 }

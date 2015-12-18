@@ -483,7 +483,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		mainframe.setJMenuBar(menuBar);
 	}
 
-	private int getPlatformKeyMask() {
+	public static int getPlatformKeyMask() {
 		return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 	}
 
