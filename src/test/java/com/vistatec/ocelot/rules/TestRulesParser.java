@@ -86,14 +86,6 @@ public class TestRulesParser {
         assertEquals(new Color(Integer.decode("#0000ff")), config.getStateQualifierColor(StateQualifier.FUZZY));
     }
 
-    @Test
-    public void testQuickAddRules() throws Exception {
-        RuleConfiguration config = getConfig("/quickadd.properties");
-        assertEquals(2, config.getQuickAdds().size());
-        assertEquals(new QuickAdd("addOmission", lqi("omission", 75, "Omission")), config.getQuickAddLQI(1));
-        assertEquals(new QuickAdd("validNoComment", lqi("mistranslation", 85)), config.getQuickAddLQI(4));
-    }
-
     private DataCategoryFlag getDataCategoryFlag(String text, String fill, String border) {
         DataCategoryFlag flag = new DataCategoryFlag();
         flag.setText(text);

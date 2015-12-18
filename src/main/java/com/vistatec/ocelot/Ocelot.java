@@ -86,8 +86,6 @@ import com.vistatec.ocelot.lqi.gui.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.gui.LQIKeyEventManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
-import com.vistatec.ocelot.rules.QuickAddView;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
@@ -106,9 +104,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private static Logger LOG = Logger.getLogger(Ocelot.class);
 
 	private JMenuBar menuBar;
-	private JMenu menuFile, menuView, menuFilter, menuExtensions, menuHelp;
+	private JMenu menuFile, menuView, menuExtensions, menuHelp;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs, menuQuickAdd;
+	        menuSave, menuSaveAs;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JMenuItem menuColumns;
@@ -238,9 +236,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		} else if (e.getSource() == this.menuRules) {
 			showModelessDialog(ocelotScope.getInstance(FilterView.class),
 			        "Filters");
-		} else if (e.getSource() == this.menuQuickAdd) {
-			showModelessDialog(ocelotScope.getInstance(QuickAddView.class),
-			        "QuickAdd Rules");
 		} else if (e.getSource() == this.menuPlugins) {
 			showModelessDialog(
 			        ocelotScope.getInstance(PluginManagerView.class),
@@ -387,7 +382,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		if (!isMac()) {
 			menuFile.setMnemonic(KeyEvent.VK_F);
 			menuView.setMnemonic(KeyEvent.VK_V);
-			menuFilter.setMnemonic(KeyEvent.VK_T);
 			menuExtensions.setMnemonic(KeyEvent.VK_E);
 			menuHelp.setMnemonic(KeyEvent.VK_H);
 		}
@@ -453,18 +447,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuLqiGrid.addActionListener(this);
 		menuView.add(menuLqiGrid);
 
-		menuFilter = new JMenu("Filter");
-		menuBar.add(menuFilter);
-
-		menuRules = new JMenuItem("Rules");
+		menuRules = new JMenuItem("Filters");
 		menuRules.addActionListener(this);
 		menuRules.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
 		        getPlatformKeyMask()));
-		menuFilter.add(menuRules);
-
-		menuQuickAdd = new JMenuItem("QuickAdd");
-		menuQuickAdd.addActionListener(this);
-		menuFilter.add(menuQuickAdd);
+		menuView.add(menuRules);
 
 		SegmentMenu segmentMenu = new SegmentMenu(eventQueue,
 		        getPlatformKeyMask());
@@ -653,13 +640,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent ke) {
 		if (ke.getID() == KeyEvent.KEY_PRESSED) {
-			if (isPlatformKeyDown(ke)
-			        && (ke.getKeyCode() >= KeyEvent.VK_0 && ke.getKeyCode() <= KeyEvent.VK_9)) {
-				OcelotSegment seg = segmentView.getSelectedSegment();
-				int hotkey = ke.getKeyCode() - KeyEvent.VK_0;
-				ocelotApp.quickAddLQI(seg, hotkey);
-
-			} else if (isPlatformKeyDown(ke) && ke.isShiftDown()
+			if (isPlatformKeyDown(ke) && ke.isShiftDown()
 			        && ke.getKeyCode() == KeyEvent.VK_TAB) {
 				segmentAttrView.focusNextTab();
 
