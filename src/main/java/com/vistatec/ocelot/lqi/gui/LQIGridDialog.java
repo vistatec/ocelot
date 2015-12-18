@@ -182,7 +182,6 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 			@Override
 			public void componentResized(ComponentEvent e) {
-				System.out.println("Component resized");
 				setTableSize();
 			}
 		});
