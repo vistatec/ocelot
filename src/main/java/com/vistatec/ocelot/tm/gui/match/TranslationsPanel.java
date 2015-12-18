@@ -11,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -137,7 +136,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 		matchesTable.setModel(tableModel);
 		// Make the table react to the ALT+R keystroke.
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK),
+				KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK ),
 				"replaceTarget");
 		matchesTable.getActionMap().put("replaceTarget",
 				new ReplaceTargetAction());

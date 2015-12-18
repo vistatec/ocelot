@@ -196,8 +196,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		matchesTable.setModel(tableModel);
 		// Configure the action "replaceTarget" for the keystroke ALT+R
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-		        KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK
-		                + KeyEvent.SHIFT_MASK), "replaceTarget");
+		        KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK), "replaceTarget");
 		matchesTable.getActionMap().put("replaceTarget",
 		        new ReplaceTargetAction());
 		// Assign the match score renderer to the match score column, and set

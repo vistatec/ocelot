@@ -109,9 +109,8 @@ public class ShortCutConstants {
 	 */
 	public static final KeyStroke[] OCELOT_RESERVED_KEYS = {
 
+	        KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK
-	                + KeyEvent.SHIFT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_MASK),

@@ -449,7 +449,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 		menuRules = new JMenuItem("Filters");
 		menuRules.addActionListener(this);
-		menuRules.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
+		menuRules.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
 		        getPlatformKeyMask()));
 		menuView.add(menuRules);
 
