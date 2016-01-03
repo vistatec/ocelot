@@ -29,7 +29,6 @@
 package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.rules.QuickAdd;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
@@ -40,11 +39,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.JMenu;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
@@ -62,6 +61,7 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
+    
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
@@ -103,7 +103,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         segmentService.clearAllSegments();
         segmentService.setSegments(segments);
 
-        this.pluginManager.notifyOpenFile(openFile.getName());
+        this.pluginManager.notifyOpenFile(openFile.getName(), segments);
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
@@ -133,13 +133,6 @@ public class OcelotApp implements OcelotEventQueueListener {
         pluginManager.notifySaveFile(filename);
     }
 
-    public void quickAddLQI(OcelotSegment seg, int hotkey) {
-        QuickAdd qa = ruleConfig.getQuickAddLQI(hotkey);
-        if (seg != null && qa != null && seg.isEditable()) {
-            segmentService.addLQI(new LQIAdditionEvent(qa.createLQI(), seg));
-        }
-    }
-
     public String getFileSourceLang() {
         return xliffService.getSourceLang();
     }
@@ -159,6 +152,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     }
 
     public class ErrorAlertException extends Exception {
+        private static final long serialVersionUID = 1L;
         public final String title, body;
 
         public ErrorAlertException(String title, String body) {
@@ -166,4 +160,9 @@ public class OcelotApp implements OcelotEventQueueListener {
             this.body = body;
         }
     }
+
+    public List<JMenu> getPluginMenuList() {
+        return pluginManager.getPluginMenuList();
+    }
+
 }

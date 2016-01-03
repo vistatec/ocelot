@@ -98,12 +98,20 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void setSegment(SegmentSelectionEvent e) {
+    	try{
         selectedSegment = e.getSegment();
         removeProvenanceDetailView();
         removeLQIDetailView();
         addSegmentDetailView();
         segDetailView.setSegment(selectedSegment);
         revalidate();
+    	}catch (Exception ex){
+    		System.out.println("EXCEPTION");
+    		System.out.println(ex.getClass().getName());
+    		System.out.println(ex.getMessage());
+    		ex.printStackTrace();
+    	}
+    	
     }
 
     public void addProvenanceDetailView() {

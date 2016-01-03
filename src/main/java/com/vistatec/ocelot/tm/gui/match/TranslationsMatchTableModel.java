@@ -74,7 +74,7 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 	 */
 	@Override
 	public boolean isCellEditable(int row, int column) {
-		return false;
+		return column == TARGET_COL;
 	}
 
 	/*
@@ -163,4 +163,6 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 	public int getSegmentNumColumnIdx() {
 		return SEG_NUM_COL;
 	}
+	
+
 }

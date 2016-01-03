@@ -36,6 +36,7 @@ import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.editdistance.EditDistance;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
 
 /**
  * Provides generic functionality for manipulating Ocelot segments that is
@@ -50,6 +51,7 @@ public abstract class BaseSegment implements OcelotSegment {
 
     protected boolean dirtyEditDistance = true;
     protected int editDistance;
+    protected Notes notes;
 
     protected boolean dirtyTargetDiff = true;
     protected List<String> targetDiff = new ArrayList<>();
@@ -64,7 +66,7 @@ public abstract class BaseSegment implements OcelotSegment {
         this.segmentNumber = segmentNumber;
         this.source = source;
         this.target = target;
-
+        this.notes = new Notes();
         if (originalTarget != null) {
             setOriginalTarget(originalTarget);
 
@@ -104,6 +106,14 @@ public abstract class BaseSegment implements OcelotSegment {
     @Override
     public boolean hasOriginalTarget() {
         return this.setOriginalTarget;
+    }
+    
+    public void setNotes(Notes notes){
+    	this.notes = notes;
+    }
+    
+    public Notes getNotes(){
+    	return notes;
     }
 
     /**

@@ -46,6 +46,7 @@ import java.util.List;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
+import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.services.SegmentService;
@@ -143,6 +144,11 @@ public class TestSegmentTableModel {
 
         @Override
         public void resetSegmentTarget(SegmentTargetResetEvent e) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void updateSegmentNote(SegmentNoteUpdatedEvent e) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

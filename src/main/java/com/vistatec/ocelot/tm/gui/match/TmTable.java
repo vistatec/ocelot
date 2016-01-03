@@ -46,7 +46,8 @@ public class TmTable extends JTable {
 				ListSelectionModel.SINGLE_SELECTION);
 		setDefaultRenderer(SegmentVariant.class,
 				new SegmentVariantCellRenderer());
-		setDefaultRenderer(Object.class, new AlternateRowsColorRenderer());
+		setDefaultRenderer(String.class, new AlternateRowsColorRenderer());
+		setDefaultRenderer(Integer.class, new AlternateRowsColorRenderer());
 		setTableHeader(null);
 
 		getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(

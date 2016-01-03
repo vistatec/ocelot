@@ -63,18 +63,6 @@ public abstract class TmMatchTableModel extends DefaultTableModel {
 	}
 
 	/**
-	 * The table model is not editable. It always returns <code>false</code>
-	 * regardless of parameter values.
-	 * 
-	 * @return <code>false</code>.
-	 * @see javax.swing.table.DefaultTableModel#isCellEditable(int, int)
-	 */
-	@Override
-	public boolean isCellEditable(int row, int column) {
-		return false;
-	}
-
-	/**
 	 * Sets the TM list.
 	 * 
 	 * @param model
@@ -130,4 +118,8 @@ public abstract class TmMatchTableModel extends DefaultTableModel {
 	 */
 	public abstract int getTmColumnIdx();
 
+	@Override
+	public void setValueAt(Object aValue, int row, int column) {
+	    //does nothing
+	}
 }

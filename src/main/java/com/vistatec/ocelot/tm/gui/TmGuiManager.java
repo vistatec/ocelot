@@ -111,6 +111,10 @@ public class TmGuiManager implements OcelotEventQueueListener {
 	 */
 	@Subscribe
 	public void handleSegmentSelected(SegmentSelectionEvent e) {
+		try{
 		matchController.setSelectedSegment(e.getSegment());
+		}catch (Exception ex){
+			ex.printStackTrace();
+		}
 	}
 }

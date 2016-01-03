@@ -46,6 +46,8 @@ import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -92,6 +94,17 @@ public class SegmentServiceImpl implements SegmentService {
         if (updatedSeg) {
             eventQueue.post(new SegmentEditEvent(seg));
         }
+    }
+    
+    @Subscribe
+    @Override
+    public void updateSegmentNote(SegmentNoteUpdatedEvent e){
+    	
+    	OcelotSegment seg = e.getSegment();
+    	String noteContent = e.getNoteContent();
+    	if(seg.getNotes().editNote(noteContent, String.valueOf(seg.getSegmentNumber()))){
+    		eventQueue.post(new SegmentNoteEditEvent(seg) );
+    	}
     }
 
     @Subscribe

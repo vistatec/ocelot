@@ -1,5 +1,6 @@
 package com.vistatec.ocelot.tm.gui.match;
 
+import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.JTable;
@@ -27,14 +28,17 @@ public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
         SegmentTextCell renderTextPane = new SegmentTextCell();
         SegmentVariant segVariant = (SegmentVariant)o;
         if(o != null){
-            renderTextPane.setVariant(segVariant, false);
-            renderTextPane.setBackground(comp.getBackground());
+        	renderTextPane.setVariant(segVariant, false);
+        	renderTextPane.setBackground(comp.getBackground());
             if (isSelected) {
                 renderTextPane.setForeground(comp.getForeground());
             }
             else {
                 renderTextPane.setForeground(jtable.getForeground());
             }
+        	renderTextPane.setSelectionColor(Color.blue);
+        	renderTextPane.setSelectedTextColor(Color.white);
+        	renderTextPane.setEditable(false);
         }
 
         renderTextPane.setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : jtable.getBorder());

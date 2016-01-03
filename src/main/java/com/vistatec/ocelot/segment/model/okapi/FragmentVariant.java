@@ -56,6 +56,7 @@ public class FragmentVariant extends BaseSegmentVariant {
     private List<SegmentAtom> segmentAtoms;
     private boolean isTarget;
     private int protectedContentId = 0;
+    
 
     public FragmentVariant(Segment okapiSegment, boolean isTarget) {
         this.isTarget = isTarget;
@@ -66,6 +67,12 @@ public class FragmentVariant extends BaseSegmentVariant {
     public FragmentVariant(List<SegmentAtom> atoms, boolean isTarget) {
         this.segmentAtoms = atoms;
         this.isTarget = isTarget;
+    }
+    
+    public FragmentVariant(Fragment frag, boolean isTarget){
+    	
+    	this.isTarget = isTarget;
+    	this.segmentAtoms = parseSegmentAtoms(frag);
     }
 
     private List<SegmentAtom> parseSegmentAtoms(Fragment frag) {
@@ -201,7 +208,8 @@ public class FragmentVariant extends BaseSegmentVariant {
 
     @Override
     public FragmentVariant createCopy() {
-        return new FragmentVariant(copyAtoms(), isTarget);
+    	FragmentVariant copyFragment = new FragmentVariant(copyAtoms(), isTarget);
+        return copyFragment;
     }
 
     @Override
@@ -209,4 +217,5 @@ public class FragmentVariant extends BaseSegmentVariant {
         FragmentVariant copy = (FragmentVariant) variant;
         this.segmentAtoms = copy.copyAtoms();
     }
+    
 }

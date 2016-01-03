@@ -19,11 +19,11 @@ public class RulesParser {
     private Pattern ruleFormat = Pattern.compile("([^.]+)\\.(\\w+)\\s*=(.*)");
     // ruleLabel.flag.flagType = display
     private Pattern flagFormat = Pattern.compile("([^.]+)\\.flag\\.(\\w+)\\s*=(.*)");
-    // ruleLabel.quickAdd.LQIType = value
-    private Pattern quickAddFormat = Pattern.compile("([^.]+)\\.quickAdd\\.(\\w+)\\s*=(.*)");
-    private Pattern quickAddHotkeyFormat = Pattern.compile("[0-9]");
     // [id-match|exact-match|fuzzy-match|mt-suggestion] = hex
     private Pattern stateQualifierFormat = Pattern.compile("(id-match|exact-match|fuzzy-match|mt-suggestion)\\s*=\\s*(.*)");
+    // NO LONGER SUPPORTED:
+    // ruleLabel.quickAdd.LQIType = value
+    private Pattern quickAddFormat = Pattern.compile("([^.]+)\\.quickAdd\\.(\\w+)\\s*=(.*)");
 
     public RuleConfiguration loadConfig(Reader reader) {
         try {
@@ -47,10 +47,11 @@ public class RulesParser {
     public RuleConfiguration parse(BufferedReader configFile) throws IOException, InstantiationException, IllegalAccessException {
         RuleConfiguration config = new RuleConfiguration();
         String line;
+        boolean hasDeprecatedQuickAddPatterns = false;
         while ((line = configFile.readLine()) != null) {
             Matcher rulePattern = ruleFormat.matcher(line);
             Matcher flagPattern = flagFormat.matcher(line);
-            Matcher quickAddPattern = quickAddFormat.matcher(line);
+            Matcher deprecatedQuickAddPattern = quickAddFormat.matcher(line);
             Matcher stateQualifierPattern = stateQualifierFormat.matcher(line);
             Matcher whitespace = Pattern.compile("\\s*").matcher(line);
             if (stateQualifierPattern.matches()) {
@@ -71,7 +72,7 @@ public class RulesParser {
                 DataCategoryField dataCategoryField =
                         DataCategoryField.byName(dataCategory);
                 if (dataCategoryField == null) {
-                    LOG.error("Unrecognized datacategory: "+dataCategory
+                    LOG.error("Unrecognized data category: "+dataCategory
                             +", line: "+line);
                 } else {
                     DataCategoryField.Matcher dcfMatcher = 
@@ -96,31 +97,8 @@ public class RulesParser {
                 } else {
                     LOG.error("Unrecognized flag: "+line);
                 }
-            } else if (quickAddPattern.matches()) {
-                String ruleLabel = quickAddPattern.group(1);
-                String LQIType = quickAddPattern.group(2);
-                String value = quickAddPattern.group(3).trim();
-
-                QuickAdd quickAdd = config.getQuickAddByLabel(ruleLabel);
-
-                if (LQIType.equals(DataCategoryField.LQI_TYPE.getName())) {
-                    quickAdd.getLQIData().setType(value);
-
-                } else if (LQIType.equals(DataCategoryField.LQI_SEVERITY.getName())) {
-                    quickAdd.getLQIData().setSeverity(Double.parseDouble(value));
-
-                } else if (LQIType.equals(DataCategoryField.LQI_COMMENT.getName())) {
-                    quickAdd.getLQIData().setComment(value);
-
-                } else if (LQIType.equals("hotkey")) {
-                    if (quickAddHotkeyFormat.matcher(value).matches()) {
-                        config.setQuickAddHotkey(Integer.parseInt(value), quickAdd);
-                    } else {
-                        LOG.error("Illegal quickAdd hotkey: "+value);
-                    }
-                } else {
-                    LOG.error("Illegal quickAdd type: "+LQIType);
-                }
+            } else if (deprecatedQuickAddPattern.matches()) {
+                hasDeprecatedQuickAddPatterns = true;
             } else if (!whitespace.matches()) {
                 LOG.error("Unrecognized rule: "+line);
             }
@@ -133,12 +111,8 @@ public class RulesParser {
                 config.removeRule(r);
             }
         }
-        // Validate quick add rules
-        for (QuickAdd qa : new ArrayList<QuickAdd>(config.getQuickAdds())) {
-            if (!qa.isValid()) {
-                LOG.warn("Ignoring invalid quickAdd rule '" + qa.getName());
-                config.removeQuickAdd(qa);
-            }
+        if (hasDeprecatedQuickAddPatterns) {
+            LOG.warn("Skipping deprecated quickadd rules.");
         }
         return config;
     }

@@ -1,10 +1,12 @@
 package com.vistatec.ocelot.tm.okapi;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import net.sf.okapi.common.resource.TextFragment;
+import net.sf.okapi.tm.pensieve.common.TmHit;
 
 import com.google.inject.Inject;
 import com.vistatec.ocelot.config.ConfigService;
@@ -13,9 +15,6 @@ import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmService;
-
-import net.sf.okapi.common.resource.TextFragment;
-import net.sf.okapi.tm.pensieve.common.TmHit;
 
 /**
  * Use Okapi Pensieve to search the Lucene index.
@@ -47,6 +46,7 @@ public class OkapiTmService implements TmService {
 
                 matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
             }
+            tmPair.getSeeker().close();
         }
         return penalizer.applyPenalties(matches);
     }
@@ -66,6 +66,7 @@ public class OkapiTmService implements TmService {
 
                 matches.addAll(convertOkapiTmHit(tmPair.getTmOrigin(), results));
             }
+            tmPair.getSeeker().close();
         }
         return penalizer.applyPenalties(matches);
     }

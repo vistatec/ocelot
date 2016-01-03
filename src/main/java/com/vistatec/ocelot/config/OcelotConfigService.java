@@ -1,15 +1,26 @@
 package com.vistatec.ocelot.config;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.xml.LQIGridConfig;
+import com.vistatec.ocelot.config.xml.LQIGridConfig.LQICategory;
+import com.vistatec.ocelot.config.xml.LQIGridConfig.Shortcut;
 import com.vistatec.ocelot.config.xml.PluginConfig;
-
 import com.vistatec.ocelot.config.xml.ProvenanceConfig;
+import com.vistatec.ocelot.config.xml.RootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.xml.TmManagement.TmConfig.TmxFiles;
+import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
+import com.vistatec.ocelot.lqi.model.LQIErrorCategory.LQIShortCut;
+import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.plugins.Plugin;
 
 /**
@@ -151,4 +162,136 @@ public class OcelotConfigService implements ConfigService {
         cfgXservice.save(config);
         return newTmConfig;
     }
+    
+    public TmConfig createNewTmConfig(String tmName, boolean enabled, String tmDataDir,
+	        List<String> tmxFiles) throws TransferException {
+		TmManagement.TmConfig newTmConfig = new TmManagement.TmConfig();
+		newTmConfig.setTmName(tmName);
+		newTmConfig.setEnabled(enabled);
+		newTmConfig.setTmDataDir(tmDataDir);
+		if (tmxFiles != null) {
+			TmxFiles tmxFilesConf = new TmxFiles();
+			tmxFilesConf.setTmxFile(tmxFiles);
+			newTmConfig.setTmxFiles(tmxFilesConf);
+		}
+		config.getTmManagement().getTms().add(newTmConfig);
+		cfgXservice.save(config);
+		return newTmConfig;
+	}
+    
+
+	@Override
+	public TmConfig createNewTmConfig(String tmName, boolean enabled,
+	        List<String> tmxFiles) throws TransferException {
+		TmManagement.TmConfig newTmConfig = new TmManagement.TmConfig();
+		newTmConfig.setTmName(tmName);
+		newTmConfig.setEnabled(enabled);
+		if (tmxFiles != null) {
+			TmxFiles tmxFilesConf = new TmxFiles();
+			tmxFilesConf.setTmxFile(tmxFiles);
+			newTmConfig.setTmxFiles(tmxFilesConf);
+		}
+		config.getTmManagement().getTms().add(newTmConfig);
+		cfgXservice.save(config);
+		return newTmConfig;
+	}
+
+	@Override
+    public void saveLQIConfig(LQIGrid lqiGrid) throws TransferException {
+	    
+		config.getLQIGrid().clear();
+		if(lqiGrid != null){
+			config.getLQIGrid().setMinor(lqiGrid.getMinorScore());
+			config.getLQIGrid().setSeroius(lqiGrid.getSeriousScore());
+			config.getLQIGrid().setCritical(lqiGrid.getCriticalScore());
+			if(lqiGrid.getErrorCategories() != null && !lqiGrid.getErrorCategories().isEmpty()){
+				List<LQIGridConfig.LQICategory> lqiCategories = new ArrayList<LQIGridConfig.LQICategory>();
+				LQIGridConfig.LQICategory configCategory = null; 
+				LQIErrorCategory errorCat = null;
+				for(int i = 0; i<lqiGrid.getErrorCategories().size(); i++){
+					errorCat = lqiGrid.getErrorCategories().get(i);
+					configCategory = new LQIGridConfig.LQICategory();
+					configCategory.setName(errorCat.getName());
+					configCategory.setWeight(errorCat.getWeight());
+					configCategory.setPosition(i);
+					if (errorCat.getMinorShortcut() != null) {
+						Shortcut minor = new Shortcut();
+						minor.setKeyCode(errorCat.getMinorShortcut()
+						        .getKeyCode());
+						minor.setModifiers(errorCat.getMinorShortcut()
+						        .getModifiersString());
+						configCategory.setMinor(minor);
+					}
+					if (errorCat.getSeriousShortcut() != null) {
+						Shortcut serious = new Shortcut();
+						serious.setKeyCode(errorCat.getSeriousShortcut()
+						        .getKeyCode());
+						serious.setModifiers(errorCat.getSeriousShortcut()
+						        .getModifiersString());
+						configCategory.setSerious(serious);
+					}
+					if (errorCat.getCriticalShortcut() != null) {
+						Shortcut critical = new Shortcut();
+						critical.setKeyCode(errorCat.getCriticalShortcut()
+						        .getKeyCode());
+						critical.setModifiers(errorCat.getCriticalShortcut()
+						        .getModifiersString());
+						configCategory.setCritical(critical);
+					}
+					lqiCategories.add(configCategory);
+				}
+				config.getLQIGrid().setLqiCategories(lqiCategories);
+			}
+		} 
+		cfgXservice.save(config);
+    }
+
+	@Override
+    public LQIGrid readLQIConfig() throws TransferException {
+		LQIGridConfig confLqiGrid = config.getLQIGrid();
+		LQIGrid grid = null;
+		if(confLqiGrid != null){
+			grid = new LQIGrid();
+			grid.setCriticalScore(confLqiGrid.getCritical());
+			grid.setMinorScore(confLqiGrid.getMinor());
+			grid.setSeriousScore(confLqiGrid.getSeroius());
+			if(confLqiGrid.getLqiCategories() != null){
+				Collections.sort(confLqiGrid.getLqiCategories(), new LQICategoriesComparator());
+				List<LQIErrorCategory> errCategories = new ArrayList<LQIErrorCategory>();
+				LQIErrorCategory errCat = null;
+				for (LQICategory cat : confLqiGrid.getLqiCategories()) {
+					errCat = new LQIErrorCategory(cat.getName());
+					errCat.setWeight(cat.getWeight());
+					if (cat.getMinor() != null) {
+						errCat.setMinorShortcut(new LQIShortCut(cat.getMinor()
+						        .getKeyCode(), cat.getMinor().getModifiers()));
+					}
+					if (cat.getSerious() != null) {
+						errCat.setSeriousShortcut(new LQIShortCut(cat
+						        .getSerious().getKeyCode(), cat.getSerious()
+						        .getModifiers()));
+					}
+					if (cat.getCritical() != null) {
+						errCat.setCriticalShortcut(new LQIShortCut(cat
+						        .getCritical().getKeyCode(), cat.getCritical()
+						        .getModifiers()));
+					}
+					errCategories.add(errCat);
+				}
+				grid.setErrorCategories(errCategories);
+			}
+		}
+	    return grid;
+    }
+	
+}
+
+class LQICategoriesComparator implements Comparator<LQICategory> {
+
+	@Override
+	public int compare(LQICategory o1, LQICategory o2) {
+		return Integer.valueOf(o1.getPosition()).compareTo(
+		        Integer.valueOf(o2.getPosition()));
+	}
+	
 }

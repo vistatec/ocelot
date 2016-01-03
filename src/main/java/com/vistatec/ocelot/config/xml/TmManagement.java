@@ -48,6 +48,7 @@ public class TmManagement {
         private String tmName;
         private boolean enabled;
         private String tmDataDir;
+        private TmxFiles tmxFiles; 
         private float penalty;
 
         @XmlElement
@@ -85,6 +86,54 @@ public class TmManagement {
         public void setPenalty(float penalty) {
             this.penalty = penalty;
         }
+        
+        @XmlElement
+        public TmxFiles getTmxFiles(){
+        	return tmxFiles;
+        }
+        
+        
+        public void setTmxFiles(TmxFiles tmxFiles){
+        	this.tmxFiles = tmxFiles;
+        }
+        
+        public static class TmxFiles{
+        	
+        	private List<String> files;
+        	
+        	public List<String> getTmxFile(){
+        		return files;
+        	}
+        	@XmlElement
+        	public void setTmxFile(List<String> files){
+        		this.files = files;
+        	}
+        }
+        
+        
+//        public static class TmxFile {
+//        	
+//        	private String fileName;
+//        	
+////        	public TmxFile() {
+////            }
+////        	
+////        	public TmxFile(String tmxFile) {
+////        		this.tmxFile = tmxFile;
+////            }
+//
+//    		public String getFileName() {
+//    			return fileName;
+//    		}
+//
+//        	@XmlElement
+//    		public void setFileName(String fileName) {
+//    			this.fileName = fileName;
+//    		}
+//        	
+//        }
 
     }
+    
+   
 }
