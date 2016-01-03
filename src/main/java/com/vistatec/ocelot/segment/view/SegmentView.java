@@ -267,6 +267,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		    final TableColumn targetOriginalCol = tableColumnModel.getColumn(index);
 		    targetOriginalCol.setCellRenderer(new SegmentTextFontRenderer(
 		            sourceTargetTable.getFont()));
+		    break;
 		case EditDistance:
 			tableColumnModel.getColumn(index).setMinWidth(25);
 			tableColumnModel.getColumn(index).setPreferredWidth(25);
