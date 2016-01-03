@@ -407,7 +407,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		List<Provenance> ocelotProvList = new ArrayList<Provenance>();
 
 		List<Tag> sourceTags = unitPart.getSource().getOwnTags();
-		List<Tag> targetTags = unitPart.getTarget().getOwnTags();
+		Fragment target = unitPart.getTarget();
+		List<Tag> targetTags = target != null ? target.getOwnTags() : new ArrayList<Tag>();
 		ocelotProvList.addAll(convertOkapiToOcelotProvData(sourceTags));
 		ocelotProvList.addAll(convertOkapiToOcelotProvData(targetTags));
 

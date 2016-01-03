@@ -90,6 +90,15 @@ public class TestFragmentVariant {
     }
 
     @Test
+    public void testNullXLIFFTarget() {
+        Store store = new Store(new DummyWithStore());
+        Segment segment = new Segment(store);
+        segment.setSource(new Fragment(store, false).append("Hello world"));
+        FragmentVariant v = new FragmentVariant(segment, true);
+        assertEquals("", v.getDisplayText());
+    }
+
+    @Test
     public void testCreateCopy() {
         FragmentVariant copy = sampleFV.createCopy();
         assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),

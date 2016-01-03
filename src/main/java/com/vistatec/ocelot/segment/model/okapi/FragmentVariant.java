@@ -60,8 +60,17 @@ public class FragmentVariant extends BaseSegmentVariant {
 
     public FragmentVariant(Segment okapiSegment, boolean isTarget) {
         this.isTarget = isTarget;
-        segmentAtoms = parseSegmentAtoms(isTarget ? okapiSegment.getTarget() :
-                okapiSegment.getSource());
+        if (isTarget) {
+            Fragment frag = okapiSegment.getTarget();
+            if (frag == null) {
+                // target elements are optional; make a dummy one if none exists
+                frag = new Fragment(okapiSegment.getStore(), true);
+            }
+            segmentAtoms = parseSegmentAtoms(frag);
+        }
+        else {
+            segmentAtoms = parseSegmentAtoms(okapiSegment.getSource());
+        }
     }
 
     public FragmentVariant(List<SegmentAtom> atoms, boolean isTarget) {
