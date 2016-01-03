@@ -202,7 +202,7 @@ public class OcelotConfigService implements ConfigService {
 		config.getLQIGrid().clear();
 		if(lqiGrid != null){
 			config.getLQIGrid().setMinor(lqiGrid.getMinorScore());
-			config.getLQIGrid().setSeroius(lqiGrid.getSeriousScore());
+			config.getLQIGrid().setSerious(lqiGrid.getSeriousScore());
 			config.getLQIGrid().setCritical(lqiGrid.getCriticalScore());
 			if(lqiGrid.getErrorCategories() != null && !lqiGrid.getErrorCategories().isEmpty()){
 				List<LQIGridConfig.LQICategory> lqiCategories = new ArrayList<LQIGridConfig.LQICategory>();
@@ -254,7 +254,7 @@ public class OcelotConfigService implements ConfigService {
 			grid = new LQIGrid();
 			grid.setCriticalScore(confLqiGrid.getCritical());
 			grid.setMinorScore(confLqiGrid.getMinor());
-			grid.setSeriousScore(confLqiGrid.getSeroius());
+			grid.setSeriousScore(confLqiGrid.getSerious());
 			if(confLqiGrid.getLqiCategories() != null){
 				Collections.sort(confLqiGrid.getLqiCategories(), new LQICategoriesComparator());
 				List<LQIErrorCategory> errCategories = new ArrayList<LQIErrorCategory>();

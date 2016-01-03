@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 public class LQIGridConfig {
 
 	private int minor;
-	private int seroius;
+	private int serious;
 	private int critical;
 	private List<LQICategory> lqiCategories;
 	
@@ -22,12 +22,12 @@ public class LQIGridConfig {
 	}
 
 	@XmlAttribute
-	public int getSeroius() {
-		return seroius;
+	public int getSerious() {
+		return serious;
 	}
 
-	public void setSeroius(int seroius) {
-		this.seroius = seroius;
+	public void setSerious(int serious) {
+		this.serious = serious;
 	}
 
 	@XmlAttribute
@@ -51,7 +51,7 @@ public class LQIGridConfig {
 	public void clear(){
 		lqiCategories = null;
 		minor = 0;
-		seroius = 0;
+		serious = 0;
 		critical = 0;
 	}
 	
