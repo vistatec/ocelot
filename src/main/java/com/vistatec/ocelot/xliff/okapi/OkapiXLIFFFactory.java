@@ -74,6 +74,7 @@ public class OkapiXLIFFFactory implements XLIFFFactory {
                     StartElement startElement = (StartElement) event;
                     String localPart = startElement.getName().getLocalPart();
                     if (localPart.equals("xliff")) {
+                        @SuppressWarnings("unchecked")
                         Iterator<Attribute> attrs = startElement.getAttributes();
                         while (attrs.hasNext()) {
                             Attribute attr = attrs.next();

@@ -14,7 +14,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.log4j.Logger;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.RtMethodGenerator;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.xml.TmManagement;

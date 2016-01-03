@@ -29,7 +29,6 @@
 package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
@@ -57,7 +56,6 @@ public class OcelotApp implements OcelotEventQueueListener {
     private final OcelotEventQueue eventQueue;
 
     private final PluginManager pluginManager;
-    private final RuleConfiguration ruleConfig;
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
@@ -68,11 +66,9 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     @Inject
     public OcelotApp(OcelotEventQueue eventQueue, PluginManager pluginManager,
-            RuleConfiguration ruleConfig, SegmentService segmentService,
-            XliffService xliffService) {
+            SegmentService segmentService, XliffService xliffService) {
         this.eventQueue = eventQueue;
         this.pluginManager = pluginManager;
-        this.ruleConfig = ruleConfig;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
     }

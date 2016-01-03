@@ -954,7 +954,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	public class NotesCellEditor extends AbstractCellEditor implements
 	        TableCellEditor {
 		
-		private JTextArea txtArea;
+        private static final long serialVersionUID = 1L;
+
+        private JTextArea txtArea;
 		
 		private NotesCellEditorListener listener;
 
