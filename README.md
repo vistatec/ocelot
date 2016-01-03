@@ -74,36 +74,6 @@ Filter display rules control how to display segments that match a particular fil
     <type> = text
     <value> = String - basically anything, though a single character is recommended.
     
-## Quick Add Rules ##
-
-Quick add rules allow you to map the keys CTRL-0 to CTRL-9 (on the Mac, ⌘-0 to
-⌘-9) to LQI metadata, allowing you to easily flag common segment issues.  They
-are specified in the same file as the filter rules (the rules.properties file).
-
-    Quick add rules are in the format:
-      <label>.quickAdd.<type> = <value>
-    
-    <label> refers to the filter rule the quick add rules are associated with.
-    Valid <type> and <value> values are essentially the same as the LQI filter rules, plus the addition of the "hotkey" type:
-    
-    <type> = locQualityIssueType
-    <value> = terminology |  mistranslation |  omission |
-              untranslated |  addition |  duplication |  inconsistency |
-              grammar |  legal |  register |  locale-specific-content |
-              locale-violation |  style |  characters |  misspelling |
-              typographical |  formatting |  inconsistent-entities |  numbers |
-              markup |  pattern-problem |  whitespace |  internationalization |
-              length |  uncategorized |  other
-    
-    <type> = locQualityIssueSeverity
-    <value> = 0.0-100.0
-    
-    <type> = locQualityIssueComment
-    <value> = String
-    
-    <type> = hotkey
-    <value> = 0-9
-
 ## XLIFF State Qualifier Display Rules ##
 These rules control how the state qualifier attribute of a target in XLIFF will be indicated in the segment view. Each rule controls the background color of the segment number of a segment that has the specified state-qualifier attribute. They are specified in the same file as the filter rules (the rules.properties file).
 
