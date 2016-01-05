@@ -65,6 +65,7 @@ public class FragmentVariant extends BaseSegmentVariant {
             if (frag == null) {
                 // target elements are optional; make a dummy one if none exists
                 frag = new Fragment(okapiSegment.getStore(), true);
+                okapiSegment.setTarget(frag);
             }
             segmentAtoms = parseSegmentAtoms(frag);
         }
