@@ -56,7 +56,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	private static final String TITLE_CONF_SUFFIX = " - Configuration";
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(LQIGridDialog.class);
+	private static final Logger logger = Logger.getLogger(LQIGridDialog.class);
 
 	/**
 	 * Dialog mode. It can be set to either <code>ISSUES_ANNOTS_MODE</code> or

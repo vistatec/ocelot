@@ -80,7 +80,7 @@ import com.vistatec.ocelot.xliff.XLIFFWriter;
  */
 public class OkapiXLIFF20Writer implements XLIFFWriter {
 	
-    private final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
     private final OkapiXLIFF20Parser parser;
     private final UserProvenance userProvenance;
     private final OcelotEventQueue eventQueue;

@@ -30,7 +30,7 @@ import com.vistatec.ocelot.tm.TmManager;
 public class TmGuiConfigController {
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(TmGuiConfigController.class);
+	private static final Logger logger = Logger.getLogger(TmGuiConfigController.class);
 
 	/** Default fuzzy threshold value. */
 	private static final float DEF_FUZZY_THRESHOLD = 0.75f;

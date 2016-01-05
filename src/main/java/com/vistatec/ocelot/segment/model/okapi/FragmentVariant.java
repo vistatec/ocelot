@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * XLIFF 2.0 segment variant, implemented using the Okapi XLIFF 2.0 library Fragment.
  */
 public class FragmentVariant extends BaseSegmentVariant {
-    private final Logger LOG = LoggerFactory.getLogger(FragmentVariant.class);
+    private final static Logger LOG = LoggerFactory.getLogger(FragmentVariant.class);
     private List<SegmentAtom> segmentAtoms;
     private boolean isTarget;
     private int protectedContentId = 0;
