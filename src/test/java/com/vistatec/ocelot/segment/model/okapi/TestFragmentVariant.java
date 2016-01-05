@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.segment.model.okapi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collections;
 
@@ -96,6 +97,7 @@ public class TestFragmentVariant {
         segment.setSource(new Fragment(store, false).append("Hello world"));
         FragmentVariant v = new FragmentVariant(segment, true);
         assertEquals("", v.getDisplayText());
+        assertNotNull(segment.getTarget());
     }
 
     @Test
