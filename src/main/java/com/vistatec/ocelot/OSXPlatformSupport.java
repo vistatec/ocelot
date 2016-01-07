@@ -1,9 +1,14 @@
 package com.vistatec.ocelot;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+
+import javax.swing.JMenu;
+import javax.swing.KeyStroke;
 
 import org.apache.log4j.Logger;
 
@@ -12,20 +17,91 @@ import org.apache.log4j.Logger;
  * via reflection to avoid explicit dependencies on the Mac-specific version
  * of the JDK.
  */
-public class OSXPlatformSupport {
+public class OSXPlatformSupport implements PlatformSupport {
     private static Logger LOG = Logger.getLogger(OSXPlatformSupport.class);
     private static Application app;
 
-    public static void init() {
+    public synchronized void init(final Ocelot ocelot) {
         try {
-            app = new Application();
-            // Prevent sudden termination:
-            Method disableTerm = app.getAppClass().getDeclaredMethod("disableSuddenTermination");
-            disableTerm.invoke(app.getAppInstance());
+            if (app == null) {
+                app = new Application();
+                // Prevent sudden termination:
+                Method disableTerm = app.getAppClass().getDeclaredMethod("disableSuddenTermination");
+                disableTerm.invoke(app.getAppInstance());
+            }
+            setQuitHandler(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ocelot.handleApplicationExit();
+                }
+            });
+            setAboutHandler(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ocelot.showAbout();
+                }
+            });
         } catch (Exception e) {
             LOG.warn(e);
         }
     }
+
+    @Override
+    public int getPlatformKeyMask() {
+        return KeyEvent.META_MASK;
+    }
+
+    @Override
+    public boolean isPlatformKeyDown(KeyEvent ke) {
+        return ke.isMetaDown();
+    }
+
+    @Override
+    public void setMenuMnemonics(JMenu file, JMenu view, JMenu extensions, JMenu help) {
+        // Mac doesn't use these
+    }
+
+    @Override
+    public KeyStroke[] getReservedKeys() {
+        return MACOSX_RESERVED_KEYS;
+    }
+
+    /**
+     * <ul>
+     * <li>Command + Tab - Switch between open applications</li>
+     * <li>Command + Shift + Tab - Switch between open applications in the reverse
+     * direction</li>
+     * <li>Ctrl + Tab - Switches between program groups, tabs, or document
+     * windows</li>
+     * <li>Ctrl + Shift + Tab - Switches between program groups, tabs, or
+     * document windows in the reverse direction</li>
+     * <li>Command + Option + Esc - Open Force Quit window</li>
+     * <li>Command + Space bar - Open Spotlight Search</li>
+     * <li>Command + Q - Quit application</li>
+     * <li>Command + W - Close current application window</li>
+     * <li>Command+C - Copy the selected item</li>
+     * <li>Command+X - Cut the selected item</li>
+     * <li>Command+V - Paste the selected item</li>
+     * <li>Command+A - Select all items in a document or window</li>
+     * </ul>
+     */
+    private static final KeyStroke[] MACOSX_RESERVED_KEYS = {
+        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.META_MASK
+                + KeyEvent.SHIFT_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.CTRL_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.CTRL_MASK
+                + KeyEvent.SHIFT_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.META_MASK
+                + KeyEvent.ALT_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_MASK)
+    };
 
     /**
      * Attach a handler to be called from the Mac OSX native 
@@ -114,4 +190,5 @@ public class OSXPlatformSupport {
             m.invoke(appInstance, wrapper);
         }
     }
+
 }

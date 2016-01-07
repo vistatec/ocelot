@@ -130,7 +130,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
 
-	private final String platformOS;
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
 
@@ -138,6 +137,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private final OcelotEventQueue eventQueue;
 	private final OcelotApp ocelotApp;
 	private final LQIGridController lqiGridController;
+
+	private PlatformSupport platformSupport;
 
 	public Ocelot(Injector ocelotScope) throws IOException,
 	        InstantiationException, IllegalAccessException {
@@ -151,7 +152,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        .getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
 
-		platformOS = System.getProperty("os.name");
+		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
+		platformSupport.init(this);
+
 		useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI",
 		        "false"));
 		optionPaneBackgroundColor = (Color) UIManager
@@ -351,14 +354,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        JOptionPane.ERROR_MESSAGE);
 	}
 
-	private void showAbout() {
+	/**
+	 * Show the about dialog.
+	 */
+	public void showAbout() {
 		showModelessDialog(new AboutDialog(icon), "About Ocelot");
 	}
 
 	/**
 	 * Exit handler. This should prompt to save unsaved data.
 	 */
-	private void handleApplicationExit() {
+	public void handleApplicationExit() {
 		boolean canQuit = true;
 		if (ocelotApp.isFileDirty()) {
 			int rv = JOptionPane
@@ -376,19 +382,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		}
 		if (canQuit) {
 			quitOcelot();
-		}
-	}
-
-	/**
-	 * Set menu mnemonics for non-Mac platforms. (Mnemonics violate the Mac
-	 * interface guidelines.)
-	 */
-	private void setMenuMnemonics() {
-		if (!isMac()) {
-			menuFile.setMnemonic(KeyEvent.VK_F);
-			menuView.setMnemonic(KeyEvent.VK_V);
-			menuExtensions.setMnemonic(KeyEvent.VK_E);
-			menuHelp.setMnemonic(KeyEvent.VK_H);
 		}
 	}
 
@@ -482,9 +475,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuAbout.addActionListener(this);
 		menuHelp.add(menuAbout);
 
-		setMenuMnemonics();
-		setMacSpecific();
-
+		platformSupport.setMenuMnemonics(menuFile, menuView, menuExtensions, menuHelp);
 		mainframe.setJMenuBar(menuBar);
 	}
 
@@ -495,11 +486,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private boolean isPlatformKeyDown(KeyEvent ke) {
 		// For reasons that are mysterious to me, the value of
 		// platformKeyMask isn't the same as the modifiers to a KeyEvent.
-		return isMac() ? ke.isMetaDown() : ke.isControlDown();
-	}
-
-	boolean isMac() {
-		return (platformOS.startsWith("Mac"));
+		return platformSupport.isPlatformKeyDown(ke);
 	}
 
 	@Override
@@ -676,27 +663,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Perform Mac OSX-specific platform initialization.
-	 */
-	private void setMacSpecific() {
-		if (isMac()) {
-			OSXPlatformSupport.init();
-			OSXPlatformSupport.setQuitHandler(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					handleApplicationExit();
-				}
-			});
-			OSXPlatformSupport.setAboutHandler(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					showAbout();
-				}
-			});
-		}
 	}
 
 	public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {

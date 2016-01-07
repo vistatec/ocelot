@@ -25,7 +25,9 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
@@ -101,7 +103,9 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	private LQIGridTableHelper tableHelper;
 
 	private LQIKeyEventHandler lqiGridKeyEventHandler;
-	
+
+	private PlatformSupport platformSupport;
+
 	/**
 	 * Constructor.
 	 * 
@@ -113,8 +117,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 *            the LQI grid object.
 	 */
 	public LQIGridDialog(JFrame owner, LQIGridController controller,
-	        LQIGrid lqiGrid) {
-		this(owner, controller, lqiGrid, ISSUES_ANNOTS_MODE);
+	        LQIGrid lqiGrid, PlatformSupport platformSupport) {
+		this(owner, controller, lqiGrid, ISSUES_ANNOTS_MODE, platformSupport);
 	}
 
 	/**
@@ -130,13 +134,14 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 *            the dialog mode to set
 	 */
 	public LQIGridDialog(Window owner, LQIGridController controller,
-	        LQIGrid lqiGrid, int mode) {
+	        LQIGrid lqiGrid, int mode, PlatformSupport platformSupport) {
 
 		super(owner);
 		setModal(false);
 		this.lqiGrid = lqiGrid;
 		this.controller = controller;
 		this.mode = mode;
+		this.platformSupport = platformSupport;
 	}
 
 	/**
@@ -149,7 +154,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 //		keyEventManager.addKeyEventHandler(ocelotKeyEventHandler);
 		LQIKeyEventManager.getInstance().addKeyEventHandler(lqiGridKeyEventHandler);
 		lqiGridKeyEventHandler.load(lqiGrid);
-		tableHelper = new LQIGridTableHelper();
+		tableHelper = new LQIGridTableHelper(platformSupport);
 		String title = TITLE;
 		if (mode == CONFIG_MODE) {
 			title = title + TITLE_CONF_SUFFIX;
@@ -481,7 +486,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		LQIGridDialog dialog = new LQIGridDialog(frame, null,
-		        LQIConstants.getDefaultLQIGrid(), ISSUES_ANNOTS_MODE);
+		        LQIConstants.getDefaultLQIGrid(), ISSUES_ANNOTS_MODE,
+		        OcelotModule.getPlatformSupport());
 		SwingUtilities.invokeLater(dialog);
 	}
 

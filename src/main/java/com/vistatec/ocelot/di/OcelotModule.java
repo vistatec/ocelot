@@ -15,7 +15,10 @@ import com.google.common.io.CharSink;
 import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.vistatec.ocelot.DefaultPlatformSupport;
+import com.vistatec.ocelot.OSXPlatformSupport;
 import com.vistatec.ocelot.OcelotApp;
+import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.Configs;
@@ -60,6 +63,10 @@ public class OcelotModule extends AbstractModule {
 
         bind(OcelotApp.class).in(Scopes.SINGLETON);
 
+        PlatformSupport platformSupport = getPlatformSupport();
+
+        bind(PlatformSupport.class).toInstance(platformSupport);
+
         ConfigService cfgService = null;
         RuleConfiguration ruleConfig = null;
         PluginManager pluginManager = null;
@@ -96,7 +103,8 @@ public class OcelotModule extends AbstractModule {
             tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, cfgService);
             tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, cfgService);
             
-            lqiGridController = new LQIGridController((OcelotConfigService)cfgService, eventQueue);
+            lqiGridController = new LQIGridController((OcelotConfigService)cfgService, eventQueue,
+                                                      platformSupport);
             eventQueue.registerListener(lqiGridController);
             bind(LQIGridController.class).toInstance(lqiGridController);
         } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
@@ -114,6 +122,13 @@ public class OcelotModule extends AbstractModule {
         bindServices(eventQueue, cfgService, docStats);
     }
     
+    public static PlatformSupport getPlatformSupport() {
+        String os = System.getProperty("os.name");
+        if (os.startsWith("Mac")) {
+            return new OSXPlatformSupport();
+        }
+        return new DefaultPlatformSupport();
+    }
 
     private void bindServices(OcelotEventQueue eventQueue, ConfigService cfgService,
             ITSDocStats docStats) {

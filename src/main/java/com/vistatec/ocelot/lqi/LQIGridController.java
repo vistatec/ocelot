@@ -7,6 +7,8 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
+import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
@@ -36,18 +38,22 @@ public class LQIGridController implements OcelotEventQueueListener {
 	
 	private LQIGridDialog gridDialog;
 
-	public LQIGridController(final OcelotConfigService configService,
-	        final OcelotEventQueue eventQueue) {
+	private PlatformSupport platformSupport;
 
-		this(configService, eventQueue, null);
+	public LQIGridController(final OcelotConfigService configService,
+	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport) {
+
+		this(configService, eventQueue, platformSupport, null);
 	}
 
 	public LQIGridController(final OcelotConfigService configService,
-	        final OcelotEventQueue eventQueue, final JFrame ocelotMainFrame) {
+	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport,
+	        final JFrame ocelotMainFrame) {
 
 		this.configService = configService;
 		this.eventQueue = eventQueue;
 		this.ocelotMainFrame = ocelotMainFrame;
+		this.platformSupport = platformSupport;
 	}
 
 	public void setOcelotMainFrame(JFrame ocelotMainFrame) {
@@ -57,7 +63,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 	public void displayLQIGrid() {
 
 		gridDialog = new LQIGridDialog(ocelotMainFrame, this,
-		        readLQIGridConfiguration());
+		        readLQIGridConfiguration(), platformSupport);
 		SwingUtilities.invokeLater(gridDialog);
 	}
 

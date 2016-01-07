@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 
+import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.constants.ShortCutConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
@@ -59,13 +60,16 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 	/** List of all shortcut used in the LQI grid. */
 	private List<KeyStroke> shortcutsInUse;
 
+	private PlatformSupport platformSupport;
+
 	/**
 	 * Constructor.
 	 * 
 	 * @param keyEventManager
 	 *            the keyboard event manager.
 	 */
-	public LQIGridTableHelper() {
+	public LQIGridTableHelper(PlatformSupport platformSupport) {
+	    this.platformSupport = platformSupport;
 		this.keyEventManager = LQIKeyEventManager.getInstance();
 	}
 
@@ -534,7 +538,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener {
 		}
 		KeyStroke shortCut = KeyStroke.getKeyStroke(keyCode, modifier);
 		return shortcutsInUse.contains(shortCut)
-		        || ShortCutConstants.getReservedKeyList().contains(shortCut);
+		        || ShortCutConstants.getReservedKeyList(platformSupport).contains(shortCut);
 	}
 
 	/*
