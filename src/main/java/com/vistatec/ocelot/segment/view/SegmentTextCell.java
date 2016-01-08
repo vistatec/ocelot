@@ -41,6 +41,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -64,9 +65,28 @@ public class SegmentTextCell extends JTextPane {
     
     private boolean inputMethodChanged;
 
+    // Shared styles table
+    private static final StyleContext styles = new StyleContext();
+    static {
+        Style style = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style regular = styles.addStyle(regularStyle, style);
+
+        Style s = styles.addStyle(tagStyle, regular);
+        StyleConstants.setBackground(s, Color.LIGHT_GRAY);
+
+        Style insert = styles.addStyle(insertStyle, s);
+        StyleConstants.setForeground(insert, Color.BLUE);
+        StyleConstants.setUnderline(insert, true);
+
+        Style delete = styles.addStyle(deleteStyle, insert);
+        StyleConstants.setForeground(delete, Color.RED);
+        StyleConstants.setStrikeThrough(delete, true);
+        StyleConstants.setUnderline(delete, false);
+    }
+
     public SegmentTextCell() {
+        super(new DefaultStyledDocument(styles));
         setEditController();
-        setDisplayCategories();
         addCaretListener(new TagSelectingCaretListener());
     }
 
@@ -106,24 +126,6 @@ public class SegmentTextCell extends JTextPane {
             AbstractDocument doc = (AbstractDocument)styledDoc;
             doc.setDocumentFilter(new SegmentFilter());
         }
-    }
-
-    public final void setDisplayCategories() {
-        Style style = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-        StyledDocument styleDoc = this.getStyledDocument();
-        Style regular = styleDoc.addStyle(regularStyle, style);
-
-        Style s = styleDoc.addStyle(tagStyle, regular);
-        StyleConstants.setBackground(s, Color.LIGHT_GRAY);
-
-        Style insert = styleDoc.addStyle(insertStyle, s);
-        StyleConstants.setForeground(insert, Color.BLUE);
-        StyleConstants.setUnderline(insert, true);
-
-        Style delete = styleDoc.addStyle(deleteStyle, insert);
-        StyleConstants.setForeground(delete, Color.RED);
-        StyleConstants.setStrikeThrough(delete, true);
-        StyleConstants.setUnderline(delete, false);
     }
 
     public void setTextPane(List<String> styledText) {
