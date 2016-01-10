@@ -42,6 +42,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -65,14 +66,55 @@ public class SegmentTextCell extends JTextPane {
     
     private boolean inputMethodChanged;
 
-    public SegmentTextCell() {
+    // Shared styles table
+    private static final StyleContext styles = new StyleContext();
+    static {
+        Style style = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style regular = styles.addStyle(regularStyle, style);
+
+        Style s = styles.addStyle(tagStyle, regular);
+        StyleConstants.setBackground(s, Color.LIGHT_GRAY);
+
+        Style insert = styles.addStyle(insertStyle, s);
+        StyleConstants.setForeground(insert, Color.BLUE);
+        StyleConstants.setUnderline(insert, true);
+
+        Style delete = styles.addStyle(deleteStyle, insert);
+        StyleConstants.setForeground(delete, Color.RED);
+        StyleConstants.setStrikeThrough(delete, true);
+        StyleConstants.setUnderline(delete, false);
+    }
+
+    /**
+     * Create a dummy cell for the purposes of cell sizing.  This cell
+     * doesn't contain the style information and isn't linked to any of
+     * the control logic.
+     * @return dummy cell
+     */
+    public static SegmentTextCell createDummyCell() {
+        return new SegmentTextCell();
+    }
+
+    /**
+     * Create a full cell to hold live content.
+     * @return real cell
+     */
+    public static SegmentTextCell createCell() {
+        return new SegmentTextCell(styles);
+    }
+
+    private SegmentTextCell(StyleContext styleContext) {
+        super(new DefaultStyledDocument(styleContext));
         setEditController();
-        setDisplayCategories();
         addCaretListener(new TagSelectingCaretListener());
     }
 
+    public SegmentTextCell() {
+        super();
+    }
+
     public SegmentTextCell(SegmentVariant v, boolean raw, boolean isBidi) {
-        this();
+        this(styles);
         setVariant(v, raw);
         setBidi(isBidi);
     }

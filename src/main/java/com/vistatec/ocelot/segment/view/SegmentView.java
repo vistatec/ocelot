@@ -102,6 +102,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -138,6 +139,26 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private boolean isSourceBidi = false;
 	private boolean isTargetBidi = false;
 
+	/**
+	 * Table implementation that recalculates row heights when doLayout()
+	 * is called.
+	 */
+	class SegmentViewTable extends JTable {
+        private static final long serialVersionUID = 1L;
+        SegmentViewTable(AbstractTableModel model) {
+	        super(model);
+	    }
+	    @Override
+	    public void doLayout() {
+	        long start = System.currentTimeMillis();
+            for (int row = 0; row < getRowCount(); row++) {
+                updateRowHeight(row);
+            }
+            super.doLayout();
+            LOG.warn("doLayout() took " + (System.currentTimeMillis() - start) + "ms");
+	    }
+	}
+
 	@Inject
 	public SegmentView(OcelotEventQueue eventQueue,
 	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig)
@@ -161,7 +182,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	}
 
 	public final void initializeTable() {
-		sourceTargetTable = new JTable(segmentTableModel);
+		sourceTargetTable = new SegmentViewTable(segmentTableModel);
 		sourceTargetTable.getTableHeader().setReorderingAllowed(false);
 
 		ListSelectionListener selectSegmentHandler = new ListSelectionListener() {
@@ -239,7 +260,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 			@Override
 			public void columnMarginChanged(ChangeEvent ce) {
-				updateRowHeights();
 			}
 
 			@Override
@@ -333,7 +353,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		currColumn.setPreferredWidth(
 		                this.getFontMetrics(font).stringWidth(
 		                        " " + segmentTableModel.getRowCount()));
-		updateRowHeights();
 	}
 
 	private void updateTableRow(int row) {
@@ -360,35 +379,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		});
 	}
 
-	protected void updateRowHeights() {
-		if (sourceTargetTable.getColumnModel().getColumnCount() != segmentTableModel
-		        .getColumnCount()) {
-			// We haven't finished building the column model, so there's no
-			// point in calculating
-			// the row height yet.
-			return;
-		}
-		setViewportView(null);
-		for (int viewRow = 0; viewRow < sort.getViewRowCount(); viewRow++) {
-			// int modelRow = sort.convertRowIndexToModel(viewRow);
-			// FontMetrics font =
-			// sourceTargetTable.getFontMetrics(sourceTargetTable.getFont());
-			// int rowHeight = font.getHeight();
-			// rowHeight = getColumnHeight(SegNum, viewRow, "1", rowHeight);
-			// rowHeight = getColumnHeight(Source, viewRow,
-			// segmentTableModel.getSegment(modelRow).getSource().getDisplayText(),
-			// rowHeight);
-			// rowHeight = getColumnHeight(Target, viewRow,
-			// segmentTableModel.getSegment(modelRow).getTarget().getDisplayText(),
-			// rowHeight);
-			// rowHeight = getColumnHeight(Original, viewRow,
-			// getOriginalTargetText(modelRow), rowHeight);
-			// sourceTargetTable.setRowHeight(viewRow, rowHeight);
-			updateRowHeight(viewRow);
-		}
-		setViewportView(sourceTargetTable);
-	}
-
 	private void updateRowHeight(int row) {
 		int modelRow = sort.convertRowIndexToModel(row);
 		FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable
@@ -404,7 +394,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		        segment.getTarget().getDisplayText(), rowHeight, targetFont);
 		rowHeight = getColumnHeight(Original, row,
 		        getOriginalTargetText(modelRow), rowHeight, targetFont);
-		sourceTargetTable.setRowHeight(row, rowHeight);
+		System.out.println("Row height for row " + row + ": " + rowHeight);
+	    sourceTargetTable.setRowHeight(row, rowHeight);
 	}
 
     private Font getFontForColumn(SegmentViewColumn col) {
@@ -514,7 +505,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
             sourceTargetTable.revalidate();
             sourceTargetTable.repaint();
             segmentTableModel.fireTableDataChanged();
-            updateRowHeights();
         }
     }
 
@@ -534,7 +524,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
                     .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
                     .getCellEditor()).setFont(font);
             segmentTableModel.fireTableDataChanged();
-            updateRowHeights();
         }
     }
 
@@ -551,7 +540,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	@Subscribe
 	public void notifySegmentTargetReset(SegmentTargetResetEvent event) {
 		segmentTableModel.fireTableDataChanged();
-		updateRowHeights();
 	}
 
 	@Subscribe
@@ -559,7 +547,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	        SegmentTargetUpdateFromMatchEvent event) {
 		// int selRow = sourceTargetTable.getSelectedRow();
 		// // segmentTableModel.fireTableRowsUpdated(selRow, selRow);
-		// // updateRowHeights();
 		// updateTableRow(selRow);
 		// sourceTargetTable.requestFocusInWindow();
 		targetChangedFromMatch = true;
@@ -570,12 +557,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		if (targetChangedFromMatch) {
 			int selRow = sourceTargetTable.getSelectedRow();
 			// segmentTableModel.fireTableRowsUpdated(selRow, selRow);
-			// updateRowHeights();
 			updateTableRow(selRow);
 			sourceTargetTable.requestFocusInWindow();
 			targetChangedFromMatch = false;
 		}
-
 	}
 
 	@Override
