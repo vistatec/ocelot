@@ -96,11 +96,24 @@ public class SegmentTextCell extends JTextPane {
     }
 
     /**
-     * Create a full cell to hold live content.
+     * Create an empty cell for the purpose of holding live content. This
+     * cell contains style information and is linked to the document.
      * @return real cell
      */
     public static SegmentTextCell createCell() {
         return new SegmentTextCell(styles);
+    }
+
+    /**
+     * Create an empty cell holding the specified content. This
+     * cell contains style information and is linked to the document.
+     * @param v
+     * @param raw
+     * @param isBidi whether the cell contains bidi content
+     * @return
+     */
+    public static SegmentTextCell createCell(SegmentVariant v, boolean raw, boolean isBidi) {
+        return new SegmentTextCell(v, raw, isBidi);
     }
 
     private SegmentTextCell(StyleContext styleContext) {
@@ -109,11 +122,11 @@ public class SegmentTextCell extends JTextPane {
         addCaretListener(new TagSelectingCaretListener());
     }
 
-    public SegmentTextCell() {
+    private SegmentTextCell() {
         super();
     }
 
-    public SegmentTextCell(SegmentVariant v, boolean raw, boolean isBidi) {
+    private SegmentTextCell(SegmentVariant v, boolean raw, boolean isBidi) {
         this(styles);
         setVariant(v, raw);
         setBidi(isBidi);

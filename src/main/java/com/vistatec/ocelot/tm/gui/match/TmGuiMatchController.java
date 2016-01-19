@@ -194,15 +194,6 @@ public class TmGuiMatchController implements OcelotEventQueueListener {
 		}
 	}
 	
-	public void sendStartEditingEvent(){
-		
-		eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.START_EDITING));
-	}
-	
-	public void sendStopEditingEvent(){
-		eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.STOP_EDITING));
-	}
-
 	/**
 	 * Gets the tabbed pane containing the translations panel and the
 	 * concordance search panel.

@@ -115,7 +115,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 	@Subscribe
 	public void handleOcelotEditingEvent(OcelotEditingEvent event) {
 
-		ocelotEditing = event.getEventType() == OcelotEditingEvent.START_EDITING;
+		ocelotEditing = event.getEventType() == OcelotEditingEvent.Type.START_EDITING;
 	}
 
 	public boolean isOcelotEditing() {
