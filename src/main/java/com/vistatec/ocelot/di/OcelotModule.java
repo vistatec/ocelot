@@ -57,7 +57,6 @@ public class OcelotModule extends AbstractModule {
     protected void configure() {
         OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
         bind(OcelotEventQueue.class).toInstance(eventQueue);
-
         ITSDocStats docStats = new ITSDocStats();
         bind(ITSDocStats.class).toInstance(docStats);
 

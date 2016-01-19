@@ -31,6 +31,7 @@ package com.vistatec.ocelot.segment.view;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.event.InputMethodEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,9 +71,16 @@ public class SegmentTextCell extends JTextPane {
         addCaretListener(new TagSelectingCaretListener());
     }
 
-    public SegmentTextCell(SegmentVariant v, boolean raw) {
+    public SegmentTextCell(SegmentVariant v, boolean raw, boolean isBidi) {
         this();
         setVariant(v, raw);
+        setBidi(isBidi);
+    }
+
+    public void setBidi(boolean isBidi) {
+        if (isBidi) {
+            setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        }
     }
 
     /**

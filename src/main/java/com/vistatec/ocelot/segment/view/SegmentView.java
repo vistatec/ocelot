@@ -32,11 +32,15 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
+
+import net.sf.okapi.common.LocaleId;
+
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
@@ -129,6 +133,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
+	private boolean isSourceBidi = false;
+	private boolean isTargetBidi = false;
 
 	@Inject
 	public SegmentView(OcelotEventQueue eventQueue,
@@ -142,6 +148,15 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		UIManager.put("Table.focusCellHighlightBorder",
 		        BorderFactory.createLineBorder(Color.BLUE, 2));
 		initializeTable();
+		eventQueue.registerListener(this);
+	}
+
+	@Subscribe
+	public void openFile(OpenFileEvent e) {
+		LocaleId srcLocale = LocaleId.fromString(e.getSrcLang());
+		isSourceBidi = LocaleId.isBidirectional(srcLocale);
+		LocaleId tgtLocale = LocaleId.fromString(e.getTgtLang());
+		isTargetBidi = LocaleId.isBidirectional(tgtLocale);
 	}
 
 	public final void initializeTable() {
@@ -598,10 +613,13 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				SegmentVariant v = null;
 				if (segmentTableModel.getSegmentSourceColumnIndex() == col) {
 					v = seg.getSource();
+					renderTextPane.setBidi(isSourceBidi);
 				} else if (segmentTableModel.getSegmentTargetColumnIndex() == col) {
 					v = seg.getTarget();
+					renderTextPane.setBidi(isTargetBidi);
 				} else if (segmentTableModel
 				        .getSegmentTargetOriginalColumnIndex() == col) {
+                    renderTextPane.setBidi(isTargetBidi);
 					if (!enabledTargetDiff) {
 						v = seg.getOriginalTarget();
 					}
@@ -752,7 +770,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
 			editorComponent = new SegmentTextCell(seg.getSource().createCopy(),
-			        false);
+			        false, isSourceBidi);
 			editorComponent.setBackground(table.getSelectionBackground());
 			editorComponent.setSelectionColor(Color.BLUE);
 			editorComponent.setSelectedTextColor(Color.WHITE);
@@ -810,14 +828,14 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			        .convertRowIndexToModel(row));
 			if (col == segmentTableModel.getSegmentSourceColumnIndex()) {
 				editorComponent = new SegmentTextCell(seg.getSource()
-				        .createCopy(), false);
+				        .createCopy(), false, isSourceBidi);
 				editorComponent.setEditable(false);
 
 			} else if (col == segmentTableModel.getSegmentTargetColumnIndex()) {
 				editListener
 				        .setBeginEdit(seg, seg.getTarget().getDisplayText());
 				editorComponent = new SegmentTextCell(seg.getTarget()
-				        .createCopy(), false);
+				        .createCopy(), false, isTargetBidi);
 				editorComponent.getInputMap().put(
 				        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
 				editorComponent.getActionMap().put("finish",
