@@ -29,9 +29,9 @@
 package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.XLIFFFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -59,7 +59,7 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
-    
+    private XLIFFFile openXliffFile;
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
@@ -95,16 +95,16 @@ public class OcelotApp implements OcelotEventQueueListener {
     }
 
     public void openFile(File openFile) throws IOException, FileNotFoundException, XMLStreamException {
-        List<OcelotSegment> segments = xliffService.parse(openFile);
+        openXliffFile = xliffService.parse(openFile);
         segmentService.clearAllSegments();
-        segmentService.setSegments(segments);
+        segmentService.setSegments(openXliffFile.getSegments());
 
-        this.pluginManager.notifyOpenFile(openFile.getName(), segments);
+        this.pluginManager.notifyOpenFile(openFile.getName(), openXliffFile.getSegments());
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
         eventQueue.post(new OpenFileEvent(openFile.getName(),
-                xliffService.getSourceLang(), xliffService.getTargetLang()));
+                openXliffFile.getSrcLocale(), openXliffFile.getTgtLocale()));
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {
@@ -124,17 +124,17 @@ public class OcelotApp implements OcelotEventQueueListener {
                         "The file " + filename + " can not be saved, because the directory is not writeable.");
             }
         }
-        xliffService.save(saveFile);
+        xliffService.save(openXliffFile, saveFile);
         this.fileDirty = false;
         pluginManager.notifySaveFile(filename);
     }
 
     public String getFileSourceLang() {
-        return xliffService.getSourceLang();
+        return openXliffFile.getSrcLocale().toString();
     }
 
     public String getFileTargetLang() {
-        return xliffService.getTargetLang();
+        return openXliffFile.getTgtLocale().toString();
     }
 
     @Subscribe

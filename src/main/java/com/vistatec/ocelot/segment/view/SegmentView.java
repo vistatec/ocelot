@@ -153,10 +153,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	@Subscribe
 	public void openFile(OpenFileEvent e) {
-		LocaleId srcLocale = LocaleId.fromString(e.getSrcLang());
-		isSourceBidi = LocaleId.isBidirectional(srcLocale);
-		LocaleId tgtLocale = LocaleId.fromString(e.getTgtLang());
-		isTargetBidi = LocaleId.isBidirectional(tgtLocale);
+		isSourceBidi = LocaleId.isBidirectional(e.getSrcLang());
+		isTargetBidi = LocaleId.isBidirectional(e.getTgtLang());
 	}
 
 	public final void initializeTable() {

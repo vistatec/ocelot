@@ -2,10 +2,13 @@ package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
 
-public class OpenFileEvent implements OcelotEvent {
-    private final String filename, srcLang, tgtLang;
+import net.sf.okapi.common.LocaleId;
 
-    public OpenFileEvent(String filename, String srcLang, String tgtLang) {
+public class OpenFileEvent implements OcelotEvent {
+    private final LocaleId srcLang, tgtLang;
+    private final String filename;
+
+    public OpenFileEvent(String filename, LocaleId srcLang, LocaleId tgtLang) {
         this.filename = filename;
         this.srcLang = srcLang;
         this.tgtLang = tgtLang;
@@ -15,12 +18,11 @@ public class OpenFileEvent implements OcelotEvent {
         return filename;
     }
 
-    public String getSrcLang() {
+    public LocaleId getSrcLang() {
         return srcLang;
     }
 
-    public String getTgtLang() {
+    public LocaleId getTgtLang() {
         return tgtLang;
     }
-
 }

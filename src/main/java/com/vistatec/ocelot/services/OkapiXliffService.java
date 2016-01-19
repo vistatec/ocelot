@@ -30,7 +30,9 @@ package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.xliff.XLIFFFactory;
+import com.vistatec.ocelot.xliff.XLIFFFile;
 import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 import java.io.File;
@@ -47,11 +49,12 @@ import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.xliff.okapi.OkapiXLIFFFactory;
 
+import net.sf.okapi.common.LocaleId;
+
 /**
  * Service for performing Okapi XLIFF operations.
  */
 public class OkapiXliffService implements XliffService {
-
     private XLIFFFactory xliffFactory = new OkapiXLIFFFactory();
     private XLIFFParser xliffParser;
     private XLIFFWriter segmentWriter;
@@ -66,7 +69,7 @@ public class OkapiXliffService implements XliffService {
 
     @Subscribe
     public void updateSegment(SegmentEditEvent e) {
-			segmentWriter.updateSegment(e.getSegment());
+		segmentWriter.updateSegment(e.getSegment());
     }
     
 
@@ -76,29 +79,26 @@ public class OkapiXliffService implements XliffService {
     }
 
     @Override
-    public List<OcelotSegment> parse(File xliffFile) throws IOException, XMLStreamException {
-        XLIFFParser newParser = xliffFactory.newXLIFFParser(xliffFile);
+    public XLIFFFile parse(File xliffFile) throws IOException, XMLStreamException {
+        XLIFFVersion version = xliffFactory.detectXLIFFVersion(xliffFile);
+        XLIFFParser newParser = xliffFactory.newXLIFFParser(version);
         List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
 
         xliffParser = newParser;
         segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
                 cfgService.getUserProvenance(), eventQueue);
-        return xliffSegments;
+        return new OkapiXLIFFFile(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
+                                  LocaleId.fromString(xliffParser.getTargetLang()), xliffSegments,
+                                  xliffParser, segmentWriter);
     }
 
     @Override
-    public void save(File file) throws FileNotFoundException, IOException {
-        segmentWriter.save(file);
-    }
-
-    @Override
-    public String getSourceLang() {
-        return xliffParser.getSourceLang();
-    }
-
-    @Override
-    public String getTargetLang() {
-        return xliffParser.getTargetLang();
+    public void save(XLIFFFile xliffFile, File dest) throws FileNotFoundException, IOException {
+        if (!(xliffFile instanceof OkapiXLIFFFile)) {
+            throw new IllegalArgumentException("Unknown XLIFF file object");
+        }
+        OkapiXLIFFFile okapiFile = (OkapiXLIFFFile)xliffFile;
+        okapiFile.getWriter().save(dest);
     }
 
 }

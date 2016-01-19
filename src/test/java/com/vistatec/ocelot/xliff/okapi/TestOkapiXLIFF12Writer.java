@@ -38,8 +38,6 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.junit.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
@@ -52,11 +50,11 @@ import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.XLIFFFile;
 
 public class TestOkapiXLIFF12Writer extends XMLTestCase {
     private final OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
@@ -82,19 +80,19 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
-        List<OcelotSegment> segments = xliffService.parse(temp);
+        XLIFFFile xliff = xliffService.parse(temp);
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(segments);
+        segmentService.setSegments(xliff.getSegments());
         temp.delete();
 
         // Remove that LQI we just added
-        LanguageQualityIssue lqi = segments.get(0).getLQI().get(0);
-        eventQueue.post(new LQIRemoveEvent(lqi, segments.get(0)));
+        LanguageQualityIssue lqi = xliff.getSegments().get(0).getLQI().get(0);
+        eventQueue.post(new LQIRemoveEvent(lqi, xliff.getSegments().get(0)));
 
         // Write it back out
-        checkAgainstGoldXML(saveXliffToTemp(xliffService), "/gold/multiple-its-namespace.xlf");
+        checkAgainstGoldXML(saveXliffToTemp(xliffService, xliff), "/gold/multiple-its-namespace.xlf");
     }
 
     @Test
@@ -131,21 +129,21 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();
-        List<OcelotSegment> segments = xliffService.parse(new File(uri));
+        XLIFFFile xliff = xliffService.parse(new File(uri));
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(segments);
+        segmentService.setSegments(xliff.getSegments());
         // Trigger an update
         segmentService.addLQI(new LQIAdditionEvent(RulesTestHelpers.lqi("omission", 90),
-                segments.get(0)));
+                xliff.getSegments().get(0)));
 
-        return saveXliffToTemp(xliffService);
+        return saveXliffToTemp(xliffService, xliff);
     }
 
-    private File saveXliffToTemp(XliffService service) throws IOException {
+    private File saveXliffToTemp(XliffService service, XLIFFFile xliff) throws IOException {
         File temp = File.createTempFile("ocelot", ".xlf");
-        service.save(temp);
+        service.save(xliff, temp);
         return temp;
     }
 }

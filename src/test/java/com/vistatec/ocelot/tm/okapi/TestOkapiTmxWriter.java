@@ -71,7 +71,7 @@ public class TestOkapiTmxWriter {
         setupTmxWriter(testSeg);
 
         tmxWriter.setOpenFileLangs(new OpenFileEvent("export_tmx_test",
-                LocaleId.ENGLISH.getLanguage(), LocaleId.FRENCH.getLanguage()));
+                LocaleId.ENGLISH, LocaleId.FRENCH));
         tmxWriter.exportTmx(testFile);
         assertExportedTmxFilesEqual(testFile,
                 TestOkapiTmxWriter.class.getResourceAsStream("export_tmx_test_goal.tmx"));
@@ -88,7 +88,7 @@ public class TestOkapiTmxWriter {
         setupTmxWriter(segBuilder.build());
 
         tmxWriter.setOpenFileLangs(new OpenFileEvent("export_tagged_tmx_test",
-                LocaleId.ENGLISH.getLanguage(), LocaleId.FRENCH.getLanguage()));
+                LocaleId.ENGLISH, LocaleId.FRENCH));
         tmxWriter.exportTmx(testFile);
         assertExportedTmxFilesEqual(testFile,
                 TestOkapiTmxWriter.class.getResourceAsStream("export_tagged_tmx_test_goal.tmx"));
@@ -123,7 +123,7 @@ public class TestOkapiTmxWriter {
         tmxWriter = new OkapiTmxWriter(segService);
 
         tmxWriter.setOpenFileLangs(new OpenFileEvent("export_multiple_segments_tmx_test",
-                LocaleId.ENGLISH.getLanguage(), LocaleId.FRENCH.getLanguage()));
+                LocaleId.ENGLISH, LocaleId.FRENCH));
         tmxWriter.exportTmx(testFile);
         assertExportedTmxFilesEqual(testFile,
                 TestOkapiTmxWriter.class.getResourceAsStream("export_multiple_segments_tmx_test_goal.tmx"));
