@@ -16,7 +16,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
  */
 public interface XliffService extends OcelotEventQueueListener {
 
-    public List<OcelotSegment> parse(File xliffFile, File detectVersion) throws FileNotFoundException, IOException, XMLStreamException;
+    public List<OcelotSegment> parse(File xliffFile) throws IOException, XMLStreamException;
 
     public void save(File file) throws FileNotFoundException, IOException;
 

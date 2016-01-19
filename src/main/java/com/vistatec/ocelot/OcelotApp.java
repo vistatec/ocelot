@@ -94,8 +94,8 @@ public class OcelotApp implements OcelotEventQueueListener {
         return fileDirty;
     }
 
-    public void openFile(File openFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
-        List<OcelotSegment> segments = xliffService.parse(openFile, detectVersion);
+    public void openFile(File openFile) throws IOException, FileNotFoundException, XMLStreamException {
+        List<OcelotSegment> segments = xliffService.parse(openFile);
         segmentService.clearAllSegments();
         segmentService.setSegments(segments);
 

@@ -282,13 +282,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
 		fd.setFilenameFilter(new XliffFileFilter());
 		fd.setVisible(true);
-		File detectVersion = getSelectedFile(fd);
 		File sourceFile = getSelectedFile(fd);
 		fd.dispose();
 
 		if (sourceFile != null) {
 			try {
-				ocelotApp.openFile(sourceFile, detectVersion);
+				ocelotApp.openFile(sourceFile);
 				this.setMainTitle(sourceFile.getName());
 				segmentView.reloadTable();
 

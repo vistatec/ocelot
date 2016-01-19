@@ -76,8 +76,8 @@ public class OkapiXliffService implements XliffService {
     }
 
     @Override
-    public List<OcelotSegment> parse(File xliffFile, File detectVersion) throws FileNotFoundException, IOException, XMLStreamException {
-        XLIFFParser newParser = xliffFactory.newXLIFFParser(detectVersion);
+    public List<OcelotSegment> parse(File xliffFile) throws IOException, XMLStreamException {
+        XLIFFParser newParser = xliffFactory.newXLIFFParser(xliffFile);
         List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
 
         xliffParser = newParser;

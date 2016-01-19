@@ -75,7 +75,6 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
     @Test
     public void testWriteITSNamespaceMultipleTimes() throws Exception {
         File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
-        File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
 
         ByteSource testLoad = Resources.asByteSource(
                 TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
@@ -83,7 +82,7 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
-        List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
+        List<OcelotSegment> segments = xliffService.parse(temp);
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
@@ -132,7 +131,7 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();
-        List<OcelotSegment> segments = xliffService.parse(new File(uri), new File(uri));
+        List<OcelotSegment> segments = xliffService.parse(new File(uri));
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
