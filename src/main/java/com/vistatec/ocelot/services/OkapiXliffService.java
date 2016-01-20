@@ -30,7 +30,7 @@ package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.xliff.XLIFFFactory;
-import com.vistatec.ocelot.xliff.XLIFFFile;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 import com.vistatec.ocelot.xliff.XLIFFParser;
 import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
@@ -79,7 +79,7 @@ public class OkapiXliffService implements XliffService {
     }
 
     @Override
-    public XLIFFFile parse(File xliffFile) throws IOException, XMLStreamException {
+    public XLIFFDocument parse(File xliffFile) throws IOException, XMLStreamException {
         XLIFFVersion version = xliffFactory.detectXLIFFVersion(xliffFile);
         XLIFFParser newParser = xliffFactory.newXLIFFParser(version);
         List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
@@ -87,17 +87,17 @@ public class OkapiXliffService implements XliffService {
         xliffParser = newParser;
         segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
                 cfgService.getUserProvenance(), eventQueue);
-        return new OkapiXLIFFFile(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
+        return new OkapiXLIFFDocument(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
                                   LocaleId.fromString(xliffParser.getTargetLang()), xliffSegments,
                                   xliffParser, segmentWriter);
     }
 
     @Override
-    public void save(XLIFFFile xliffFile, File dest) throws FileNotFoundException, IOException {
-        if (!(xliffFile instanceof OkapiXLIFFFile)) {
+    public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException {
+        if (!(xliffFile instanceof OkapiXLIFFDocument)) {
             throw new IllegalArgumentException("Unknown XLIFF file object");
         }
-        OkapiXLIFFFile okapiFile = (OkapiXLIFFFile)xliffFile;
+        OkapiXLIFFDocument okapiFile = (OkapiXLIFFDocument)xliffFile;
         okapiFile.getWriter().save(dest);
     }
 

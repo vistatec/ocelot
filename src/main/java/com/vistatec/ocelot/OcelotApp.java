@@ -31,7 +31,7 @@ package com.vistatec.ocelot;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
-import com.vistatec.ocelot.xliff.XLIFFFile;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -59,7 +59,7 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
-    private XLIFFFile openXliffFile;
+    private XLIFFDocument openXliffFile;
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
@@ -97,7 +97,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     public void openFile(File openFile) throws IOException, FileNotFoundException, XMLStreamException {
         openXliffFile = xliffService.parse(openFile);
         segmentService.clearAllSegments();
-        segmentService.setSegments(openXliffFile.getSegments());
+        segmentService.setSegments(openXliffFile);
 
         this.pluginManager.notifyOpenFile(openFile.getName(), openXliffFile.getSegments());
         this.openFile = openFile;

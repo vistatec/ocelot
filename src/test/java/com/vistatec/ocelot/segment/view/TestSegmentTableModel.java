@@ -41,8 +41,6 @@ import com.vistatec.ocelot.rules.RuleConfiguration;
 
 import static com.vistatec.ocelot.SegmentViewColumn.*;
 
-import java.util.List;
-
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
@@ -50,6 +48,7 @@ import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class TestSegmentTableModel {
     private SegmentTableModel model;
@@ -113,7 +112,7 @@ public class TestSegmentTableModel {
         }
 
         @Override
-        public void setSegments(List<OcelotSegment> segments) {
+        public void setSegments(XLIFFDocument xliff) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

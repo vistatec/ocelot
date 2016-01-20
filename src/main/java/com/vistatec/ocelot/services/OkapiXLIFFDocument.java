@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.xliff.XLIFFFile;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 import com.vistatec.ocelot.xliff.XLIFFParser;
 import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 import net.sf.okapi.common.LocaleId;
 
-class OkapiXLIFFFile implements XLIFFFile {
+class OkapiXLIFFDocument implements XLIFFDocument {
     private File file;
     private XLIFFVersion version;
     private LocaleId srcLocale;
@@ -21,7 +21,7 @@ class OkapiXLIFFFile implements XLIFFFile {
     private XLIFFWriter writer;
     private List<OcelotSegment> segments = new ArrayList<>();
 
-    OkapiXLIFFFile(File file, XLIFFVersion version, LocaleId srcLocale, LocaleId tgtLocale,
+    OkapiXLIFFDocument(File file, XLIFFVersion version, LocaleId srcLocale, LocaleId tgtLocale,
                    List<OcelotSegment> segments, XLIFFParser parser, XLIFFWriter writer) {
         this.file = file;
         this.version = version;

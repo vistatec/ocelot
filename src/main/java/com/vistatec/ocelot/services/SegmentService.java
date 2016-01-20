@@ -1,8 +1,7 @@
 package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
-
-import java.util.List;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
@@ -21,7 +20,7 @@ public interface SegmentService extends OcelotEventQueueListener {
 
     public int getNumSegments();
 
-    public void setSegments(List<OcelotSegment> segments);
+    public void setSegments(XLIFFDocument xliff);
 
     public void updateSegmentTarget(SegmentTargetUpdateEvent e);
     public void updateSegmentNote(SegmentNoteUpdatedEvent e);

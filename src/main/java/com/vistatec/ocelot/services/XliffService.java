@@ -1,6 +1,6 @@
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.xliff.XLIFFFile;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,8 +14,8 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
  */
 public interface XliffService extends OcelotEventQueueListener {
 
-    public XLIFFFile parse(File xliffFile) throws IOException, XMLStreamException;
+    public XLIFFDocument parse(File xliffFile) throws IOException, XMLStreamException;
 
-    public void save(XLIFFFile xliffFile, File dest) throws FileNotFoundException, IOException;
+    public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException;
 
 }

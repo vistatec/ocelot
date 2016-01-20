@@ -30,7 +30,6 @@ package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.eventbus.Subscribe;
@@ -54,6 +53,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * Service for performing segment related operations.
@@ -61,7 +61,7 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
  */
 public class SegmentServiceImpl implements SegmentService {
     // TODO: remove segments (data) from service implementation
-    private List<OcelotSegment> segments = new ArrayList<>(100);
+    private XLIFFDocument xliff;
     private final OcelotEventQueue eventQueue;
 
     @Inject
@@ -71,18 +71,18 @@ public class SegmentServiceImpl implements SegmentService {
 
     @Override
     public OcelotSegment getSegment(int row) {
-        return segments.get(row);
+        return (xliff != null) ? xliff.getSegments().get(row) : null;
     }
 
     @Override
     public int getNumSegments() {
-        return segments.size();
+        return (xliff != null) ? xliff.getSegments().size() : 0;
     }
 
     @Override
-    public void setSegments(List<OcelotSegment> segments) {
-        this.segments = segments;
-        eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
+    public void setSegments(XLIFFDocument xliff) {
+        this.xliff = xliff;
+        eventQueue.post(new ItsDocStatsRecalculateEvent(xliff.getSegments()));
     }
 
     @Subscribe
@@ -153,7 +153,7 @@ public class SegmentServiceImpl implements SegmentService {
         OcelotSegment seg = e.getSegment();
         LanguageQualityIssue lqi = e.getLQI();
         seg.removeLQI(lqi);
-        eventQueue.post(new ItsDocStatsRemovedLqiEvent(segments));
+        eventQueue.post(new ItsDocStatsRemovedLqiEvent(xliff.getSegments()));
         eventQueue.post(new SegmentEditEvent(seg));
         eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
@@ -171,7 +171,6 @@ public class SegmentServiceImpl implements SegmentService {
 
     @Override
     public void clearAllSegments() {
-        this.segments.clear();
         eventQueue.post(new ItsDocStatsClearEvent());
     }
 }

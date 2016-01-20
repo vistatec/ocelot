@@ -54,7 +54,7 @@ import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
-import com.vistatec.ocelot.xliff.XLIFFFile;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class TestOkapiXLIFF12Writer extends XMLTestCase {
     private final OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
@@ -80,11 +80,11 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
-        XLIFFFile xliff = xliffService.parse(temp);
+        XLIFFDocument xliff = xliffService.parse(temp);
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(xliff.getSegments());
+        segmentService.setSegments(xliff);
         temp.delete();
 
         // Remove that LQI we just added
@@ -129,11 +129,11 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();
-        XLIFFFile xliff = xliffService.parse(new File(uri));
+        XLIFFDocument xliff = xliffService.parse(new File(uri));
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(xliff.getSegments());
+        segmentService.setSegments(xliff);
         // Trigger an update
         segmentService.addLQI(new LQIAdditionEvent(RulesTestHelpers.lqi("omission", 90),
                 xliff.getSegments().get(0)));
@@ -141,7 +141,7 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         return saveXliffToTemp(xliffService, xliff);
     }
 
-    private File saveXliffToTemp(XliffService service, XLIFFFile xliff) throws IOException {
+    private File saveXliffToTemp(XliffService service, XLIFFDocument xliff) throws IOException {
         File temp = File.createTempFile("ocelot", ".xlf");
         service.save(xliff, temp);
         return temp;

@@ -7,7 +7,7 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import net.sf.okapi.common.LocaleId;
 
-public interface XLIFFFile {
+public interface XLIFFDocument {
 
     public File getFile();
 

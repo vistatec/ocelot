@@ -1,7 +1,9 @@
 package com.vistatec.ocelot.services;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,10 @@ import com.vistatec.ocelot.rules.RulesTestHelpers;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
+import com.vistatec.ocelot.xliff.XLIFFVersion;
+
+import net.sf.okapi.common.LocaleId;
 
 public class TestSegmentService {
     private final Mockery mockery = new Mockery();
@@ -54,11 +60,7 @@ public class TestSegmentService {
 
     @Test
     public void testItsDocStatsLoadSegments() {
-        mockery.checking(new Expectations() {{
-            oneOf(mockEventQueue).post(with(any(ItsDocStatsRecalculateEvent.class)));
-        }});
-
-        List<OcelotSegment> segments = new ArrayList<>();
+        final List<OcelotSegment> segments = new ArrayList<>();
         segments.add(new SimpleSegment.Builder()
                 .segmentNumber(1)
                 .source("source")
@@ -66,9 +68,17 @@ public class TestSegmentService {
                 .originalTarget("original_target")
                 .build());
 
-        assertTrue(segmentService.getNumSegments() == 0);
-        segmentService.setSegments(segments);
-        assertTrue(segmentService.getNumSegments() == 1);
+        final XLIFFDocument xliff = mockery.mock(XLIFFDocument.class);
+        mockery.checking(new Expectations() {{
+            oneOf(mockEventQueue).post(with(any(ItsDocStatsRecalculateEvent.class)));
+            allowing(xliff).getSegments();
+                will(returnValue(segments));
+        }});
+
+        assertEquals(0, segmentService.getNumSegments());
+        segmentService.setSegments(xliff);
+        assertEquals(1, segmentService.getNumSegments());
+        mockery.assertIsSatisfied();
     }
 
     @Test
