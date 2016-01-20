@@ -16,22 +16,26 @@ import net.sf.okapi.common.resource.TextContainer;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * This class stands over all graphic processes pertaining the TM match
  * functionalities: translations matches and concordance search. It manages two
  * detachable panels: the <code>TranslationsPanel</code>.
  */
-public class TmGuiMatchController {
+public class TmGuiMatchController implements OcelotEventQueueListener {
 
 	/**
 	 * The TM service providing methods for translations match and concordance
@@ -57,6 +61,9 @@ public class TmGuiMatchController {
 	/** The component containing the TM tabbed panel in Ocelot main frame. */
 	private Container tmPanelContainer;
 
+	/** Current XLIFF document. **/
+	private XLIFFDocument xliff;
+
 	/**
 	 * Constructor.
 	 * 
@@ -70,6 +77,12 @@ public class TmGuiMatchController {
 
 		this.tmService = tmService;
 		this.eventQueue = eventQueue;
+		eventQueue.registerListener(this);
+	}
+
+	@Subscribe
+	public void openFile(OpenFileEvent e) {
+	    this.xliff = e.getDocument();
 	}
 
 	/**
@@ -155,7 +168,7 @@ public class TmGuiMatchController {
 		if (currSelectedSegment != null) {
 			SegmentVariant textContainerVariant = new TextContainerVariant(
 			        new TextContainer(newTarget.getDisplayText()));
-			eventQueue.post(new SegmentTargetUpdateFromMatchEvent(
+			eventQueue.post(new SegmentTargetUpdateFromMatchEvent(xliff,
 			        currSelectedSegment, textContainerVariant));
 		}
 	}

@@ -595,7 +595,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	private void postSegmentSelection(OcelotSegment seg) {
 		if (seg != null) {
-			eventQueue.post(new SegmentSelectionEvent(seg));
+			eventQueue.post(new SegmentSelectionEvent(xliff, seg));
 		}
 	}
 
@@ -915,7 +915,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 		public void setBeginEdit(OcelotSegment seg, String codedText) {
 			this.seg = seg;
-			eventQueue.post(new SegmentTargetEnterEvent(seg));
+			eventQueue.post(new SegmentTargetEnterEvent(xliff, seg));
 		}
 
 		@Override
@@ -923,8 +923,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			SegmentVariant updatedTarget = ((SegmentEditor) ce.getSource()).editorComponent
 			        .getVariant();
 			int row = sourceTargetTable.getSelectedRow();
-			eventQueue.post(new SegmentTargetExitEvent(seg));
-			eventQueue.post(new SegmentTargetUpdateEvent(seg, updatedTarget));
+			eventQueue.post(new SegmentTargetExitEvent(xliff, seg));
+			eventQueue.post(new SegmentTargetUpdateEvent(xliff, seg, updatedTarget));
 			postSegmentSelection(seg);
 			updateTableRow(row);
 			// Restore row selection
@@ -1166,7 +1166,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			}
 
 			if (seg != null) {
-				ContextMenu menu = new ContextMenu(seg, eventQueue);
+				ContextMenu menu = new ContextMenu(xliff, seg, eventQueue);
 				menu.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}

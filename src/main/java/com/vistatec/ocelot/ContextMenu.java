@@ -31,6 +31,7 @@ package com.vistatec.ocelot;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,10 +55,11 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     private JMenuItem addLQI, removeLQI, resetTarget;
     private OcelotSegment selectedSeg;
     private LanguageQualityIssue selectedLQI;
-
+    private XLIFFDocument xliff;
     private OcelotEventQueue eventQueue;
 
-    public ContextMenu(OcelotSegment selectedSeg, OcelotEventQueue eventQueue) {
+    public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, OcelotEventQueue eventQueue) {
+        this.xliff = xliff;
         this.selectedSeg = selectedSeg;
         this.eventQueue = eventQueue;
 
@@ -72,8 +74,9 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         add(resetTarget);
     }
 
-    public ContextMenu(OcelotSegment selectedSeg, LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue) {
-        this(selectedSeg, eventQueue);
+    public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, LanguageQualityIssue selectedLQI,
+                       OcelotEventQueue eventQueue) {
+        this(xliff, selectedSeg, eventQueue);
         this.selectedLQI = selectedLQI;
 
         removeLQI = new JMenuItem("Remove Issue");
@@ -90,7 +93,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         } else if (e.getSource() == removeLQI) {
             eventQueue.post(new LQIRemoveEvent(selectedLQI, selectedSeg));
         } else if (e.getSource() == resetTarget) {
-            eventQueue.post(new SegmentTargetResetEvent(selectedSeg));
+            eventQueue.post(new SegmentTargetResetEvent(xliff, selectedSeg));
         }
     }
 }
