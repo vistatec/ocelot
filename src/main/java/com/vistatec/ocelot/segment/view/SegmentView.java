@@ -32,6 +32,7 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import net.sf.okapi.common.LocaleId;
 
@@ -133,6 +134,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
+	private XLIFFDocument xliff;
 	private boolean isSourceBidi = false;
 	private boolean isTargetBidi = false;
 
@@ -153,8 +155,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	@Subscribe
 	public void openFile(OpenFileEvent e) {
-		isSourceBidi = LocaleId.isBidirectional(e.getSrcLang());
-		isTargetBidi = LocaleId.isBidirectional(e.getTgtLang());
+		isSourceBidi = LocaleId.isBidirectional(e.getDocument().getSrcLocale());
+		isTargetBidi = LocaleId.isBidirectional(e.getDocument().getTgtLocale());
+		xliff = e.getDocument();
 	}
 
 	public final void initializeTable() {
@@ -1069,7 +1072,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 			int row = sourceTargetTable.getSelectedRow();
 			String noteContent = ((NotesCellEditor)ce.getSource()).txtArea.getText();
-			eventQueue.post(new SegmentNoteUpdatedEvent(seg, noteContent));
+			eventQueue.post(new SegmentNoteUpdatedEvent(xliff, seg, noteContent));
 			updateTableRow(row);
 			// Restore row selection
 			sourceTargetTable.setRowSelectionInterval(row, row);

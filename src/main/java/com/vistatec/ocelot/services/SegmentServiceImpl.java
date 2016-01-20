@@ -30,8 +30,6 @@ package com.vistatec.ocelot.services;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
-import java.util.List;
-
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ItsDocStatsUpdateLqiEvent;
@@ -92,7 +90,7 @@ public class SegmentServiceImpl implements SegmentService {
         SegmentVariant updatedTarget = e.getUpdatedTarget();
         boolean updatedSeg = seg.updateTarget(updatedTarget);
         if (updatedSeg) {
-            eventQueue.post(new SegmentEditEvent(seg));
+            eventQueue.post(new SegmentEditEvent(xliff, seg));
         }
     }
     
@@ -103,7 +101,7 @@ public class SegmentServiceImpl implements SegmentService {
     	OcelotSegment seg = e.getSegment();
     	String noteContent = e.getNoteContent();
     	if(seg.getNotes().editNote(noteContent, String.valueOf(seg.getSegmentNumber()))){
-    		eventQueue.post(new SegmentNoteEditEvent(seg) );
+    		eventQueue.post(new SegmentNoteEditEvent(e.getDocument(), seg) );
     	}
     }
 
@@ -113,7 +111,7 @@ public class SegmentServiceImpl implements SegmentService {
         OcelotSegment seg = e.getSegment();
         if (seg.hasOriginalTarget() && !seg.getTargetDiff().isEmpty()) {
             if (seg.resetTarget()) {
-                eventQueue.post(new SegmentEditEvent(seg));
+                eventQueue.post(new SegmentEditEvent(xliff, seg));
             }
         }
     }
@@ -125,7 +123,7 @@ public class SegmentServiceImpl implements SegmentService {
         LanguageQualityIssue lqi = e.getLQI();
         seg.addLQI(lqi);
         eventQueue.post(new ItsDocStatsUpdateLqiEvent(lqi));
-        eventQueue.post(new SegmentEditEvent(seg));
+        eventQueue.post(new SegmentEditEvent(xliff, seg));
         eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
 
@@ -143,7 +141,7 @@ public class SegmentServiceImpl implements SegmentService {
         segmentLQI.setEnabled(editedLQI.isEnabled());
 
         eventQueue.post(new ItsDocStatsUpdateLqiEvent(segmentLQI));
-        eventQueue.post(new SegmentEditEvent(seg));
+        eventQueue.post(new SegmentEditEvent(xliff, seg));
         eventQueue.post(new LQIModificationEvent(segmentLQI, seg));
     }
 
@@ -154,7 +152,7 @@ public class SegmentServiceImpl implements SegmentService {
         LanguageQualityIssue lqi = e.getLQI();
         seg.removeLQI(lqi);
         eventQueue.post(new ItsDocStatsRemovedLqiEvent(xliff.getSegments()));
-        eventQueue.post(new SegmentEditEvent(seg));
+        eventQueue.post(new SegmentEditEvent(xliff, seg));
         eventQueue.post(new LQIModificationEvent(lqi, seg));
     }
 

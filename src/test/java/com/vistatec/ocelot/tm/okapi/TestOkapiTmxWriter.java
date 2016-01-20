@@ -25,6 +25,7 @@ import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
 import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import net.sf.okapi.common.LocaleId;
 
@@ -61,6 +62,17 @@ public class TestOkapiTmxWriter {
         tmxWriter = new OkapiTmxWriter(segService);
     }
 
+    private XLIFFDocument getMockXLIFFDoc() {
+        final XLIFFDocument doc = mockery.mock(XLIFFDocument.class);
+        mockery.checking(new Expectations() {{
+            allowing(doc).getSrcLocale();
+                will(returnValue(LocaleId.ENGLISH));
+            allowing(doc).getTgtLocale();
+                will(returnValue(LocaleId.FRENCH));
+        }});
+        return doc;
+    }
+
     @Test
     public void exportBasicTmx() throws Exception {
         final OcelotSegment testSeg = new SimpleSegment.Builder()
@@ -70,8 +82,7 @@ public class TestOkapiTmxWriter {
                 .build();
         setupTmxWriter(testSeg);
 
-        tmxWriter.setOpenFileLangs(new OpenFileEvent("export_tmx_test",
-                LocaleId.ENGLISH, LocaleId.FRENCH));
+        tmxWriter.setOpenFileLangs(new OpenFileEvent("export_tmx_test", getMockXLIFFDoc()));
         tmxWriter.exportTmx(testFile);
         assertExportedTmxFilesEqual(testFile,
                 TestOkapiTmxWriter.class.getResourceAsStream("export_tmx_test_goal.tmx"));
@@ -87,8 +98,7 @@ public class TestOkapiTmxWriter {
                 .text("test").code("2", "<mrk>", "<mrk id=\"2\" type=\"its:its\" translate=\"no\"");
         setupTmxWriter(segBuilder.build());
 
-        tmxWriter.setOpenFileLangs(new OpenFileEvent("export_tagged_tmx_test",
-                LocaleId.ENGLISH, LocaleId.FRENCH));
+        tmxWriter.setOpenFileLangs(new OpenFileEvent("export_tagged_tmx_test", getMockXLIFFDoc()));
         tmxWriter.exportTmx(testFile);
         assertExportedTmxFilesEqual(testFile,
                 TestOkapiTmxWriter.class.getResourceAsStream("export_tagged_tmx_test_goal.tmx"));
@@ -122,8 +132,7 @@ public class TestOkapiTmxWriter {
         });
         tmxWriter = new OkapiTmxWriter(segService);
 
-        tmxWriter.setOpenFileLangs(new OpenFileEvent("export_multiple_segments_tmx_test",
-                LocaleId.ENGLISH, LocaleId.FRENCH));
+        tmxWriter.setOpenFileLangs(new OpenFileEvent("export_multiple_segments_tmx_test", getMockXLIFFDoc()));
         tmxWriter.exportTmx(testFile);
         assertExportedTmxFilesEqual(testFile,
                 TestOkapiTmxWriter.class.getResourceAsStream("export_multiple_segments_tmx_test_goal.tmx"));

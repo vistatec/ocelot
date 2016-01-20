@@ -103,8 +103,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
-        eventQueue.post(new OpenFileEvent(openFile.getName(),
-                openXliffFile.getSrcLocale(), openXliffFile.getTgtLocale()));
+        eventQueue.post(new OpenFileEvent(openFile.getName(), openXliffFile));
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {

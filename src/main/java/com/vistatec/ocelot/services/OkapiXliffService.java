@@ -56,8 +56,6 @@ import net.sf.okapi.common.LocaleId;
  */
 public class OkapiXliffService implements XliffService {
     private XLIFFFactory xliffFactory = new OkapiXLIFFFactory();
-    private XLIFFParser xliffParser;
-    private XLIFFWriter segmentWriter;
 
     private final ConfigService cfgService;
     private final OcelotEventQueue eventQueue;
@@ -69,13 +67,20 @@ public class OkapiXliffService implements XliffService {
 
     @Subscribe
     public void updateSegment(SegmentEditEvent e) {
-		segmentWriter.updateSegment(e.getSegment());
+        getDoc(e.getDocument()).getWriter().updateSegment(e.getSegment());
     }
     
 
     @Subscribe
     public void updateNotes(SegmentNoteEditEvent e ) {
-    	segmentWriter.updateNotes(e.getSegment());
+        getDoc(e.getDocument()).getWriter().updateNotes(e.getSegment());
+    }
+
+    private OkapiXLIFFDocument getDoc(XLIFFDocument xliff) {
+        if (!(xliff instanceof OkapiXLIFFDocument)) {
+            throw new IllegalArgumentException("Unknown XLIFF file object");
+        }
+        return (OkapiXLIFFDocument)xliff;
     }
 
     @Override
@@ -84,8 +89,8 @@ public class OkapiXliffService implements XliffService {
         XLIFFParser newParser = xliffFactory.newXLIFFParser(version);
         List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
 
-        xliffParser = newParser;
-        segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
+        XLIFFParser xliffParser = newParser;
+        XLIFFWriter segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
                 cfgService.getUserProvenance(), eventQueue);
         return new OkapiXLIFFDocument(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
                                   LocaleId.fromString(xliffParser.getTargetLang()), xliffSegments,
@@ -94,10 +99,7 @@ public class OkapiXliffService implements XliffService {
 
     @Override
     public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException {
-        if (!(xliffFile instanceof OkapiXLIFFDocument)) {
-            throw new IllegalArgumentException("Unknown XLIFF file object");
-        }
-        OkapiXLIFFDocument okapiFile = (OkapiXLIFFDocument)xliffFile;
+        OkapiXLIFFDocument okapiFile = getDoc(xliffFile);
         okapiFile.getWriter().save(dest);
     }
 
