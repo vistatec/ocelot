@@ -30,6 +30,7 @@ package com.vistatec.ocelot;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
@@ -98,20 +99,21 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void setSegment(SegmentSelectionEvent e) {
-    	try{
-        selectedSegment = e.getSegment();
+	    this.selectedSegment = e.getSegment();
+        showSegmentDetailView(selectedSegment);
+        revalidate();
+    }
+
+    @Subscribe
+    public void openFile(OpenFileEvent e) {
+        showSegmentDetailView(null);
+    }
+
+    private void showSegmentDetailView(OcelotSegment segment) {
         removeProvenanceDetailView();
         removeLQIDetailView();
         addSegmentDetailView();
-        segDetailView.setSegment(selectedSegment);
-        revalidate();
-    	}catch (Exception ex){
-    		System.out.println("EXCEPTION");
-    		System.out.println(ex.getClass().getName());
-    		System.out.println(ex.getMessage());
-    		ex.printStackTrace();
-    	}
-    	
+        segDetailView.setSegment(segment);
     }
 
     public void addProvenanceDetailView() {
