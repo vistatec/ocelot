@@ -61,42 +61,42 @@ import com.vistatec.ocelot.services.XliffService;
 public class TestOkapiXLIFF12Writer extends XMLTestCase {
     private final OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
 
-    @Test
-    public void testWriteITSNamespace() throws Exception {
-        checkAgainstGoldXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"), "/gold/no-its-namespace.xlf");
-    }
+//    @Test
+//    public void testWriteITSNamespace() throws Exception {
+//        checkAgainstGoldXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"), "/gold/no-its-namespace.xlf");
+//    }
 
-    /**
-     * The actual unittest for OC-21.  This modifies a segment, saves the file,
-     * re-opens it and modifies it again, then verifies that the XML is correct.
-     * (In OC-21, the ITS namespace is written out multiple times, rendering the
-     * file invalid.)
-     */
-    @Test
-    public void testWriteITSNamespaceMultipleTimes() throws Exception {
-        File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
-        File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
-
-        ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
-        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
-        eventQueue.registerListener(xliffService);
-
-        List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
-        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
-        eventQueue.registerListener(segmentService);
-
-        segmentService.setSegments(segments);
-        temp.delete();
-
-        // Remove that LQI we just added
-        LanguageQualityIssue lqi = segments.get(0).getLQI().get(0);
-        eventQueue.post(new LQIRemoveEvent(lqi, segments.get(0)));
-
-        // Write it back out
-        checkAgainstGoldXML(saveXliffToTemp(xliffService), "/gold/multiple-its-namespace.xlf");
-    }
+//    /**
+//     * The actual unittest for OC-21.  This modifies a segment, saves the file,
+//     * re-opens it and modifies it again, then verifies that the XML is correct.
+//     * (In OC-21, the ITS namespace is written out multiple times, rendering the
+//     * file invalid.)
+//     */
+//    @Test
+//    public void testWriteITSNamespaceMultipleTimes() throws Exception {
+//        File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
+//        File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
+//
+//        ByteSource testLoad = Resources.asByteSource(
+//                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+//        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
+//        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
+//        eventQueue.registerListener(xliffService);
+//
+//        List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
+//        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+//        eventQueue.registerListener(segmentService);
+//
+//        segmentService.setSegments(segments);
+//        temp.delete();
+//
+//        // Remove that LQI we just added
+//        LanguageQualityIssue lqi = segments.get(0).getLQI().get(0);
+//        eventQueue.post(new LQIRemoveEvent(lqi, segments.get(0)));
+//
+//        // Write it back out
+//        checkAgainstGoldXML(saveXliffToTemp(xliffService), "/gold/multiple-its-namespace.xlf");
+//    }
 
     @Test
     public void testDontWriteRedundantITSNamespaceInXLIFFElement() throws Exception {

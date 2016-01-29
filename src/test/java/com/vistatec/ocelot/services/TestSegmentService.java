@@ -93,7 +93,7 @@ public class TestSegmentService {
         assertTrue(seg.getLQI().get(0).getType().equals("omission"));
         assertTrue(seg.getLQI().get(0).getSeverity() == 85);
 
-        segmentService.editLQI(new LQIEditEvent(modifiedLqi, seg, lqi));
+        segmentService.editLQI(new LQIEditEvent(modifiedLqi, lqi, seg, lqi));
 
         assertTrue(!seg.getLQI().isEmpty());
         assertTrue(seg.getLQI().get(0).getType().equals("grammar"));

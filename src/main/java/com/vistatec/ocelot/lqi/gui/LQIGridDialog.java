@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
@@ -218,15 +219,19 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 				LQIGridButton button = (LQIGridButton) e.getSource();
 				if (mode == ISSUES_ANNOTS_MODE) {
 					double severity = 0;
+					int severityType = -1;
 					if (button.getSeverityColumn() == tableHelper
 					        .getLqiTableModel().getMinorScoreColumn()) {
 						severity = lqiGrid.getMinorScore();
+						severityType = LanguageQualityIssue.MINOR;
 					} else if (button.getSeverityColumn() == tableHelper
 					        .getLqiTableModel().getSeriousScoreColumn()) {
 						severity = lqiGrid.getSeriousScore();
+						severityType = LanguageQualityIssue.MAJOR;
 					} else if (button.getSeverityColumn() == tableHelper
 					        .getLqiTableModel().getCriticalScoreColumn()) {
 						severity = lqiGrid.getCriticalScore();
+						severityType = LanguageQualityIssue.CRITICAL;
 					}
 					String categoryName = tableHelper
 					        .getLqiTable()
@@ -243,7 +248,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 //						comment = commentObj.toString();
 //					}
 //					createNewLqi(categoryName, severity, comment);
-					controller.createNewLqi(categoryName, severity);
+					controller.createNewLqi(categoryName, severity, severityType);
 				} else if (mode == CONFIG_MODE) {
 
 					LQIErrorCategory selErrorCat = tableHelper

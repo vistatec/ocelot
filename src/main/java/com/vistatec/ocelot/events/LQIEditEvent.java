@@ -6,12 +6,14 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 public class LQIEditEvent extends LQIEvent {
     private final OcelotSegment segment;
     private final LanguageQualityIssue segmentLQI;
+    private final LanguageQualityIssue oldLQI;
 
-    public LQIEditEvent(LanguageQualityIssue editedLQI, OcelotSegment segment,
+    public LQIEditEvent(LanguageQualityIssue editedLQI, LanguageQualityIssue oldLQI, OcelotSegment segment,
             LanguageQualityIssue segmentLQI) {
         super(editedLQI);
         this.segment = segment;
         this.segmentLQI = segmentLQI;
+        this.oldLQI = oldLQI;
     }
 
     public OcelotSegment getSegment() {
@@ -20,5 +22,9 @@ public class LQIEditEvent extends LQIEvent {
 
     public LanguageQualityIssue getSegmentLQI() {
         return segmentLQI;
+    }
+    
+    public LanguageQualityIssue getOldLQI(){
+    	return oldLQI;
     }
 }

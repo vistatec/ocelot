@@ -39,25 +39,31 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -80,19 +86,23 @@ public class PluginManager implements OcelotEventQueueListener {
 	private List<String> itsPluginClassNames = new ArrayList<String>();
 	private List<String> segPluginClassNames = new ArrayList<String>();
 	private List<String> reportPluginClassNames = new ArrayList<String>();
+	private List<String> qualityPluginClassNames = new ArrayList<String>();
 	private HashMap<ITSPlugin, Boolean> itsPlugins;
 	private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private HashMap<ReportPlugin, Boolean> reportPlugins;
 	private ClassLoader classLoader;
 	private File pluginDir;
 	private final ConfigService cfgService;
+	private QualityPluginManager qualityPluginManager;
 
 	public PluginManager(ConfigService cfgService, File pluginDir) {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
 		this.reportPlugins = new HashMap<ReportPlugin, Boolean>();
+
 		this.cfgService = cfgService;
 		this.pluginDir = pluginDir;
+		qualityPluginManager = new QualityPluginManager();
 	}
 
 	public File getPluginDir() {
@@ -108,9 +118,11 @@ public class PluginManager implements OcelotEventQueueListener {
 		Set<? extends Plugin> itsPlugins = getITSPlugins();
 		Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
 		Set<? extends Plugin> reportPlugins = getReportPlugins();
+		Set<? extends Plugin> qualityPlugins = getQualityPlugins();
 		plugins.addAll(itsPlugins);
 		plugins.addAll(segmentPlugins);
 		plugins.addAll(reportPlugins);
+		plugins.addAll(qualityPlugins);
 		return plugins;
 	}
 
@@ -129,6 +141,10 @@ public class PluginManager implements OcelotEventQueueListener {
 		return this.reportPlugins.keySet();
 	}
 
+	public Set<QualityPlugin> getQualityPlugins() {
+		return qualityPluginManager.getPlugins().keySet();
+	}
+
 	/**
 	 * Return if the plugin should receive data from the workbench.
 	 */
@@ -143,6 +159,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof ReportPlugin) {
 			ReportPlugin reportPlugin = (ReportPlugin) plugin;
 			enabled = reportPlugins.get(reportPlugin);
+		} else if (plugin instanceof QualityPlugin) {
+			QualityPlugin qualityPlugin = (QualityPlugin) plugin;
+			enabled = qualityPluginManager.getPlugins().get(qualityPlugin);
 		}
 		return enabled;
 	}
@@ -158,6 +177,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof ReportPlugin) {
 			ReportPlugin reportPlugin = (ReportPlugin) plugin;
 			reportPlugins.put(reportPlugin, enabled);
+		} else if (plugin instanceof QualityPlugin) {
+			QualityPlugin qualityPlugin = (QualityPlugin) plugin;
+			qualityPluginManager.enablePlugin(qualityPlugin, enabled);
 		}
 		cfgService.savePluginEnabled(plugin, enabled);
 	}
@@ -253,10 +275,12 @@ public class PluginManager implements OcelotEventQueueListener {
 				}
 			}
 		}
-		if(isReportPluginEnabled()){
-			ReportPlugin reportPlugin = reportPlugins.keySet().iterator().next();
+		if (isReportPluginEnabled()) {
+			ReportPlugin reportPlugin = reportPlugins.keySet().iterator()
+			        .next();
 			reportPlugin.onOpenFile(filename, segments);
 		}
+		qualityPluginManager.initOpenedFileSettings(segments);
 	}
 
 	public void notifySaveFile(String filename) {
@@ -348,6 +372,22 @@ public class PluginManager implements OcelotEventQueueListener {
 				e.printStackTrace();
 			}
 		}
+		for (String s : qualityPluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends QualityPlugin> c = (Class<QualityPlugin>) Class
+				        .forName(s, false, classLoader);
+				QualityPlugin plugin = c.newInstance();
+				qualityPluginManager.getPlugins().put(plugin,
+				        cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void installClassLoader(File[] jarFiles) throws IOException {
@@ -375,11 +415,14 @@ public class PluginManager implements OcelotEventQueueListener {
 	void scanJar(final File file) {
 		try {
 			Enumeration<JarEntry> e = new JarFile(file).entries();
+			System.out.println("----------------------------------");
+			System.out.println("File: " + file.getName());
 			while (e.hasMoreElements()) {
 				JarEntry entry = e.nextElement();
 				String name = entry.getName();
 				if (name.endsWith(".class")) {
 					name = convertFileNameToClass(name);
+					System.out.println(name);
 					try {
 						Class<?> clazz = Class
 						        .forName(name, false, classLoader);
@@ -430,6 +473,20 @@ public class PluginManager implements OcelotEventQueueListener {
 								reportPluginClassNames.add(name);
 							}
 						}
+						if (QualityPlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin! Just store the name for now
+							// since we will need to reinstantiate it later with
+							// the
+							// real classloader (I think)
+							if (qualityPluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
+							} else {
+								qualityPluginClassNames.add(name);
+							}
+						}
 					} catch (ClassNotFoundException ex) {
 						// XXX shouldn't happen?
 						System.out.println("Warning: " + ex.getMessage());
@@ -455,10 +512,6 @@ public class PluginManager implements OcelotEventQueueListener {
 		return s.replace('/', '.');
 	}
 
-	public void generateReports() {
-
-	}
-
 	static class JarFilenameFilter implements FilenameFilter {
 		@Override
 		public boolean accept(File dir, String filename) {
@@ -474,32 +527,134 @@ public class PluginManager implements OcelotEventQueueListener {
 		}
 	}
 
-	public List<JMenu> getPluginMenuList(){
-		
+	public List<JMenu> getPluginMenuList(final JFrame ocelotFrame) {
+
 		List<JMenu> menuList = new ArrayList<JMenu>();
-		if(isReportPluginEnabled()){
+		if (isReportPluginEnabled()) {
 			JMenu reportMenu = new JMenu("Reports");
 			JMenuItem generateMenuItem = new JMenuItem("Generate Reports");
 			generateMenuItem.addActionListener(new ActionListener() {
-				
+
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-	                    reportPlugins.keySet().iterator().next().generateReport(null);
-                    } catch (ReportException e1) {
-	                    // TODO Auto-generated catch block
-	                    e1.printStackTrace();
-                    }
+						reportPlugins.keySet().iterator().next()
+						        .generateReport(ocelotFrame);
+					} catch (ReportException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 			});
 			reportMenu.add(generateMenuItem);
 			menuList.add(reportMenu);
 		}
+		if (qualityPluginManager.isQualityPluginLoaded()) {
+			qualityPluginManager.setOcelotMainFrame(ocelotFrame);
+			menuList.add(qualityPluginManager.getQualityPluginMenu());
+		}
 		return menuList;
 	}
-	
+
+	// public JMenu getQualityPluginMenu(final JFrame ocelotFrame ){
+	//
+	// JMenu qualityMenu = new JMenu("Quality Score Evaluation");
+	// JMenu auditProfMenu = new JMenu("Manage Audit Profile");
+	// final JMenuItem mnuLoadAudit = new JMenuItem("Load Audit Profile");
+	// auditProfMenu.add(mnuLoadAudit);
+	// final JMenuItem mnuNewAudit = new JMenuItem("Create New Audit Profile");
+	// auditProfMenu.add(mnuNewAudit);
+	// final JMenuItem mnuCopyAudit = new JMenuItem("Copy Audit Profile");
+	// auditProfMenu.add(mnuCopyAudit);
+	// final JMenuItem mnuViewAudit = new JMenuItem("View Audit");
+	// auditProfMenu.add(mnuViewAudit);
+	// qualityMenu.add(auditProfMenu);
+	//
+	// ActionListener listener = new ActionListener() {
+	//
+	// @Override
+	// public void actionPerformed(ActionEvent e) {
+	// if(e.getSource().equals(mnuViewAudit)){
+	// qualityPlugins.keySet().iterator().next().viewAuditProfileProps();
+	// } else if(e.getSource().equals(mnuCopyAudit)){
+	// qualityPlugins.keySet().iterator().next().createAuditProfileFromExistingOne(file);;
+	// }
+	// }
+	// };
+	//
+	// return qualityMenu;
+	// }
+
 	public boolean isReportPluginEnabled() {
 		return reportPlugins != null && !reportPlugins.isEmpty()
 		        && reportPlugins.entrySet().iterator().next().getValue();
+	}
+
+	public void newFiledOpened(List<OcelotSegment> segments) {
+
+		
+
+	}
+	
+	
+
+	@Subscribe
+	public void handleLqiAdded(LQIAdditionEvent event) {
+
+		try{
+		qualityPluginManager.addQualityIssue(event.getLQI());
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	@Subscribe
+	public void handleLqiEdited(LQIEditEvent event) {
+		qualityPluginManager.editedQualityIssue(event.getOldLQI(),
+		        event.getLQI());
+	}
+
+	public static void main(String[] args) throws IOException, SAXException {
+
+//		String regex = "[a-zA-Z0-9_]*?";
+//		String str = "marta";
+//		System.out.println(str.matches(regex));
+//		String str2 = "php utilizza la sintassi di perl, e mentre ereg... beh, ereg";
+//		String regex2 = "[^a-zA-Z0-9_].";
+//		String[] splitString = str2.split(regex2);
+//		System.out.println(Arrays.toString(splitString));
+//		System.out.println(splitString.length);
+		
+		BreakIterator iterator = BreakIterator.getWordInstance(Locale.ITALIAN);
+		String text = "php utilizza la sintassi di perl, e mentre ereg... beh, ereg";
+		iterator.setText(text);
+		int lastBoundary = 0; 
+		int boundary = iterator.first();
+		while(boundary != BreakIterator.DONE){
+			for(int i = lastBoundary; i<boundary; i++){
+				if(Character.isLetter(text.codePointAt(i))){
+					System.out.println(text.substring(lastBoundary, boundary));
+					break;
+				}
+			}
+			lastBoundary = boundary;
+			boundary = iterator.next();
+		}
+		if(lastBoundary < text.length()){
+			for(int i = lastBoundary; i<text.length(); i++){
+				if(Character.isLetter(text.codePointAt(i))){
+					System.out.println(text.substring(lastBoundary));
+					break;
+				}
+			}
+		}
+
+//		BodyContentHandler handler = new BodyContentHandler(10*1024*1024);
+//		Metadata metadata = new Metadata();
+//		AutoDetectParser parser = new AutoDetectParser();
+//		InputStream in = new FileInputStream(new File(System.getProperty("user.home"), "words.txt"));
+//		parser.parse(in, handler, metadata);
+//		System.out.println(metadata.get(Metadata.WORD_COUNT));
+		
 	}
 }

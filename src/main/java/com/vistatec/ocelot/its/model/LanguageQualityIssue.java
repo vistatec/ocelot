@@ -43,8 +43,14 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
  * Represents Language Quality Issue Data Category in the ITS 2.0 spec.
  */
 public class LanguageQualityIssue extends ITSMetadata {
+	
+	public static final int NONE = -1;
+	public static final int MINOR = 0;
+	public static final int MAJOR = 1;
+	public static final int CRITICAL = 2;
     private String type, comment, issuesRef;
     private double severity;
+    private int severityType = NONE;
     private URL profileReference;
     private boolean enabled = true;
 
@@ -150,8 +156,16 @@ public class LanguageQualityIssue extends ITSMetadata {
     public void setIssuesRef(String issuesRef) {
         this.issuesRef = issuesRef;
     }
+    
+    public int getSeverityType() {
+		return severityType;
+	}
 
-    @Override
+	public void setSeverityType(int severityType) {
+		this.severityType = severityType;
+	}
+
+	@Override
     public String toString() {
         return getType();
     }

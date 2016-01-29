@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
@@ -283,10 +284,11 @@ public class LQIKeyEventHandler {
 	        String severity, int severityScore, LQIShortCut shortCut) {
 
 		String actionName = getActionName(errorCategory, severity);
+
 		rootPane
 		        .getActionMap()
 		        .put(actionName,
-		                new LQIAction(errorCategory.getName(), severityScore));
+		                new LQIAction(errorCategory.getName(), severityScore, getSeverityType(severity)));
 		// lqiTable
 		// .getActionMap()
 		// .put(actionName,
@@ -297,6 +299,18 @@ public class LQIKeyEventHandler {
 		}
 	}
 
+	private int getSeverityType(String severityName){
+		int severityType = -1;
+		if(severityName.equals(LQIConstants.MINOR_SEVERITY_NAME)){
+			severityType = LanguageQualityIssue.MINOR;
+		} else if(severityName.equals(LQIConstants.SERIOUS_SEVERITY_NAME)){
+			severityType = LanguageQualityIssue.MAJOR;
+		} if(severityName.equals(LQIConstants.CRITICAL_SEVERITY_NAME)){
+			severityType = LanguageQualityIssue.CRITICAL;
+		}  
+		return severityType;
+	}
+	
 	private String getActionName(LQIErrorCategory errCat, String errSeverity) {
 
 		return errCat.getName() + errSeverity;
@@ -312,16 +326,19 @@ public class LQIKeyEventHandler {
 		private String categoryName;
 
 		private double severityScore;
+		
+		private int severityType;
 
-		public LQIAction(String categoryName, double severitySCore) {
+		public LQIAction(String categoryName, double severitySCore, int severityType) {
 			this.categoryName = categoryName;
 			this.severityScore = severitySCore;
+			this.severityType = severityType;
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			lqiGridController.createNewLqi(categoryName, severityScore);
+			lqiGridController.createNewLqi(categoryName, severityScore, severityType);
 		}
 
 		public void setCategoryName(String categoryName) {
@@ -330,6 +347,10 @@ public class LQIKeyEventHandler {
 
 		public void setSeverityScore(double severityScore) {
 			this.severityScore = severityScore;
+		}
+		
+		public void setSeverityType(int severityType){
+			this.severityType = severityType;
 		}
 
 	}

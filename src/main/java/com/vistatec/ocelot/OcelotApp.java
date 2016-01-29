@@ -38,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.xml.stream.XMLStreamException;
 
@@ -157,8 +158,8 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
     }
 
-    public List<JMenu> getPluginMenuList() {
-        return pluginManager.getPluginMenuList();
+    public List<JMenu> getPluginMenuList(JFrame mainframe) {
+        return pluginManager.getPluginMenuList(mainframe);
     }
 
 }

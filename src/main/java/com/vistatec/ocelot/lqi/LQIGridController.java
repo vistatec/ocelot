@@ -123,8 +123,10 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 *            the LQI category
 	 * @param severity
 	 *            the issue severity.
+	 * @param severityType
+	 *            the severity type.
 	 */
-	public void createNewLqi(String category, double severity) {
+	public void createNewLqi(String category, double severity, int severityType) {
 
 		
 		if (gridDialog == null || gridDialog.canCreateIssue()) {
@@ -135,6 +137,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 			LanguageQualityIssue lqi = new LanguageQualityIssue();
 			lqi.setSeverity(severity);
 			lqi.setType(category);
+			lqi.setSeverityType(severityType);
 			lqi.setComment(comment);
 			System.out.println("-------- Create LQI " + lqi.toString() + " - "
 			        + lqi.getSeverity() + " - " + comment );

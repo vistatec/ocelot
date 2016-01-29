@@ -470,7 +470,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuPlugins.addActionListener(this);
 		menuExtensions.add(menuPlugins);
 
-		List<JMenu> pluginMenuList = ocelotApp.getPluginMenuList();
+		List<JMenu> pluginMenuList = ocelotApp.getPluginMenuList(mainframe);
 		for (JMenu menu : pluginMenuList) {
 			menuExtensions.add(menu);
 		}
