@@ -132,7 +132,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private static Logger LOG = Logger.getLogger(SegmentView.class);
 
 	protected SegmentTableModel segmentTableModel;
-	protected JTable sourceTargetTable;
+	protected SegmentViewTable sourceTargetTable;
 	private TableColumnModel tableColumnModel;
 	protected TableRowSorter<SegmentTableModel> sort;
 	private boolean enabledTargetDiff = true;
@@ -149,21 +149,39 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	/**
 	 * Table implementation that recalculates row heights when doLayout()
-	 * is called.
+	 * is called.  To try to minimize redraw time, we avoid recalculating
+	 * the whole table unless recalculateAllRowHeights() has been called
+	 * since the last call to doLayout().
 	 */
 	class SegmentViewTable extends JTable {
         private static final long serialVersionUID = 1L;
+        private boolean requireFullRecalc = false;
         SegmentViewTable(AbstractTableModel model) {
 	        super(model);
 	    }
 	    @Override
 	    public void doLayout() {
 	        long start = System.currentTimeMillis();
-            for (int row = 0; row < getRowCount(); row++) {
-                updateRowHeight(row, getIntercellSpacing().height);
-            }
+            // The call to super will trigger any necessary recalculation of
+	        // margin sizes.  We do this first to avoid rendering and then
+	        // immediately re-rendering with the updated column sizes (which
+	        // produces a noticeable UI flicker.)
             super.doLayout();
-            LOG.warn("doLayout() took " + (System.currentTimeMillis() - start) + "ms");
+	        int updatedRowCount = 0;
+            for (int row = 0; row < getRowCount(); row++) {
+                if (requireFullRecalc || editingRow == row) {
+                    updateRowHeight(row, getIntercellSpacing().height);
+                    updatedRowCount++;
+                }
+            }
+            requireFullRecalc = false;
+            LOG.trace("doLayout() took " + (System.currentTimeMillis() - start) + "ms for " +
+                      updatedRowCount + " rows");
+	    }
+
+	    // Dirty the whole layout
+	    public void recalculateAllRowHeights() {
+	        this.requireFullRecalc = true;
 	    }
 	}
 
@@ -265,7 +283,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			public void columnMoved(TableColumnModelEvent tcme) {}
 
 			@Override
-			public void columnMarginChanged(ChangeEvent ce) {}
+			public void columnMarginChanged(ChangeEvent ce) {
+			    sourceTargetTable.recalculateAllRowHeights();
+			}
 
 			@Override
 			public void columnSelectionChanged(ListSelectionEvent lse) {}
@@ -401,6 +421,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		currColumn.setPreferredWidth(
 		                this.getFontMetrics(font).stringWidth(
 		                        " " + segmentTableModel.getRowCount()));
+        sourceTargetTable.recalculateAllRowHeights();
 	}
 
 	private void updateTableRow(int row) {
@@ -575,6 +596,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
     public void setSourceFont(final Font font) {
 
         if (sourceTargetTable != null) {
+            sourceTargetTable.recalculateAllRowHeights();
             ((SegmentTextFontRenderer) sourceTargetTable.getColumnModel()
                     .getColumn(segmentTableModel.getSegmentSourceColumnIndex())
                     .getCellRenderer()).setFont(font);
@@ -587,6 +609,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
     public void setTargetFont(final Font font) {
 
         if (sourceTargetTable != null) {
+            sourceTargetTable.recalculateAllRowHeights();
             ((SegmentTextFontRenderer) sourceTargetTable.getColumnModel()
                     .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
                     .getCellRenderer()).setFont(font);
