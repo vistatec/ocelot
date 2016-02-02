@@ -47,8 +47,6 @@ import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
-import com.vistatec.ocelot.events.SegmentTargetResetEvent;
-import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
@@ -140,7 +138,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	protected RuleConfiguration ruleConfig;
 	private final OcelotEventQueue eventQueue;
 
-	private boolean targetChangedFromMatch;
 	private XLIFFDocument xliff;
 	private boolean isSourceBidi = false;
 	private boolean isTargetBidi = false;
@@ -450,7 +447,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	private void updateRowHeight(int row, int intercellHeight) {
 	    if (row == editingRow) {
-	        adjustEditorInitialSize(sourceTargetTable, row);
+	        adjustEditorInitialSize(row);
 	        return;
 	    }
 		int modelRow = sort.convertRowIndexToModel(row);
@@ -470,7 +467,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	    sourceTargetTable.setRowHeight(row, rowHeight + intercellHeight);
 	}
 
-    private void adjustEditorInitialSize(JTable jtable, int row) {
+    private void adjustEditorInitialSize(int row) {
         final FontMetrics defFontMetrics = sourceTargetTable
                 .getFontMetrics(sourceTargetTable.getFont());
         final int defFontHeight = defFontMetrics.getHeight();
@@ -492,7 +489,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
         final int targetFontHeight = targetFontMetrics.getHeight();
         int height = Math.max(defFontHeight, sourceFontHeight);
         height = Math.max(height, targetFontHeight);
-        jtable.setRowHeight(row, height * 10);
+        sourceTargetTable.setRowHeight(row, height * 10);
     }
 
     private Font getFontForColumn(SegmentViewColumn col) {
@@ -637,29 +634,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	}
 
 	@Subscribe
-	public void notifySegmentTargetReset(SegmentTargetResetEvent event) {
-		segmentTableModel.fireTableDataChanged();
-	}
-
-	@Subscribe
-	public synchronized void handleTargetUpdatedFromMatch(
-	        SegmentTargetUpdateFromMatchEvent event) {
-		// int selRow = sourceTargetTable.getSelectedRow();
-		// // segmentTableModel.fireTableRowsUpdated(selRow, selRow);
-		// updateTableRow(selRow);
-		// sourceTargetTable.requestFocusInWindow();
-		targetChangedFromMatch = true;
-	}
-
-	@Subscribe
-	public synchronized void handleTargetUpdatedFromMatch(SegmentEditEvent event) {
-		if (targetChangedFromMatch) {
-			int selRow = sourceTargetTable.getSelectedRow();
-			// segmentTableModel.fireTableRowsUpdated(selRow, selRow);
-			updateTableRow(selRow);
-			sourceTargetTable.requestFocusInWindow();
-			targetChangedFromMatch = false;
-		}
+	public void notifySegmentEdit(SegmentEditEvent event) {
+		int selRow = sourceTargetTable.getSelectedRow();
+		updateTableRow(selRow);
+		sourceTargetTable.requestFocusInWindow();
 	}
 
 	@Override
