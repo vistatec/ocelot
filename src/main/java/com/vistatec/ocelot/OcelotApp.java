@@ -28,11 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.services.SegmentService;
-import com.vistatec.ocelot.services.XliffService;
-import com.vistatec.ocelot.xliff.XLIFFDocument;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,6 +43,10 @@ import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * Main Ocelot application context.

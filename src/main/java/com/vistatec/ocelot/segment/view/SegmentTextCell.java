@@ -60,7 +60,7 @@ public class SegmentTextCell extends JTextPane {
 
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
     public static final String tagStyle = "tag", regularStyle = "regular",
-            insertStyle = "insert", deleteStyle = "delete";
+            insertStyle = "insert", deleteStyle = "delete", highlightStyle="highlight";
     private SegmentVariant v;
     
     private boolean inputMethodChanged;
@@ -121,6 +121,9 @@ public class SegmentTextCell extends JTextPane {
         StyledDocument styleDoc = this.getStyledDocument();
         Style regular = styleDoc.addStyle(regularStyle, style);
 
+        Style highlight = styleDoc.addStyle(highlightStyle, regular);
+        StyleConstants.setBackground(highlight, Color.yellow);
+        
         Style s = styleDoc.addStyle(tagStyle, regular);
         StyleConstants.setBackground(s, Color.LIGHT_GRAY);
 

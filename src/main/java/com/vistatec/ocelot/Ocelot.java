@@ -55,10 +55,10 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -79,12 +79,14 @@ import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.gui.LQIKeyEventHandler;
@@ -93,9 +95,9 @@ import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
-import com.vistatec.ocelot.tm.gui.TmGuiManager;
 
 /**
  * Main UI Thread class. Handles menu and file operations
@@ -110,9 +112,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private static Logger LOG = Logger.getLogger(Ocelot.class);
 
 	private JMenuBar menuBar;
-	private JMenu menuFile, menuView, menuExtensions, menuHelp;
+	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs;
+	        menuSave, menuSaveAs, menuFindReplace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JMenuItem menuColumns;
@@ -129,6 +131,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private DetailView itsDetailView;
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
+	private FindAndReplaceController frController;
 
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
@@ -151,7 +154,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		this.lqiGridController = ocelotScope
 		        .getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
-
+		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
 		platformSupport.init(this);
 
@@ -275,6 +278,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			eventQueue.post(new ConfigTmRequestEvent(mainframe));
 		} else if (e.getSource() == this.menuLqiGrid) {
 			lqiGridController.displayLQIGrid();
+		} else if (e.getSource() == this.menuFindReplace) {
+			frController.displayDialog(mainframe);
 		}
 	}
 
@@ -425,6 +430,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuExit.addActionListener(this);
 		menuFile.add(menuExit);
 
+		mnuEdit = new JMenu("Edit");
+		menuFindReplace = new JMenuItem("Find and Replace");
+		menuFindReplace.addActionListener(this);
+		mnuEdit.add(menuFindReplace);
+		menuBar.add(mnuEdit);
+		
+		
 		menuView = new JMenu("View");
 		menuBar.add(menuView);
 

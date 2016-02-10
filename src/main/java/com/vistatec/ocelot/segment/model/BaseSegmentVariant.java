@@ -12,6 +12,9 @@ import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 public abstract class BaseSegmentVariant implements SegmentVariant {
 
+
+    protected List<HighlightData> highlightDataList;
+	
     protected abstract void setAtoms(List<SegmentAtom> atoms);
 
     List<SegmentAtom> getAtomsForRange(int start, int length) {
@@ -62,11 +65,22 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
         for (SegmentAtom atom : getAtoms()) {
             if (atom instanceof CodeAtom && verbose) {
                 textToStyle.add(((CodeAtom)atom).getVerboseData());
+                textToStyle.add(atom.getTextStyle());
             }
             else {
-                textToStyle.add(atom.getData());
+            	TextAtom txtAtom = (TextAtom)atom;
+            	if(txtAtom.getHighlightIndices() != null){
+            		textToStyle.add(atom.getData().substring(0, txtAtom.getHighlightIndices()[0]));
+            		textToStyle.add(txtAtom.getTextStyle());
+            		textToStyle.add(atom.getData().substring(txtAtom.getHighlightIndices()[0], txtAtom.getHighlightIndices()[1]));
+            		textToStyle.add(txtAtom.getHighlightStyle());
+            		textToStyle.add(atom.getData().substring(txtAtom.getHighlightIndices()[1]));
+            		textToStyle.add(txtAtom.getTextStyle());
+            	} else {
+            		textToStyle.add(atom.getData());
+            		textToStyle.add(atom.getTextStyle());
+            	}
             }
-            textToStyle.add(atom.getTextStyle());
         }
         return textToStyle;
     }
@@ -254,4 +268,45 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
         return codes;
     }
 
+    
+//    public void setHighlightedTxtAtomIndex(int atomIndex){
+//    	this.highlightedTxtAtomIdx = atomIndex;
+//    }
+    
+    public void clearHighlightedAtom(){
+//    	highlightedTxtAtomIdx = -1;
+//    	highlightIndices = null;
+    	highlightDataList = null;
+    }
+    
+    public void setHighlightDataList(List<HighlightData> highlightDataList) {
+    	this.highlightDataList = highlightDataList;
+    }
+    
+    public List<HighlightData> getHighlightDataList(){
+    	return highlightDataList;
+    }
+    
+    public void addHighlightData(HighlightData highlightData){
+    	if(highlightDataList == null){
+    		highlightDataList = new ArrayList<HighlightData>(); 
+    	}
+    	highlightDataList.add(highlightData);
+    }
+    
+//    public int getHighlightedTxtAtomIndex(){
+//    	
+//    	return highlightedTxtAtomIdx;
+//    }
+//    
+//    public void setHighlightedIndices(int startIndex, int endIndex){
+//    	
+//    	highlightIndices = new int[]{startIndex, endIndex};
+//    }
+//    
+//    public int[] getHighlightedIndices(){
+//    	
+//    	return highlightIndices;
+//    }
+//    
 }

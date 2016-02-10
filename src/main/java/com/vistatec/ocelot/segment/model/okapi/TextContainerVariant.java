@@ -35,8 +35,10 @@ import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 
 import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.HighlightData;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 /**
  * XLIFF 1.2 segment variant, implemented using Okapi
@@ -71,7 +73,19 @@ public class TextContainerVariant extends OkapiSegmentVariant {
 
     @Override
     public List<SegmentAtom> getAtoms() {
-        return convertTextFragment(tc.getUnSegmentedContentCopy());
+    	List<SegmentAtom> atoms = convertTextFragment(tc.getUnSegmentedContentCopy());
+		if (highlightDataList != null) {
+			for (HighlightData hlData : highlightDataList) {
+				if (hlData.getAtomIndex() != -1
+						&& hlData.getAtomIndex() < atoms.size()
+						&& atoms.get(hlData.getAtomIndex()) instanceof TextAtom) {
+					TextAtom txtAtom = (TextAtom) atoms.get(hlData
+							.getAtomIndex());
+					txtAtom.setHighlightIndices(hlData.getHighlightIndices());
+				}
+			}
+		}
+        return atoms;
     }
 
     @Override
