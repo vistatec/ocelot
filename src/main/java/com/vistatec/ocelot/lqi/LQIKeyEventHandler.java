@@ -1,8 +1,7 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi;
 
 import java.awt.event.ActionEvent;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -12,12 +11,10 @@ import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.lqi.LQIGridController;
-import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIErrorCategory.LQIShortCut;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQISeverity;
+import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
 /**
  * Handler class for managing LQI grid shortcuts.
@@ -38,7 +35,8 @@ public class LQIKeyEventHandler {
 	 * @param rootPane
 	 *            the root pane listening to key events.
 	 */
-	public LQIKeyEventHandler(final LQIGridController lqiGridController, JRootPane rootPane) {
+	public LQIKeyEventHandler(final LQIGridController lqiGridController,
+	        JRootPane rootPane) {
 
 		this.lqiGridController = lqiGridController;
 		this.rootPane = rootPane;
@@ -80,11 +78,7 @@ public class LQIKeyEventHandler {
 	 * @return the input map.
 	 */
 	private InputMap getInputMap() {
-//		return rootPane.getInputMap(
-//		        JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		return rootPane.getInputMap(
-		        JComponent.WHEN_IN_FOCUSED_WINDOW);
-//		 return rootPane.getInputMap();
+		return rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 
 	/**
@@ -114,22 +108,15 @@ public class LQIKeyEventHandler {
 	        LQIErrorCategory errorCategory) {
 
 		ActionMap actionMap = rootPane.getActionMap();
-		// ActionMap actionMap = lqiTable.getActionMap();
 		InputMap inputMap = getInputMap();
-		actionMap.remove(getActionName(errorCategory,
-		        LQIConstants.MINOR_SEVERITY_NAME));
-		actionMap.remove(getActionName(errorCategory,
-		        LQIConstants.SERIOUS_SEVERITY_NAME));
-		actionMap.remove(getActionName(errorCategory,
-		        LQIConstants.CRITICAL_SEVERITY_NAME));
-		if (errorCategory.getMinorShortcut() != null) {
-			inputMap.remove(errorCategory.getMinorShortcut().getKeyStroke());
+		for (LQISeverity sev : lqiGrid.getSeverities()) {
+			actionMap.remove(getActionName(errorCategory, sev.getName()));
 		}
-		if (errorCategory.getSeriousShortcut() != null) {
-			inputMap.remove(errorCategory.getSeriousShortcut().getKeyStroke());
-		}
-		if (errorCategory.getCriticalShortcut() != null) {
-			inputMap.remove(errorCategory.getCriticalShortcut().getKeyStroke());
+
+		if (errorCategory.getShortcuts() != null) {
+			for (LQIShortCut shortcut : errorCategory.getShortcuts()) {
+				inputMap.remove(shortcut.getKeyStroke());
+			}
 		}
 	}
 
@@ -141,28 +128,20 @@ public class LQIKeyEventHandler {
 	 *            the error category
 	 * @param oldShortcut
 	 *            the old shortcut
-	 * @param errSeverity
-	 *            the error severity
+	 * @param severityName
+	 *            the severity name
 	 */
 	public void shortCutChanged(LQIErrorCategory errorCategory,
-	        KeyStroke oldShortcut, String errSeverity) {
+	        KeyStroke oldShortcut, String severityName) {
 
 		InputMap inputMap = getInputMap();
 		String actionNameFromMap = (String) inputMap.get(oldShortcut);
-		String actionName = getActionName(errorCategory, errSeverity);
+		String actionName = getActionName(errorCategory, severityName);
 		if (actionName.equals(actionNameFromMap)) {
 			inputMap.remove(oldShortcut);
 		}
-		if (errSeverity.equals(LQIConstants.MINOR_SEVERITY_NAME)) {
-			inputMap.put(errorCategory.getMinorShortcut().getKeyStroke(),
-			        actionName);
-		} else if (errSeverity.equals(LQIConstants.SERIOUS_SEVERITY_NAME)) {
-			inputMap.put(errorCategory.getSeriousShortcut().getKeyStroke(),
-			        actionName);
-		} else if (errSeverity.equals(LQIConstants.CRITICAL_SEVERITY_NAME)) {
-			inputMap.put(errorCategory.getCriticalShortcut().getKeyStroke(),
-			        actionName);
-		}
+		inputMap.put(errorCategory.getShortcut(severityName).getKeyStroke(),
+		        actionName);
 	}
 
 	/**
@@ -173,10 +152,10 @@ public class LQIKeyEventHandler {
 	 * @param errSeverity
 	 *            the error severity.
 	 */
-	public void errorSeverityScoreChanged(int newScoreValue, String errSeverity) {
+	public void errorSeverityScoreChanged(double newScoreValue,
+	        String errSeverity) {
 
 		ActionMap actionMap = rootPane.getActionMap();
-		// ActionMap actionMap = lqiTable.getActionMap();
 		Action action = null;
 		for (Object actionName : actionMap.allKeys()) {
 			action = actionMap.get(actionName);
@@ -197,29 +176,63 @@ public class LQIKeyEventHandler {
 	 */
 	public void categoryNameChanged(LQIErrorCategory errorCat, String oldName) {
 
-		replaceActionName(oldName, errorCat.getName(),
-		        LQIConstants.MINOR_SEVERITY_NAME,
-		        errorCat.getMinorShortcut() != null ? errorCat
-		                .getMinorShortcut().getKeyStroke() : null);
-		replaceActionName(oldName, errorCat.getName(),
-		        LQIConstants.SERIOUS_SEVERITY_NAME,
-		        errorCat.getSeriousShortcut() != null ? errorCat
-		                .getSeriousShortcut().getKeyStroke() : null);
-		replaceActionName(oldName, errorCat.getName(),
-		        LQIConstants.CRITICAL_SEVERITY_NAME,
-		        errorCat.getCriticalShortcut() != null ? errorCat
-		                .getCriticalShortcut().getKeyStroke() : null);
+		for (LQIShortCut shortcut : errorCat.getShortcuts()) {
+			replaceActionNameErrCat(oldName, errorCat.getName(), shortcut
+			        .getSeverity().getName(), shortcut.getKeyStroke());
+		}
 
 	}
 
-	public static void main(String[] args) {
+	/**
+	 * Handles the event a severity name has changed.
+	 * 
+	 * @param errCategories
+	 *            the list of error categories.
+	 * @param newName
+	 *            the severity new name.
+	 * @param oldName
+	 *            the severity old name.
+	 */
+	public void severityNameChanged(List<LQIErrorCategory> errCategories,
+	        String newName, String oldName) {
+		LQIShortCut shortcut = null;
+		for (LQIErrorCategory errCat : errCategories) {
+			shortcut = errCat.getShortcut(oldName);
+			if (shortcut != null) {
+				replaceActionNameSeverity(errCat.getName(), oldName, newName,
+				        shortcut.getKeyStroke());
+			}
+		}
 
-		String comma = ",";
-		try {
-			System.out.println(URLEncoder.encode(comma, "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	}
+
+	/**
+	 * Replaces the action name when a severity name changes.
+	 * 
+	 * @param errCatName
+	 *            the error category name
+	 * @param oldSevName
+	 *            the old severity name
+	 * @param newSevName
+	 *            the new severity name
+	 * @param keyStroke
+	 *            the key stroke
+	 */
+	private void replaceActionNameSeverity(String errCatName,
+	        String oldSevName, String newSevName, KeyStroke keyStroke) {
+
+		InputMap inputMap = getInputMap();
+		ActionMap actionMap = rootPane.getActionMap();
+		String currName = errCatName + oldSevName;
+		String newName = errCatName + newSevName;
+		Action action = actionMap.get(currName);
+		if (action != null && action instanceof LQIAction) {
+			actionMap.put(newName, action);
+			((LQIAction) action).setSeverityName(newSevName);
+
+		}
+		if (keyStroke != null) {
+			inputMap.put(keyStroke, newName);
 		}
 	}
 
@@ -235,12 +248,11 @@ public class LQIKeyEventHandler {
 	 * @param keyStroke
 	 *            the shortcut
 	 */
-	private void replaceActionName(String catOldName, String catNewtName,
+	private void replaceActionNameErrCat(String catOldName, String catNewtName,
 	        String severity, KeyStroke keyStroke) {
 
 		InputMap inputMap = getInputMap();
 		ActionMap actionMap = rootPane.getActionMap();
-		// ActionMap actionMap = lqiTable.getActionMap();
 		String currName = catOldName + severity;
 		String newName = catNewtName + severity;
 		Action action = actionMap.get(currName);
@@ -265,93 +277,145 @@ public class LQIKeyEventHandler {
 	 */
 	private void putActionForErrCategory(LQIGrid lqiGrid,
 	        LQIErrorCategory errorCategory) {
-		putActionInMap(errorCategory, LQIConstants.MINOR_SEVERITY_NAME,
-		        lqiGrid.getMinorScore(), errorCategory.getMinorShortcut());
-		putActionInMap(errorCategory, LQIConstants.SERIOUS_SEVERITY_NAME,
-		        lqiGrid.getSeriousScore(), errorCategory.getSeriousShortcut());
-		putActionInMap(errorCategory, LQIConstants.CRITICAL_SEVERITY_NAME,
-		        lqiGrid.getCriticalScore(), errorCategory.getCriticalShortcut());
-	}
 
-	/**
-	 * 
-	 * @param errorCategory
-	 * @param severity
-	 * @param severityScore
-	 * @param shortCut
-	 */
-	private void putActionInMap(LQIErrorCategory errorCategory,
-	        String severity, int severityScore, LQIShortCut shortCut) {
+		if (lqiGrid.getSeverities() != null) {
+			for (LQISeverity severity : lqiGrid.getSeverities()) {
 
-		String actionName = getActionName(errorCategory, severity);
-
-		rootPane
-		        .getActionMap()
-		        .put(actionName,
-		                new LQIAction(errorCategory.getName(), severityScore, getSeverityType(severity)));
-		// lqiTable
-		// .getActionMap()
-		// .put(actionName,
-		// new LQIAction(errorCategory.getName(), severityScore));
-
-		if (shortCut != null) {
-			getInputMap().put(shortCut.getKeyStroke(), actionName);
+				String actionName = getActionName(errorCategory,
+				        severity.getName());
+				rootPane.getActionMap().put(
+				        actionName,
+				        new LQIAction(errorCategory.getName(), severity
+				                .getScore(), severity.getName()));
+				LQIShortCut shortcut = errorCategory.getShortcut(severity
+				        .getName());
+				if (shortcut != null) {
+					getInputMap().put(shortcut.getKeyStroke(), actionName);
+				}
+			}
 		}
 	}
 
-	private int getSeverityType(String severityName){
-		int severityType = -1;
-		if(severityName.equals(LQIConstants.MINOR_SEVERITY_NAME)){
-			severityType = LanguageQualityIssue.MINOR;
-		} else if(severityName.equals(LQIConstants.SERIOUS_SEVERITY_NAME)){
-			severityType = LanguageQualityIssue.MAJOR;
-		} if(severityName.equals(LQIConstants.CRITICAL_SEVERITY_NAME)){
-			severityType = LanguageQualityIssue.CRITICAL;
-		}  
-		return severityType;
-	}
-	
+	/**
+	 * Gets the action name by concatenating the error category and the error
+	 * severity names.
+	 * 
+	 * @param errCat
+	 *            the error category
+	 * @param errSeverity
+	 *            the error severity
+	 * @return the action name.
+	 */
 	private String getActionName(LQIErrorCategory errCat, String errSeverity) {
 
 		return errCat.getName() + errSeverity;
 	}
 
-	private class LQIAction extends AbstractAction {
+	/**
+	 * Handles the event a severity has been deleted.
+	 * 
+	 * @param errCategories
+	 *            the list of error categories.
+	 * @param delSeverity
+	 *            the deleted severity.
+	 */
+	public void severityDeleted(List<LQIErrorCategory> errCategories,
+	        LQISeverity delSeverity) {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1279195606709400222L;
+		if (errCategories != null) {
+			for (LQIErrorCategory cat : errCategories) {
 
-		private String categoryName;
-
-		private double severityScore;
-		
-		private int severityType;
-
-		public LQIAction(String categoryName, double severitySCore, int severityType) {
-			this.categoryName = categoryName;
-			this.severityScore = severitySCore;
-			this.severityType = severityType;
+				rootPane.getActionMap().remove(
+				        getActionName(cat, delSeverity.getName()));
+				LQIShortCut shortcut = cat.getShortcut(delSeverity.getName());
+				if (shortcut != null) {
+					getInputMap().remove(shortcut.getKeyStroke());
+				}
+			}
 		}
 
+	}
+
+	/**
+	 * The LQI action. It stores the information needed for creating a Language
+	 * Quality Issue.
+	 */
+	private class LQIAction extends AbstractAction {
+
+		/** The serial version UID. */
+		private static final long serialVersionUID = 1279195606709400222L;
+
+		/** The category name. */
+		private String categoryName;
+
+		/** The severity score. */
+		private double severityScore;
+
+		/** The severity name. */
+		private String severityName;
+
+		/**
+		 * Constructor.
+		 * 
+		 * @param categoryName
+		 *            the category name.
+		 * @param severitySCore
+		 *            the severity score.
+		 * @param severityName
+		 *            the severity name.
+		 */
+		public LQIAction(String categoryName, double severitySCore,
+		        String severityName) {
+			this.categoryName = categoryName;
+			this.severityScore = severitySCore;
+			// this.severityType = severityType;
+			this.severityName = severityName;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent
+		 * )
+		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			lqiGridController.createNewLqi(categoryName, severityScore, severityType);
+			lqiGridController.createNewLqi(categoryName, severityScore,
+			        severityName);
 		}
 
+		/**
+		 * Sets the category name.
+		 * 
+		 * @param categoryName
+		 *            the category name.
+		 */
 		public void setCategoryName(String categoryName) {
 			this.categoryName = categoryName;
 		}
 
+		/**
+		 * // * Sets the severity score.
+		 * 
+		 * @param severityScore
+		 *            the severity score.
+		 */
 		public void setSeverityScore(double severityScore) {
 			this.severityScore = severityScore;
 		}
-		
-		public void setSeverityType(int severityType){
-			this.severityType = severityType;
+
+		/**
+		 * Sets the severity name.
+		 * 
+		 * @param severityName
+		 *            the severity name.
+		 */
+		public void setSeverityName(String severityName) {
+			this.severityName = severityName;
 		}
 
 	}
+
 }

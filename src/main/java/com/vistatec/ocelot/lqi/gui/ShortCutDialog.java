@@ -20,61 +20,65 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.vistatec.ocelot.lqi.constants.ShortCutConstants;
-import com.vistatec.ocelot.lqi.model.LQIErrorCategory.LQIShortCut;
+import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
+/**
+ * The shortcut dialog.
+ */
 public class ShortCutDialog extends JDialog implements Runnable, ActionListener {
 
-	/**
-	 * 
-	 */
+	/** The serial version UID. */
 	private static final long serialVersionUID = 2783798014624857076L;
 
-	// private final int[] symbolKeys = {
-	// KeyEvent.getExtendedKeyCodeForChar('~'),
-	// KeyEvent.getExtendedKeyCodeForChar('-'),
-	// KeyEvent.getExtendedKeyCodeForChar('='),
-	// KeyEvent.getExtendedKeyCodeForChar('['),
-	// KeyEvent.getExtendedKeyCodeForChar(']'),
-	// KeyEvent.getExtendedKeyCodeForChar(';'),
-	// KeyEvent.getExtendedKeyCodeForChar('\''),
-	// KeyEvent.getExtendedKeyCodeForChar('\\'),
-	// KeyEvent.getExtendedKeyCodeForChar(','),
-	// KeyEvent.getExtendedKeyCodeForChar('.'),
-	// KeyEvent.getExtendedKeyCodeForChar('<'),
-	// KeyEvent.getExtendedKeyCodeForChar('>') };
-
+	/** The dialog width. */
 	private static final int WIDTH = 300;
 
+	/** The dialog height. */
 	private static final int HEIGHT = 200;
 
+	/** The Ctrl check box */
 	private JCheckBox ckbCtrl;
 
+	/** The Alt check box */
 	private JCheckBox ckbAlt;
 
+	/** The Shift check box */
 	private JCheckBox ckbShift;
 
+	/** The combo listing the available keys. */
 	private JComboBox<KeyItem> cmbKeys;
 
+	/** Ok button */
 	private JButton btnOk;
 
+	/** Cancel button */
 	private JButton btnCancel;
 
+	/** The error category name. */
 	private String errorCatTitle;
 
+	/** The shortcut. */
 	private LQIShortCut lqiShortcut;
 
-	// private LQIGridDialog gridDialog;
 
+	/**
+	 * Constructor.
+	 * @param gridDialog the LQI grid dialog.
+	 * @param errorCatTitle the error category name
+	 * @param lqiShortCut the shortcut.
+	 */
 	public ShortCutDialog(LQIGridDialog gridDialog, String errorCatTitle,
 	        LQIShortCut lqiShortCut) {
 
 		super(gridDialog);
 		setModal(true);
-		// this.gridDialog = gridDialog;
 		this.errorCatTitle = errorCatTitle;
 		this.lqiShortcut = lqiShortCut;
 	}
 
+	/**
+	 * Initializes the dialog.
+	 */
 	private void init() {
 
 		setTitle("Short Cut");
@@ -88,6 +92,9 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		load();
 	}
 
+	/**
+	 * Loads theshortcut and fills in the fields.
+	 */
 	private void load() {
 
 		if (lqiShortcut != null) {
@@ -112,15 +119,22 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		}
 	}
 
+	/**
+	 * Gets the component to be displayed at the top.
+	 * @return the component to be displayed at the top.
+	 */
 	private Component getTopComponent() {
 
 		JPanel topPanel = new JPanel();
 		JLabel catLabel = new JLabel(errorCatTitle);
-		// catLabel.setFont(catLabel.getFont().deriveFont(Font.BOLD));
 		topPanel.add(catLabel);
 		return topPanel;
 	}
 
+	/**
+	 * Gets the component to be displayed at the center.
+	 * @return the component to be displayed at the center.
+	 */
 	private Component getCenterComponent() {
 
 		JPanel centerPanel = new JPanel();
@@ -130,7 +144,6 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		ckbShift = new JCheckBox("SHIFT");
 		cmbKeys = new JComboBox<KeyItem>(buildKeyComboModel());
 		JLabel plus1 = new JLabel("<html> <font size=\"5\">+</font></html>");
-		// plus1.setFont(plus1.getFont().deriveFont(20));
 		JLabel plus2 = new JLabel("<html> <font size=\"5\">+</font></html>");
 
 		GridBagConstraints c = new GridBagConstraints();
@@ -159,6 +172,10 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		return centerPanel;
 	}
 
+	/**
+	 * Builds the model for the combo listing available keys.
+	 * @return the combo model. 
+	 */
 	private KeyItem[] buildKeyComboModel() {
 
 		int keyItemsSize = ShortCutConstants.funcKeys.length
@@ -181,6 +198,13 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		return keyItems;
 	}
 
+	/**
+	 * Fills the key items array with keys from a different array.
+	 * @param keyItemArray the key items array
+	 * @param keyArray the keys array
+	 * @param startIndex the start index
+	 * @return the new start index.
+	 */
 	private int fillKeyItemArray(KeyItem[] keyItemArray, int[] keyArray,
 	        int startIndex) {
 
@@ -190,6 +214,10 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		return startIndex + keyArray.length;
 	}
 
+	/**
+	 * Gets the component to be displayed at the bottom.
+	 * @return the component to be displayed at the bottom.
+	 */
 	private Component getBottomComponent() {
 
 		JPanel bottomPanel = new JPanel();
@@ -203,6 +231,10 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		return bottomPanel;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 
@@ -210,92 +242,10 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		setVisible(true);
 	}
 
-	public static void main(String[] args) {
-
-		System.out.println(KeyEvent.getModifiersExText(KeyEvent.CTRL_DOWN_MASK
-		        + KeyEvent.ALT_DOWN_MASK));
-		String shortcut = KeyEvent.getModifiersExText(KeyEvent.CTRL_DOWN_MASK
-		        + KeyEvent.ALT_DOWN_MASK)
-		        + "+" + KeyEvent.getKeyText(KeyEvent.VK_2);
-		System.out.println(shortcut);
-		System.out.println(KeyEvent.getModifiersExText(0));
-		System.out
-		        .println(KeyEvent.getModifiersExText(KeyEvent.CTRL_DOWN_MASK));
-
-		// KeyStroke key = KeyStroke.getKeyStroke('J', 0);
-		// System.out.println(key.getKeyChar() + " - " +
-		// KeyEvent.getKeyModifiersText(0));
-
-		// System.out.println(KeyEvent.get);
-
-		// JFrame frame = new JFrame();
-		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		// frame.setLocationRelativeTo(null);
-		// frame.setVisible(true);
-		//
-		// ShortCutDialog dialog = new ShortCutDialog(frame,
-		// "Terminology - Minor");
-		// SwingUtilities.invokeLater(dialog);
-
-		// int[] funcKeys = {KeyEvent.VK_BACK_SPACE, KeyEvent.VK_TAB,
-		// KeyEvent.VK_ENTER, KeyEvent.VK_ESCAPE, KeyEvent.VK_SPACE,
-		// KeyEvent.VK_PAGE_UP, KeyEvent.VK_PAGE_DOWN, KeyEvent.VK_END,
-		// KeyEvent.VK_HOME, KeyEvent.VK_LEFT, KeyEvent.VK_UP,
-		// KeyEvent.VK_RIGHT, KeyEvent.VK_DOWN, KeyEvent.VK_INSERT,
-		// KeyEvent.VK_DELETE};
-		// int[] numberKeys = {KeyEvent.VK_0, KeyEvent.VK_1, KeyEvent.VK_2,
-		// KeyEvent.VK_3, KeyEvent.VK_4, KeyEvent.VK_5, KeyEvent.VK_6,
-		// KeyEvent.VK_7, KeyEvent.VK_8, KeyEvent.VK_9 };
-		// int[] letterKeys = {KeyEvent.VK_A, KeyEvent.VK_B, KeyEvent.VK_C,
-		// KeyEvent.VK_D, KeyEvent.VK_E, KeyEvent.VK_F, KeyEvent.VK_G,
-		// KeyEvent.VK_H, KeyEvent.VK_I, KeyEvent.VK_J, KeyEvent.VK_K,
-		// KeyEvent.VK_L, KeyEvent.VK_M, KeyEvent.VK_N, KeyEvent.VK_O,
-		// KeyEvent.VK_P, KeyEvent.VK_Q, KeyEvent.VK_R, KeyEvent.VK_S,
-		// KeyEvent.VK_T, KeyEvent.VK_U, KeyEvent.VK_V, KeyEvent.VK_W,
-		// KeyEvent.VK_X, KeyEvent.VK_Y, KeyEvent.VK_Z};
-		// int[] numPadKeys = {KeyEvent.VK_NUMPAD0, KeyEvent.VK_NUMPAD1,
-		// KeyEvent.VK_NUMPAD2, KeyEvent.VK_NUMPAD3, KeyEvent.VK_NUMPAD4,
-		// KeyEvent.VK_NUMPAD5, KeyEvent.VK_NUMPAD6, KeyEvent.VK_NUMPAD7,
-		// KeyEvent.VK_NUMPAD8, KeyEvent.VK_NUMPAD9, KeyEvent.VK_ADD,
-		// KeyEvent.VK_MULTIPLY, KeyEvent.VK_DIVIDE, KeyEvent.VK_SUBTRACT,
-		// KeyEvent.VK_DECIMAL};
-		// int[] fKeys = {KeyEvent.VK_F1, KeyEvent.VK_F2, KeyEvent.VK_F3,
-		// KeyEvent.VK_F4, KeyEvent.VK_F5, KeyEvent.VK_F6, KeyEvent.VK_F7,
-		// KeyEvent.VK_F8, KeyEvent.VK_F9, KeyEvent.VK_F10, KeyEvent.VK_F11,
-		// KeyEvent.VK_F12};
-		// int[] symbolKeys = {KeyEvent.getExtendedKeyCodeForChar('~'),
-		// KeyEvent.getExtendedKeyCodeForChar('-'),
-		// KeyEvent.getExtendedKeyCodeForChar('='),
-		// KeyEvent.getExtendedKeyCodeForChar('['),
-		// KeyEvent.getExtendedKeyCodeForChar(']'),
-		// KeyEvent.getExtendedKeyCodeForChar(';'),
-		// KeyEvent.getExtendedKeyCodeForChar('\''),
-		// KeyEvent.getExtendedKeyCodeForChar('\\'),
-		// KeyEvent.getExtendedKeyCodeForChar(','),
-		// KeyEvent.getExtendedKeyCodeForChar('.'),
-		// KeyEvent.getExtendedKeyCodeForChar('<'),
-		// KeyEvent.getExtendedKeyCodeForChar('>')};
-		// for(int key: funcKeys ){
-		// System.out.println(KeyEvent.getKeyText(key));
-		// }
-		// for(int numKey: numberKeys ){
-		// System.out.println(KeyEvent.getKeyText(numKey));
-		// }
-		// for(int letterKey: letterKeys ){
-		// System.out.println(KeyEvent.getKeyText(letterKey));
-		// }
-		// for(int numPadKey: numPadKeys ){
-		// System.out.println(KeyEvent.getKeyText(numPadKey));
-		// }
-		// for(int fKey: fKeys ){
-		// System.out.println(KeyEvent.getKeyText(fKey));
-		// }
-		// for(int symbolKey: symbolKeys ){
-		// System.out.println(KeyEvent.getKeyText(symbolKey));
-		// }
-
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
@@ -306,6 +256,9 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 		}
 	}
 
+	/**
+	 * Saves the data.
+	 */
 	private void save() {
 
 		int[] modifiers = new int[3];
@@ -334,34 +287,61 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 
 	}
 
+	/**
+	 * Closes the dialog.
+	 */
 	private void close() {
 		setVisible(false);
 		dispose();
 	}
 }
 
+/**
+ * Key item class. Objects from this class are the items for the keys combo.
+ */
 class KeyItem {
 
+	/** The key */
 	private int key;
 
+	/**
+	 * Constructor.
+	 * @param key the key. 
+	 */
 	public KeyItem(int key) {
 		this.key = key;
 	}
 
+	/**
+	 * Sets the key.
+	 * @param key the key.
+	 */
 	public void setKey(int key) {
 		this.key = key;
 	}
 
+	/**
+	 * Gets the key.
+	 * @return the key.
+	 */
 	public int getKey() {
 		return key;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 
 		return KeyEvent.getKeyText(key);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -374,6 +354,10 @@ class KeyItem {
 		return retValue;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		return key;

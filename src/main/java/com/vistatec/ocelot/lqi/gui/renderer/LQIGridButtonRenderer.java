@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.renderer;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -6,6 +6,8 @@ import java.awt.Component;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
+
+import com.vistatec.ocelot.lqi.gui.ColorCellRenderer;
 
 /**
  * Renderer for button cells of the LQI grid.

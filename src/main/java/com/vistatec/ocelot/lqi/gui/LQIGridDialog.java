@@ -12,6 +12,7 @@ import java.awt.event.ComponentEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -21,17 +22,21 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 
 import org.apache.log4j.Logger;
 
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.LQIGridController;
-import com.vistatec.ocelot.lqi.constants.LQIConstants;
+import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
+import com.vistatec.ocelot.lqi.LQIKeyEventManager;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIErrorCategory.LQIShortCut;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQISeverity;
+import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
 /**
  * Dialog displaying the LQI grid.
@@ -81,16 +86,25 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	private JButton btnCancel;
 
 	/** Add new row button. */
-	private JButton btnAdd;
+	private JButton btnAddRow;
 
 	/** Delete row button. */
-	private JButton btnDelete;
+	private JButton btnDeleteRow;
+
+	/** Add new column button. */
+	private JButton btnAddCol;
 
 	/** Arrow up button. */
 	private JButton btnUp;
 
 	/** Arrow down button. */
 	private JButton btnDown;
+
+	/** The columns panel. */
+	private JPanel colsPanel;
+
+	/** The rows panel. */
+	private JPanel rowsPanel;
 
 	/** The grid scroll panel. */
 	private JScrollPane scrollPane;
@@ -101,8 +115,9 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	/** The helper object for table management. */
 	private LQIGridTableHelper tableHelper;
 
+	/** The key event handler. */
 	private LQIKeyEventHandler lqiGridKeyEventHandler;
-	
+
 	/**
 	 * Constructor.
 	 * 
@@ -145,10 +160,10 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 */
 	private void init() {
 
-//		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(controller, ((JFrame)getOwner()).getRootPane());
-		lqiGridKeyEventHandler = new LQIKeyEventHandler(controller, getRootPane());
-//		keyEventManager.addKeyEventHandler(ocelotKeyEventHandler);
-		LQIKeyEventManager.getInstance().addKeyEventHandler(lqiGridKeyEventHandler);
+		lqiGridKeyEventHandler = new LQIKeyEventHandler(controller,
+		        getRootPane());
+		LQIKeyEventManager.getInstance().addKeyEventHandler(
+		        lqiGridKeyEventHandler);
 		lqiGridKeyEventHandler.load(lqiGrid);
 		tableHelper = new LQIGridTableHelper();
 		String title = TITLE;
@@ -159,7 +174,6 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		setResizable(false);
 		add(getCenterComponent(), BorderLayout.CENTER);
 		add(getBottomComponent(), BorderLayout.SOUTH);
-		// pack();
 		setTableSize();
 		setLocationRelativeTo(getOwner());
 	}
@@ -183,13 +197,57 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 			@Override
 			public void componentResized(ComponentEvent e) {
+				System.out.println("Component resized");
 				setTableSize();
 			}
 		});
+
+		tableHelper.getLqiTable().getColumnModel()
+		        .addColumnModelListener(new TableColumnModelListener() {
+
+			        /** number of columns added so far. */
+			        private int colAddedNum;
+
+			        @Override
+			        public void columnSelectionChanged(ListSelectionEvent arg0) {
+				        // do nothing
+			        }
+
+			        @Override
+			        public void columnRemoved(TableColumnModelEvent arg0) {
+				        // do nothing
+			        }
+
+			        @Override
+			        public void columnMoved(TableColumnModelEvent arg0) {
+				        // do nothing
+			        }
+
+			        @Override
+			        public void columnMarginChanged(ChangeEvent e) {
+
+				        // do nothing
+			        }
+
+			        @Override
+			        public void columnAdded(TableColumnModelEvent e) {
+				        System.out.println("Column added");
+
+				        colAddedNum++;
+				        if (colAddedNum == tableHelper.getLqiTableModel()
+				                .getColumnCount()) {
+					        colAddedNum = 0;
+					        setTableSize();
+				        }
+			        }
+		        });
 		return scrollPane;
 	}
 
-	private void setTableSize() {
+	/**
+	 * Sets the table size.
+	 */
+	private synchronized void setTableSize() {
 		int height = tableHelper.getLqiTable().getTableHeader().getSize().height
 		        + 5
 		        + (tableHelper.getLqiTable().getRowHeight() * tableHelper
@@ -197,6 +255,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 		int width = DIALOG_WIDTH_PADDING + tableHelper.getTableWidth();
 		scrollPane.setPreferredSize(new Dimension(width, height));
+		tableHelper.initColorForColumns();
 		tableHelper.configureTable(getGridButtonAction());
 		pack();
 
@@ -218,21 +277,13 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 				LQIGridButton button = (LQIGridButton) e.getSource();
 				if (mode == ISSUES_ANNOTS_MODE) {
-					double severity = 0;
-					int severityType = -1;
-					if (button.getSeverityColumn() == tableHelper
-					        .getLqiTableModel().getMinorScoreColumn()) {
-						severity = lqiGrid.getMinorScore();
-						severityType = LanguageQualityIssue.MINOR;
-					} else if (button.getSeverityColumn() == tableHelper
-					        .getLqiTableModel().getSeriousScoreColumn()) {
-						severity = lqiGrid.getSeriousScore();
-						severityType = LanguageQualityIssue.MAJOR;
-					} else if (button.getSeverityColumn() == tableHelper
-					        .getLqiTableModel().getCriticalScoreColumn()) {
-						severity = lqiGrid.getCriticalScore();
-						severityType = LanguageQualityIssue.CRITICAL;
-					}
+					int severityIndex = button.getSeverityColumn()
+					        - tableHelper.getLqiTableModel()
+					                .getSeverityColsStartIndex();
+					double severity = lqiGrid.getSeverities()
+					        .get(severityIndex).getScore();
+					String severityName = lqiGrid.getSeverities()
+					        .get(severityIndex).getName();
 					String categoryName = tableHelper
 					        .getLqiTable()
 					        .getValueAt(
@@ -240,15 +291,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 					                tableHelper.getLqiTableModel()
 					                        .getErrorCategoryColumn())
 					        .toString();
-//					Object commentObj = tableHelper.getLqiTable().getValueAt(
-//					        button.getCategoryRow(),
-//					        tableHelper.getLqiTableModel().getCommentColumn());
-//					String comment = null;
-//					if (commentObj != null) {
-//						comment = commentObj.toString();
-//					}
-//					createNewLqi(categoryName, severity, comment);
-					controller.createNewLqi(categoryName, severity, severityType);
+					controller.createNewLqi(categoryName, severity,
+					        severityName);
 				} else if (mode == CONFIG_MODE) {
 
 					LQIErrorCategory selErrorCat = tableHelper
@@ -259,17 +303,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 						        .getSelectedColumn();
 						String severityName = tableHelper.getLqiTableModel()
 						        .getSeverityNameForColumn(selCol);
-						LQIShortCut currShortcut = null;
-						if (selCol == tableHelper.getLqiTableModel()
-						        .getCriticalScoreColumn()) {
-							currShortcut = selErrorCat.getCriticalShortcut();
-						} else if (selCol == tableHelper.getLqiTableModel()
-						        .getMinorScoreColumn()) {
-							currShortcut = selErrorCat.getMinorShortcut();
-						} else if (selCol == tableHelper.getLqiTableModel()
-						        .getSeriousScoreColumn()) {
-							currShortcut = selErrorCat.getSeriousShortcut();
-						}
+						LQIShortCut currShortcut = selErrorCat
+						        .getShortcut(severityName);
 						ShortCutDialog shortCutDialog = new ShortCutDialog(
 						        LQIGridDialog.this, selErrorCat.getName()
 						                + " - " + severityName, currShortcut);
@@ -285,15 +320,32 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 		return annotationAncion;
 	}
-	
-	public boolean isReservedShortcut(int keyCode, int[] modifiers){
+
+	/**
+	 * Checks if the shortcut defined by the key code and the modifiers is a
+	 * reserved one.
+	 * 
+	 * @param keyCode
+	 *            the key code
+	 * @param modifiers
+	 *            the modifiers
+	 * @return <code>true</code> if it is a reserved shortcut;
+	 *         <code>false</code> otherwise.
+	 */
+	public boolean isReservedShortcut(int keyCode, int[] modifiers) {
 		return tableHelper.isReservedShortcut(keyCode, modifiers);
 	}
 
+	/**
+	 * Clears the commnet cell for a specific category.
+	 * 
+	 * @param category
+	 *            the category name.
+	 */
 	public void clearCommentCellForCategory(String category) {
-		
+
 		tableHelper.getLqiTableModel().clearCommentForCategory(category);
-    }
+	}
 
 	/**
 	 * Gets the component to be displayed at the bottom of the dialog.
@@ -304,16 +356,29 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		createAndConfigureButtons();
+		rowsPanel = new JPanel();
+		rowsPanel.setLayout(new BoxLayout(rowsPanel, BoxLayout.X_AXIS));
+		rowsPanel.setBorder(BorderFactory.createTitledBorder("Category rows"));
+		rowsPanel.add(btnAddRow);
+		rowsPanel.add(Box.createHorizontalStrut(10));
+		rowsPanel.add(btnDeleteRow);
+		rowsPanel.add(Box.createHorizontalStrut(10));
+		rowsPanel.add(btnUp);
+		rowsPanel.add(Box.createHorizontalStrut(10));
+		rowsPanel.add(btnDown);
+
+		colsPanel = new JPanel();
+		colsPanel.setLayout(new BoxLayout(colsPanel, BoxLayout.X_AXIS));
+		colsPanel.setPreferredSize(new Dimension(120, 50));
+		colsPanel.setBorder(BorderFactory
+		        .createTitledBorder("Severity Columns"));
+		colsPanel.add(btnAddCol);
 		bottomPanel.add(Box.createRigidArea(new Dimension(1, 50)));
 		bottomPanel.add(Box.createHorizontalStrut(10));
 		bottomPanel.add(btnConfig);
-		bottomPanel.add(btnAdd);
+		bottomPanel.add(rowsPanel);
 		bottomPanel.add(Box.createHorizontalStrut(10));
-		bottomPanel.add(btnDelete);
-		bottomPanel.add(Box.createHorizontalStrut(10));
-		bottomPanel.add(btnUp);
-		bottomPanel.add(Box.createHorizontalStrut(10));
-		bottomPanel.add(btnDown);
+		bottomPanel.add(colsPanel);
 		bottomPanel.add(Box.createHorizontalGlue());
 		bottomPanel.add(btnSave);
 		bottomPanel.add(Box.createHorizontalStrut(10));
@@ -323,10 +388,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		if (mode == ISSUES_ANNOTS_MODE) {
 			btnCancel.setVisible(false);
 			btnSave.setVisible(false);
-			btnAdd.setVisible(false);
-			btnDelete.setVisible(false);
-			btnUp.setVisible(false);
-			btnDown.setVisible(false);
+			colsPanel.setVisible(false);
+			rowsPanel.setVisible(false);
 		} else {
 			btnConfig.setVisible(false);
 			btnClose.setVisible(false);
@@ -350,12 +413,14 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		ImageIcon icon = new ImageIcon(kit.createImage(getClass().getResource(
 		        "add.png")));
-		btnAdd = new JButton(icon);
-		configIconButton(btnAdd);
+		btnAddRow = new JButton(icon);
+		configIconButton(btnAddRow);
+		btnAddCol = new JButton(icon);
+		configIconButton(btnAddCol);
 		icon = new ImageIcon(kit.createImage(getClass().getResource(
 		        "remove.png")));
-		btnDelete = new JButton(icon);
-		configIconButton(btnDelete);
+		btnDeleteRow = new JButton(icon);
+		configIconButton(btnDeleteRow);
 		icon = new ImageIcon(kit.createImage(getClass().getResource(
 		        "arrow-up.png")));
 		btnUp = new JButton(icon);
@@ -387,10 +452,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
-		btnAdd.setVisible(false);
-		btnDelete.setVisible(false);
-		btnUp.setVisible(false);
-		btnDown.setVisible(false);
+		rowsPanel.setVisible(false);
+		colsPanel.setVisible(false);
 		btnClose.setVisible(true);
 		btnConfig.setVisible(true);
 		setTitle(TITLE);
@@ -402,16 +465,14 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	}
 
 	/**
-	 * Switches to teh configuration mode.
+	 * Switches to the configuration mode.
 	 */
 	private void switchToConfigMode() {
 
 		btnCancel.setVisible(true);
 		btnSave.setVisible(true);
-		btnAdd.setVisible(true);
-		btnDelete.setVisible(true);
-		btnUp.setVisible(true);
-		btnDown.setVisible(true);
+		rowsPanel.setVisible(true);
+		colsPanel.setVisible(true);
 		btnClose.setVisible(false);
 		btnConfig.setVisible(false);
 		setTitle(TITLE + TITLE_CONF_SUFFIX);
@@ -420,7 +481,6 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		tableHelper.getLqiTableModel().setMode(mode);
 		tableHelper.configureTable(getGridButtonAction());
 		setTableSize();
-		
 
 	}
 
@@ -479,17 +539,6 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		}
 	}
 
-	public static void main(String[] args) {
-
-		JFrame frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		LQIGridDialog dialog = new LQIGridDialog(frame, null,
-		        LQIConstants.getDefaultLQIGrid(), ISSUES_ANNOTS_MODE);
-		SwingUtilities.invokeLater(dialog);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -507,10 +556,12 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 			discardConfiguration();
 		} else if (e.getSource().equals(btnClose)) {
 			close();
-		} else if (e.getSource().equals(btnAdd)) {
+		} else if (e.getSource().equals(btnAddRow)) {
 			addErrorCategory();
-		} else if (e.getSource().equals(btnDelete)) {
+		} else if (e.getSource().equals(btnDeleteRow)) {
 			deleteSelectedErrorCategory();
+		} else if (e.getSource().equals(btnAddCol)) {
+			addSeverity();
 		} else if (e.getSource().equals(btnUp)) {
 			tableHelper.moveSelectedRowUp();
 		} else if (e.getSource().equals(btnDown)) {
@@ -518,15 +569,36 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		}
 
 	}
-	
-	public boolean canCreateIssue(){
-		
+
+	/**
+	 * Adds a severity column.
+	 */
+	private void addSeverity() {
+		tableHelper.displayNewSeverityDialog();
+
+	}
+
+	/**
+	 * Checks if an issue can be created.
+	 * 
+	 * @return <code>true</code> if an issue can be created; <code>false</code>
+	 *         otherwise
+	 */
+	public boolean canCreateIssue() {
+
 		return mode == ISSUES_ANNOTS_MODE && !isEditing();
 	}
-	
-	private boolean isEditing(){
-		return tableHelper.getLqiTable().getEditingColumn() == tableHelper.getLqiTableModel().getCommentColumn() || controller.isOcelotEditing();
-//		return tableHelper.getLqiTable().getColumnModel().getColumn(tableHelper.getLqiTableModel().getCommentColumn()).getCellEditor().
+
+	/**
+	 * Checks if there's a text field being edited in Ocelot.
+	 * 
+	 * @return <code>true</code> if a text field exists being edited;
+	 *         <code>false</code> otherwise.
+	 */
+	private boolean isEditing() {
+		return tableHelper.getLqiTable().getEditingColumn() == tableHelper
+		        .getLqiTableModel().getCommentColumn()
+		        || controller.isOcelotEditing();
 	}
 
 	/**
@@ -552,13 +624,14 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	/**
 	 * Handles the event a severity score has been changed.
 	 * 
-	 * @param severityScore
-	 *            the severity score.
-	 * @param severityName
-	 *            the severity name.
+	 * @param oldSeverity
+	 *            the old severity.
+	 * @param newSeverity
+	 *            the new severity.
 	 */
-	public void severityScoreChanged(String severityScore, String severityName) {
-		tableHelper.severityScoreChanged(severityScore, severityName);
+	public void severityChanged(LQISeverity oldSeverity, LQISeverity newSeverity) {
+
+		tableHelper.severityColumnChanged(oldSeverity, newSeverity);
 	}
 
 	/*
@@ -597,10 +670,55 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 	}
 
-
+	/**
+	 * Gets the comment for a specific category.
+	 * 
+	 * @param errorCategory
+	 *            the error category
+	 * @return the comment
+	 */
 	public String getCommentForCategory(String errorCategory) {
 
 		return tableHelper.getLqiTableModel().getCommentByCategory(
 		        errorCategory);
+	}
+
+	/**
+	 * Creates a new severity column for the given severity.
+	 * 
+	 * @param severity
+	 *            the severity.
+	 */
+	public void createSeverityColumn(LQISeverity severity) {
+
+		tableHelper.addSeverityColumn(severity);
+	}
+
+	/**
+	 * Checks if a name chosen for a severity is a valid one. A severity name is
+	 * valid if no other severity has the same name.
+	 * 
+	 * @param severity
+	 *            the severity
+	 * @param newSeverityName
+	 *            the new name.
+	 * @return <code>true</code> if the new name is a valid one;
+	 *         <code>false</code> otherwise
+	 */
+	public boolean checkSeverityName(LQISeverity severity,
+	        String newSeverityName) {
+
+		boolean validName = true;
+		LQIGrid modelGrid = tableHelper.getLqiTableModel().getLQIGrid();
+		if (modelGrid.getSeverities() != null) {
+			for (LQISeverity sev : modelGrid.getSeverities()) {
+				if (!sev.equals(severity)
+				        && sev.getName().equals(newSeverityName)) {
+					validName = false;
+					break;
+				}
+			}
+		}
+		return validName;
 	}
 }

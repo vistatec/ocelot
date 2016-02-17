@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.xml.OcelotRootConfig;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
@@ -40,7 +40,7 @@ public class TestOkapiTmService {
 
     @Test
     public void testFuzzy() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
-        final RootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
+        final OcelotRootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
                     .tmName("simple_tm")
                     .testTmFileResource(testTm)
                     .fuzzyThreshold(1)
@@ -73,7 +73,7 @@ public class TestOkapiTmService {
 
     @Test
     public void testConcordance() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
-        final RootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
+        final OcelotRootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
                     .tmName("simple_tm")
                     .testTmFileResource(testTm)
                     .fuzzyThreshold(1)
@@ -88,7 +88,7 @@ public class TestOkapiTmService {
 
     @Test
     public void testSearchOnlyEnabled() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
-        final RootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
+        final OcelotRootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
                     .tmName("simple_tm")
                     .testTmFileResource(testTm)
                     .fuzzyThreshold(1)
@@ -111,9 +111,9 @@ public class TestOkapiTmService {
     }
 
     private class OkapiTmServiceBuilder {
-        private final RootConfig config;
+        private final OcelotRootConfig config;
 
-        public OkapiTmServiceBuilder(RootConfig config) {
+        public OkapiTmServiceBuilder(OcelotRootConfig config) {
             this.config = config;
         }
 
@@ -125,7 +125,7 @@ public class TestOkapiTmService {
                 {
                     allowing(cfgXService).parse();
                         will(returnValue(config));
-                    allowing(cfgXService).save(with(any(RootConfig.class)));
+                    allowing(cfgXService).save(with(any(OcelotRootConfig.class)));
                     allowing(penalizer).applyPenalties(with(any(List.class)));
                         will(new OkapiTmTestHelpers.ReturnFirstArgument());
                 }

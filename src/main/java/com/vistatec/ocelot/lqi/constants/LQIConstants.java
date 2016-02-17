@@ -1,12 +1,11 @@
 package com.vistatec.ocelot.lqi.constants;
 
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIErrorCategory.LQIShortCut;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQISeverity;
 
 /**
  * LQI Constants class.
@@ -14,22 +13,22 @@ import com.vistatec.ocelot.lqi.model.LQIGrid;
 public abstract class LQIConstants {
 
 	/** Default minor score constant. */
-	public final static int DEFAULT_MINOR_SCORE = 10;
+	public final static double DEFAULT_MINOR_SCORE = 1.0;
 
 	/** Default serious score constant. */
-	public final static int DEFAULT_SERIOUS_SCORE = 50;
+	public final static double DEFAULT_MAJOR_SCORE = 2.0;
 
 	/** Default critical score constant. */
-	public final static int DEFAULT_CRITICAL_SCORE = 100;
-
-	/** Minor severity name constant. */
-	public final static String MINOR_SEVERITY_NAME = "Minor";
-
-	/** Serious severity name constant. */
-	public final static String SERIOUS_SEVERITY_NAME = "Serious";
-
-	/** Critical severity name constant. */
-	public final static String CRITICAL_SEVERITY_NAME = "Critical";
+	public final static double DEFAULT_CRITICAL_SCORE = 4.0;
+	
+	/** The default minor severity name. */
+	public final static String DEFAULT_MINOR_SEV_NAME = "Minor";
+	
+	/** The default major severity name. */
+	public final static String DEFAULT_MAJOR_SEV_NAME = "Major";
+	
+	/** The default critical severity name. */
+	public final static String DEFAULT_CRITICAL_SEV_NAME = "Critical";
 
 	/** Default category names. */
 	public final static String[] DEFAULT_CATEGORIES_NAMES = { "terminology",
@@ -54,21 +53,16 @@ public abstract class LQIConstants {
 	public static LQIGrid getDefaultLQIGrid() {
 
 		LQIGrid lqiGrid = new LQIGrid();
-		lqiGrid.setCriticalScore(DEFAULT_CRITICAL_SCORE);
-		lqiGrid.setMinorScore(DEFAULT_MINOR_SCORE);
-		lqiGrid.setSeriousScore(DEFAULT_SERIOUS_SCORE);
+		List<LQISeverity> severities = new ArrayList<LQISeverity>();
+		severities.add(new LQISeverity(DEFAULT_MINOR_SEV_NAME, DEFAULT_MINOR_SCORE));
+		severities.add(new LQISeverity(DEFAULT_MAJOR_SEV_NAME, DEFAULT_MAJOR_SCORE));
+		severities.add(new LQISeverity(DEFAULT_CRITICAL_SEV_NAME, DEFAULT_CRITICAL_SCORE));
+		lqiGrid.setSeverities(severities);
 		List<LQIErrorCategory> errorCategories = new ArrayList<LQIErrorCategory>();
 		for (String catName : DEFAULT_CATEGORIES_NAMES) {
 			errorCategories.add(new LQIErrorCategory(catName));
 		}
 		lqiGrid.setErrorCategories(errorCategories);
-//		// TODO DELETE, JUST FOR TEST PURPOSE
-//		lqiGrid.getErrorCategories()
-//		        .get(0)
-//		        .setMinorShortcut(
-//		                new LQIShortCut(KeyEvent.VK_G,
-//		                        new int[] { KeyEvent.CTRL_DOWN_MASK }));
-//		//
 		return lqiGrid;
 	}
 }

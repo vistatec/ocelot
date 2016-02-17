@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.editor;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -9,6 +9,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
+
+import com.vistatec.ocelot.lqi.gui.LQIGridButton;
+import com.vistatec.ocelot.lqi.gui.renderer.LQIGridButtonRenderer;
 
 /**
  * Editor for button cells in the LQI grid.
@@ -53,7 +56,6 @@ public class LQIGridButtonEditor extends DefaultCellEditor {
 			        .getBackground());
 		}
 
-//		gridButton.setAnnotCategory(table.getValueAt(row, 0).toString());
 		gridButton.setCategoryRow(row);
 		gridButton.setSeverityColumn(column);
 		gridButton.setBorder(new LineBorder(table.getGridColor()));

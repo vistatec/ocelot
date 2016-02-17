@@ -18,10 +18,13 @@ import com.google.inject.Scopes;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
+import com.vistatec.ocelot.config.LQIXmlConfigTransferService;
+import com.vistatec.ocelot.config.LqiConfigService;
 import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.XmlConfigTransferService;
+import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
@@ -48,100 +51,127 @@ import com.vistatec.ocelot.tm.penalty.SimpleTmPenalizer;
  * Main Ocelot object dependency context module.
  */
 public class OcelotModule extends AbstractModule {
-    private static final Logger LOG = LoggerFactory.getLogger(OcelotModule.class);
+	private static final Logger LOG = LoggerFactory
+	        .getLogger(OcelotModule.class);
 
-    @Override
-    protected void configure() {
-        OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
-        bind(OcelotEventQueue.class).toInstance(eventQueue);
+	@Override
+	protected void configure() {
+		OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+		bind(OcelotEventQueue.class).toInstance(eventQueue);
 
-        ITSDocStats docStats = new ITSDocStats();
-        bind(ITSDocStats.class).toInstance(docStats);
+		ITSDocStats docStats = new ITSDocStats();
+		bind(ITSDocStats.class).toInstance(docStats);
 
-        bind(OcelotApp.class).in(Scopes.SINGLETON);
+		bind(OcelotApp.class).in(Scopes.SINGLETON);
 
-        ConfigService cfgService = null;
-        RuleConfiguration ruleConfig = null;
-        PluginManager pluginManager = null;
-        TmManager tmManager = null;
-        TmService tmService = null;
-        TmPenalizer penalizer = null;
-        TmGuiManager tmGuiManager = null;
-        LQIGridController lqiGridController = null;
-        try {
-            File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
-            ocelotDir.mkdirs();
+		ConfigService cfgService = null;
+		LqiConfigService lqiCfgService = null;
+		RuleConfiguration ruleConfig = null;
+		PluginManager pluginManager = null;
+		TmManager tmManager = null;
+		TmService tmService = null;
+		TmPenalizer penalizer = null;
+		TmGuiManager tmGuiManager = null;
+		LQIGridController lqiGridController = null;
+		try {
+			File ocelotDir = new File(System.getProperty("user.home"),
+			        ".ocelot");
+			ocelotDir.mkdirs();
 
-            Configs configs = new DirectoryBasedConfigs(ocelotDir);
+			Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            cfgService = setupConfigService(ocelotDir);
-            ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
+			cfgService = setupConfigService(ocelotDir);
+			lqiCfgService = setupLQIConfigService(ocelotDir);
+			ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
-            pluginManager = new PluginManager(cfgService, new File(ocelotDir, "plugins"));
-            pluginManager.discover();
-            eventQueue.registerListener(pluginManager);
+			pluginManager = new PluginManager(cfgService, new File(ocelotDir,
+			        "plugins"));
+			pluginManager.discover();
+			eventQueue.registerListener(pluginManager);
 
-            SegmentService segmentService = new SegmentServiceImpl(eventQueue);
-            bind(SegmentService.class).toInstance(segmentService);
-            eventQueue.registerListener(segmentService);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			bind(SegmentService.class).toInstance(segmentService);
+			eventQueue.registerListener(segmentService);
 
-            File tm = new File(ocelotDir, "tm");
-            tm.mkdirs();
-            OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
-            eventQueue.registerListener(tmxWriter);
-            tmManager = new OkapiTmManager(tm, cfgService, tmxWriter);
-            
-            bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
-            penalizer = new SimpleTmPenalizer(tmManager);
-            tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, cfgService);
-            tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, cfgService);
-            
-            lqiGridController = new LQIGridController((OcelotConfigService)cfgService, eventQueue);
-            eventQueue.registerListener(lqiGridController);
-            bind(LQIGridController.class).toInstance(lqiGridController);
-        } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
-            LOG.error("Failed to initialize configuration", ex);
-            System.exit(1);
-        }
+			File tm = new File(ocelotDir, "tm");
+			tm.mkdirs();
+			OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
+			eventQueue.registerListener(tmxWriter);
+			tmManager = new OkapiTmManager(tm, cfgService, tmxWriter);
 
-        bind(RuleConfiguration.class).toInstance(ruleConfig);
-        bind(PluginManager.class).toInstance(pluginManager);
-        bind(TmManager.class).toInstance(tmManager);
-        bind(TmPenalizer.class).toInstance(penalizer);
-        bind(TmService.class).toInstance(tmService);
-        bind(TmGuiManager.class).toInstance(tmGuiManager);
+			bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
+			penalizer = new SimpleTmPenalizer(tmManager);
+			tmService = new OkapiTmService((OkapiTmManager) tmManager,
+			        penalizer, cfgService);
+			tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue,
+			        cfgService);
 
-        bindServices(eventQueue, cfgService, docStats);
-    }
-    
+			lqiGridController = new LQIGridController(
+			        lqiCfgService, eventQueue);
+			eventQueue.registerListener(lqiGridController);
+			bind(LQIGridController.class).toInstance(lqiGridController);
+		} catch (IOException | JAXBException
+		        | ConfigTransferService.TransferException ex) {
+			LOG.error("Failed to initialize configuration", ex);
+			System.exit(1);
+		}
 
-    private void bindServices(OcelotEventQueue eventQueue, ConfigService cfgService,
-            ITSDocStats docStats) {
-        bind(ConfigService.class).toInstance(cfgService);
+		bind(RuleConfiguration.class).toInstance(ruleConfig);
+		bind(PluginManager.class).toInstance(pluginManager);
+		bind(TmManager.class).toInstance(tmManager);
+		bind(TmPenalizer.class).toInstance(penalizer);
+		bind(TmService.class).toInstance(tmService);
+		bind(TmGuiManager.class).toInstance(tmGuiManager);
 
-        ProvenanceService provService = new ProvenanceService(eventQueue, cfgService);
-        bind(ProvenanceService.class).toInstance(provService);
-        eventQueue.registerListener(provService);
+		bindServices(eventQueue, cfgService, lqiCfgService, docStats);
+	}
 
-        ITSDocStatsService docStatsService = new ITSDocStatsService(docStats, eventQueue);
-        bind(ITSDocStatsService.class).toInstance(docStatsService);
-        eventQueue.registerListener(docStatsService);
+	private void bindServices(OcelotEventQueue eventQueue,
+	        ConfigService cfgService, LqiConfigService lqiCfgService,
+	        ITSDocStats docStats) {
+		bind(ConfigService.class).toInstance(cfgService);
+		bind(LqiConfigService.class).toInstance(lqiCfgService);
 
-        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
-        bind(XliffService.class).toInstance(xliffService);
-        eventQueue.registerListener(xliffService);
+		ProvenanceService provService = new ProvenanceService(eventQueue,
+		        cfgService);
+		bind(ProvenanceService.class).toInstance(provService);
+		eventQueue.registerListener(provService);
 
-    }
+		ITSDocStatsService docStatsService = new ITSDocStatsService(docStats,
+		        eventQueue);
+		bind(ITSDocStatsService.class).toInstance(docStatsService);
+		eventQueue.registerListener(docStatsService);
 
-    private OcelotConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {
-        File configFile = new File(ocelotDir, "ocelot_cfg.xml");
-        ByteSource configSource = !configFile.exists() ?
-                ByteSource.empty() :
-                Files.asByteSource(configFile);
+		XliffService xliffService = new OkapiXliffService(cfgService,
+		        eventQueue);
+		bind(XliffService.class).toInstance(xliffService);
+		eventQueue.registerListener(xliffService);
 
-        CharSink configSink = Files.asCharSink(configFile,
-                Charset.forName("UTF-8"));
-        return new OcelotConfigService(new XmlConfigTransferService(
-                configSource, configSink));
-    }
+	}
+
+	private OcelotConfigService setupConfigService(File ocelotDir)
+	        throws ConfigTransferService.TransferException, JAXBException {
+		File configFile = new File(ocelotDir, "ocelot_cfg.xml");
+		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
+		        : Files.asByteSource(configFile);
+
+		CharSink configSink = Files.asCharSink(configFile,
+		        Charset.forName("UTF-8"));
+		return new OcelotConfigService(new OcelotXmlConfigTransferService(
+		        configSource, configSink));
+	}
+
+	private LqiConfigService setupLQIConfigService(File ocelotDir)
+	        throws TransferException, JAXBException {
+
+		File configFile = new File(ocelotDir, "lqi_cfg.xml");
+		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
+		        : Files.asByteSource(configFile);
+
+		CharSink configSink = Files.asCharSink(configFile,
+		        Charset.forName("UTF-8"));
+		return new LqiConfigService(new LQIXmlConfigTransferService(
+		        configSource, configSink));
+
+	}
 }

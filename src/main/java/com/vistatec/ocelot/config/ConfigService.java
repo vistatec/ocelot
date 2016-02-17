@@ -45,7 +45,7 @@ public interface ConfigService {
     
     public TmManagement.TmConfig createNewTmConfig(String tmName, boolean enabled, List<String> tmxFiles) throws ConfigTransferService.TransferException;
     
-    public void saveLQIConfig(LQIGrid lqiGrid) throws ConfigTransferService.TransferException;
-    
-    public LQIGrid readLQIConfig() throws ConfigTransferService.TransferException;
+//    public void saveLQIConfig(LQIGrid lqiGrid) throws ConfigTransferService.TransferException;
+//    
+//    public LQIGrid readLQIConfig() throws ConfigTransferService.TransferException;
 }

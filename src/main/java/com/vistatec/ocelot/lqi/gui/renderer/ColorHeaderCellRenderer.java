@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.renderer;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -8,6 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
+
+import com.vistatec.ocelot.lqi.gui.ColorCellRenderer;
 
 /**
  * Renderer for LQI grid header. It displays header cells colored with a specific color. 

@@ -1,23 +1,33 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.renderer;
 
 import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.table.DefaultTableCellRenderer;
 
+import com.vistatec.ocelot.lqi.gui.ColorCellRenderer;
+
+/**
+ * Table cell renderer displaying a text area.
+ */
 public class TextAreaColorCellRenderer extends ColorCellRenderer {
 
+	/** The serial version UID. */
+	private static final long serialVersionUID = 8367564808375095337L;
+	
+	/**
+	 * Constructor.
+	 * @param color the background color for this cell.
+	 */
 	public TextAreaColorCellRenderer(Color color) {
 		super(color);
 	}
-
-	/**
-	 * 
+	
+	/*
+	 * (non-Javadoc)
+	 * @see com.vistatec.ocelot.lqi.gui.ColorCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
 	 */
-	private static final long serialVersionUID = 8367564808375095337L;
-
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
 	        boolean isSelected, boolean hasFocus, int row, int column) {

@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.xml.OcelotRootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement;
 
 /**
@@ -44,8 +44,8 @@ public class TmConfigBuilder {
         return this;
     }
 
-    public RootConfig build() throws URISyntaxException, IOException {
-        final RootConfig config = new RootConfig();
+    public OcelotRootConfig build() throws URISyntaxException, IOException {
+        final OcelotRootConfig config = new OcelotRootConfig();
         config.getTmManagement().setFuzzyThreshold(threshold);
         config.getTmManagement().setMaxResults(maxResults);
 

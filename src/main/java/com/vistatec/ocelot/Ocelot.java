@@ -79,6 +79,7 @@ import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
@@ -87,8 +88,8 @@ import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
-import com.vistatec.ocelot.lqi.gui.LQIKeyEventHandler;
-import com.vistatec.ocelot.lqi.gui.LQIKeyEventManager;
+import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
+import com.vistatec.ocelot.lqi.LQIKeyEventManager;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;

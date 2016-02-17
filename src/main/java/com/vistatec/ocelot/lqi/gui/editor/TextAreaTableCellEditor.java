@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.editor;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -11,25 +11,32 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+/**
+ * Cell editor displaying a text area.
+ */
 public class TextAreaTableCellEditor extends DefaultCellEditor {
 
-	/**
-	 * 
-	 */
+	/** The serial version UID. */
 	private static final long serialVersionUID = 7243499768414128027L;
 
+	/** The text area. */
 	private JTextArea txtArea;
 	
+	/**
+	 * Constructor.
+	 */
 	public TextAreaTableCellEditor() {
 		super(new JTextField());
 		setClickCountToStart(2);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+	 */
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, Object value,
 	        boolean isSelected, int row, int column) {
-		// super.getTableCellEditorComponent(table, value, isSelected, row,
-		// column);
 
 		txtArea = new JTextArea();
 		if (value != null) {
@@ -43,13 +50,12 @@ public class TextAreaTableCellEditor extends DefaultCellEditor {
 			
 			@Override
 			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
+				//do nothing
 			}
 			
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
+				//do nothing
 				
 			}
 			
@@ -69,11 +75,20 @@ public class TextAreaTableCellEditor extends DefaultCellEditor {
 		return scrollpane;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+	 */
 	@Override
 	public Object getCellEditorValue() {
 	    return txtArea.getText();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.DefaultCellEditor#isCellEditable(java.util.EventObject)
+	 */
+	@Override
 	public boolean isCellEditable(java.util.EventObject anEvent) {
 	
 		return anEvent instanceof MouseEvent &&  ((MouseEvent) anEvent).getButton() == MouseEvent.BUTTON1 && ((MouseEvent) anEvent).getClickCount() == 2; 

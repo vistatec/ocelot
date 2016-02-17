@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.editor;
 
 import java.awt.Component;
 import java.util.Arrays;
@@ -11,6 +11,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
+import com.vistatec.ocelot.lqi.gui.LQIGridTableModel;
 
 /**
  * Editor for LQI grid category cells. It displays a combo box listing all

@@ -20,8 +20,8 @@ import com.google.common.io.CharSink;
 import com.google.common.io.CharStreams;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.XmlConfigTransferService;
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
+import com.vistatec.ocelot.config.xml.OcelotRootConfig;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 
 public class TestOcelotTmConfigService {
@@ -31,20 +31,20 @@ public class TestOcelotTmConfigService {
     @Before
     public void setup() throws JAXBException, ConfigTransferService.TransferException {
         testOutput = new TestCharSink();
-        ConfigTransferService cfgXService = new XmlConfigTransferService(ByteSource.empty(),
+        ConfigTransferService cfgXService = new OcelotXmlConfigTransferService(ByteSource.empty(),
                 testOutput);
         this.cfgService = new OcelotConfigService(cfgXService);
     }
 
     @Test
     public void testCreateTmConfig() throws URISyntaxException, IOException, ConfigTransferService.TransferException, JAXBException {
-        RootConfig config = TestOkapiTmManager.setupNewForeignDataDir();
+        OcelotRootConfig config = TestOkapiTmManager.setupNewForeignDataDir();
         cfgService.createNewTmConfig("config_test", true,
                 config.getTmManagement().getTms().get(0).getTmDataDir());
-        ConfigTransferService svc = new XmlConfigTransferService(
+        ConfigTransferService svc = new OcelotXmlConfigTransferService(
                 ByteSource.wrap(testOutput.getString().getBytes(StandardCharsets.UTF_8)),
                 new TestCharSink());
-        List<TmConfig> tms = svc.parse().getTmManagement().getTms();
+        List<TmConfig> tms = ((OcelotRootConfig)svc.parse()).getTmManagement().getTms();
         assertEquals(1, tms.size());
         assertEquals("config_test", tms.get(0).getTmName());
         Path tmDir = Paths.get(tms.get(0).getTmDataDir());

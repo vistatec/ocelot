@@ -38,6 +38,7 @@ import static org.junit.Assert.*;
 
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.config.xml.OcelotRootConfig;
 import com.vistatec.ocelot.config.xml.RootConfig;
 
 public class TestPluginManager {
@@ -70,8 +71,8 @@ public class TestPluginManager {
     public class TestConfigTransferService implements ConfigTransferService {
 
         @Override
-        public RootConfig parse() throws ConfigTransferService.TransferException {
-            return new RootConfig();
+        public OcelotRootConfig parse() throws ConfigTransferService.TransferException {
+            return new OcelotRootConfig();
         }
 
         @Override

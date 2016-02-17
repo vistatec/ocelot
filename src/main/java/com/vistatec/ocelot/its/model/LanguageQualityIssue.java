@@ -44,13 +44,14 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
  */
 public class LanguageQualityIssue extends ITSMetadata {
 	
-	public static final int NONE = -1;
-	public static final int MINOR = 0;
-	public static final int MAJOR = 1;
-	public static final int CRITICAL = 2;
+//	public static final int NONE = -1;
+//	public static final int MINOR = 0;
+//	public static final int MAJOR = 1;
+//	public static final int CRITICAL = 2;
     private String type, comment, issuesRef;
     private double severity;
-    private int severityType = NONE;
+//    private int severityType = NONE;
+    private String severityName;
     private URL profileReference;
     private boolean enabled = true;
 
@@ -157,12 +158,20 @@ public class LanguageQualityIssue extends ITSMetadata {
         this.issuesRef = issuesRef;
     }
     
-    public int getSeverityType() {
-		return severityType;
+//    public int getSeverityType() {
+//		return severityType;
+//	}
+//
+//	public void setSeverityType(int severityType) {
+//		this.severityType = severityType;
+//	}
+    
+    public String getSeverityName() {
+		return severityName;
 	}
 
-	public void setSeverityType(int severityType) {
-		this.severityType = severityType;
+	public void setSeverityName(String severityName) {
+		this.severityName = severityName;
 	}
 
 	@Override

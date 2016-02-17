@@ -1,211 +1,234 @@
 package com.vistatec.ocelot.lqi.model;
 
-import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.KeyStroke;
-
+/**
+ * LQI error category object,.
+ */
 public class LQIErrorCategory {
 
+	/** The category name. */
 	private String name;
-	private LQIShortCut minorShortcut;
-	private LQIShortCut seriousShortcut;
-	private LQIShortCut criticalShortcut;
+
+	/** The list of shortcuts. */
+	private List<LQIShortCut> shortcuts;
+
+	/** The comment. */
 	private String comment;
+
+	/** The weight. */
 	private float weight;
 
+	/**
+	 * Default constructor.
+	 */
 	public LQIErrorCategory() {
 	}
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param name
+	 *            the category name.
+	 */
 	public LQIErrorCategory(final String name) {
 
-		this(name, 0f, null, null, null);
+		this(name, 0f, null);
 	}
 
-	public LQIErrorCategory(final String name, final float weight, final LQIShortCut minorShortcut,
-	        final LQIShortCut seriousShortcut, final LQIShortCut criticalShortcut) {
+	/**
+	 * Constructor.
+	 * 
+	 * @param name
+	 *            the category name.
+	 * @param weight
+	 *            the weight.
+	 * @param shortcuts
+	 *            the list of shortcuts.
+	 */
+	public LQIErrorCategory(final String name, final float weight,
+	        final List<LQIShortCut> shortcuts) {
 		this.name = name;
 		this.weight = weight;
-		this.minorShortcut = minorShortcut;
-		this.criticalShortcut = criticalShortcut;
-		this.seriousShortcut = seriousShortcut;
+		this.shortcuts = shortcuts;
 	}
 
+	/**
+	 * Gets the category name.
+	 * 
+	 * @return the category name.
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Sets the category name.
+	 * 
+	 * @param name
+	 *            the category name.
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	public LQIShortCut getMinorShortcut() {
-		return minorShortcut;
-	}
-
-	public void setMinorShortcut(LQIShortCut minorShortcut) {
-		this.minorShortcut = minorShortcut;
-	}
-
-	public LQIShortCut getSeriousShortcut() {
-		return seriousShortcut;
-	}
-
-	public void setSeriousShortcut(LQIShortCut seriousShortcut) {
-		this.seriousShortcut = seriousShortcut;
-	}
-
-	public LQIShortCut getCriticalShortcut() {
-		return criticalShortcut;
-	}
-
-	public void setCriticalShortcut(LQIShortCut criticalShortcut) {
-		this.criticalShortcut = criticalShortcut;
-	}
-	
-	public void setComment(String comment){
+	/**
+	 * Sets the comment.
+	 * 
+	 * @param comment
+	 *            the comment.
+	 */
+	public void setComment(String comment) {
 		this.comment = comment;
 	}
-	
-	public String getComment(){
+
+	/**
+	 * Gets the comment.
+	 * 
+	 * @return the comment.
+	 */
+	public String getComment() {
 		return comment;
 	}
-	
+
+	/**
+	 * Gets the weight.
+	 * 
+	 * @return the weight.
+	 */
 	public float getWeight() {
 		return weight;
 	}
 
+	/**
+	 * Sets the weight.
+	 * 
+	 * @param weight
+	 *            the weight.
+	 */
 	public void setWeight(float weight) {
 		this.weight = weight;
 	}
 
-	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	/**
+	 * Sets the shortcuts list.
+	 * 
+	 * @param shortcuts
+	 *            the shortcuts list.
+	 */
+	public void setShortcuts(List<LQIShortCut> shortcuts) {
+		this.shortcuts = shortcuts;
+	}
 
-		return new LQIErrorCategory(name, weight, minorShortcut, seriousShortcut,
-		        criticalShortcut);
+	/**
+	 * Gets the shortcuts list.
+	 * 
+	 * @return the shortcuts list.
+	 */
+	public List<LQIShortCut> getShortcuts() {
+		return shortcuts;
+	}
+
+	/**
+	 * Clones this category.
+	 * 
+	 * @param severities
+	 *            the list of severities.
+	 * @return a category being a clone of this one.
+	 */
+	public LQIErrorCategory clone(List<LQISeverity> severities) {
+
+		LQIErrorCategory clonedErrCat = new LQIErrorCategory(name);
+		clonedErrCat.setWeight(weight);
+		if (shortcuts != null) {
+			List<LQIShortCut> clonedShortcuts = new ArrayList<LQIShortCut>();
+			for (LQIShortCut shortcut : shortcuts) {
+				clonedShortcuts.add(shortcut.clone(getSeverityByName(shortcut
+				        .getSeverity().getName(), severities)));
+			}
+			clonedErrCat.setShortcuts(clonedShortcuts);
+		}
+		return clonedErrCat;
 
 	}
-	
-	public static class LQIShortCut {
 
-		private int keyCode;
+	/**
+	 * Gets the severity by name.
+	 * 
+	 * @param severityName
+	 *            the severity name.
+	 * @param severities
+	 *            the list of severities
+	 * @return the severity haviing the desired name.
+	 */
+	private LQISeverity getSeverityByName(String severityName,
+	        List<LQISeverity> severities) {
 
-		private int[] modifiers;
-
-		private String shortCut;
-		
-		public LQIShortCut(int keyCode, int[] modifiers) {
-
-			setShortCut(keyCode, modifiers);
-		}
-		
-		public LQIShortCut(int keyCode, String modifiersString) {
-
-			this.keyCode = keyCode;
-			buildModifiersFromString(modifiersString);
-		}
-		
-
-		public int getKeyCode() {
-			return keyCode;
-		}
-
-		public final void setShortCut(int keyCode, int[] modifiers) {
-			
-			this.keyCode = keyCode;
-			this.modifiers = modifiers;
-			buildShortCut();
-
-		}
-		
-		public int[] getModifiers() {
-			return modifiers;
-		}
-
-		public KeyStroke getKeyStroke() {
-
-			return KeyStroke.getKeyStroke(keyCode, getModifiersSum());
-		}
-
-		private int getModifiersSum() {
-			int modifiersSum = 0;
-			if (modifiers != null) {
-				for (int modifier : modifiers) {
-					modifiersSum += modifier;
+		LQISeverity severity = null;
+		if (severities != null) {
+			for (LQISeverity currSev : severities) {
+				if (currSev.getName().equals(severityName)) {
+					severity = currSev;
+					break;
 				}
 			}
-			return modifiersSum;
 		}
+		return severity;
+	}
 
-		private void buildShortCut(){
-			
-			StringBuilder shortcutBuilder = new StringBuilder();
-			shortcutBuilder.append(KeyEvent.getModifiersExText(getModifiersSum()));
-			if (shortcutBuilder.length() > 0) {
-				shortcutBuilder.append("+");
-			}
-			shortcutBuilder.append(KeyEvent.getKeyText(keyCode));
+	/**
+	 * Gets the shortcut for a specific severity.
+	 * 
+	 * @param severityName
+	 *            the severity name
+	 * @return the shortcut if it exists; <code>null</code> otherwise
+	 */
+	public LQIShortCut getShortcut(String severityName) {
 
-			shortCut = shortcutBuilder.toString();
-		}
-		
-		public String getShortCut() {
-			
-			return shortCut;
-			
-		}
-		
-		public String getModifiersString(){
-			
-			return KeyEvent.getModifiersExText(getModifiersSum());
-		}
-
-		private void buildModifiersFromString(String modifiersString){
-			
-			if(modifiersString != null && !modifiersString.isEmpty()){
-				String[] modStringSplit = modifiersString.split("\\+");
-				modifiers = new int[modStringSplit.length];
-				for(int i = 0; i<modStringSplit.length; i++){
-					if(modStringSplit[i].equals(KeyEvent.getModifiersExText(KeyEvent.CTRL_DOWN_MASK))){
-						modifiers[i] = KeyEvent.CTRL_DOWN_MASK;
-					} else if(modStringSplit[i].equals(KeyEvent.getModifiersExText(KeyEvent.ALT_DOWN_MASK))){
-						modifiers[i] = KeyEvent.ALT_DOWN_MASK;
-					} else if(modStringSplit[i].equals(KeyEvent.getModifiersExText(KeyEvent.SHIFT_DOWN_MASK))){
-						modifiers[i] = KeyEvent.SHIFT_DOWN_MASK;
-					}
+		LQIShortCut shortcut = null;
+		if (shortcuts != null) {
+			for (LQIShortCut sc : shortcuts) {
+				if (sc.getSeverity().getName().equals(severityName)) {
+					shortcut = sc;
+					break;
 				}
-				shortCut = modifiersString + "+" + KeyEvent.getKeyText(keyCode);
-			} else {
-				shortCut = KeyEvent.getKeyText(keyCode);
 			}
-			
 		}
-		
-		@Override
-		public String toString() {
-		    
-		    return shortCut;
+		return shortcut;
+	}
+
+	/**
+	 * Adds a shortcuts or replaces the existing one if it already exists.
+	 * 
+	 * @param shortcut
+	 *            the shortcut.
+	 */
+	public void setShortcut(LQIShortCut shortcut) {
+
+		if (shortcuts == null) {
+			shortcuts = new ArrayList<LQIShortCut>();
 		}
-		
-		@Override
-		public boolean equals(Object obj) {
-		 
-			boolean retValue = false;
-			if(obj instanceof LQIShortCut){
-				LQIShortCut shotrcutObj = (LQIShortCut)obj;
-				retValue = keyCode == shotrcutObj.getKeyCode() && shotrcutObj.getModifiersSum() == getModifiersSum();
-			} else {
-				retValue = super.equals(obj);
-			}
-		    return retValue;
+		LQIShortCut existingShortcut = getShortcut(shortcut.getSeverity()
+		        .getName());
+		if (existingShortcut != null) {
+			shortcuts.remove(existingShortcut);
 		}
-		
-		@Override
-		public int hashCode() {
-		 
-		    return keyCode + getModifiersSum();
+		shortcuts.add(shortcut);
+	}
+
+	/**
+	 * Removes a shortcut for a specific severity.
+	 * 
+	 * @param severityName
+	 *            the severity name.
+	 */
+	public void removeShortcut(String severityName) {
+
+		LQIShortCut shortcut = getShortcut(severityName);
+		if (shortcut != null) {
+			shortcuts.remove(shortcut);
 		}
 	}
 
 }
-
