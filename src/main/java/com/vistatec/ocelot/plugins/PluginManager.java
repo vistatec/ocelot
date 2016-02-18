@@ -39,13 +39,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -57,7 +55,6 @@ import javax.swing.JMenuItem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
@@ -415,14 +412,11 @@ public class PluginManager implements OcelotEventQueueListener {
 	void scanJar(final File file) {
 		try {
 			Enumeration<JarEntry> e = new JarFile(file).entries();
-			System.out.println("----------------------------------");
-			System.out.println("File: " + file.getName());
 			while (e.hasMoreElements()) {
 				JarEntry entry = e.nextElement();
 				String name = entry.getName();
 				if (name.endsWith(".class")) {
 					name = convertFileNameToClass(name);
-					System.out.println(name);
 					try {
 						Class<?> clazz = Class
 						        .forName(name, false, classLoader);
@@ -614,47 +608,4 @@ public class PluginManager implements OcelotEventQueueListener {
 		        event.getLQI());
 	}
 
-	public static void main(String[] args) throws IOException, SAXException {
-
-//		String regex = "[a-zA-Z0-9_]*?";
-//		String str = "marta";
-//		System.out.println(str.matches(regex));
-//		String str2 = "php utilizza la sintassi di perl, e mentre ereg... beh, ereg";
-//		String regex2 = "[^a-zA-Z0-9_].";
-//		String[] splitString = str2.split(regex2);
-//		System.out.println(Arrays.toString(splitString));
-//		System.out.println(splitString.length);
-		
-		BreakIterator iterator = BreakIterator.getWordInstance(Locale.ITALIAN);
-		String text = "php utilizza la sintassi di perl, e mentre ereg... beh, ereg";
-		iterator.setText(text);
-		int lastBoundary = 0; 
-		int boundary = iterator.first();
-		while(boundary != BreakIterator.DONE){
-			for(int i = lastBoundary; i<boundary; i++){
-				if(Character.isLetter(text.codePointAt(i))){
-					System.out.println(text.substring(lastBoundary, boundary));
-					break;
-				}
-			}
-			lastBoundary = boundary;
-			boundary = iterator.next();
-		}
-		if(lastBoundary < text.length()){
-			for(int i = lastBoundary; i<text.length(); i++){
-				if(Character.isLetter(text.codePointAt(i))){
-					System.out.println(text.substring(lastBoundary));
-					break;
-				}
-			}
-		}
-
-//		BodyContentHandler handler = new BodyContentHandler(10*1024*1024);
-//		Metadata metadata = new Metadata();
-//		AutoDetectParser parser = new AutoDetectParser();
-//		InputStream in = new FileInputStream(new File(System.getProperty("user.home"), "words.txt"));
-//		parser.parse(in, handler, metadata);
-//		System.out.println(metadata.get(Metadata.WORD_COUNT));
-		
-	}
 }

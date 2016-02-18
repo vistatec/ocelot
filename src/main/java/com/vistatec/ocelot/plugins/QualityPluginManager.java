@@ -447,7 +447,7 @@ public class QualityPluginManager implements ActionListener {
 				}
 				int sampleSize = countWords(sourceText.toString());
 				try {
-					plugin.documentOpened(sampleSize, lqiList);
+					plugin.documentOpened(sampleSize, lqiList, segments);
 				} catch (QualityEvaluationException e) {
 
 					promptEvaluationOnTheFlyErrorMessage();

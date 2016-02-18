@@ -8,6 +8,7 @@ import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.plugins.exception.AuditProfileException;
 import com.vistatec.ocelot.plugins.exception.NoAuditProfileLoadedException;
 import com.vistatec.ocelot.plugins.exception.QualityEvaluationException;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public interface QualityPlugin extends Plugin {
 
@@ -27,7 +28,7 @@ public interface QualityPlugin extends Plugin {
 	        throws NoAuditProfileLoadedException, QualityEvaluationException;
 
 	public void documentOpened(int sampleSize,
-	        List<LanguageQualityIssue> lqiList)
+	        List<LanguageQualityIssue> lqiList, List<OcelotSegment> segments)
 	        throws QualityEvaluationException;
 
 	public void enableEvaluationOnTheFly(boolean enable)
