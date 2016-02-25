@@ -1,6 +1,7 @@
 package com.vistatec.ocelot.findrep;
 
 import java.text.BreakIterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -12,7 +13,7 @@ import com.vistatec.ocelot.segment.model.TextAtom;
  * This class provides methods for searching text occurrences in Ocelot
  * segments.
  */
-public class FindAndReplaceManager {
+public class WordFinder {
 
 	/** The case sensitive option constant. */
 	public static final int CASE_SENSITIVE_OPTION = 0;
@@ -23,11 +24,14 @@ public class FindAndReplaceManager {
 	/** The wrap search option constant. */
 	public static final int WRAP_SEARCH_OPTION = 2;
 
+	/** None scope constant. */
+	public static final int SCOPE_NONE = 0;
+
 	/** The source scope constant. */
-	public static final int SCOPE_SOURCE = 0;
+	public static final int SCOPE_SOURCE = 1;
 
 	/** The target scope constant. */
-	public static final int SCOPE_TARGET = 1;
+	public static final int SCOPE_TARGET = 2;
 
 	/** The direction down constant. */
 	public static final int DIRECTION_DOWN = 0;
@@ -74,10 +78,16 @@ public class FindAndReplaceManager {
 	/** The break iterator finding word boundaries. */
 	private BreakIterator breakIt;
 
+	/** The list of results. */
+	private List<FindResult> allResults;
+
+	/** The index of the current result. */
+	private int currResultIndex = -1;
+
 	/**
 	 * Constructor.
 	 */
-	public FindAndReplaceManager() {
+	public WordFinder() {
 
 		options = new boolean[AVAILABLE_OPTIONS_COUNT];
 	}
@@ -87,9 +97,12 @@ public class FindAndReplaceManager {
 	 */
 	public void reset() {
 
+		System.out.println("RESET");
 		goToStartOfDocument();
+		allResults = null;
+		currResultIndex = -1;
 		breakIt = null;
-		scope = SCOPE_SOURCE;
+		scope = SCOPE_NONE;
 		direction = DIRECTION_DOWN;
 		options = new boolean[AVAILABLE_OPTIONS_COUNT];
 	}
@@ -162,15 +175,45 @@ public class FindAndReplaceManager {
 	 */
 	public void setScope(int scope, Locale locale) {
 
+		System.out.println("SCOPE");
 		if (scope != SCOPE_SOURCE && scope != SCOPE_TARGET) {
 			throw new IllegalArgumentException("Invalid scope value: " + scope
 					+ ". Accepted values are " + SCOPE_SOURCE + " and "
 					+ SCOPE_TARGET + ".");
 		}
+		if (this.scope != scope) {
+			this.scope = scope;
+			breakIt = BreakIterator.getWordInstance(locale);
+			goToStartOfDocument();
+			allResults = null;
+			currResultIndex = -1;
+		}
+	}
 
-		this.scope = scope;
-		breakIt = BreakIterator.getWordInstance(locale);
+	/**
+	 * Finds all occurrences of a text in the Ocelot segments.
+	 * 
+	 * @param text
+	 *            the text
+	 * @param segments
+	 *            the Ocelot segments
+	 * @return the list of results.
+	 */
+	public List<FindResult> findWord(String text, List<OcelotSegment> segments) {
+
+		allResults = new ArrayList<FindResult>();
 		goToStartOfDocument();
+		while (findNextWord(text, segments)) {
+			allResults.add(getCurrentResult());
+		}
+		if (!allResults.isEmpty()) {
+			if (direction == DIRECTION_DOWN) {
+				currResultIndex = 0;
+			} else {
+				currResultIndex = allResults.size() - 1;
+			}
+		}
+		return allResults;
 	}
 
 	/**
@@ -183,9 +226,8 @@ public class FindAndReplaceManager {
 	 * @return <code>true</code> if the string has been found:
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean findNextWord(String text, List<OcelotSegment> segments) {
+	private boolean findNextWord(String text, List<OcelotSegment> segments) {
 		boolean found = false;
-		currWholeWord = "";
 		if (options[WHOLE_WORD_OPTION]) {
 			found = findNextWholeWord(text, segments);
 		} else {
@@ -194,22 +236,6 @@ public class FindAndReplaceManager {
 
 		return found;
 	}
-
-	// public List<FindReplaceResult> findAll(String text,
-	// List<OcelotSegment> segments) {
-	//
-	// List<FindReplaceResult> results = new ArrayList<FindReplaceResult>();
-	// goToStartOfDocument();
-	// boolean found = true;
-	// while (found) {
-	// found = findNextWord(text, segments);
-	// if (found) {
-	// results.add(new FindReplaceResult(currSegIndex, currAtomIndex,
-	// getFirstWordIndex(), getLastWordIndex(), scope));
-	// }
-	// }
-	// return results;
-	// }
 
 	/**
 	 * Finds the next occurrence of a specific string
@@ -255,14 +281,6 @@ public class FindAndReplaceManager {
 				currOffsetIdx = RESET_VALUE;
 				resetBoundaries();
 			}
-			// if (!found) {
-			// System.out.println("End of document reached.");
-			// } else {
-			// System.out.println("Word found! Segment number: "
-			// + currSegIndex + " - Boundaries: " + prevBoundary
-			// + " - " + currBoundary);
-			//
-			// }
 		}
 		return found;
 	}
@@ -371,13 +389,6 @@ public class FindAndReplaceManager {
 			}
 
 		}
-		// if (!found) {
-		// System.out.println("End of document reached.");
-		// } else {
-		// System.out.println("Word found! Segment number: " + currSegIndex
-		// + " - Boundaries: " + prevBoundary + " - " + currBoundary);
-		//
-		// }
 		return found;
 	}
 
@@ -392,14 +403,8 @@ public class FindAndReplaceManager {
 
 		if (direction == DIRECTION_DOWN) {
 			currSegIndex++;
-			if (options[WRAP_SEARCH_OPTION]) {
-				currSegIndex = currSegIndex % segCount;
-			}
 		} else {
 			currSegIndex--;
-			if (options[WRAP_SEARCH_OPTION] && currSegIndex == -1) {
-				currSegIndex = segCount - 1;
-			}
 		}
 
 	}
@@ -625,22 +630,12 @@ public class FindAndReplaceManager {
 	}
 
 	/**
-	 * Gets the current segment index.
-	 * 
-	 * @return the current segment index.
-	 */
-	public int getSegmentIndex() {
-		return currSegIndex;
-	}
-
-	/**
 	 * Gets the found word first index.
 	 * 
 	 * @return the found word first index.
 	 */
-	public int getWordFirstIndex() {
+	private int getWordFirstIndex() {
 		if (direction == DIRECTION_DOWN) {
-			// return prevBoundary;
 			return firstBoundary;
 		} else {
 			return currBoundary;
@@ -652,31 +647,130 @@ public class FindAndReplaceManager {
 	 * 
 	 * @return the found word last index.
 	 */
-	public int getWordLastIndex() {
+	private int getWordLastIndex() {
 
 		if (direction == DIRECTION_DOWN) {
 			return currBoundary;
 		} else {
 			return firstBoundary;
-			// return prevBoundary;
 		}
 	}
 
 	/**
-	 * Gets the current atom index.
+	 * Gets the current result.
 	 * 
-	 * @return the current atom index.
+	 * @return the current result.
 	 */
-	public int getCurrAtomIndex() {
-		return currAtomIndex;
+	public FindResult getCurrentResult() {
+
+		return new FindResult(currSegIndex, currAtomIndex, getWordFirstIndex(),
+				getWordLastIndex(), scope == SCOPE_TARGET);
 	}
 
 	/**
-	 * Gets the scope.
+	 * Gets all the results.
 	 * 
-	 * @return the scope.
+	 * @return the list of results.
 	 */
-	public int getScope() {
-		return scope;
+	public List<FindResult> getAllResults() {
+		return allResults;
+	}
+
+	/**
+	 * Clears the list of results.
+	 */
+	public void clearAllResults() {
+		allResults = null;
+	}
+
+	/**
+	 * Gets the index in the list of the current result.
+	 * 
+	 * @return the index in the list of the current result.
+	 */
+	public int getCurrentResIndex() {
+
+		return currResultIndex;
+	}
+
+	/**
+	 * Move the index to the next result.
+	 */
+	public void goToNextResult() {
+
+		if (allResults != null) {
+			if (currResultIndex == -1 && direction == DIRECTION_UP
+					&& options[WRAP_SEARCH_OPTION]) {
+				currResultIndex = allResults.size() - 1;
+			} else if (currResultIndex == allResults.size()
+					&& direction == DIRECTION_DOWN
+					&& options[WRAP_SEARCH_OPTION]) {
+				currResultIndex = 0;
+			} else if (currResultIndex == -1 && direction == DIRECTION_DOWN) {
+				currResultIndex++;
+			} else if (currResultIndex == allResults.size()
+					&& direction == DIRECTION_UP) {
+				currResultIndex--;
+			} else if (currResultIndex > -1
+					&& currResultIndex < allResults.size()) {
+				if (direction == DIRECTION_DOWN) {
+					if (options[WRAP_SEARCH_OPTION]) {
+						currResultIndex = (currResultIndex + 1)
+								% allResults.size();
+					} else {
+						currResultIndex++;
+					}
+				} else {
+					currResultIndex--;
+					if (options[WRAP_SEARCH_OPTION] && currResultIndex == -1) {
+						currResultIndex = allResults.size() - 1;
+					}
+				}
+			}
+		} else {
+			currResultIndex = -1;
+		}
+	}
+
+	/**
+	 * Removes the current result from the list.
+	 */
+	public void removeCurrentResult() {
+
+		if (allResults != null && currResultIndex > -1) {
+			allResults.remove(currResultIndex);
+			currResultIndex = -1;
+		}
+	}
+
+	/**
+	 * Adjusts results boundaries when the current occurrence is replaced by a
+	 * new string.
+	 * 
+	 * @param newString
+	 *            the new string.
+	 */
+	public void replacedString(String newString) {
+
+		if (allResults != null && currResultIndex > -1
+				&& currResultIndex < allResults.size()) {
+			FindResult currRes = allResults.get(currResultIndex);
+			int resIdx = currResultIndex + 1;
+			FindResult nextRes = null;
+			int delta = newString.length()
+					- (currRes.getStringEndIndex() - currRes
+							.getStringStartIndex());
+			while (resIdx < allResults.size()) {
+				nextRes = allResults.get(resIdx++);
+				if (nextRes.getSegmentIndex() == currRes.getSegmentIndex()
+						&& nextRes.getAtomIndex() == currRes.getAtomIndex()) {
+
+					nextRes.setStringStartIndex(nextRes.getStringStartIndex()
+							+ delta);
+					nextRes.setStringEndIndex(nextRes.getStringEndIndex()
+							+ delta);
+				}
+			}
+		}
 	}
 }

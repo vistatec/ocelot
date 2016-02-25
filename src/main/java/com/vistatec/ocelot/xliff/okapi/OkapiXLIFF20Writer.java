@@ -118,6 +118,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
 
             FragmentVariant target = (FragmentVariant) okapiSeg.getTarget();
             target.updateSegmentAtoms(unitPart);
+            target.setAtomsHighlightedText();
 
         } else {
             LOG.error("Unit part associated with Segment was not an Okapi Segment!");

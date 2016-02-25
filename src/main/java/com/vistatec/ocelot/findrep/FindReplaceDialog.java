@@ -65,6 +65,12 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 	/** The settings panel height. */
 	private static final int SETTING_PANELS_HEIGHT = 100;
 
+	/** The text displaying the number of found occurrences. */
+	private static final String OCCUR_NUM_LBL_TEXT = "Found $$$ occurrences. ";
+
+	/** The string to be replaced with the actual number of occurrences. */
+	private static final String OCCUR_NUM_REPLACE_STRING = "$$$";
+
 	/** The find next button. */
 	private JButton btnFindNext;
 
@@ -73,6 +79,9 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 
 	/** The replace all button. */
 	private JButton btnReplaceAll;
+
+	/** The find all button. */
+	private JButton btnFindAll;
 
 	/** The close button. */
 	private JButton btnClose;
@@ -112,6 +121,9 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 
 	/** The beginning of document reached label. */
 	private JLabel lblBeginOfDoc;
+
+	/** The label displaying the number of found occurrences. */
+	private JLabel lblOccNum;
 
 	/** The replace label. */
 	private JLabel lblReplace;
@@ -171,6 +183,8 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 		configButton(btnReplace);
 		btnReplaceAll = new JButton("Replace All");
 		configButton(btnReplaceAll);
+		btnFindAll = new JButton("Find All");
+		configButton(btnFindAll);
 		btnClose = new JButton("Close");
 		configButton(btnClose);
 		lblStrNotFound = new JLabel("String not found.");
@@ -180,6 +194,8 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 		lblEndOfDoc.setForeground(darkgreen);
 		lblBeginOfDoc = new JLabel("Beginning of document reached.");
 		lblBeginOfDoc.setForeground(darkgreen);
+		lblOccNum = new JLabel();
+		lblOccNum.setForeground(darkgreen);
 
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
@@ -187,9 +203,13 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 		topPanel.add(btnFindNext);
 		topPanel.add(Box.createHorizontalStrut(10));
 		// topPanel.add(Box.createHorizontalGlue());
+		// topPanel.add(btnFindAll);
+		// topPanel.add(Box.createHorizontalStrut(10));
 		topPanel.add(btnReplace);
+		topPanel.add(Box.createHorizontalStrut(10));
+		topPanel.add(btnReplaceAll);
 		topPanel.add(Box.createHorizontalGlue());
-		// topPanel.add(btnReplaceAll);
+
 		topPanel.add(Box.createHorizontalStrut(16));
 
 		JPanel bottomPanel = new JPanel();
@@ -197,6 +217,7 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		bottomPanel.add(Box.createHorizontalStrut(5));
 		bottomPanel.add(lblStrNotFound);
+		bottomPanel.add(lblOccNum);
 		bottomPanel.add(lblBeginOfDoc);
 		bottomPanel.add(lblEndOfDoc);
 		bottomPanel.add(Box.createHorizontalGlue());
@@ -390,6 +411,8 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 			replace();
 		} else if (e.getSource().equals(btnReplaceAll)) {
 			replaceAll();
+			// } else if (e.getSource().equals(btnFindAll)) {
+			// findAll();
 		}
 	}
 
@@ -409,6 +432,7 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 			lblBeginOfDoc.setVisible(false);
 			lblEndOfDoc.setVisible(false);
 			lblStrNotFound.setVisible(true);
+			lblOccNum.setVisible(false);
 		} else if (result == FindAndReplaceController.RESULT_END_OF_DOC_REACHED) {
 			if (rbtnDown.isSelected()) {
 				lblBeginOfDoc.setVisible(false);
@@ -422,11 +446,35 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 	}
 
 	/**
+	 * Displays the number of found occurrences.
+	 * 
+	 * @param occurNum
+	 *            the number of occurrences.
+	 */
+	public void displayOccurrenceNum(int occurNum) {
+
+		lblOccNum.setText(OCCUR_NUM_LBL_TEXT.replace(OCCUR_NUM_REPLACE_STRING,
+				String.valueOf(occurNum)));
+		setResult(FindAndReplaceController.RESULT_FOUND);
+		lblOccNum.setVisible(true);
+	}
+
+	/**
+	 * Hides the number of occurrences.
+	 */
+	public void hideOccNumber() {
+
+		lblOccNum.setVisible(false);
+		lblBeginOfDoc.setVisible(false);
+		lblEndOfDoc.setVisible(false);
+	}
+
+	/**
 	 * Replaces all instances.
 	 */
 	private void replaceAll() {
 
-		System.out.println("Replace All");
+		controller.replaceAll(txtReplace.getText());
 	}
 
 	/**
@@ -509,9 +557,9 @@ public class FindReplaceDialog extends JDialog implements ActionListener,
 	public int getSelectedScope() {
 
 		if (rbtnSource.isSelected()) {
-			return FindAndReplaceManager.SCOPE_SOURCE;
+			return WordFinder.SCOPE_SOURCE;
 		} else {
-			return FindAndReplaceManager.SCOPE_TARGET;
+			return WordFinder.SCOPE_TARGET;
 		}
 	}
 }

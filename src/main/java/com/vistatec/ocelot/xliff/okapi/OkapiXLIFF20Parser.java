@@ -50,7 +50,6 @@ import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
 import net.sf.okapi.lib.xliff2.changeTracking.Item;
 import net.sf.okapi.lib.xliff2.changeTracking.Revision;
 import net.sf.okapi.lib.xliff2.changeTracking.Revisions;
-import net.sf.okapi.lib.xliff2.core.CTag;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Note;

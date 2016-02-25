@@ -58,6 +58,7 @@ public class TextContainerVariant extends OkapiSegmentVariant {
 
     @Override
     public TextContainerVariant createCopy() {
+    	
         return new TextContainerVariant(tc.clone());
     }
 
@@ -75,13 +76,20 @@ public class TextContainerVariant extends OkapiSegmentVariant {
     public List<SegmentAtom> getAtoms() {
     	List<SegmentAtom> atoms = convertTextFragment(tc.getUnSegmentedContentCopy());
 		if (highlightDataList != null) {
-			for (HighlightData hlData : highlightDataList) {
+			HighlightData hlData = null;
+			for (int i = 0; i< highlightDataList.size(); i++) {
+				hlData = highlightDataList.get(i);
 				if (hlData.getAtomIndex() != -1
 						&& hlData.getAtomIndex() < atoms.size()
 						&& atoms.get(hlData.getAtomIndex()) instanceof TextAtom) {
 					TextAtom txtAtom = (TextAtom) atoms.get(hlData
 							.getAtomIndex());
-					txtAtom.setHighlightIndices(hlData.getHighlightIndices());
+//					txtAtom.setHighlightIndices(hlData.getHighlightIndices());
+					TextAtom.HighlightBoundaries hlBoundary = new TextAtom.HighlightBoundaries(hlData.getHighlightIndices()[0], hlData.getHighlightIndices()[1]);
+					txtAtom.addHighlightBoundary(hlBoundary);
+					if(i == currentHighlightedIndex){
+						txtAtom.setCurrentHLBoundaryIdx(txtAtom.getHighlightBoundaries().indexOf(hlBoundary));
+					}
 				}
 			}
 		}
@@ -127,4 +135,5 @@ public class TextContainerVariant extends OkapiSegmentVariant {
     public String toString() {
         return getDisplayText();
     }
+    
 }

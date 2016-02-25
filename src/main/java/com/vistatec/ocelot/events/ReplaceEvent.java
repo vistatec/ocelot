@@ -1,33 +1,41 @@
 package com.vistatec.ocelot.events;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.vistatec.ocelot.events.api.OcelotEvent;
-import com.vistatec.ocelot.findrep.FindReplaceResult;
 
 public class ReplaceEvent implements OcelotEvent {
 
+	public static final int REPLACE = 0;
+	
+	public static final int REPLACE_ALL = 1;
+	
 	private String newString;
 	
-	private List<FindReplaceResult> results;
+	private int action;
+	
+	private int segmentIndex;
 
-	public ReplaceEvent(String newString, List<FindReplaceResult> results) {
+	public ReplaceEvent(String newString, int action) {
 		this.newString = newString;
-		this.results = results;
+		this.action = action;
 	}
 	
-	public ReplaceEvent(String newString, FindReplaceResult result) {
+	public ReplaceEvent(String newString, int segmentIndex, int action) {
 		this.newString = newString;
-		this.results = new ArrayList<FindReplaceResult>();
-		results.add(result);
+		this.segmentIndex = segmentIndex;
+		this.action = action;
 	}
+	
 
 	public String getNewString() {
 		return newString;
 	}
 	
-	public List<FindReplaceResult> getFindResults(){
-		return results;
+	
+	public int getSegmentIndex(){
+		return segmentIndex;
+	}
+	
+	public int getAction(){
+		return action;
 	}
 }

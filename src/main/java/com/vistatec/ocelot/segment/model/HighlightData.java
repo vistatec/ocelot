@@ -1,5 +1,6 @@
 package com.vistatec.ocelot.segment.model;
 
+
 /**
  * This class contains data of a highlighted string contained in a text atom.
  */
@@ -10,6 +11,7 @@ public class HighlightData {
 
 	/** The start and end indices of the highlighted string. */
 	private int[] highlightIndices;
+
 
 	/**
 	 * Default constructor.
@@ -69,4 +71,5 @@ public class HighlightData {
 	public void setHighlightIndices(int[] highlightIndices) {
 		this.highlightIndices = highlightIndices;
 	}
+
 }

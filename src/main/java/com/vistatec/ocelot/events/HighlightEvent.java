@@ -1,44 +1,37 @@
 package com.vistatec.ocelot.events;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vistatec.ocelot.events.api.OcelotEvent;
+import com.vistatec.ocelot.findrep.FindResult;
 
 public class HighlightEvent implements OcelotEvent {
 
-	private int segmentIndex;
+	private List<FindResult> highlightDataList;
 	
-	private int atomIndex;
+	private int currResultIndex;
 	
-	private int startIndex;
-	
-	private int endIndex;
-	
-	private boolean target;
-	
-	public HighlightEvent(int segmentIndex, int atomIndex, int startIndex, int endIndex, boolean target) {
-		this.segmentIndex = segmentIndex;
-		this.atomIndex = atomIndex;
-		this.startIndex = startIndex;
-		this.endIndex = endIndex;
-		this.target = target;
-	}
-
-	public int getSegmentIdx(){
-		return segmentIndex;
+	public HighlightEvent(List<FindResult> highlightDataList, int currResultIndex) {
+		
+		this.highlightDataList	= highlightDataList;
+		this.currResultIndex = currResultIndex;
 	}
 	
-	public int getAtomIndex(){
-		return atomIndex;
+	public HighlightEvent(FindResult highlightData) {
+		
+		highlightDataList = new ArrayList<FindResult>();
+		highlightDataList.add(highlightData);
+		
 	}
 	
-	public int getStartIndex(){
-		return startIndex;
+	public List<FindResult> getHighlightDataList(){
+		return highlightDataList;
 	}
 	
-	public int getEndIndex(){
-		return endIndex;
+	public int getCurrResultIndex(){
+		
+		return currResultIndex; 
 	}
 	
-	public boolean isTarget(){
-		return target;
-	}
 }

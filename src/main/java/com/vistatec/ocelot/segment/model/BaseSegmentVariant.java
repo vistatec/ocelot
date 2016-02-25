@@ -14,6 +14,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 
 
     protected List<HighlightData> highlightDataList;
+    
+    protected int currentHighlightedIndex = -1;
 	
     protected abstract void setAtoms(List<SegmentAtom> atoms);
 
@@ -67,19 +69,43 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
                 textToStyle.add(((CodeAtom)atom).getVerboseData());
                 textToStyle.add(atom.getTextStyle());
             }
-            else {
+            else if(atom instanceof TextAtom) {
             	TextAtom txtAtom = (TextAtom)atom;
-            	if(txtAtom.getHighlightIndices() != null){
-            		textToStyle.add(atom.getData().substring(0, txtAtom.getHighlightIndices()[0]));
-            		textToStyle.add(txtAtom.getTextStyle());
-            		textToStyle.add(atom.getData().substring(txtAtom.getHighlightIndices()[0], txtAtom.getHighlightIndices()[1]));
-            		textToStyle.add(txtAtom.getHighlightStyle());
-            		textToStyle.add(atom.getData().substring(txtAtom.getHighlightIndices()[1]));
-            		textToStyle.add(txtAtom.getTextStyle());
+            	if(txtAtom.getHighlightBoundaries() != null){
+            		int index = 0;
+					for (int i = 0; i < txtAtom.getHighlightBoundaries().size(); i++) {
+						String style = null;
+						if (i == txtAtom.getCurrentHLBoundaryIdx()) {
+							style = txtAtom.getCurrHighlightStyle();
+						} else {
+							style = txtAtom.getHighlightStyle();
+						}
+						textToStyle.add(atom.getData().substring(
+								index,
+								txtAtom.getHighlightBoundaries().get(i)
+										.getFirstIndex()));
+						textToStyle.add(txtAtom.getTextStyle());
+						textToStyle.add(atom.getData().substring(
+								txtAtom.getHighlightBoundaries().get(i)
+										.getFirstIndex(),
+								txtAtom.getHighlightBoundaries().get(i)
+										.getLastIndex()));
+						textToStyle.add(style);
+						index = txtAtom.getHighlightBoundaries().get(i)
+								.getLastIndex();
+					}
+            		if(txtAtom.getData().length() > index){
+            			textToStyle.add(atom.getData().substring(index));
+            			textToStyle.add(txtAtom.getTextStyle());
+            		}
+            	
             	} else {
             		textToStyle.add(atom.getData());
             		textToStyle.add(atom.getTextStyle());
             	}
+            } else {
+            	textToStyle.add(atom.getData());
+        		textToStyle.add(atom.getTextStyle());
             }
         }
         return textToStyle;
@@ -269,14 +295,10 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
     }
 
     
-//    public void setHighlightedTxtAtomIndex(int atomIndex){
-//    	this.highlightedTxtAtomIdx = atomIndex;
-//    }
     
-    public void clearHighlightedAtom(){
-//    	highlightedTxtAtomIdx = -1;
-//    	highlightIndices = null;
+    public void clearHighlightedText(){
     	highlightDataList = null;
+    	currentHighlightedIndex = -1;
     }
     
     public void setHighlightDataList(List<HighlightData> highlightDataList) {
@@ -294,19 +316,53 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
     	highlightDataList.add(highlightData);
     }
     
-//    public int getHighlightedTxtAtomIndex(){
-//    	
-//    	return highlightedTxtAtomIdx;
-//    }
-//    
-//    public void setHighlightedIndices(int startIndex, int endIndex){
-//    	
-//    	highlightIndices = new int[]{startIndex, endIndex};
-//    }
-//    
-//    public int[] getHighlightedIndices(){
-//    	
-//    	return highlightIndices;
-//    }
-//    
+    public void removeHighlightData(int atomIndex, int startIndex, int endIndex){
+    	
+    	HighlightData hdToDelete = null;
+    	if(highlightDataList != null){
+    		for(HighlightData hd: highlightDataList){
+    			if(hd.getAtomIndex() == atomIndex && hd.getHighlightIndices()[0] == startIndex && hd.getHighlightIndices()[1] == endIndex){
+    				hdToDelete = hd;
+    				break;
+    			}
+    		}
+    		highlightDataList.remove(hdToDelete);
+    	}
+    }
+    
+    public void setCurrentHighlightedIndex(int currentHighlightedIndex){
+    	this.currentHighlightedIndex = currentHighlightedIndex;
+    }
+    
+    public int getCurrentHighlightedIndex(){
+    	return currentHighlightedIndex;
+    }
+    
+    public void replaced(String newString){
+    	
+		if (highlightDataList != null) {
+			HighlightData replacedHd = highlightDataList
+					.get(currentHighlightedIndex);
+			if (currentHighlightedIndex < highlightDataList.size() - 1) {
+				HighlightData nextHd = null;
+				int hdIndex = currentHighlightedIndex + 1;
+				int delta = newString.length()
+						- (replacedHd.getHighlightIndices()[1] - replacedHd
+								.getHighlightIndices()[0]);
+				while (hdIndex < highlightDataList.size()) {
+					nextHd = highlightDataList.get(hdIndex++);
+					if (replacedHd.getAtomIndex() == nextHd.getAtomIndex()) {
+						
+						int[] newHLIndices = {
+								nextHd.getHighlightIndices()[0] + delta,
+								nextHd.getHighlightIndices()[1] + delta };
+						nextHd.setHighlightIndices(newHLIndices);
+					}
+				}
+			}
+			highlightDataList.remove(currentHighlightedIndex);
+			currentHighlightedIndex = -1;
+		}
+    }
+    
 }

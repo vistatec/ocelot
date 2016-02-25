@@ -1,12 +1,16 @@
 package com.vistatec.ocelot.findrep;
 
 import java.awt.Window;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import javax.swing.JOptionPane;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
+import com.vistatec.ocelot.events.ReplaceDoneEvent;
 import com.vistatec.ocelot.events.ReplaceEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -30,8 +34,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	/** The Ocelot event queue. */
 	private OcelotEventQueue eventQueue;
 
-	/** The find and replace manager. */
-	private FindAndReplaceManager frManager;
+	/** The word finder object. */
+	private WordFinder wordFinder;
 
 	/** The find and replace dialog. */
 	private FindReplaceDialog frDialog;
@@ -48,8 +52,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	/** Last searched text. */
 	private String lastSearchedText;
 
-	/** States if at least an occurrence has been found for the current text. */
-	private boolean atLeastOneFound;
+	/** List of replaced results. */
+	private List<Integer> replacedResIdxList;
 
 	/**
 	 * Constructor.
@@ -60,7 +64,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	public FindAndReplaceController(OcelotEventQueue eventQueue) {
 
 		this.eventQueue = eventQueue;
-		frManager = new FindAndReplaceManager();
+		wordFinder = new WordFinder();
+		replacedResIdxList = new ArrayList<Integer>();
 	}
 
 	/**
@@ -77,17 +82,24 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 				.getOriginalLocId());
 		targetLocale = new Locale(e.getDocument().getTgtLocale()
 				.getOriginalLocId());
-		System.out.println(sourceLocale.toString());
-		System.out.println(targetLocale.toString());
 		if (frDialog != null) {
 			int selectedScope = frDialog.getSelectedScope();
-			if (selectedScope == FindAndReplaceManager.SCOPE_SOURCE) {
+			if (selectedScope == WordFinder.SCOPE_SOURCE) {
 				setSourceScope();
 			} else {
 				setTargetScope();
 			}
 		}
+		clear();
 
+	}
+
+	/**
+	 * Clears the controller.
+	 */
+	private void clear() {
+		lastSearchedText = null;
+		replacedResIdxList.clear();
 	}
 
 	/**
@@ -102,34 +114,63 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 			// if the text to be searched has changed, then start to search from
 			// the beginning (or the end) of the document
 			if (lastSearchedText == null || !text.equals(lastSearchedText)) {
-				frManager.goToStartOfDocument();
-				atLeastOneFound = false;
-			}
-			lastSearchedText = text;
-			// if the text is found, then an event is sent for making the
-			// segmentView highlight the text in the main grid
-			if (frManager.findNextWord(text, segments)) {
-				eventQueue
-						.post(new HighlightEvent(
-								frManager.getSegmentIndex(),
-								frManager.getCurrAtomIndex(),
-								frManager.getWordFirstIndex(),
-								frManager.getWordLastIndex(),
-								frManager.getScope() == FindAndReplaceManager.SCOPE_TARGET));
-				frDialog.setResult(RESULT_FOUND);
-				atLeastOneFound = true;
-			} else if (atLeastOneFound) {
-				// if the text wasn't found, but at least one occurrence was
-				// found before, then a message is displayed informing the user
-				// that the end (or beginning) of the document has been reached
-				frDialog.setResult(RESULT_END_OF_DOC_REACHED);
-			} else {
-				// if neither text wasn't found and no occurrences were found
-				// before, then a message is displayed informing the user that
-				// the string was not found.
-				frDialog.setResult(RESULT_NOT_FOUND);
+				lastSearchedText = text;
+				replacedResIdxList.clear();
+				wordFinder.goToStartOfDocument();
+				wordFinder.clearAllResults();
+				List<FindResult> results = wordFinder.findWord(text, segments);
+				if (results != null && !results.isEmpty()) {
+					frDialog.displayOccurrenceNum(results.size());
+					sendHighlightEvent(results);
+				} else {
+					frDialog.setResult(RESULT_NOT_FOUND);
+					eventQueue.post(new HighlightEvent(null, -1));
+				}
+				// if a list of results already exists, then go to the next
+				// result
+			} else if (wordFinder.getAllResults() != null
+					&& !wordFinder.getAllResults().isEmpty()) {
+				do {
+					wordFinder.goToNextResult();
+				} while (replacedResIdxList.contains(wordFinder
+						.getCurrentResIndex()));
+				if (wordFinder.getCurrentResIndex() != -1
+						&& wordFinder.getCurrentResIndex() != wordFinder
+								.getAllResults().size()) {
+					sendHighlightEvent(wordFinder.getAllResults());
+					frDialog.setResult(RESULT_FOUND);
+				} else {
+					frDialog.setResult(RESULT_END_OF_DOC_REACHED);
+				}
 			}
 		}
+	}
+
+	/**
+	 * Sends the highlight event for current results.
+	 * 
+	 * @param results
+	 *            the find results.
+	 */
+	private void sendHighlightEvent(List<FindResult> results) {
+
+		List<FindResult> resultsToSend = null;
+		int currResIdx = -1;
+		if (replacedResIdxList.isEmpty()) {
+			resultsToSend = results;
+			currResIdx = wordFinder.getCurrentResIndex();
+		} else {
+			resultsToSend = new ArrayList<FindResult>();
+			for (int i = 0; i < results.size(); i++) {
+				if (!replacedResIdxList.contains(i)) {
+					resultsToSend.add(results.get(i));
+				}
+			}
+			currResIdx = resultsToSend.indexOf(results.get(wordFinder
+					.getCurrentResIndex()));
+		}
+
+		eventQueue.post(new HighlightEvent(resultsToSend, currResIdx));
 	}
 
 	/**
@@ -141,30 +182,49 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 *            the new string.
 	 */
 	public void replace(String newString) {
-		eventQueue.post(new ReplaceEvent(newString, new FindReplaceResult(
-				frManager.getSegmentIndex(), frManager.getCurrAtomIndex(),
-				frManager.getWordFirstIndex(), frManager.getWordLastIndex(),
-				frManager.getScope())));
+		boolean replace = true;
+		if (newString.isEmpty()) {
+			int option = JOptionPane
+					.showConfirmDialog(
+							frDialog,
+							"Do you want to replace the selected occurrence with an empty string?",
+							"Replace", JOptionPane.YES_NO_OPTION);
+			replace = option == JOptionPane.YES_OPTION;
+		}
+		if (replace) {
+			frDialog.hideOccNumber();
+			if (replacedResIdxList.contains(wordFinder.getCurrentResIndex())) {
+				findNext(lastSearchedText);
+			} else if (wordFinder.getCurrentResIndex() != -1) {
+				eventQueue.post(new ReplaceEvent(newString,
+						wordFinder.getAllResults()
+								.get(wordFinder.getCurrentResIndex())
+								.getSegmentIndex(), ReplaceEvent.REPLACE));
+				wordFinder.replacedString(newString);
+				replacedResIdxList.add(wordFinder.getCurrentResIndex());
+				if (replacedResIdxList.size() == wordFinder
+						.getAllResults().size()) {
+					wordFinder.clearAllResults();
+					clear();
+				}
+			}
+		}
 	}
 
 	/**
 	 * Set the scope to the source.
 	 */
 	public void setSourceScope() {
-		if (checkDocumentOpened()) {
-			frManager
-					.setScope(FindAndReplaceManager.SCOPE_SOURCE, sourceLocale);
-		}
+		wordFinder.setScope(WordFinder.SCOPE_SOURCE, sourceLocale);
+		clear();
 	}
 
 	/**
 	 * Sets the scope to the target.
 	 */
 	public void setTargetScope() {
-		if (checkDocumentOpened()) {
-			frManager
-					.setScope(FindAndReplaceManager.SCOPE_TARGET, targetLocale);
-		}
+		wordFinder.setScope(WordFinder.SCOPE_TARGET, targetLocale);
+		clear();
 	}
 
 	/**
@@ -174,8 +234,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 *            if <true> the whole word option will be set.
 	 */
 	public void setWholeWord(boolean wholeWord) {
-		frManager.enableOption(FindAndReplaceManager.WHOLE_WORD_OPTION,
-				wholeWord);
+		wordFinder.enableOption(WordFinder.WHOLE_WORD_OPTION, wholeWord);
+		clear();
 	}
 
 	/**
@@ -185,22 +245,23 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 *            if <true> the case sensitive option will be set.
 	 */
 	public void setCaseSensitive(boolean caseSensitive) {
-		frManager.enableOption(FindAndReplaceManager.CASE_SENSITIVE_OPTION,
-				caseSensitive);
+		wordFinder
+				.enableOption(WordFinder.CASE_SENSITIVE_OPTION, caseSensitive);
+		clear();
 	}
 
 	/**
 	 * Sets the search direction to "down".
 	 */
 	public void setSearchDirectionDown() {
-		frManager.setDirection(FindAndReplaceManager.DIRECTION_DOWN);
+		wordFinder.setDirection(WordFinder.DIRECTION_DOWN);
 	}
 
 	/**
 	 * Sets the search direction to "up".
 	 */
 	public void setSearchDirectionUp() {
-		frManager.setDirection(FindAndReplaceManager.DIRECTION_UP);
+		wordFinder.setDirection(WordFinder.DIRECTION_UP);
 	}
 
 	/**
@@ -223,8 +284,9 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 */
 	public void closeDialog() {
 
-		frManager.reset();
+		wordFinder.reset();
 		frDialog = null;
+		clear();
 	}
 
 	/**
@@ -246,7 +308,48 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 */
 	public void setWrapSearch(boolean enable) {
 
-		frManager
-				.enableOption(FindAndReplaceManager.WRAP_SEARCH_OPTION, enable);
+		wordFinder.enableOption(WordFinder.WRAP_SEARCH_OPTION, enable);
+	}
+
+	/**
+	 * Replaces all the highlighted strings with a specific text.
+	 * 
+	 * @param text
+	 *            the text
+	 */
+	public void replaceAll(String text) {
+
+		boolean replace = true;
+		if (text.isEmpty()) {
+			int option = JOptionPane
+					.showConfirmDialog(
+							frDialog,
+							"Do you want to replace all occurrences with an empty string?",
+							"Replace", JOptionPane.YES_NO_OPTION);
+			replace = option == JOptionPane.YES_OPTION;
+		}
+		if (replace) {
+			eventQueue.post(new ReplaceEvent(text, ReplaceEvent.REPLACE_ALL));
+			wordFinder.clearAllResults();
+			clear();
+		}
+	}
+
+	/**
+	 * Once all occurrences have been replaced, it prompt a message to the user
+	 * displaying the number of replaced occurrences.
+	 * 
+	 * @param e
+	 *            the replace done event.
+	 */
+	@Subscribe
+	public void handleReplaceAllDone(ReplaceDoneEvent e) {
+
+		if (frDialog != null) {
+			JOptionPane.showMessageDialog(frDialog,
+					"Replaced " + e.getReplacedOccurrencesNum()
+							+ " occurrences.", "Replace All",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
 	}
 }

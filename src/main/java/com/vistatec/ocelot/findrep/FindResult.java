@@ -3,7 +3,7 @@ package com.vistatec.ocelot.findrep;
 /**
  * Result of the searching functionality.
  */
-public class FindReplaceResult {
+public class FindResult {
 
 	/** The segment index. */
 	private int segmentIndex;
@@ -17,8 +17,8 @@ public class FindReplaceResult {
 	/** The found string end index. */
 	private int stringEndIndex;
 
-	/** The scope. */
-	private int scope;
+	/** States if the scope is the target. */
+	private boolean targetScope;
 
 	/**
 	 * Constructor.
@@ -31,17 +31,17 @@ public class FindReplaceResult {
 	 *            the string start index
 	 * @param stringEndIndex
 	 *            the string end index
-	 * @param scope
-	 *            the scope
+	 * @param targetScope
+	 *            a boolean stating if the scope is the target.
 	 */
-	public FindReplaceResult(int segmentIndex, int atomIndex,
-			int stringStartIndex, int stringEndIndex, int scope) {
+	public FindResult(int segmentIndex, int atomIndex,
+			int stringStartIndex, int stringEndIndex, boolean targetScope) {
 
 		this.segmentIndex = segmentIndex;
 		this.atomIndex = atomIndex;
 		this.stringStartIndex = stringStartIndex;
 		this.stringEndIndex = stringEndIndex;
-		this.scope = scope;
+		this.targetScope = targetScope;
 	}
 
 	/**
@@ -123,19 +123,27 @@ public class FindReplaceResult {
 	/**
 	 * Sets the scope.
 	 * 
-	 * @param scope
-	 *            the scope.
+	 * @param targetScope
+	 *            a boolean stating if the target is the scope.
 	 */
-	public void setScope(int scope) {
-		this.scope = scope;
+	public void setTargetScope(boolean targetScope) {
+		this.targetScope = targetScope;
 	}
 
 	/**
-	 * Gets the scope.
+	 * Checks if the scope is on the target.
 	 * 
-	 * @return the scope.
+	 * @return <code>true</code> if the target is the current scope;
+	 *         <code>false</code> otherwise.
 	 */
-	public int getScope() {
-		return scope;
+	public boolean isTargetScope() {
+		return targetScope;
+	}
+
+	@Override
+	public String toString() {
+
+		return "Segment " + segmentIndex + " - Atom " + atomIndex
+				+ " - Indices " + stringStartIndex + ", " + stringEndIndex;
 	}
 }

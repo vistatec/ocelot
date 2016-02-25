@@ -14,5 +14,5 @@ manifest.mf
 /nbbuild/
 /dist/
 target
-ocelot.log
+ocelot.log*
 *.csv
