@@ -61,6 +61,7 @@ import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
+import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -590,16 +591,16 @@ public class PluginManager implements OcelotEventQueueListener {
 
 	}
 	
-	
+	@Subscribe
+	public void handleLqiDeleted(LQIRemoveEvent event){
+		
+		qualityPluginManager.removedQualityIssue(event.getLQI());
+	}
 
 	@Subscribe
 	public void handleLqiAdded(LQIAdditionEvent event) {
 
-		try{
 		qualityPluginManager.addQualityIssue(event.getLQI());
-		} catch (Exception e){
-			e.printStackTrace();
-		}
 	}
 
 	@Subscribe

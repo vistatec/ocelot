@@ -460,7 +460,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuView.add(menuRules);
 
 		SegmentMenu segmentMenu = new SegmentMenu(eventQueue,
-		        getPlatformKeyMask());
+		        getPlatformKeyMask(), lqiGridController.getConfigService());
 		menuBar.add(segmentMenu.getMenu());
 		this.eventQueue.registerListener(segmentMenu);
 

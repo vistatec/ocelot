@@ -86,6 +86,7 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
     }
 
     protected void segmentSelected(OcelotSegment seg) {
+    	this.selectedSegment = seg;
     }
 
     @Subscribe

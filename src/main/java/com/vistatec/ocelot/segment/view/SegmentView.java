@@ -28,38 +28,10 @@
  */
 package com.vistatec.ocelot.segment.view;
 
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.okapi.Note;
-import com.vistatec.ocelot.segment.model.okapi.Notes;
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ItsSelectionEvent;
-import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.LQISelectionEvent;
-import com.vistatec.ocelot.events.OcelotEditingEvent;
-import com.vistatec.ocelot.events.SegmentEditEvent;
-import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
-import com.vistatec.ocelot.events.SegmentTargetExitEvent;
-import com.vistatec.ocelot.events.SegmentTargetResetEvent;
-import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
-import com.vistatec.ocelot.ContextMenu;
-import com.vistatec.ocelot.SegmentViewColumn;
-import com.vistatec.ocelot.TextContextMenu;
-
-import static com.vistatec.ocelot.SegmentViewColumn.*;
-
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
-import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
-import com.vistatec.ocelot.rules.NullITSMetadata;
-import com.vistatec.ocelot.rules.SegmentSelector;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.rules.RuleListener;
-import com.vistatec.ocelot.rules.StateQualifier;
+import static com.vistatec.ocelot.SegmentViewColumn.Original;
+import static com.vistatec.ocelot.SegmentViewColumn.SegNum;
+import static com.vistatec.ocelot.SegmentViewColumn.Source;
+import static com.vistatec.ocelot.SegmentViewColumn.Target;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -106,8 +78,40 @@ import javax.swing.text.BadLocationException;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.TextContextMenu;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
+import com.vistatec.ocelot.events.SegmentTargetExitEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
+import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.rules.DataCategoryFlag;
+import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
+import com.vistatec.ocelot.rules.NullITSMetadata;
+import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.rules.RuleListener;
+import com.vistatec.ocelot.rules.SegmentSelector;
+import com.vistatec.ocelot.rules.StateQualifier;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -129,16 +133,18 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
+	private LQIGrid lqiGrid;
 
 	@Inject
 	public SegmentView(OcelotEventQueue eventQueue,
-	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig)
+	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig, LqiConfigService lqiService)
 	        throws IOException, InstantiationException, InstantiationException,
-	        IllegalAccessException {
+	        IllegalAccessException, TransferException {
 		this.eventQueue = eventQueue;
 		this.segmentTableModel = segmentTableModel;
 		this.ruleConfig = ruleConfig;
 		this.ruleConfig.addRuleListener(this);
+		this.lqiGrid = lqiService.readLQIConfig();
 		UIManager.put("Table.focusCellHighlightBorder",
 		        BorderFactory.createLineBorder(Color.BLUE, 2));
 		initializeTable();
@@ -1147,7 +1153,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			}
 
 			if (seg != null) {
-				ContextMenu menu = new ContextMenu(seg, eventQueue);
+				ContextMenu menu = new ContextMenu(seg, eventQueue, lqiGrid);
 				menu.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}

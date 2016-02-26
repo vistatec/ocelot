@@ -81,4 +81,25 @@ public class LQISeverity {
 
 		return new LQISeverity(name, score);
 	}
+	
+	@Override
+	public String toString() {
+	    return name + " - " + score;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof LQISeverity) {
+			LQISeverity sevObj = (LQISeverity)obj;
+			return name.equals(sevObj.name) && score == sevObj.score;
+			
+		} else {
+			return super.equals(obj);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+	    return 11*name.hashCode()*Double.valueOf(score).hashCode();
+	}
 }

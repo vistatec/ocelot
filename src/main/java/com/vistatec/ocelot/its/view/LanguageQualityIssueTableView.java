@@ -28,18 +28,6 @@
  */
 package com.vistatec.ocelot.its.view;
 
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.ContextMenu;
-import com.vistatec.ocelot.events.LQIDeselectionEvent;
-import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.LQISelectionEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -51,6 +39,21 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.events.LQIDeselectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
+
 /**
  * Table View for displaying segment ITS metadata.
  */
@@ -58,9 +61,12 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
     private static final long serialVersionUID = 1L;
 
     private OcelotEventQueue eventQueue;
+    
+    private LqiConfigService lqiService;
 
-    public LanguageQualityIssueTableView(OcelotEventQueue eventQueue) {
+    public LanguageQualityIssueTableView(OcelotEventQueue eventQueue, LqiConfigService lqiService) {
         this.eventQueue = eventQueue;
+        this.lqiService = lqiService;
         addMouseListener(new LQIPopupMenuListener());
     }
 
@@ -96,6 +102,7 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
     protected void segmentSelected(OcelotSegment seg) {
         List<LanguageQualityIssue> lqiData = seg.getLQI();
         getTableModel().setRows(lqiData);
+        super.segmentSelected(seg);
     }
 
     @Override
@@ -187,10 +194,17 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
                 }
             }
             if (e.isPopupTrigger() && getSelectedSegment() != null) {
-                ContextMenu menu = selectedLQI == null ?
-                        new ContextMenu(getSelectedSegment(), eventQueue) :
-                        new ContextMenu(getSelectedSegment(), selectedLQI, eventQueue);
-                menu.show(e.getComponent(), e.getX(), e.getY());
+            	LQIGrid lqiGrid;
+                try {
+	                lqiGrid = lqiService.readLQIConfig();
+	                ContextMenu menu = selectedLQI == null ?
+	                		new ContextMenu(getSelectedSegment(), eventQueue, lqiGrid) :
+	                			new ContextMenu(getSelectedSegment(), selectedLQI, eventQueue, lqiGrid);
+	                		menu.show(e.getComponent(), e.getX(), e.getY());
+                } catch (TransferException e1) {
+	                // TODO Auto-generated catch block
+	                e1.printStackTrace();
+                }
             }
         }
     }

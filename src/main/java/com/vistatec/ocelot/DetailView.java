@@ -29,10 +29,13 @@
 package com.vistatec.ocelot;
 
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.LqiConfigService;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
 import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.view.ProvenanceView;
@@ -53,16 +56,19 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 public class DetailView extends JPanel implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
-    private NewLanguageQualityIssueView lqiDetailView;
+//    private NewLanguageQualityIssueView lqiDetailView;
+    private LanguageQualityIssuePropsPanel lqiDetailView;
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
     private OcelotSegment selectedSegment;
-
+    private LqiConfigService lqiService;
+    
     private final OcelotEventQueue eventQueue;
 
     @Inject
-    public DetailView(OcelotEventQueue eventQueue) {
+    public DetailView(OcelotEventQueue eventQueue, LqiConfigService lqiService) {
         this.eventQueue = eventQueue;
+        this.lqiService = lqiService;
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(500, 250));
     }
@@ -81,6 +87,7 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void metadataSelected(ItsSelectionEvent e) {
+    	try{
         if (e.getITSMetadata() instanceof LanguageQualityIssue) {
             removeSegmentDetailView();
             removeProvenanceDetailView();
@@ -94,6 +101,9 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
             provDetailView.setMetadata(selectedSegment, (Provenance)e.getITSMetadata());
         }
         revalidate();
+    	} catch(Exception ex){
+    		ex.printStackTrace();
+    	}
     }
 
     @Subscribe
@@ -130,8 +140,14 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     public void addLQIDetailView() {
         if (lqiDetailView == null) {
-            lqiDetailView = new NewLanguageQualityIssueView(eventQueue);
-            add(lqiDetailView);
+//            lqiDetailView = new NewLanguageQualityIssueView(eventQueue);
+        	try {
+	            lqiDetailView = new LanguageQualityIssuePropsPanel(eventQueue, lqiService.readLQIConfig());
+	            add(lqiDetailView);
+            } catch (TransferException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+            }
         }
     }
 

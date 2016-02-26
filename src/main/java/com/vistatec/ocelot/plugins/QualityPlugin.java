@@ -39,6 +39,9 @@ public interface QualityPlugin extends Plugin {
 
 	public void lqiEdited(LanguageQualityIssue oldLqi,
 	        LanguageQualityIssue newLqi) throws QualityEvaluationException;
+	
+	public void lqiRemoved(LanguageQualityIssue lqi)
+	        throws QualityEvaluationException;
 
 	// public boolean enableEvaluationOnTheFly(int sampleSize,
 	// List<LanguageQualityIssue> lqiList) throws NoAuditProfileLoadedException;

@@ -12,6 +12,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.LqiConfigService;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
@@ -20,6 +22,7 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
 import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
@@ -31,7 +34,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
 
     private NewLanguageQualityIssueView addLQIView = null;
 
-    public SegmentMenu(final OcelotEventQueue eventQueue, int platformKeyMask) {
+    public SegmentMenu(final OcelotEventQueue eventQueue, int platformKeyMask, final LqiConfigService lqiService) {
         menu = new JMenu("Segment");
         menuAddIssue = new JMenuItem("Add Issue");
         menuAddIssue.setAccelerator(
@@ -46,10 +49,17 @@ public class SegmentMenu implements OcelotEventQueueListener {
                  * This seems to be fixed in the 1.8 runtime.  See OC-41 for more.
                  */
                 if (addLQIView == null) {
-                    addLQIView = new NewLanguageQualityIssueView(eventQueue);
-                    addLQIView.setWindowListener(new AddLQIViewWindowListener());
-                    addLQIView.setSegment(selectedSegment);
-                    SwingUtilities.invokeLater(addLQIView);
+//                    addLQIView = new NewLanguageQualityIssueView(eventQueue);
+//                    addLQIView.setSegment(selectedSegment);
+//                    SwingUtilities.invokeLater(addLQIView);
+                    try {
+                    	LanguageQualityIssuePropsPanel addLQIView = new LanguageQualityIssuePropsPanel(eventQueue, lqiService.readLQIConfig());
+	                    addLQIView.setSegment(selectedSegment);
+	                    SwingUtilities.invokeLater(addLQIView);
+                    } catch (TransferException e1) {
+	                    // TODO Auto-generated catch block
+	                    e1.printStackTrace();
+                    }
                 }
             }
         });

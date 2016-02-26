@@ -230,4 +230,8 @@ public class LQIGridController implements OcelotEventQueueListener {
 		gridDialog.dispose();
 		gridDialog = null;
 	}
+	
+	public LqiConfigService getConfigService(){
+		return configService;
+	}
 }

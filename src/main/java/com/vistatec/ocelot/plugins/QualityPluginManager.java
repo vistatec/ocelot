@@ -406,6 +406,25 @@ public class QualityPluginManager implements ActionListener {
 		}
 
 	}
+	
+	public void removedQualityIssue(LanguageQualityIssue removedLqi){
+		
+		QualityPlugin plugin = getPlugin();
+		if (plugin != null) {
+			try {
+				plugin.lqiRemoved(removedLqi);
+			} catch (EvaluationOnTheFlyFailedException e) {
+				logger.warn("Fail result on lqi removed.");
+				promptFailMessage();
+			} catch (QualityEvaluationException e) {
+				logger.error(
+				        "Error while evaluating the quality score on lqi removed.",
+				        e);
+				promptEvaluationOnTheFlyErrorMessage();
+			}
+		}
+
+	}
 
 	// private QualityPlugin getEnabledPlugin() {
 	//

@@ -29,7 +29,9 @@
 package com.vistatec.ocelot;
 
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
 import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
+import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.awt.event.ActionEvent;
@@ -54,12 +56,14 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     private JMenuItem addLQI, removeLQI, resetTarget;
     private OcelotSegment selectedSeg;
     private LanguageQualityIssue selectedLQI;
+    private LQIGrid lqiGrid;
 
     private OcelotEventQueue eventQueue;
 
-    public ContextMenu(OcelotSegment selectedSeg, OcelotEventQueue eventQueue) {
+    public ContextMenu(OcelotSegment selectedSeg, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
         this.selectedSeg = selectedSeg;
         this.eventQueue = eventQueue;
+        this.lqiGrid = lqiGrid;
 
         addLQI = new JMenuItem("Add Issue");
         addLQI.addActionListener(this);
@@ -72,8 +76,8 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         add(resetTarget);
     }
 
-    public ContextMenu(OcelotSegment selectedSeg, LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue) {
-        this(selectedSeg, eventQueue);
+    public ContextMenu(OcelotSegment selectedSeg, LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+        this(selectedSeg, eventQueue, lqiGrid);
         this.selectedLQI = selectedLQI;
 
         removeLQI = new JMenuItem("Remove Issue");
@@ -84,9 +88,15 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addLQI) {
-            NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView(eventQueue);
-            addLQIView.setSegment(selectedSeg);
-            SwingUtilities.invokeLater(addLQIView);
+//            NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView(eventQueue);
+//            addLQIView.setSegment(selectedSeg);
+//            SwingUtilities.invokeLater(addLQIView);
+            
+			LanguageQualityIssuePropsPanel addLQIView = new LanguageQualityIssuePropsPanel(
+			        eventQueue, lqiGrid);
+			addLQIView.setSegment(selectedSeg);
+			SwingUtilities.invokeLater(addLQIView);
+            
         } else if (e.getSource() == removeLQI) {
             eventQueue.post(new LQIRemoveEvent(selectedLQI, selectedSeg));
         } else if (e.getSource() == resetTarget) {
