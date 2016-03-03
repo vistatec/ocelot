@@ -7,6 +7,7 @@ import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.events.ConcordanceSearchEvent;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.RefreshSegmentView;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -116,5 +117,10 @@ public class TmGuiManager implements OcelotEventQueueListener {
 		}catch (Exception ex){
 			ex.printStackTrace();
 		}
+	}
+	
+	@Subscribe
+    public void updateSegmentView(RefreshSegmentView event){
+		matchController.update(event.getSegmentNumber());
 	}
 }

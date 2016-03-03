@@ -61,7 +61,7 @@ public class SegmentTextCell extends JTextPane {
 
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
     public static final String tagStyle = "tag", regularStyle = "regular",
-            insertStyle = "insert", deleteStyle = "delete";
+            insertStyle = "insert", deleteStyle = "delete", enrichedStyle = "enriched";
     private SegmentVariant v;
     
     private boolean inputMethodChanged;
@@ -187,6 +187,11 @@ public class SegmentTextCell extends JTextPane {
         StyleConstants.setForeground(delete, Color.RED);
         StyleConstants.setStrikeThrough(delete, true);
         StyleConstants.setUnderline(delete, false);
+        
+        Style enriched = styleDoc.addStyle(enrichedStyle, regular);
+        StyleConstants.setForeground(enriched, Color.BLUE);
+        StyleConstants.setUnderline(enriched, true);
+        
     }
 
     public void setTextPane(List<String> styledText) {

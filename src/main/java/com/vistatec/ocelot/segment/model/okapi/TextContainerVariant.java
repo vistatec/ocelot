@@ -75,7 +75,7 @@ public class TextContainerVariant extends OkapiSegmentVariant {
     }
 
     @Override
-    protected void setAtoms(List<SegmentAtom> atoms) {
+    public void setAtoms(List<SegmentAtom> atoms) {
         // Unfortunately, TextContainer's can't view all of the codes
         // they contain.
         List<Code> tcCodes = tc.getUnSegmentedContentCopy().getCodes();

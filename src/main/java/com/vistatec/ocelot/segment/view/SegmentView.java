@@ -28,41 +28,10 @@
  */
 package com.vistatec.ocelot.segment.view;
 
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.okapi.Note;
-import com.vistatec.ocelot.segment.model.okapi.Notes;
-import com.vistatec.ocelot.xliff.XLIFFDocument;
-
-import net.sf.okapi.common.LocaleId;
-
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ItsSelectionEvent;
-import com.vistatec.ocelot.events.LQIModificationEvent;
-import com.vistatec.ocelot.events.LQISelectionEvent;
-import com.vistatec.ocelot.events.OcelotEditingEvent;
-import com.vistatec.ocelot.events.OpenFileEvent;
-import com.vistatec.ocelot.events.SegmentEditEvent;
-import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
-import com.vistatec.ocelot.events.SegmentTargetExitEvent;
-import com.vistatec.ocelot.ContextMenu;
-import com.vistatec.ocelot.SegmentViewColumn;
-import com.vistatec.ocelot.TextContextMenu;
-
-import static com.vistatec.ocelot.SegmentViewColumn.*;
-
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.rules.DataCategoryFlag;
-import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
-import com.vistatec.ocelot.rules.NullITSMetadata;
-import com.vistatec.ocelot.rules.SegmentSelector;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-import com.vistatec.ocelot.rules.RuleListener;
-import com.vistatec.ocelot.rules.StateQualifier;
+import static com.vistatec.ocelot.SegmentViewColumn.Original;
+import static com.vistatec.ocelot.SegmentViewColumn.SegNum;
+import static com.vistatec.ocelot.SegmentViewColumn.Source;
+import static com.vistatec.ocelot.SegmentViewColumn.Target;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -92,6 +61,7 @@ import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -114,10 +84,46 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
+import net.sf.okapi.common.LocaleId;
+
 import org.apache.log4j.Logger;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.ContextMenu;
+import com.vistatec.ocelot.OcelotApp;
+import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.TextContextMenu;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.LQIModificationEvent;
+import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
+import com.vistatec.ocelot.events.RefreshSegmentView;
+import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
+import com.vistatec.ocelot.events.SegmentTargetExitEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
+import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.rules.DataCategoryFlag;
+import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
+import com.vistatec.ocelot.rules.NullITSMetadata;
+import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.rules.RuleListener;
+import com.vistatec.ocelot.rules.SegmentSelector;
+import com.vistatec.ocelot.rules.StateQualifier;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -134,9 +140,12 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private TableColumnModel tableColumnModel;
 	protected TableRowSorter<SegmentTableModel> sort;
 	private boolean enabledTargetDiff = true;
+	private OcelotApp ocelotApp;
 
 	protected RuleConfiguration ruleConfig;
 	private final OcelotEventQueue eventQueue;
+
+	private boolean targetChangedFromMatch;
 
 	private XLIFFDocument xliff;
 	private boolean isSourceBidi = false;
@@ -145,52 +154,55 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private int editingRow = -1;
 
 	/**
-	 * Table implementation that recalculates row heights when doLayout()
-	 * is called.  To try to minimize redraw time, we avoid recalculating
-	 * the whole table unless recalculateAllRowHeights() has been called
-	 * since the last call to doLayout().
+	 * Table implementation that recalculates row heights when doLayout() is
+	 * called. To try to minimize redraw time, we avoid recalculating the whole
+	 * table unless recalculateAllRowHeights() has been called since the last
+	 * call to doLayout().
 	 */
 	class SegmentViewTable extends JTable {
-        private static final long serialVersionUID = 1L;
-        private boolean requireFullRecalc = false;
-        SegmentViewTable(AbstractTableModel model) {
-	        super(model);
-	    }
-	    @Override
-	    public void doLayout() {
-	        long start = System.currentTimeMillis();
-            // The call to super will trigger any necessary recalculation of
-	        // margin sizes.  We do this first to avoid rendering and then
-	        // immediately re-rendering with the updated column sizes (which
-	        // produces a noticeable UI flicker.)
-            super.doLayout();
-	        int updatedRowCount = 0;
-            for (int row = 0; row < getRowCount(); row++) {
-                if (requireFullRecalc || editingRow == row) {
-                    updateRowHeight(row, getIntercellSpacing().height);
-                    updatedRowCount++;
-                }
-            }
-            requireFullRecalc = false;
-            LOG.trace("doLayout() took " + (System.currentTimeMillis() - start) + "ms for " +
-                      updatedRowCount + " rows");
-	    }
+		private static final long serialVersionUID = 1L;
+		private boolean requireFullRecalc = false;
 
-	    // Dirty the whole layout
-	    public void recalculateAllRowHeights() {
-	        this.requireFullRecalc = true;
-	    }
+		SegmentViewTable(AbstractTableModel model) {
+			super(model);
+		}
+
+		@Override
+		public void doLayout() {
+			long start = System.currentTimeMillis();
+			// The call to super will trigger any necessary recalculation of
+			// margin sizes. We do this first to avoid rendering and then
+			// immediately re-rendering with the updated column sizes (which
+			// produces a noticeable UI flicker.)
+			super.doLayout();
+			int updatedRowCount = 0;
+			for (int row = 0; row < getRowCount(); row++) {
+				if (requireFullRecalc || editingRow == row) {
+					updateRowHeight(row, getIntercellSpacing().height);
+					updatedRowCount++;
+				}
+			}
+			requireFullRecalc = false;
+			LOG.trace("doLayout() took " + (System.currentTimeMillis() - start)
+			        + "ms for " + updatedRowCount + " rows");
+		}
+
+		// Dirty the whole layout
+		public void recalculateAllRowHeights() {
+			this.requireFullRecalc = true;
+		}
 	}
 
 	@Inject
 	public SegmentView(OcelotEventQueue eventQueue,
-	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig)
-	        throws IOException, InstantiationException, InstantiationException,
-	        IllegalAccessException {
+	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig,
+	        OcelotApp ocelotApp) throws IOException, InstantiationException,
+	        InstantiationException, IllegalAccessException {
 		this.eventQueue = eventQueue;
 		this.segmentTableModel = segmentTableModel;
 		this.ruleConfig = ruleConfig;
 		this.ruleConfig.addRuleListener(this);
+		this.ocelotApp = ocelotApp;
 		UIManager.put("Table.focusCellHighlightBorder",
 		        BorderFactory.createLineBorder(Color.BLUE, 2));
 		initializeTable();
@@ -274,18 +286,21 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			}
 
 			@Override
-			public void columnRemoved(TableColumnModelEvent tcme) {}
-
-			@Override
-			public void columnMoved(TableColumnModelEvent tcme) {}
-
-			@Override
-			public void columnMarginChanged(ChangeEvent ce) {
-			    sourceTargetTable.recalculateAllRowHeights();
+			public void columnRemoved(TableColumnModelEvent tcme) {
 			}
 
 			@Override
-			public void columnSelectionChanged(ListSelectionEvent lse) {}
+			public void columnMoved(TableColumnModelEvent tcme) {
+			}
+
+			@Override
+			public void columnMarginChanged(ChangeEvent ce) {
+				sourceTargetTable.recalculateAllRowHeights();
+			}
+
+			@Override
+			public void columnSelectionChanged(ListSelectionEvent lse) {
+			}
 		});
 
 		addFilters();
@@ -312,20 +327,24 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			tableColumnModel.getColumn(index).setMaxWidth(50);
 			break;
 		case Source:
-		    final TableColumn sourceCol = tableColumnModel.getColumn(index);
+			final TableColumn sourceCol = tableColumnModel.getColumn(index);
 			sourceCol.setCellEditor(new ReadOnlySegmentEditor());
-			sourceCol.setCellRenderer(new SegmentTextFontRenderer(sourceTargetTable.getFont()));
+			sourceCol.setCellRenderer(new SegmentTextFontRenderer(
+			        sourceTargetTable.getFont()));
 			break;
-        case Target:
-            final TableColumn targetCol = tableColumnModel.getColumn(index);
-            targetCol.setCellRenderer(new SegmentTextFontRenderer(sourceTargetTable.getFont()));
-            targetCol.setCellEditor(new SegmentEditor(sourceTargetTable.getFont()));
-            break;
+		case Target:
+			final TableColumn targetCol = tableColumnModel.getColumn(index);
+			targetCol.setCellRenderer(new SegmentTextFontRenderer(
+			        sourceTargetTable.getFont()));
+			targetCol.setCellEditor(new SegmentEditor(sourceTargetTable
+			        .getFont()));
+			break;
 		case Original:
-		    final TableColumn targetOriginalCol = tableColumnModel.getColumn(index);
-		    targetOriginalCol.setCellRenderer(new SegmentTextFontRenderer(
-		            sourceTargetTable.getFont()));
-		    break;
+			final TableColumn targetOriginalCol = tableColumnModel
+			        .getColumn(index);
+			targetOriginalCol.setCellRenderer(new SegmentTextFontRenderer(
+			        sourceTargetTable.getFont()));
+			break;
 		case EditDistance:
 			tableColumnModel.getColumn(index).setMinWidth(25);
 			tableColumnModel.getColumn(index).setPreferredWidth(25);
@@ -349,48 +368,49 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		}
 	}
 
-   private void addEditingListeners(Component component) {
-        final FocusListener focusListener = new FocusListener() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                eventQueue.post(new OcelotEditingEvent(
-                        OcelotEditingEvent.Type.STOP_EDITING));
-            }
+	private void addEditingListeners(Component component) {
+		final FocusListener focusListener = new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				eventQueue.post(new OcelotEditingEvent(
+				        OcelotEditingEvent.Type.STOP_EDITING));
+			}
 
-            @Override
-            public void focusGained(FocusEvent e) {
-                eventQueue.post(new OcelotEditingEvent(
-                        OcelotEditingEvent.Type.START_EDITING));
-            }
-        };
+			@Override
+			public void focusGained(FocusEvent e) {
+				eventQueue.post(new OcelotEditingEvent(
+				        OcelotEditingEvent.Type.START_EDITING));
+			}
+		};
 
-        final ContainerListener containerListener = new ContainerListener() {
-            @Override
-            public void componentRemoved(ContainerEvent e) { }
+		final ContainerListener containerListener = new ContainerListener() {
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+			}
 
-            @Override
-            public void componentAdded(ContainerEvent e) {
-                addListenersToComponents(e.getChild(), focusListener, this);
-            }
-        };
-        addListenersToComponents(component, focusListener, containerListener);
-    }
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				addListenersToComponents(e.getChild(), focusListener, this);
+			}
+		};
+		addListenersToComponents(component, focusListener, containerListener);
+	}
 
-    private void addListenersToComponents(Component component,
-            FocusListener focusListener, ContainerListener containerListener ) {
-        if (component instanceof JTextComponent) {
-            component.addFocusListener(focusListener);
-        } else if (component instanceof Container) {
-            Container container = (Container) component;
-            container.addContainerListener(containerListener);
-            if (container.getComponentCount() > 0) {
-                for (int i = 0; i < container.getComponentCount(); i++) {
-                    addListenersToComponents(container.getComponent(i),
-                            focusListener, containerListener);
-                }
-            }
-        }
-    }
+	private void addListenersToComponents(Component component,
+	        FocusListener focusListener, ContainerListener containerListener) {
+		if (component instanceof JTextComponent) {
+			component.addFocusListener(focusListener);
+		} else if (component instanceof Container) {
+			Container container = (Container) component;
+			container.addContainerListener(containerListener);
+			if (container.getComponentCount() > 0) {
+				for (int i = 0; i < container.getComponentCount(); i++) {
+					addListenersToComponents(container.getComponent(i),
+					        focusListener, containerListener);
+				}
+			}
+		}
+	}
 
 	public SegmentTableModel getTableModel() {
 		return segmentTableModel;
@@ -407,18 +427,18 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		setViewportView(sourceTargetTable);
 		addFilters();
 		segmentTableModel.fireTableDataChanged();
-        final TableColumn currColumn = tableColumnModel.getColumn(
-                segmentTableModel.getSegmentNumColumnIndex());
-        Font font = sourceTargetTable.getFont();
-        if(currColumn.getCellRenderer() != null && 
-                currColumn.getCellRenderer() instanceof SegmentTextFontRenderer) {
-            font = ((SegmentTextFontRenderer)currColumn.getCellRenderer()).getFont();
-        }
+		final TableColumn currColumn = tableColumnModel
+		        .getColumn(segmentTableModel.getSegmentNumColumnIndex());
+		Font font = sourceTargetTable.getFont();
+		if (currColumn.getCellRenderer() != null
+		        && currColumn.getCellRenderer() instanceof SegmentTextFontRenderer) {
+			font = ((SegmentTextFontRenderer) currColumn.getCellRenderer())
+			        .getFont();
+		}
 		// Adjust the segment number column width
-		currColumn.setPreferredWidth(
-		                this.getFontMetrics(font).stringWidth(
-		                        " " + segmentTableModel.getRowCount()));
-        sourceTargetTable.recalculateAllRowHeights();
+		currColumn.setPreferredWidth(this.getFontMetrics(font).stringWidth(
+		        " " + segmentTableModel.getRowCount()));
+		sourceTargetTable.recalculateAllRowHeights();
 	}
 
 	private void updateTableRow(int row) {
@@ -446,55 +466,55 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	}
 
 	private void updateRowHeight(int row, int intercellHeight) {
-	    if (row == editingRow) {
-	        adjustEditorInitialSize(row);
-	        return;
-	    }
+		if (row == editingRow) {
+			adjustEditorInitialSize(row);
+			return;
+		}
 		int modelRow = sort.convertRowIndexToModel(row);
 		FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable
 		        .getFont());
 		int rowHeight = font.getHeight();
-		rowHeight = getColumnHeight(SegNum, row, "1", rowHeight, sourceTargetTable.getFont());
-        OcelotSegment segment = segmentTableModel.getSegment(modelRow);
-        Font sourceFont = getFontForColumn(Source);
-		rowHeight = getColumnHeight(Source, row,
-		        segment.getSource().getDisplayText(), rowHeight, sourceFont);
+		rowHeight = getColumnHeight(SegNum, row, "1", rowHeight,
+		        sourceTargetTable.getFont());
+		OcelotSegment segment = segmentTableModel.getSegment(modelRow);
+		Font sourceFont = getFontForColumn(Source);
+		rowHeight = getColumnHeight(Source, row, segment.getSource()
+		        .getDisplayText(), rowHeight, sourceFont);
 		Font targetFont = getFontForColumn(Target);
-		rowHeight = getColumnHeight(Target, row,
-		        segment.getTarget().getDisplayText(), rowHeight, targetFont);
+		rowHeight = getColumnHeight(Target, row, segment.getTarget()
+		        .getDisplayText(), rowHeight, targetFont);
 		rowHeight = getColumnHeight(Original, row,
 		        getOriginalTargetText(modelRow), rowHeight, targetFont);
-	    sourceTargetTable.setRowHeight(row, rowHeight + intercellHeight);
+		sourceTargetTable.setRowHeight(row, rowHeight + intercellHeight);
 	}
 
-    private void adjustEditorInitialSize(int row) {
-        final FontMetrics defFontMetrics = sourceTargetTable
-                .getFontMetrics(sourceTargetTable.getFont());
-        final int defFontHeight = defFontMetrics.getHeight();
-        final FontMetrics sourceFontMetrics = sourceTargetTable
-                .getFontMetrics(((SegmentTextFontRenderer) sourceTargetTable
-                        .getColumnModel()
-                        .getColumn(
-                                segmentTableModel
-                                        .getSegmentSourceColumnIndex())
-                        .getCellRenderer()).getFont());
-        final int sourceFontHeight = sourceFontMetrics.getHeight();
-        final FontMetrics targetFontMetrics = sourceTargetTable
-                .getFontMetrics(((SegmentTextFontRenderer) sourceTargetTable
-                        .getColumnModel()
-                        .getColumn(
-                                segmentTableModel
-                                        .getSegmentTargetColumnIndex())
-                        .getCellRenderer()).getFont());
-        final int targetFontHeight = targetFontMetrics.getHeight();
-        int height = Math.max(defFontHeight, sourceFontHeight);
-        height = Math.max(height, targetFontHeight);
-        sourceTargetTable.setRowHeight(row, height * 10);
-    }
+	private void adjustEditorInitialSize(int row) {
+		final FontMetrics defFontMetrics = sourceTargetTable
+		        .getFontMetrics(sourceTargetTable.getFont());
+		final int defFontHeight = defFontMetrics.getHeight();
+		final FontMetrics sourceFontMetrics = sourceTargetTable
+		        .getFontMetrics(((SegmentTextFontRenderer) sourceTargetTable
+		                .getColumnModel()
+		                .getColumn(
+		                        segmentTableModel.getSegmentSourceColumnIndex())
+		                .getCellRenderer()).getFont());
+		final int sourceFontHeight = sourceFontMetrics.getHeight();
+		final FontMetrics targetFontMetrics = sourceTargetTable
+		        .getFontMetrics(((SegmentTextFontRenderer) sourceTargetTable
+		                .getColumnModel()
+		                .getColumn(
+		                        segmentTableModel.getSegmentTargetColumnIndex())
+		                .getCellRenderer()).getFont());
+		final int targetFontHeight = targetFontMetrics.getHeight();
+		int height = Math.max(defFontHeight, sourceFontHeight);
+		height = Math.max(height, targetFontHeight);
+		sourceTargetTable.setRowHeight(row, height * 10);
+	}
 
-    private Font getFontForColumn(SegmentViewColumn col) {
-        return ((SegmentTextFontRenderer)tableColumnModel.getColumn(col.ordinal()).getCellRenderer()).getFont();
-    }
+	private Font getFontForColumn(SegmentViewColumn col) {
+		return ((SegmentTextFontRenderer) tableColumnModel.getColumn(
+		        col.ordinal()).getCellRenderer()).getFont();
+	}
 
 	// TODO: move elsewhere
 	private String getOriginalTargetText(int modelRow) {
@@ -566,62 +586,79 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		reloadTable();
 	}
 
-    public Font getSourceFont() {
+	@Subscribe
+	public void updateSegmentView(RefreshSegmentView event) {
+		try {
+			synchronized (segmentTableModel) {
+				if (segmentTableModel.getRowCount() > 0) {
+					segmentTableModel.fireTableRowsUpdated(
+					        event.getSegmentNumber() - 1,
+					        event.getSegmentNumber() - 1);
+				} else {
+					segmentTableModel.fireTableDataChanged();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-        Font font = null;
-        if (sourceTargetTable != null) {
-            font = ((SegmentTextFontRenderer) sourceTargetTable
-                    .getColumnModel()
-                    .getColumn(segmentTableModel.getSegmentSourceColumnIndex())
-                    .getCellRenderer()).getFont();
-        }
-        return font;
-    }
+	public Font getSourceFont() {
 
-    public Font getTargetFont() {
+		Font font = null;
+		if (sourceTargetTable != null) {
+			font = ((SegmentTextFontRenderer) sourceTargetTable
+			        .getColumnModel()
+			        .getColumn(segmentTableModel.getSegmentSourceColumnIndex())
+			        .getCellRenderer()).getFont();
+		}
+		return font;
+	}
 
-        Font font = null;
-        if (sourceTargetTable != null) {
-            font = ((SegmentTextFontRenderer) sourceTargetTable
-                    .getColumnModel()
-                    .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
-                    .getCellRenderer()).getFont();
-        }
-        return font;
-    }
+	public Font getTargetFont() {
 
-    public void setSourceFont(final Font font) {
+		Font font = null;
+		if (sourceTargetTable != null) {
+			font = ((SegmentTextFontRenderer) sourceTargetTable
+			        .getColumnModel()
+			        .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
+			        .getCellRenderer()).getFont();
+		}
+		return font;
+	}
 
-        if (sourceTargetTable != null) {
-            sourceTargetTable.recalculateAllRowHeights();
-            ((SegmentTextFontRenderer) sourceTargetTable.getColumnModel()
-                    .getColumn(segmentTableModel.getSegmentSourceColumnIndex())
-                    .getCellRenderer()).setFont(font);
-            sourceTargetTable.revalidate();
-            sourceTargetTable.repaint();
-            segmentTableModel.fireTableDataChanged();
-        }
-    }
+	public void setSourceFont(final Font font) {
 
-    public void setTargetFont(final Font font) {
+		if (sourceTargetTable != null) {
+			sourceTargetTable.recalculateAllRowHeights();
+			((SegmentTextFontRenderer) sourceTargetTable.getColumnModel()
+			        .getColumn(segmentTableModel.getSegmentSourceColumnIndex())
+			        .getCellRenderer()).setFont(font);
+			sourceTargetTable.revalidate();
+			sourceTargetTable.repaint();
+			segmentTableModel.fireTableDataChanged();
+		}
+	}
 
-        if (sourceTargetTable != null) {
-            sourceTargetTable.recalculateAllRowHeights();
-            ((SegmentTextFontRenderer) sourceTargetTable.getColumnModel()
-                    .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
-                    .getCellRenderer()).setFont(font);
-            ((SegmentTextFontRenderer) sourceTargetTable
-                    .getColumnModel()
-                    .getColumn(
-                            segmentTableModel
-                                    .getSegmentTargetOriginalColumnIndex())
-                    .getCellRenderer()).setFont(font);
-            ((SegmentEditor) sourceTargetTable.getColumnModel()
-                    .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
-                    .getCellEditor()).setFont(font);
-            segmentTableModel.fireTableDataChanged();
-        }
-    }
+	public void setTargetFont(final Font font) {
+
+		if (sourceTargetTable != null) {
+			sourceTargetTable.recalculateAllRowHeights();
+			((SegmentTextFontRenderer) sourceTargetTable.getColumnModel()
+			        .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
+			        .getCellRenderer()).setFont(font);
+			((SegmentTextFontRenderer) sourceTargetTable
+			        .getColumnModel()
+			        .getColumn(
+			                segmentTableModel
+			                        .getSegmentTargetOriginalColumnIndex())
+			        .getCellRenderer()).setFont(font);
+			((SegmentEditor) sourceTargetTable.getColumnModel()
+			        .getColumn(segmentTableModel.getSegmentTargetColumnIndex())
+			        .getCellEditor()).setFont(font);
+			segmentTableModel.fireTableDataChanged();
+		}
+	}
 
 	@Subscribe
 	public void notifyModifiedLQI(LQIModificationEvent event) {
@@ -631,6 +668,36 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		eventQueue.post(new LQISelectionEvent(event.getLQI()));
 		postSegmentSelection(event.getSegment());
 		requestFocusTable();
+	}
+
+	@Subscribe
+	public void notifySegmentTargetReset(SegmentTargetResetEvent event) {
+		segmentTableModel.fireTableDataChanged();
+		sourceTargetTable.recalculateAllRowHeights();
+	}
+
+	@Subscribe
+	public synchronized void handleTargetUpdatedFromMatch(
+	        SegmentTargetUpdateFromMatchEvent event) {
+		// int selRow = sourceTargetTable.getSelectedRow();
+		// // segmentTableModel.fireTableRowsUpdated(selRow, selRow);
+		// // updateRowHeights();
+		// updateTableRow(selRow);
+		// sourceTargetTable.requestFocusInWindow();
+		targetChangedFromMatch = true;
+	}
+
+	@Subscribe
+	public synchronized void handleTargetUpdatedFromMatch(SegmentEditEvent event) {
+		if (targetChangedFromMatch) {
+			int selRow = sourceTargetTable.getSelectedRow();
+			// segmentTableModel.fireTableRowsUpdated(selRow, selRow);
+			// updateRowHeights();
+			updateTableRow(selRow);
+			sourceTargetTable.requestFocusInWindow();
+			targetChangedFromMatch = false;
+		}
+
 	}
 
 	@Subscribe
@@ -682,7 +749,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 					renderTextPane.setBidi(isTargetBidi);
 				} else if (segmentTableModel
 				        .getSegmentTargetOriginalColumnIndex() == col) {
-                    renderTextPane.setBidi(isTargetBidi);
+					renderTextPane.setBidi(isTargetBidi);
 					if (!enabledTargetDiff) {
 						v = seg.getOriginalTarget();
 					}
@@ -711,35 +778,35 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		}
 	}
 
-    public class SegmentTextFontRenderer extends SegmentTextRenderer {
+	public class SegmentTextFontRenderer extends SegmentTextRenderer {
 
-        private Font font;
+		private Font font;
 
-        public SegmentTextFontRenderer(final Font font) {
+		public SegmentTextFontRenderer(final Font font) {
 
-            this.font = font;
-        }
+			this.font = font;
+		}
 
-        @Override
-        public Component getTableCellRendererComponent(JTable jtable, Object o,
-                boolean isSelected, boolean hasFocus, int row, int col) {
+		@Override
+		public Component getTableCellRendererComponent(JTable jtable, Object o,
+		        boolean isSelected, boolean hasFocus, int row, int col) {
 
-            Component component = super.getTableCellRendererComponent(jtable,
-                    o, isSelected, hasFocus, row, col);
+			Component component = super.getTableCellRendererComponent(jtable,
+			        o, isSelected, hasFocus, row, col);
 
-            component.setFont(font);
-            return component;
-        }
+			component.setFont(font);
+			return component;
+		}
 
-        public Font getFont() {
-            return font;
-        }
+		public Font getFont() {
+			return font;
+		}
 
-        public void setFont(final Font font) {
-            this.font = font;
-        }
+		public void setFont(final Font font) {
+			this.font = font;
+		}
 
-    }
+	}
 
 	static class ITSMetadataRenderer extends DataCategoryFlagRenderer {
 		private static final long serialVersionUID = 1L;
@@ -763,6 +830,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	public class IntegerRenderer extends JLabel implements TableCellRenderer {
 		private static final long serialVersionUID = 1L;
+
+		private final Color enrichedColor = new Color(5, 169, 71);
+
+		private final Color sentToFremeColor = Color.red;
 
 		public IntegerRenderer() {
 			setOpaque(true);
@@ -797,6 +868,18 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			        .getSelectionForeground() : jtable.getForeground()
 			        : Color.GRAY;
 
+			if (seg.getSource() instanceof BaseSegmentVariant
+			        && ((BaseSegmentVariant) seg.getSource()).isEnriched()
+			        && (((BaseSegmentVariant) seg.getTarget()).isEnriched()
+			                || seg.getTarget().getDisplayText() == null || seg
+			                .getTarget().getDisplayText().isEmpty())) {
+				foreground = enrichedColor;
+			} else if (seg.getSource() instanceof BaseSegmentVariant
+			        && ((BaseSegmentVariant) seg.getSource()).isSentToFreme()
+			        && (((BaseSegmentVariant) seg.getTarget()).isSentToFreme())) {
+				foreground = sentToFremeColor;
+			}
+
 			setHorizontalAlignment(JLabel.LEFT);
 			setVerticalAlignment(JLabel.TOP);
 			setBackground(background);
@@ -828,8 +911,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		        Object value, boolean isSelected, int row, int column) {
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
-			editorComponent = SegmentTextCell.createCell(seg.getSource().createCopy(),
-			        false, isSourceBidi);
+			editorComponent = SegmentTextCell.createCell(seg.getSource()
+			        .createCopy(), false, isSourceBidi);
 			editorComponent.setBackground(table.getSelectionBackground());
 			editorComponent.setSelectionColor(Color.BLUE);
 			editorComponent.setSelectedTextColor(Color.WHITE);
@@ -872,7 +955,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 		protected SegmentTextCell editorComponent;
 		protected SegmentCellEditorListener editListener;
-        private Font font;
+		private Font font;
 
 		public SegmentEditor(final Font font) {
 			editListener = new SegmentCellEditorListener();
@@ -903,7 +986,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 					        @Override
 					        public void actionPerformed(ActionEvent e) {
-				                fireEditingStopped();
+						        fireEditingStopped();
 						        eventQueue.post(new OcelotEditingEvent(
 						                OcelotEditingEvent.Type.STOP_EDITING));
 					        }
@@ -916,9 +999,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			return new JScrollPane(editorComponent);
 		}
 
-        public void setFont(final Font font) {
-            this.font = font;
-        }
+		public void setFont(final Font font) {
+			this.font = font;
+		}
 
 		@Override
 		public Object getCellEditorValue() {
@@ -957,7 +1040,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			        .getVariant();
 			int row = sourceTargetTable.getSelectedRow();
 			eventQueue.post(new SegmentTargetExitEvent(xliff, seg));
-			eventQueue.post(new SegmentTargetUpdateEvent(xliff, seg, updatedTarget));
+			eventQueue.post(new SegmentTargetUpdateEvent(xliff, seg,
+			        updatedTarget));
 			postSegmentSelection(seg);
 			editingRow = -1;
 			updateTableRow(row);
@@ -980,8 +1064,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 			JTextArea txtArea = new JTextArea();
 			if (value != null && value instanceof Notes) {
-				Note ocelotNote = ((Notes)value).getOcelotNote();
-				if(ocelotNote != null){
+				Note ocelotNote = ((Notes) value).getOcelotNote();
+				if (ocelotNote != null) {
 					txtArea.setText(ocelotNote.getContent());
 				}
 			}
@@ -1006,18 +1090,18 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	public class NotesCellEditor extends AbstractCellEditor implements
 	        TableCellEditor {
-		
-        private static final long serialVersionUID = 1L;
 
-        private JTextArea txtArea;
-		
+		private static final long serialVersionUID = 1L;
+
+		private JTextArea txtArea;
+
 		private NotesCellEditorListener listener;
 
 		public NotesCellEditor() {
-	     
+
 			listener = new NotesCellEditorListener();
 			addCellEditorListener(listener);
-        }
+		}
 
 		@Override
 		public Object getCellEditorValue() {
@@ -1033,8 +1117,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			listener.beginEditSegment(seg);
 			txtArea = new JTextArea();
 			if (value != null && value instanceof Notes) {
-				Note ocelotNote = ((Notes)value).getOcelotNote();
-				if(ocelotNote != null){
+				Note ocelotNote = ((Notes) value).getOcelotNote();
+				if (ocelotNote != null) {
 					txtArea.setText(ocelotNote.getContent());
 				}
 			}
@@ -1063,7 +1147,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 						stopCellEditing();
-						
+
 					}
 				}
 			});
@@ -1088,36 +1172,40 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		public boolean stopCellEditing() {
 			eventQueue.post(new OcelotEditingEvent(
 			        OcelotEditingEvent.Type.STOP_EDITING));
-		    return super.stopCellEditing();
+			return super.stopCellEditing();
 		}
 	}
-	
+
 	public class NotesCellEditorListener implements CellEditorListener {
-	
+
 		private OcelotSegment seg;
 
-		public void beginEditSegment(OcelotSegment seg){
+		public void beginEditSegment(OcelotSegment seg) {
 			this.seg = seg;
 		}
-		
+
 		@Override
 		public void editingStopped(ChangeEvent ce) {
 
 			int row = sourceTargetTable.getSelectedRow();
-			String noteContent = ((NotesCellEditor)ce.getSource()).txtArea.getText();
-			eventQueue.post(new SegmentNoteUpdatedEvent(xliff, seg, noteContent));
+			String noteContent = ((NotesCellEditor) ce.getSource()).txtArea
+			        .getText();
+			eventQueue
+			        .post(new SegmentNoteUpdatedEvent(xliff, seg, noteContent));
 			updateTableRow(row);
 			// Restore row selection
 			sourceTargetTable.setRowSelectionInterval(row, row);
-//			SegmentVariant updatedTarget = ((SegmentEditor) ce.getSource()).editorComponent
-//			        .getVariant();
-//			int row = sourceTargetTable.getSelectedRow();
-//			eventQueue.post(new SegmentTargetExitEvent(seg));
-//			eventQueue.post(new SegmentTargetUpdateEvent(seg, updatedTarget));
-//			postSegmentSelection(seg);
-//			updateTableRow(row);
-//			// Restore row selection
-//			sourceTargetTable.setRowSelectionInterval(row, row);
+			// SegmentVariant updatedTarget = ((SegmentEditor)
+			// ce.getSource()).editorComponent
+			// .getVariant();
+			// int row = sourceTargetTable.getSelectedRow();
+			// eventQueue.post(new SegmentTargetExitEvent(seg));
+			// eventQueue.post(new SegmentTargetUpdateEvent(seg,
+			// updatedTarget));
+			// postSegmentSelection(seg);
+			// updateTableRow(row);
+			// // Restore row selection
+			// sourceTargetTable.setRowSelectionInterval(row, row);
 		}
 
 		@Override
@@ -1191,15 +1279,31 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		public void displayContextMenu(MouseEvent e) {
 
 			OcelotSegment seg = null;
+			BaseSegmentVariant variant = null;
 			int r = sourceTargetTable.rowAtPoint(e.getPoint());
 			if (r >= 0 && r < sourceTargetTable.getRowCount()) {
 				sourceTargetTable.setRowSelectionInterval(r, r);
 				seg = segmentTableModel.getSegment(r);
-
+			}
+			int c = sourceTargetTable.columnAtPoint(e.getPoint());
+			boolean target = false;
+			if (c == segmentTableModel.getIndexForColumn(Source)) {
+				variant = (BaseSegmentVariant) seg.getSource();
+			} else if (c == segmentTableModel.getIndexForColumn(Target)) {
+				variant = (BaseSegmentVariant) seg.getTarget();
+				target = true;
 			}
 
 			if (seg != null) {
-				ContextMenu menu = new ContextMenu(xliff, seg, eventQueue);
+				ContextMenu menu = new ContextMenu(xliff, seg, variant, null,
+				        eventQueue);
+				List<JMenuItem> pluginsItems = ocelotApp
+				        .getSegmentContexPluginMenues(seg, variant, target);
+				if (pluginsItems != null) {
+					for (JMenuItem item : pluginsItems) {
+						menu.add(item);
+					}
+				}
 				menu.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}

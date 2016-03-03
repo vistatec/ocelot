@@ -30,10 +30,14 @@ package com.vistatec.ocelot.segment.model;
 
 import java.util.List;
 
+import net.sf.okapi.lib.xliff2.its.TextAnalysis;
+
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.TerminologyMetaData;
+import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
@@ -55,6 +59,8 @@ public interface OcelotSegment {
     public SegmentVariant getSource();
     public SegmentVariant getTarget();
     public SegmentVariant getOriginalTarget();
+    
+    public String getTuId();
 
     /**
      * Should only set the original target if one does not exist already,
@@ -105,11 +111,21 @@ public interface OcelotSegment {
     public void addLQI(LanguageQualityIssue lqi);
     public void addAllLQI(List<LanguageQualityIssue> lqis);
     public void removeLQI(LanguageQualityIssue removeLQI);
-
+    
     public List<Provenance> getProvenance();
     public void addProvenance(Provenance prov);
     public void addAllProvenance(List<Provenance> provs);
 
+    public List<TextAnalysisMetaData> getTextAnalysis();
+    public void addTextAnalysis(TextAnalysisMetaData ta);
+    public void addAllTextAnalysis(List<TextAnalysisMetaData> tas);
+    public void removeTextAnalysis(TextAnalysisMetaData ta);
+    
+    public List<TerminologyMetaData> getTerms();
+    public void addTerm(TerminologyMetaData term);
+    public void addAllTerms(List<TerminologyMetaData> terms);
+    public void removeTerm(TerminologyMetaData term);
+    
     /**
      * Return whether the segment has already gotten the Ocelot provenance
      * record for the current profile user. See

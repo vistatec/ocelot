@@ -28,25 +28,24 @@
  */
 package com.vistatec.ocelot;
 
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.events.ItsSelectionEvent;
-import com.vistatec.ocelot.events.OpenFileEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.its.view.ProvenanceView;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.view.SegmentDetailView;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JPanel;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
+import com.vistatec.ocelot.its.view.ProvenanceView;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.view.SegmentDetailView;
 
 /**
  * Detail pane displaying data related to a selected segment in the SegmentView.
@@ -58,7 +57,6 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
     private OcelotSegment selectedSegment;
-
     private final OcelotEventQueue eventQueue;
 
     @Inject

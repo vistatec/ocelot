@@ -53,10 +53,10 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -73,13 +73,16 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.gui.LQIKeyEventHandler;
@@ -88,16 +91,16 @@ import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
-import com.vistatec.ocelot.tm.gui.TmGuiManager;
 
 /**
  * Main UI Thread class. Handles menu and file operations
  * 
  */
 public class Ocelot extends JPanel implements Runnable, ActionListener,
-        KeyEventDispatcher, ItemListener {
+        KeyEventDispatcher, ItemListener, OcelotEventQueueListener {
 	/** Default serial ID */
 	private static final long serialVersionUID = 1L;
 	private static String APPNAME = "Ocelot";
@@ -140,6 +143,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		super(new BorderLayout());
 		this.ocelotScope = ocelotScope;
 		this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
+		eventQueue.registerListener(this);
 		this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
 		this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
 		this.eventQueue.registerListener(tmGuiManager);

@@ -39,19 +39,22 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
  */
 public class OkapiSegment extends BaseSegment {
     public final int eventNum;
-
+    
     public final String phaseName;
     private final StateQualifier stateQualifier;
-
+    private String tuId;
+    
     public OkapiSegment(int segNum, int eventNum, SegmentVariant source,
             SegmentVariant target, SegmentVariant originalTarget,
-            StateQualifier stateQualifier, String phaseName) {
+            StateQualifier stateQualifier, String phaseName, String tuId) {
         super(segNum, source, target, originalTarget);
 
         this.stateQualifier = stateQualifier;
         this.phaseName = phaseName;
 
         this.eventNum = eventNum;
+        this.tuId = tuId;
+        
     }
 
     @Override
@@ -64,12 +67,18 @@ public class OkapiSegment extends BaseSegment {
     public StateQualifier getStateQualifier() {
         return stateQualifier;
     }
+    
+    @Override
+    public String getTuId() {
+    	return tuId;
+    }
 
     public static class Builder {
         private int segmentNumber, eventNum;
         private SegmentVariant source, target, originalTarget;
         private StateQualifier stateQualifier;
         private String phaseName;
+        private String tuId;
 
         public Builder segmentNumber(int segNum) {
             this.segmentNumber = segNum;
@@ -105,10 +114,16 @@ public class OkapiSegment extends BaseSegment {
             this.phaseName = phaseName;
             return this;
         }
+        
+        public Builder tuId(String tuId){
+        	this.tuId = tuId;
+        	return this;
+        }
 
         public OkapiSegment build() {
             return new OkapiSegment(segmentNumber, eventNum,
-                    source, target, originalTarget, stateQualifier, phaseName);
+                    source, target, originalTarget, stateQualifier, phaseName, tuId);
         }
+
     }
 }
