@@ -11,15 +11,12 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
@@ -40,7 +37,7 @@ public class TmAddingDialog extends JDialog implements Runnable,
 	private static final long serialVersionUID = 7715304755942763439L;
 
 	/** Log. */
-	private final Logger log = Logger.getLogger(TmAddingDialog.class);
+	private static final Logger log = Logger.getLogger(TmAddingDialog.class);
 
 	/** the controller. */
 	private TmGuiConfigController controller;
@@ -183,7 +180,7 @@ public class TmAddingDialog extends JDialog implements Runnable,
 	@Override
 	public void run() {
 
-		setTitle("Create New TM");
+		setTitle("Add New TM");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		add(getMainPanel(), BorderLayout.CENTER);
 		add(getBottomPanel(), BorderLayout.SOUTH);
@@ -246,26 +243,26 @@ public class TmAddingDialog extends JDialog implements Runnable,
 	 */
 	private void save() {
 
-		if (checkMandatoryFields()) {
-			try {
-				controller
-						.createNewTm(txtName.getText(), txtLocation.getText());
-				close();
-			} catch (IOException e) {
-				log.trace("Error while creating a new TM: " + e.getMessage(), e);
-				JOptionPane.showMessageDialog(this, e.getMessage(),
-						"Create TM", JOptionPane.WARNING_MESSAGE);
-			} catch (Exception e) {
-				log.trace("Error while creating a new TM.", e);
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(this,
-						"An error occurred while creating the TM",
-						"Create TM Error", JOptionPane.ERROR_MESSAGE);
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "Please, fill in all fields.",
-					"Fill mandatory fields", JOptionPane.WARNING_MESSAGE);
-		}
+//		if (checkMandatoryFields()) {
+//			try {
+////				controller
+////						.createNewTm(txtName.getText(), txtLocation.getText());
+//				close();
+//			} catch (IOException e) {
+//				log.trace("Error while creating a new TM: " + e.getMessage(), e);
+//				JOptionPane.showMessageDialog(this, e.getMessage(),
+//						"Create TM", JOptionPane.WARNING_MESSAGE);
+//			} catch (Exception e) {
+//				log.trace("Error while creating a new TM.", e);
+//				e.printStackTrace();
+//				JOptionPane.showMessageDialog(this,
+//						"An error occurred while creating the TM",
+//						"Create TM Error", JOptionPane.ERROR_MESSAGE);
+//			}
+//		} else {
+//			JOptionPane.showMessageDialog(this, "Please, fill in all fields.",
+//					"Fill mandatory fields", JOptionPane.WARNING_MESSAGE);
+//		}
 	}
 
 	/**

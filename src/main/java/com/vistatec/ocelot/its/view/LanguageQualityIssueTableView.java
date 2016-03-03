@@ -35,10 +35,12 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -57,6 +59,7 @@ import javax.swing.table.AbstractTableModel;
 public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
+    private XLIFFDocument xliff;
     private OcelotEventQueue eventQueue;
 
     public LanguageQualityIssueTableView(OcelotEventQueue eventQueue) {
@@ -82,6 +85,11 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
     @Subscribe
     public void handleLQIUpdate(LQIModificationEvent e) {
         getTableModel().fireTableDataChanged();
+    }
+
+    @Subscribe
+    public void openFile(OpenFileEvent e) {
+        this.xliff = e.getDocument();
     }
 
     public void selectedLQI() {
@@ -188,8 +196,8 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
             }
             if (e.isPopupTrigger() && getSelectedSegment() != null) {
                 ContextMenu menu = selectedLQI == null ?
-                        new ContextMenu(getSelectedSegment(), eventQueue) :
-                        new ContextMenu(getSelectedSegment(), selectedLQI, eventQueue);
+                        new ContextMenu(xliff, getSelectedSegment(), eventQueue) :
+                        new ContextMenu(xliff, getSelectedSegment(), selectedLQI, eventQueue);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }

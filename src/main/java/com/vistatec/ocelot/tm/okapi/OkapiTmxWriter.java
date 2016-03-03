@@ -15,6 +15,8 @@ import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.tm.TmTmxWriter;
 
 import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.encoder.EncoderContext;
+import net.sf.okapi.common.encoder.XMLEncoder;
 import net.sf.okapi.common.filterwriter.TMXWriter;
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextFragment;
@@ -30,15 +32,18 @@ public class OkapiTmxWriter implements TmTmxWriter, OcelotEventQueueListener {
 
     private boolean hasOpenFile = false;
     private LocaleId sourceLang, targetLang;
+    private XMLEncoder attributeEncoder = new XMLEncoder("UTF-8", "\n",
+                    true, true, false, 1 /* XMLEncoder.QuoteMode.ALL */);
 
     public OkapiTmxWriter(SegmentService segService) {
         this.segService = segService;
+        attributeEncoder.getParameters();
     }
 
     @Subscribe
     public void setOpenFileLangs(OpenFileEvent fileEvent) {
-        this.sourceLang = LocaleId.fromString(fileEvent.getSrcLang());
-        this.targetLang = LocaleId.fromString(fileEvent.getTgtLang());
+        this.sourceLang = fileEvent.getDocument().getSrcLocale();
+        this.targetLang = fileEvent.getDocument().getTgtLocale();
         this.hasOpenFile = true;
     }
 
@@ -69,8 +74,10 @@ public class OkapiTmxWriter implements TmTmxWriter, OcelotEventQueueListener {
         for (SegmentAtom atom : segVar.getAtoms()) {
             if (atom instanceof CodeAtom) {
                 CodeAtom cAtom = (CodeAtom) atom;
+                // The TMXWriter does not escape inline code content
                 Code c = new Code(TextFragment.TagType.PLACEHOLDER,
-                        cAtom.getData(), cAtom.getVerboseData());
+                        attributeEncoder.encode(cAtom.getData(), EncoderContext.INLINE),
+                        cAtom.getVerboseData());
                 tFrag.append(c);
             } else {
                 tFrag.append(atom.getData());

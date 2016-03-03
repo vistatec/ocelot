@@ -34,8 +34,8 @@ public class FremeMenu extends JMenu {
 	/** The link service menu item. */
 	private FremeEServiceMenuItem mnuETranslationService;
 	
-	/** The Entity Categories Filter menu item. */
-	private FremeMenuItem mnuViewCatFilter;
+//	/** The Entity Categories Filter menu item. */
+//	private FremeMenuItem mnuViewCatFilter;
 
 	/** The configure pipeline menu item. */
 	private FremeMenuItem mnuConfigPipeline;
@@ -94,9 +94,9 @@ public class FremeMenu extends JMenu {
 		mnuETranslationService.addItemListener(itemListener);
 		add(mnuETranslationService);
 
-		mnuViewCatFilter = new FremeMenuItem("Entity Categories Filter", FILTER_MENU);
-		mnuViewCatFilter.addActionListener(actionListener);
-		add(mnuViewCatFilter);
+//		mnuViewCatFilter = new FremeMenuItem("Entity Categories Filter", FILTER_MENU);
+//		mnuViewCatFilter.addActionListener(actionListener);
+//		add(mnuViewCatFilter);
 		
 		mnuEnrich = new FremeMenuItem("Enrich Segments", ENRICH_MENU);
 		mnuEnrich.addActionListener(actionListener);

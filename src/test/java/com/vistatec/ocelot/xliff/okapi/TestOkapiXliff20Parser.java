@@ -67,6 +67,14 @@ public class TestOkapiXliff20Parser {
         compareSegmentsIgnoringWhitespace(testSegments, goalSegments);
     }
 
+    @Test
+    public void testMissingTarget() throws Exception {
+        File testFile = new File(getClass().getResource("/xliff20/noTargets.xlf").toURI());
+        OkapiXLIFF20Parser parser = new OkapiXLIFF20Parser();
+        List<OcelotSegment> testSegments = parser.parse(testFile);
+        assertEquals(6, testSegments.size());
+    }
+
     public void compareSegmentsIgnoringWhitespace(List<OcelotSegment> testSegs, List<OcelotSegment> goalSegs) {
         Iterator<OcelotSegment> testIter = testSegs.iterator();
         Iterator<OcelotSegment> goalIter = goalSegs.iterator();

@@ -41,11 +41,13 @@ public class RootConfig {
     @XmlElement protected List<PluginConfig> plugins;
     @XmlElement protected ProvenanceConfig userProvenance;
     @XmlElement protected TmManagement tmManagement;
+    @XmlElement(name="LQIGrid") protected LQIGridConfig lqiGrid;
 
     public RootConfig() {
         this.plugins = new ArrayList<>();
         this.userProvenance = new ProvenanceConfig();
         this.tmManagement = new TmManagement();
+        this.lqiGrid = new LQIGridConfig();
     }
 
     public List<PluginConfig> getPlugins() {
@@ -58,6 +60,10 @@ public class RootConfig {
 
     public TmManagement getTmManagement() {
         return tmManagement;
+    }
+    
+    public LQIGridConfig getLQIGrid() {
+	    return lqiGrid;
     }
 
 }

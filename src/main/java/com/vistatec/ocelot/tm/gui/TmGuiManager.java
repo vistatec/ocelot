@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Window;
 
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.events.ConcordanceSearchEvent;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.RefreshSegmentView;
@@ -29,6 +30,8 @@ public class TmGuiManager implements OcelotEventQueueListener {
 	 * functionalities.
 	 */
 	private TmGuiMatchController matchController;
+	
+	
 
 	/**
 	 * Constructor.
@@ -39,11 +42,13 @@ public class TmGuiManager implements OcelotEventQueueListener {
 	 *            the TM service
 	 * @param eventQueue
 	 *            the ocelot event queue.
+	 * @param cfgService
+	 *            the configuration service            
 	 */
 	public TmGuiManager(final TmManager tmManager, final TmService tmService,
-			final OcelotEventQueue eventQueue) {
+			final OcelotEventQueue eventQueue, final ConfigService cfgService) {
 
-		configController = new TmGuiConfigController(tmManager);
+		configController = new TmGuiConfigController(tmManager, cfgService);
 		matchController = new TmGuiMatchController(tmService, eventQueue);
 	}
 
@@ -107,7 +112,11 @@ public class TmGuiManager implements OcelotEventQueueListener {
 	 */
 	@Subscribe
 	public void handleSegmentSelected(SegmentSelectionEvent e) {
+		try{
 		matchController.setSelectedSegment(e.getSegment());
+		}catch (Exception ex){
+			ex.printStackTrace();
+		}
 	}
 	
 	@Subscribe

@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
@@ -96,12 +97,21 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void setSegment(SegmentSelectionEvent e) {
-        selectedSegment = e.getSegment();
+	    this.selectedSegment = e.getSegment();
+        showSegmentDetailView(selectedSegment);
+        revalidate();
+    }
+
+    @Subscribe
+    public void openFile(OpenFileEvent e) {
+        showSegmentDetailView(null);
+    }
+
+    private void showSegmentDetailView(OcelotSegment segment) {
         removeProvenanceDetailView();
         removeLQIDetailView();
         addSegmentDetailView();
-        segDetailView.setSegment(selectedSegment);
-        revalidate();
+        segDetailView.setSegment(segment);
     }
 
     public void addProvenanceDetailView() {

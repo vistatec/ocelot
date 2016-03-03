@@ -101,6 +101,10 @@ public class SegmentTableModel extends AbstractTableModel {
     int getSegmentTargetOriginalColumnIndex() {
         return Original.ordinal();
     }
+    
+    int getNotesColumnIndex(){
+    	return Notes.ordinal();
+    }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
@@ -181,16 +185,31 @@ public class SegmentTableModel extends AbstractTableModel {
             return getSegment(row).getOriginalTarget();
         case EditDistance:
             return getSegment(row).getEditDistance();
+        case Notes:
+        	return getSegment(row).getNotes();
         default: // flag cases
             Object ret = ruleConfig.getTopDataCategory(
                     getSegment(row), column.getFlagIndex());
             return ret != null ? ret : NullITSMetadata.getInstance();
         }
     }
+    
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+
+    	if(rowIndex < segmentService.getNumSegments()){
+//    		SegmentViewColumn column = getColumn(columnIndex);
+//    		if(column.equals(Notes)){
+//    			getSegment(rowIndex).getNotes().editNote((String)aValue, String.valueOf(getSegment(rowIndex).getSegmentNumber()));
+//    		} else {
+    			super.setValueAt(aValue, rowIndex, columnIndex);
+//    		}
+    	}
+    }
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex();
+        return col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex() || col == getNotesColumnIndex();
     }
 
     OcelotSegment getSegment(int row) {

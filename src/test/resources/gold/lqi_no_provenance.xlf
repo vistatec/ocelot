@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:okp="okapi-framework:xliff-extensions" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" version="1.2" its:version="2.0">
+<file original="test.xml" source-language="en" target-language="fr" datatype="xml" okp:inputEncoding="UTF-8">
+<body>
+<group id="tu1_ssf1" resname="sub-filter:generic">
+<trans-unit id="tu1_tu1" resname="generic_2" restype="x-paragraph" its:locQualityIssuesRef="#RW1">
+<source xml:lang="en">Hello</source>
+<target xml:lang="fr">Hello</target>
+</trans-unit>
+<trans-unit id="tu1_tu2" resname="generic_4">
+<source xml:lang="en">goodbye <g id="1">etc</g> .</source>
+<target xml:lang="fr">goodbye <g id="1">etc</g> .</target>
+</trans-unit>
+</group>
+</body>
+</file><its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="RW1">
+<its:locQualityIssue locQualityIssueSeverity="90" locQualityIssueType="omission"/>
+</its:locQualityIssues>
+
+</xliff>

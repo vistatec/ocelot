@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+ <file id="f1">
+  <unit id="1">
+   <segment id="s1">
+    <source>Sentence 1. Sentence 2.</source>
+   </segment>
+   <ignorable>
+    <source> <sm id="m1" translate="no"/></source>
+   </ignorable>
+   <segment id="s2">
+    <source>Sentence 3 (no-trans). Sentence 4 (no-trans).</source>
+   </segment>
+   <ignorable>
+    <source> <sm id="m2" translate="yes"/></source>
+   </ignorable>
+   <segment id="s3">
+    <source>Sentence 5.</source>
+   </segment>
+   <ignorable>
+    <source><em startRef="m2"/> </source>
+   </ignorable>
+   <segment id="s4">
+    <source>Sentence 6 (no-trans).</source>
+   </segment>
+   <ignorable>
+    <source><em startRef="m1"/> </source>
+   </ignorable>
+   <segment id="s5">
+    <source>Sentence 7. Sentence 8. </source>
+   </segment>
+   <segment id="s6">
+    <source>Sentence with A. Sentence with <cp hex="0001"/>. </source>
+   </segment>
+  </unit>
+ </file>
+</xliff>

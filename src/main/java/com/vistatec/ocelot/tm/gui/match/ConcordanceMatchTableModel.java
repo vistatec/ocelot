@@ -131,4 +131,16 @@ public class ConcordanceMatchTableModel extends TmMatchTableModel {
 		return TM_NAME_COL;
 	}
 
+	/**
+	 * The table model is not editable. It always returns <code>false</code>
+	 * regardless of parameter values.
+	 * 
+	 * @return <code>false</code>.
+	 * @see javax.swing.table.DefaultTableModel#isCellEditable(int, int)
+	 */
+	@Override
+	public boolean isCellEditable(int row, int column) {
+		return column == TARGET_COL;
+	}
+
 }

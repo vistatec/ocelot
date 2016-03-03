@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.tm.gui.configuration;
+package com.vistatec.ocelot.ui;
 
 import java.awt.Component;
 

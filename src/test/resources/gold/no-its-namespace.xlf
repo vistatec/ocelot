@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns:its="http://www.w3.org/2005/11/its" ><file source-language="en-US" target-language="fr-FR" original="none" datatype="plaintext">
+        <header><tool tool-id="Ocelot" tool-name="Ocelot"></tool></header>
+        <body>
+
+            <trans-unit id="2" xmlns:its="http://www.w3.org/2005/11/its" its:version="2.0" its:locQualityIssuesRef="#RW1" its:provenanceRecordsRef="#RW1">
+                <source>example source 2</source>
+                <target>example source 2</target>
+            </trans-unit>
+        </body>
+        </file><its:locQualityIssues xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="RW1">
+<its:locQualityIssue locQualityIssueSeverity="90" locQualityIssueType="omission"/>
+</its:locQualityIssues>
+<its:provenanceRecords xmlns:its="http://www.w3.org/2005/11/its" version="2.0" xml:id="RW1"><its:provenanceRecord revPerson="A" revOrg="B" provRef="C"/></its:provenanceRecords>
+</xliff>

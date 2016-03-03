@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.segment.model.okapi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collections;
 
@@ -87,6 +88,16 @@ public class TestFragmentVariant {
         FragmentVariant fv = plainCodeFV.createEmptyTarget();
         assertEquals(Collections.emptyList(), fv.getAtoms());
         assertEquals(true, fv.isTarget());
+    }
+
+    @Test
+    public void testNullXLIFFTarget() {
+        Store store = new Store(new DummyWithStore());
+        Segment segment = new Segment(store);
+        segment.setSource(new Fragment(store, false).append("Hello world"));
+        FragmentVariant v = new FragmentVariant(segment, true);
+        assertEquals("", v.getDisplayText());
+        assertNotNull(segment.getTarget());
     }
 
     @Test

@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
 
 public interface XLIFFWriter {
     public void updateSegment(OcelotSegment seg);
+    
+    public void updateNotes(OcelotSegment seg);
 
     public void save(File file) throws IOException, UnsupportedEncodingException;
 }

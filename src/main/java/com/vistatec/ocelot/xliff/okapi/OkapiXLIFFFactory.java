@@ -30,7 +30,6 @@ package com.vistatec.ocelot.xliff.okapi;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -48,6 +47,7 @@ import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.xliff.XLIFFFactory;
 import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 /**
@@ -56,47 +56,60 @@ import com.vistatec.ocelot.xliff.XLIFFWriter;
 public class OkapiXLIFFFactory implements XLIFFFactory {
 
     @Override
-    public XLIFFParser newXLIFFParser(File detectVersion) throws FileNotFoundException, IOException, XMLStreamException {
-        BOMInputStream bomInputStream = new BOMInputStream(new FileInputStream(detectVersion),
+    public XLIFFVersion detectXLIFFVersion(File detectVersion) throws IOException, XMLStreamException {
+        try (BOMInputStream bomInputStream = new BOMInputStream(new FileInputStream(detectVersion),
                 ByteOrderMark.UTF_8, ByteOrderMark.UTF_16BE, ByteOrderMark.UTF_16LE,
-                ByteOrderMark.UTF_32BE, ByteOrderMark.UTF_32LE);
-        String bom = "UTF-8";
-        if (bomInputStream.hasBOM()) {
-            bom = bomInputStream.getBOMCharsetName();
-        }
+                ByteOrderMark.UTF_32BE, ByteOrderMark.UTF_32LE)) {
+            String bom = "UTF-8";
+            if (bomInputStream.hasBOM()) {
+                bom = bomInputStream.getBOMCharsetName();
+            }
 
-        XMLInputFactory xml = XMLInputFactory.newInstance();
-        XMLEventReader reader = xml.createXMLEventReader(bomInputStream, bom);
-        while (reader.hasNext()) {
-            XMLEvent event = reader.nextEvent();
-            switch (event.getEventType()) {
-                case XMLEvent.START_ELEMENT:
-                    StartElement startElement = (StartElement) event;
-                    String localPart = startElement.getName().getLocalPart();
-                    if (localPart.equals("xliff")) {
-                        Iterator<Attribute> attrs = startElement.getAttributes();
-                        while (attrs.hasNext()) {
-                            Attribute attr = attrs.next();
-                            String name = attr.getName().getLocalPart();
-                            String value = attr.getValue();
+            XMLInputFactory xml = XMLInputFactory.newInstance();
+            XMLEventReader reader = xml.createXMLEventReader(bomInputStream, bom);
+            while (reader.hasNext()) {
+                XMLEvent event = reader.nextEvent();
+                switch (event.getEventType()) {
+                    case XMLEvent.START_ELEMENT:
+                        StartElement startElement = (StartElement) event;
+                        String localPart = startElement.getName().getLocalPart();
+                        if (localPart.equals("xliff")) {
+                            @SuppressWarnings("unchecked")
+                            Iterator<Attribute> attrs = startElement.getAttributes();
+                            while (attrs.hasNext()) {
+                                Attribute attr = attrs.next();
+                                String name = attr.getName().getLocalPart();
+                                String value = attr.getValue();
 
-                            if (name.equals("version")) {
-                                if ("2.0".equals(value)) {
+                                if (name.equals("version")) {
                                     reader.close();
-                                    return new OkapiXLIFF20Parser();
-                                } else {
-                                    return new OkapiXLIFF12Parser();
+                                    if ("2.0".equals(value)) {
+                                        return XLIFFVersion.XLIFF20;
+                                    } else {
+                                        return XLIFFVersion.XLIFF12;
+                                    }
                                 }
                             }
                         }
-                    }
-                    break;
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
             }
+            throw new IllegalStateException("Could not detect XLIFF version");
         }
-        throw new IllegalStateException("Could not detect XLIFF version");
+    }
+
+    @Override
+    public XLIFFParser newXLIFFParser(XLIFFVersion version) throws IOException, XMLStreamException {
+        switch (version) {
+        case XLIFF12:
+            return new OkapiXLIFF12Parser();
+        case XLIFF20:
+            return new OkapiXLIFF20Parser();
+        }
+        throw new IllegalStateException();
     }
 
     @Override

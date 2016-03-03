@@ -2,12 +2,13 @@ package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class SegmentTargetUpdateFromMatchEvent extends SegmentTargetUpdateEvent {
 
-	public SegmentTargetUpdateFromMatchEvent(OcelotSegment segment,
+	public SegmentTargetUpdateFromMatchEvent(XLIFFDocument xliff, OcelotSegment segment,
 			SegmentVariant updatedTarget) {
-		super(segment, updatedTarget);
+		super(xliff, segment, updatedTarget);
 	}
 
 }

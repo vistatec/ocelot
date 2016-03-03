@@ -39,6 +39,8 @@ import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.TerminologyMetaData;
 import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.rules.StateQualifier;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
 
 /**
  * Expected data format of a segment within Ocelot; every data unit representing
@@ -101,6 +103,10 @@ public interface OcelotSegment {
      */
     public int getEditDistance();
 
+    public Notes getNotes();
+    
+    public void setNotes(Notes notes);
+    
     public List<LanguageQualityIssue> getLQI();
     public void addLQI(LanguageQualityIssue lqi);
     public void addAllLQI(List<LanguageQualityIssue> lqis);

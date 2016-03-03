@@ -14,7 +14,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.log4j.Logger;
 
+import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.xml.TmManagement;
 import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
 import com.vistatec.ocelot.tm.TmManager;
 
@@ -28,16 +30,28 @@ import com.vistatec.ocelot.tm.TmManager;
 public class TmGuiConfigController {
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(TmGuiConfigController.class);
+	private static final Logger logger = Logger.getLogger(TmGuiConfigController.class);
+
+	/** Default fuzzy threshold value. */
+	private static final float DEF_FUZZY_THRESHOLD = 0.75f;
+
+	/** Default max results value. */
+	private static final int DEF_MAX_RESULTS = 5;
 
 	/** The object managing the TM Configuration in Ocelot. */
 	private TmManager tmManager;
+
+	/** The Ocelot configuration service. */
+	private ConfigService cfgService;
 
 	/** The TM configuration dialog. */
 	private TmConfigDialog configDialog;
 
 	/** The Adding TM dialog. */
 	private TmAddingDialog addDialog;
+
+	/** The TM Settings dialog. */
+	private TmSettingsDialog settingDialog;
 
 	/** Current opened dialog. */
 	private JDialog currDialog;
@@ -56,10 +70,22 @@ public class TmGuiConfigController {
 	 * 
 	 * @param tmManager
 	 *            the TM Manager.
+	 * @param cfgService
+	 *            the configuration service
 	 */
-	public TmGuiConfigController(final TmManager tmManager) {
+	public TmGuiConfigController(final TmManager tmManager,
+	        final ConfigService cfgService) {
 
 		this.tmManager = tmManager;
+		this.cfgService = cfgService;
+		try {
+			this.cfgService.saveFuzzyThreshold(DEF_FUZZY_THRESHOLD);
+			this.cfgService.saveMaxResults(DEF_MAX_RESULTS);
+		} catch (TransferException e) {
+			logger.trace(
+			        "Error while setting TM default values to the Configuration Service.",
+			        e);
+		}
 	}
 
 	/**
@@ -80,40 +106,81 @@ public class TmGuiConfigController {
 		} catch (Exception e) {
 			changed = false;
 			logger.trace(
-					"Error while changing the root directory [tm = "
-							+ tm.getTmName() + " - Old dir = "
-							+ tm.getTmDataDir() + " - New dir = " + newRootDir
-							+ "]", e);
+			        "Error while changing the root directory [tm = "
+			                + tm.getTmName() + " - Old dir = "
+			                + tm.getTmDataDir() + " - New dir = " + newRootDir
+			                + "]", e);
 			JOptionPane
-					.showMessageDialog(
-							configDialog,
-							"An error occurred while changing the selected TM directory.",
-							"TM Change Directory Error",
-							JOptionPane.ERROR_MESSAGE);
+			        .showMessageDialog(
+			                configDialog,
+			                "An error occurred while changing the selected TM directory.",
+			                "TM Change Directory Error",
+			                JOptionPane.ERROR_MESSAGE);
 		}
 		return changed;
 	}
 
+	//
+	// /**
+	// * Creates a new TM.
+	// *
+	// * @param tmName
+	// * the TM name.
+	// * @param tmDirPath
+	// * the TM root directory.
+	// * @throws IOException
+	// * The IO exception
+	// * @throws TransferException
+	// * the transfer exception
+	// */
+	// public void createNewTm(final String tmName, final String tmDirPath)
+	// throws IOException, TransferException {
+	// tmManager.initializeNewTm(tmName, new File(tmDirPath));
+	// TmConfig newTm = new TmConfig();
+	// newTm.setTmName(tmName);
+	// newTm.setTmDataDir(tmDirPath);
+	// newTm.setEnabled(true);
+	// configDialog.addNewTm(newTm);
+	// }
+
 	/**
-	 * Creates a new TM.
+	 * Adds a new TM to the configuration table.
 	 * 
-	 * @param tmName
-	 *            the TM name.
-	 * @param tmDirPath
-	 *            the TM root directory.
-	 * @throws IOException
-	 *             The IO exception
-	 * @throws TransferException
-	 *             the transfer exception
+	 * @param tmxFiles
+	 *            the list of Translation Memory eXchange files.
+	 * @throws TransferException 
+	 * @throws IOException 
 	 */
-	public void createNewTm(final String tmName, final String tmDirPath)
-			throws IOException, TransferException {
-		tmManager.initializeNewTm(tmName, new File(tmDirPath));
-		TmConfig newTm = new TmConfig();
-		newTm.setTmName(tmName);
-		newTm.setTmDataDir(tmDirPath);
-		newTm.setEnabled(true);
-		configDialog.addNewTm(newTm);
+	public void createNewTm(final File[] tmxFiles) throws IOException, TransferException {
+
+		if (tmxFiles != null && tmxFiles.length > 0) {
+			String tmDataDir = tmxFiles[0].getParentFile().getAbsolutePath();
+			String ext = ".tmx";
+			int extIndex = -1;
+			StringBuilder tmName = new StringBuilder();
+//			List<TmManagement.TmConfig.TmxFile> tmxFilesList = new ArrayList<TmManagement.TmConfig.TmxFile>();
+			List<String> tmxFileNames = new ArrayList<String>();
+			for (File currFile : tmxFiles) {
+				extIndex = currFile.getName().toLowerCase().indexOf(ext);
+				if (tmName.length() > 0) {
+					tmName.append(" - ");
+				}
+				tmName.append(currFile.getName().substring(0, extIndex));
+//				TmManagement.TmConfig.TmxFile configFile = new TmManagement.TmConfig.TmxFile();
+				tmxFileNames.add(currFile.getName());
+//				configFile.setFileName(currFile.getName());
+//				tmxFilesList.add(configFile);
+			}
+			TmConfig newTm = new TmConfig();
+			newTm.setEnabled(true);
+			newTm.setTmDataDir(tmDataDir);
+			newTm.setTmName(tmName.toString());
+			TmManagement.TmConfig.TmxFiles tmxFilesConf = new TmManagement.TmConfig.TmxFiles();
+			tmxFilesConf.setTmxFile(tmxFileNames);
+			newTm.setTmxFiles(tmxFilesConf);
+			tmManager.initializeNewTm(tmName.toString(), tmxFiles);
+			configDialog.addNewTm(newTm);
+		}
 	}
 
 	/**
@@ -133,12 +200,12 @@ public class TmGuiConfigController {
 		} catch (Exception e) {
 			deleted = false;
 			Logger.getLogger(TmGuiConfigController.class).trace(
-					"Error while deleting the TM " + tmName, e);
+			        "Error while deleting the TM " + tmName, e);
 			JOptionPane
-					.showMessageDialog(configDialog,
-							"An error occurred while deleting the TM '"
-									+ tmName + "'.", "Delete TM Error",
-							JOptionPane.ERROR_MESSAGE);
+			        .showMessageDialog(configDialog,
+			                "An error occurred while deleting the TM '"
+			                        + tmName + "'.", "Delete TM Error",
+			                JOptionPane.ERROR_MESSAGE);
 		}
 		return deleted;
 	}
@@ -155,7 +222,7 @@ public class TmGuiConfigController {
 			// Create a filter for the file chooser. Set "tmx" as the accepted
 			// extension
 			FileNameExtensionFilter filter = new FileNameExtensionFilter("tmx",
-					"tmx");
+			        "tmx");
 			// Create and configure the file chooser
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileFilter(filter);
@@ -173,17 +240,17 @@ public class TmGuiConfigController {
 					// if the selected file has not the correct format, add .tmx
 					// at the end of the file name
 					selectedFile = new File(selectedFile.getAbsolutePath()
-							+ "." + filter.getExtensions()[0]);
+					        + "." + filter.getExtensions()[0]);
 				}
 				// save current segments into the selected file.
 				tmManager.saveOpenFileAsTmx(selectedFile);
 			}
 		} catch (Exception e) {
 			Logger.getLogger(TmGuiConfigController.class).trace(
-					"Error while saving the opened file as a tmx.", e);
+			        "Error while saving the opened file as a tmx.", e);
 			JOptionPane.showMessageDialog(currentWindow,
-					"An error occurred while saving the tmx file.",
-					"Save as tmx error", JOptionPane.ERROR_MESSAGE);
+			        "An error occurred while saving the tmx file.",
+			        "Save as tmx error", JOptionPane.ERROR_MESSAGE);
 		}
 
 	}
@@ -238,6 +305,9 @@ public class TmGuiConfigController {
 		} else if (currDialog.equals(addDialog)) {
 			currDialog = configDialog;
 			addDialog = null;
+		} else if (currDialog.equals(settingDialog)) {
+			currDialog = configDialog;
+			settingDialog = null;
 		}
 	}
 
@@ -280,14 +350,15 @@ public class TmGuiConfigController {
 		} catch (Exception e) {
 			logger.trace("An error occurred while saving the TM ordering.", e);
 			JOptionPane.showMessageDialog(configDialog,
-					"An error occurred while saving the TM ordering.",
-					"Save TM Ordering Error", JOptionPane.ERROR_MESSAGE);
+			        "An error occurred while saving the TM ordering.",
+			        "Save TM Ordering Error", JOptionPane.ERROR_MESSAGE);
 		}
 		return saved;
 	}
 
 	/**
-	 * Discards current changes to the TM configuration and restores the previous one.
+	 * Discards current changes to the TM configuration and restores the
+	 * previous one.
 	 */
 	public void cancel() {
 
@@ -298,13 +369,13 @@ public class TmGuiConfigController {
 					if (currConfig != null) {
 						tmOrderedList.remove(currConfig);
 						if (!currConfig.getTmDataDir()
-								.equals(tm.getTmDataDir())) {
+						        .equals(tm.getTmDataDir())) {
 							changeTmDirectory(currConfig,
-									new File(tm.getTmDataDir()));
+							        new File(tm.getTmDataDir()));
 						}
 					} else {
 						tmManager.initializeNewTm(tm.getTmName(),
-								new File(tm.getTmDataDir()));
+						        new File(tm.getTmDataDir()));
 					}
 
 				}
@@ -317,16 +388,81 @@ public class TmGuiConfigController {
 			} catch (Exception e) {
 
 				logger.trace(
-						"An error occurred while restoring previous TM Configuration.",
-						e);
+				        "An error occurred while restoring previous TM Configuration.",
+				        e);
 				JOptionPane
-						.showMessageDialog(
-								configDialog,
-								"An error occurred while restoring the TM Configuration.",
-								"Cancel TM Changes Error",
-								JOptionPane.ERROR_MESSAGE);
+				        .showMessageDialog(
+				                configDialog,
+				                "An error occurred while restoring the TM Configuration.",
+				                "Cancel TM Changes Error",
+				                JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
 
+	/**
+	 * Gets currently configured fuzzy threshold.
+	 * 
+	 * @return currently configured fuzzy threshold.
+	 */
+	public int getFuzzyThreshold() {
+
+		return (int) (cfgService.getFuzzyThreshold() * 100);
+	}
+
+	/**
+	 * Gets currently configured max results.
+	 * 
+	 * @return currently configured max results
+	 */
+	public int getMaxResults() {
+		return cfgService.getMaxResults();
+	}
+
+	/**
+	 * Gets the default fuzzy threshold value.
+	 * 
+	 * @return the default fuzzy threshold value.
+	 */
+	public int getDefaultFuzzyThreshold() {
+
+		return (int) (DEF_FUZZY_THRESHOLD * 100);
+	}
+
+	/**
+	 * Gets the default max results value.
+	 * 
+	 * @return the default max results value.
+	 */
+	public int getDefaultMaxResults() {
+
+		return DEF_MAX_RESULTS;
+	}
+
+	/**
+	 * Saves the TM settings.
+	 * 
+	 * @param fuzzyThreshold
+	 *            the fuzzy threshold value.
+	 * @param maxResults
+	 *            the max results value.
+	 * @throws TransferException
+	 *             the Transfer exception.
+	 */
+	public void saveTmSettings(float fuzzyThreshold, int maxResults)
+	        throws TransferException {
+
+		cfgService.saveFuzzyThreshold(fuzzyThreshold);
+		cfgService.saveMaxResults(maxResults);
+	}
+
+	/**
+	 * Opens the TM Settings dialog.
+	 */
+	public void openSettingsDialog() {
+
+		settingDialog = new TmSettingsDialog(configDialog, this);
+		currDialog = settingDialog;
+		SwingUtilities.invokeLater(settingDialog);
+	}
 }

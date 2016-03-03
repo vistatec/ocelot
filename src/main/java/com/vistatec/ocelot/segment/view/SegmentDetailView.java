@@ -106,19 +106,21 @@ public class SegmentDetailView extends JScrollPane {
         FontMetrics font = table.getFontMetrics(table.getFont());
         int rowHeight = font.getHeight();
         for (int row = 0; row < DetailTableModel.SEGMENTROWS; row++) {
-            SegmentTextCell segmentCell = new SegmentTextCell();
+            SegmentTextCell segmentCell = SegmentTextCell.createCell();
             segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
-
-            rowHeight = getLabelRowHeight(tableModel.getValueAt(row, 0).toString(),
-                    table.getColumnModel().getColumn(0).getWidth(), row);
-            for (int col = 1; col < 2; col++) {
-                int width = table.getColumnModel().getColumn(col).getWidth();
-                segmentCell.setVariant((SegmentVariant) tableModel.getValueAt(row, col), true);
-                // Need to set width to force text area to calculate a pref height
-                segmentCell.setSize(new Dimension(width, table.getRowHeight(row)));
-                rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
+            if (tableModel.hasSegment()) {
+                rowHeight = getLabelRowHeight(tableModel.getValueAt(row, 0).toString(),
+                        table.getColumnModel().getColumn(0).getWidth(), row);
+                for (int col = 1; col < 2; col++) {
+                    int width = table.getColumnModel().getColumn(col).getWidth();
+                    SegmentVariant sv = (SegmentVariant) tableModel.getValueAt(row, col);
+                    segmentCell.setVariant(sv, true);
+                    // Need to set width to force text area to calculate a pref height
+                    segmentCell.setSize(new Dimension(width, table.getRowHeight(row)));
+                    rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
+                }
+                table.setRowHeight(row, rowHeight);
             }
-            table.setRowHeight(row, rowHeight);
         }
         for (int row = DetailTableModel.SEGMENTROWS; row < table.getRowCount(); row++) {
             String detailLabel = tableModel.getValueAt(row, 0).toString();
@@ -148,6 +150,10 @@ public class SegmentDetailView extends JScrollPane {
             segment = seg;
         }
 
+        public boolean hasSegment() {
+            return segment != null;
+        }
+
         @Override
         public int getRowCount() {
             return segment != null ? 4 : 0;
@@ -160,7 +166,7 @@ public class SegmentDetailView extends JScrollPane {
 
         @Override
         public Class<?> getColumnClass(int col) {
-            return String.class;
+            return (col == 0) ? String.class : SegmentVariant.class;
         }
 
         @Override
@@ -172,23 +178,23 @@ public class SegmentDetailView extends JScrollPane {
         public Object getValueAt(int row, int col) {
             if (segment != null) {
                 switch(row) {
-                        case 0:
-                            return col == 0 ? rowName[row] : segment.getSource();
+                    case 0:
+                        return col == 0 ? rowName[row] : segment.getSource();
 
-                        case 1:
-                            return col == 0 ? rowName[row] : segment.getTarget();
+                    case 1:
+                        return col == 0 ? rowName[row] : segment.getTarget();
 
-                        case 2:
-                            return col == 0 ? rowName[row] : segment.getOriginalTarget();
+                    case 2:
+                        return col == 0 ? rowName[row] : segment.getOriginalTarget();
 
-                        case 3:
-                            if (col == 0) {
-                                return rowName[row];
-                            }
-                            return segment.getEditDistance();
-                        default:
-                            LOG.warn("Invalid row for SegmentDetailView '"+row+"'");
-                            break;
+                    case 3:
+                        if (col == 0) {
+                            return rowName[row];
+                        }
+                        return segment.getEditDistance();
+                    default:
+                        LOG.warn("Invalid row for SegmentDetailView '"+row+"'");
+                        break;
                 }
             }
             return null;
@@ -205,7 +211,7 @@ public class SegmentDetailView extends JScrollPane {
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object o,
             boolean isSelected, boolean hasFocus, int row, int col) {
-            SegmentTextCell renderTextPane = new SegmentTextCell();
+            SegmentTextCell renderTextPane = SegmentTextCell.createCell();
             if (tableModel.getRowCount() > row) {
                 if (col > 0) {
                     if (row > 2) {

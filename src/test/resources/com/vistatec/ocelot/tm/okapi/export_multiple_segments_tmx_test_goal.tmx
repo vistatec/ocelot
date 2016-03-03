@@ -5,8 +5,8 @@
 <tuv xml:lang="fr"><seg>target 1</seg></tuv>
 </tu>
 <tu tuid="2">
-<tuv xml:lang="en"><seg><ph x="1" type="<mrk>">&lt;mrk id=&quot;1&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph>test<ph x="2" type="<mrk>">&lt;mrk id=&quot;2&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph></seg></tuv>
-<tuv xml:lang="fr"><seg><ph x="1" type="<mrk>">&lt;mrk id=&quot;1&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph>test<ph x="2" type="<mrk>">&lt;mrk id=&quot;2&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph></seg></tuv>
+<tuv xml:lang="en"><seg><ph x="1" type="&lt;mrk&gt;">&lt;mrk id=&quot;1&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph>test<ph x="2" type="&lt;mrk&gt;">&lt;mrk id=&quot;2&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph></seg></tuv>
+<tuv xml:lang="fr"><seg><ph x="1" type="&lt;mrk&gt;">&lt;mrk id=&quot;1&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph>test<ph x="2" type="&lt;mrk&gt;">&lt;mrk id=&quot;2&quot; type=&quot;its:its&quot; translate=&quot;no&quot;</ph></seg></tuv>
 </tu>
 </body>
 </tmx>

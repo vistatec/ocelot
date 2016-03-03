@@ -32,6 +32,7 @@ public class AlternateRowsColorRenderer extends DefaultTableCellRenderer {
 				isSelected, hasFocus, row, col);
 		if (isSelected) {
 			comp.setBackground(table.getSelectionBackground());
+			comp.setForeground(table.getSelectionForeground());
 		} else {
 			if (row % 2 == 0) {
 				//if even row, assign even color background

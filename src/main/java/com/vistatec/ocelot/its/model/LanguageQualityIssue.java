@@ -46,7 +46,7 @@ public class LanguageQualityIssue extends ITSMetadata {
     private String type, comment, issuesRef;
     private double severity;
     private URL profileReference;
-    private boolean enabled;
+    private boolean enabled = true;
 
     public LanguageQualityIssue() {
         super();

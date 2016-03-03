@@ -29,14 +29,22 @@
 package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,17 +59,21 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
 import net.sf.okapi.common.annotation.XLIFFTool;
+import net.sf.okapi.common.encoder.EncoderManager;
+import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.query.MatchType;
 import net.sf.okapi.common.resource.DocumentPart;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.skeleton.GenericSkeleton;
+import net.sf.okapi.common.skeleton.ISkeletonWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
@@ -71,14 +83,17 @@ import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
  * Handles synchronization between workbench Segments and the Okapi Event list
  * retrieved from the XLIFFParser.
  */
-public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWriter {
+public class OkapiXLIFF12Writer implements XLIFFWriter {
     private Logger LOG = LoggerFactory.getLogger(OkapiXLIFF12Writer.class);
     private OkapiXLIFF12Parser parser;
+    private final UserProvenance userProvenance;
+    private final OcelotEventQueue eventQueue;
 
     public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser,
             UserProvenance userProvenance, OcelotEventQueue eventQueue) {
-        super(userProvenance, eventQueue);
         this.parser = xliffParser;
+        this.userProvenance = userProvenance;
+        this.eventQueue = eventQueue;
     }
 
     public OkapiXLIFF12Parser getParser() {
@@ -99,9 +114,17 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
             updateITSLQIAnnotations(textUnit, okapiSeg, rwRef);
 
             ITSProvenanceAnnotations provAnns = addOcelotProvenance(okapiSeg);
-            textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
-            provAnns.setData(rwRef);
-            textUnit.setAnnotation(provAnns);
+            if (provAnns.getAllAnnotations().size() > 0) {
+                textUnit.setProperty(new Property(Property.ITS_PROV, " its:provenanceRecordsRef=\"#" + rwRef + "\""));
+                provAnns.setData(rwRef);
+                textUnit.setAnnotation(provAnns);
+            }
+
+            if(textUnit.getProperty("note") != null){
+            	textUnit.setProperty(new Property("note", textUnit.getProperty("note").getValue() + "\n---\n" + "new Note"));
+            } else {
+            	textUnit.setProperty(new Property("note", "New Note"));
+            }
 
             if (okapiSeg.hasOriginalTarget()) {
                 // Make sure the Okapi Event is aware that the target has changed.
@@ -112,6 +135,43 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
             LOG.error("Event associated with Segment was not an Okapi TextUnit!");
             LOG.error("Failed to update event for segment #"+okapiSeg.getSegmentNumber());
         }
+    }
+
+    ITSProvenanceAnnotations addOcelotProvenance(OcelotSegment seg) {
+        ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
+        for (Provenance prov : seg.getProvenance()) {
+            String revPerson = prov.getRevPerson();
+            String revOrg = prov.getRevOrg();
+            String provRef = prov.getProvRef();
+            GenericAnnotation ga = new GenericAnnotation(GenericAnnotationType.PROV,
+                    GenericAnnotationType.PROV_PERSON, prov.getPerson(),
+                    GenericAnnotationType.PROV_ORG, prov.getOrg(),
+                    GenericAnnotationType.PROV_TOOL, prov.getTool(),
+                    GenericAnnotationType.PROV_REVPERSON, revPerson,
+                    GenericAnnotationType.PROV_REVORG, revOrg,
+                    GenericAnnotationType.PROV_REVTOOL, prov.getRevTool(),
+                    GenericAnnotationType.PROV_PROVREF, provRef);
+            provAnns.add(ga);
+
+            // Check for existing Ocelot annotation.
+            if (Objects.equals(prov.getRevPerson(), userProvenance.getRevPerson()) &&
+                Objects.equals(prov.getRevOrg(), userProvenance.getRevOrg()) &&
+                Objects.equals(prov.getProvRef(), userProvenance.getProvRef())) {
+                seg.setOcelotProvenance(true);
+            }
+        }
+
+        if (!seg.hasOcelotProvenance() && !userProvenance.isEmpty()) {
+            GenericAnnotation provGA = new GenericAnnotation(GenericAnnotationType.PROV,
+                    GenericAnnotationType.PROV_REVPERSON, userProvenance.getRevPerson(),
+                    GenericAnnotationType.PROV_REVORG, userProvenance.getRevOrg(),
+                    GenericAnnotationType.PROV_PROVREF, userProvenance.getProvRef());
+            provAnns.add(provGA);
+            Provenance ocelotProv = new OkapiProvenance(provGA);
+            eventQueue.post(new ProvenanceAddEvent(ocelotProv, seg, true));
+        }
+
+        return provAnns;
     }
 
     void updateITSLQIAnnotations(ITextUnit tu, OcelotSegment seg, String rwRef) {
@@ -204,8 +264,62 @@ public class OkapiXLIFF12Writer extends OkapiSegmentWriter implements XLIFFWrite
     private static final Pattern XLIFF_ELEMENT_PATTERN = Pattern.compile("(.*<xliff)([^>]*)(>.*)");
     private static final Pattern ITS_NAMESPACE_PATTERN = Pattern.compile("xmlns(:[^=]+)?=\"" + Namespaces.ITS_NS_URI + "\"");
 
-    @Override
-    protected DocumentPart preprocessDocumentPart(DocumentPart dp) {
+	@Override
+    public void updateNotes(OcelotSegment seg) {
+	    // TODO Auto-generated method stub
+    }
+
+    private void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        StringBuilder tmp = new StringBuilder();
+        ISkeletonWriter skelWriter = filter.createSkeletonWriter();
+        EncoderManager encoderManager = filter.getEncoderManager();
+        for (Event event : events) {
+            switch (event.getEventType()) {
+                case START_DOCUMENT:
+                    tmp.append(skelWriter.processStartDocument(locId, "UTF-8", null, encoderManager,
+                                    event.getStartDocument()));
+                    break;
+                case END_DOCUMENT:
+                    tmp.append(skelWriter.processEndDocument(event.getEnding()));
+                    break;
+                case START_SUBDOCUMENT:
+                    tmp.append(skelWriter.processStartSubDocument(event.getStartSubDocument()));
+                    break;
+                case END_SUBDOCUMENT:
+                    tmp.append(skelWriter.processEndSubDocument(event.getEnding()));
+                    break;
+                case TEXT_UNIT:
+                    tmp.append(skelWriter.processTextUnit(event.getTextUnit()));
+                    break;
+                case DOCUMENT_PART:
+                    tmp.append(skelWriter.processDocumentPart(
+                            preprocessDocumentPart(event.getDocumentPart())));
+                    break;
+                case START_GROUP:
+                    tmp.append(skelWriter.processStartGroup(event.getStartGroup()));
+                    break;
+                case END_GROUP:
+                    tmp.append(skelWriter.processEndGroup(event.getEnding()));
+                    break;
+                case START_SUBFILTER:
+                    tmp.append(skelWriter.processStartSubfilter(event.getStartSubfilter()));
+                    break;
+                case END_SUBFILTER:
+                    tmp.append(skelWriter.processEndSubfilter(event.getEndSubfilter()));
+                    break;
+                default:
+                    break;
+            }
+        }
+        skelWriter.close();
+        Writer outputFile = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
+        outputFile.write(tmp.toString());
+        outputFile.flush();
+        outputFile.close();
+    }
+
+    private DocumentPart preprocessDocumentPart(DocumentPart dp) {
         if (foundXliffElement) return dp;
 
         String origSkel = dp.getSkeleton().toString();

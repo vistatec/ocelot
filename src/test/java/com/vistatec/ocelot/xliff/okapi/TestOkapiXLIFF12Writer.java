@@ -29,20 +29,15 @@
 package com.vistatec.ocelot.xliff.okapi;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.custommonkey.xmlunit.XMLTestCase;
 import org.junit.*;
-import org.w3c.dom.Document;
-
-import static org.junit.Assert.*;
-
 import java.net.URI;
-import java.util.List;
-
+import java.nio.charset.StandardCharsets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
@@ -55,35 +50,29 @@ import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
-public class TestOkapiXLIFF12Writer {
+public class TestOkapiXLIFF12Writer extends XMLTestCase {
     private final OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
 
     @Test
     public void testWriteITSNamespace() throws Exception {
-        // Methodology:
-        // - Open no-its-namespace.xlf
-        // - Add an LQI
-        // - Write it out
-        // Load the file and verify that it's valid XML
-        checkValidXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"));
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"), "/gold/no-its-namespace.xlf");
     }
 
     /**
      * The actual unittest for OC-21.  This modifies a segment, saves the file,
-     * re-opens it and modifies it again, then verifies that the XML is valid.
+     * re-opens it and modifies it again, then verifies that the XML is correct.
      * (In OC-21, the ITS namespace is written out multiple times, rendering the
      * file invalid.)
      */
     @Test
     public void testWriteITSNamespaceMultipleTimes() throws Exception {
         File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
-        File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
 
         ByteSource testLoad = Resources.asByteSource(
                 TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
@@ -91,67 +80,70 @@ public class TestOkapiXLIFF12Writer {
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
-        List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
+        XLIFFDocument xliff = xliffService.parse(temp);
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(segments);
+        segmentService.setSegments(xliff);
         temp.delete();
 
         // Remove that LQI we just added
-        LanguageQualityIssue lqi = segments.get(0).getLQI().get(0);
-        eventQueue.post(new LQIRemoveEvent(lqi, segments.get(0)));
+        LanguageQualityIssue lqi = xliff.getSegments().get(0).getLQI().get(0);
+        eventQueue.post(new LQIRemoveEvent(lqi, xliff.getSegments().get(0)));
 
         // Write it back out
-        checkValidXML(saveXliffToTemp(xliffService));
+        checkAgainstGoldXML(saveXliffToTemp(xliffService, xliff), "/gold/multiple-its-namespace.xlf");
     }
 
     @Test
     public void testDontWriteRedundantITSNamespaceInXLIFFElement() throws Exception {
-        checkValidXML(roundtripXliffAndAddLQI("/test.xlf"));
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/test.xlf"), "/gold/redundant-its-namespace.xlf");
     }
 
+    @Test
+    public void testDontWriteEmptyProvenance() throws Exception {
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/test.xlf", "test_empty_provenance.xml"),
+                            "/gold/lqi_no_provenance.xlf");
+    }
+
+    private void checkAgainstGoldXML(File output, String goldResourceName) throws Exception {
+        try (Reader r = new InputStreamReader(new FileInputStream(output), StandardCharsets.UTF_8);
+                Reader goldReader = new InputStreamReader(getClass().getResourceAsStream(goldResourceName),
+                                        StandardCharsets.UTF_8)) {
+           assertXMLEqual(goldReader, r);
+       }
+       output.delete();
+    }
+    
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
+        return roundtripXliffAndAddLQI(resourceName, "test_load_provenance.xml");
+    }
+
+    private File roundtripXliffAndAddLQI(String resourceName, String provenanceConfig) throws Exception {
         // Note that we need non-null provenance to be added, so we supply
         // a dummy revPerson value
         ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+                TestProvenanceConfig.class.getResource(provenanceConfig));
         OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();
-        List<OcelotSegment> segments = xliffService.parse(new File(uri), new File(uri));
+        XLIFFDocument xliff = xliffService.parse(new File(uri));
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(segments);
+        segmentService.setSegments(xliff);
         // Trigger an update
         segmentService.addLQI(new LQIAdditionEvent(RulesTestHelpers.lqi("omission", 90),
-                segments.get(0)));
+                xliff.getSegments().get(0)));
 
-        return saveXliffToTemp(xliffService);
+        return saveXliffToTemp(xliffService, xliff);
     }
 
-    private File saveXliffToTemp(XliffService service) throws IOException {
+    private File saveXliffToTemp(XliffService service, XLIFFDocument xliff) throws IOException {
         File temp = File.createTempFile("ocelot", ".xlf");
-        service.save(temp);
+        service.save(xliff, temp);
         return temp;
-    }
-
-    private void checkValidXML(File f) throws ParserConfigurationException {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        docFactory.setNamespaceAware(true);
-        DocumentBuilder builder = docFactory.newDocumentBuilder();
-        try {
-            Document doc = builder.parse(f);
-            assertNotNull(doc);
-        }
-        catch (Exception e) {
-            fail("Failed to parse roundtripped XLIFF: " + e.getMessage());
-        }
-        finally {
-            f.delete();
-        }
     }
 }

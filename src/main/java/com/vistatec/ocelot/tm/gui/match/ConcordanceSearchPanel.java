@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
@@ -75,6 +76,9 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 	/** The table scroll panel. */
 	private JScrollPane scrollPanel;
 
+	/** Cell editor for the target. */
+	private TableCellEditor targetEditor;
+
 	/** The table model. */
 	private ConcordanceMatchTableModel tableModel;
 
@@ -100,7 +104,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		// Build and configure the search text field.
 		txtSearch = new JTextField();
 		final Dimension txtDim = new Dimension(SEARCH_TXT_WIDTH,
-				SEARCH_TXT_HEIGHT);
+		        SEARCH_TXT_HEIGHT);
 		txtSearch.setPreferredSize(txtDim);
 		txtSearch.setMinimumSize(txtDim);
 		txtSearch.setMaximumSize(txtDim);
@@ -108,7 +112,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		// Build and configure the search button.
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		ImageIcon icon = new ImageIcon(kit.createImage(Ocelot.class
-				.getResource(TmIconsConst.FIND_ICO)));
+		        .getResource(TmIconsConst.FIND_ICO)));
 		btnSearch = new JButton(icon);
 		btnSearch.addActionListener(this);
 		btnSearch.setToolTipText("Search");
@@ -132,7 +136,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		// Creates the Concordance Search label.
 		JLabel lblConcordance = new JLabel("Concordance Search");
 		lblConcordance.setFont(lblConcordance.getFont().deriveFont(Font.BOLD,
-				12));
+		        12));
 		// builds panel components.
 		buildComponents();
 		// Create the panel.
@@ -192,27 +196,30 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 		matchesTable.setModel(tableModel);
 		// Configure the action "replaceTarget" for the keystroke ALT+R
 		matchesTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-				KeyStroke.getKeyStroke('R', KeyEvent.CTRL_MASK),
-				"replaceTarget");
+		        KeyStroke.getKeyStroke(KeyEvent.VK_R, Ocelot.getPlatformKeyMask()), "replaceTarget");
 		matchesTable.getActionMap().put("replaceTarget",
-				new ReplaceTargetAction());
+		        new ReplaceTargetAction());
 		// Assign the match score renderer to the match score column, and set
 		// size
 		TableColumn scoreCol = matchesTable.getColumnModel().getColumn(
-				tableModel.getMatchScoreColumnIdx());
+		        tableModel.getMatchScoreColumnIdx());
 		scoreCol.setCellRenderer(new MatchScoreRenderer());
 		scoreCol.setPreferredWidth(50);
 		scoreCol.setMaxWidth(50);
 		// Set size to the TM column
 		TableColumn tmCol = matchesTable.getColumnModel().getColumn(
-				tableModel.getTmColumnIdx());
+		        tableModel.getTmColumnIdx());
 		tmCol.setPreferredWidth(200);
 		tmCol.setMaxWidth(200);
 		// Assign the Concordance cell renderer to the source column
 		TableColumn sourceCol = matchesTable.getColumnModel().getColumn(
-				tableModel.getSourceColumnIdx());
+		        tableModel.getSourceColumnIdx());
 		sourceColRenderer = new ConcordanceCellRenderer();
 		sourceCol.setCellRenderer(sourceColRenderer);
+		targetEditor = new ReadOnlyCellEditor();
+		TableColumn targetCol = matchesTable.getColumnModel().getColumn(
+		        tableModel.getTargetColumnIdx());
+		targetCol.setCellEditor(targetEditor);
 	}
 
 	/**
@@ -226,10 +233,11 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 
 			SegmentAtom text = new TextAtom(txtSearch.getText());
 			final List<TmMatch> results = controller
-					.getConcordanceMatches(Arrays
-							.asList(new SegmentAtom[] { text }));
+			        .getConcordanceMatches(Arrays
+			                .asList(new SegmentAtom[] { text }));
 
 			if (results != null && !results.isEmpty()) {
+				targetEditor.stopCellEditing();
 				SwingUtilities.invokeLater(new Runnable() {
 
 					@Override
@@ -238,7 +246,7 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 						scrollPanel.setViewportView(matchesTable);
 						scrollPanel.repaint();
 						matchesTable.getSelectionModel().setSelectionInterval(
-								0, 0);
+						        0, 0);
 
 					}
 				});
@@ -250,10 +258,25 @@ public class ConcordanceSearchPanel extends AbstractDetachableTmPanel {
 						infoPanel.removeAll();
 						infoPanel.add(lblNoResults);
 						infoPanel.repaint();
+						scrollPanel.setViewportView(infoPanel);
+						scrollPanel.repaint();
 					}
 				});
 			}
 
+		} else {
+			targetEditor.stopCellEditing();
+			SwingUtilities.invokeLater(new Runnable() {
+
+				@Override
+				public void run() {
+					infoPanel.removeAll();
+					infoPanel.add(lblNoResults);
+					infoPanel.repaint();
+					scrollPanel.setViewportView(infoPanel);
+					scrollPanel.repaint();
+				}
+			});
 		}
 	}
 
@@ -361,7 +384,7 @@ class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
 
 	/** The highlight painter. */
 	private DefaultHighlightPainter painter = new DefaultHighlightPainter(
-			Color.yellow);
+	        Color.yellow);
 
 	/*
 	 * (non-Javadoc)
@@ -372,10 +395,10 @@ class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
 	 */
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
-			boolean isSelected, boolean hasFocus, int row, int column) {
+	        boolean isSelected, boolean hasFocus, int row, int column) {
 
 		JTextPane textPane = (JTextPane) super.getTableCellRendererComponent(
-				table, value, isSelected, hasFocus, row, column);
+		        table, value, isSelected, hasFocus, row, column);
 		String text = textPane.getText();
 		if (text != null && searchedString != null) {
 			int strIndex = 0;
@@ -384,7 +407,7 @@ class ConcordanceCellRenderer extends SegmentVariantCellRenderer {
 				if (strIndex != -1) {
 					try {
 						textPane.getHighlighter().addHighlight(strIndex,
-								strIndex + searchedString.length(), painter);
+						        strIndex + searchedString.length(), painter);
 						strIndex += searchedString.length();
 					} catch (BadLocationException e) {
 						e.printStackTrace();

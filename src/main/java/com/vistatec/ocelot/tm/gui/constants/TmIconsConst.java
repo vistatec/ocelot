@@ -17,6 +17,9 @@ public interface TmIconsConst {
 	/** The change directory icon. */
 	String CHANGE_DIR_ICO = "change-dir.png";
 
+	/** The Settings icon. */
+	String SETTINGS_ICO = "settings.png";
+	
 	/** The add icon. */
 	String ADD_ICO = "add.png";
 

@@ -19,7 +19,7 @@ public class OkapiTmTestHelpers {
                 if (f.isDirectory()) {
                     deleteDirectory(f);
                 } else {
-                    f.delete();
+                   f.delete();
                 }
             }
             dir.delete();
