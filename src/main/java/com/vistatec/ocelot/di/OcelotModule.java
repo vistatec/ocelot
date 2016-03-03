@@ -27,6 +27,7 @@ import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.XmlConfigTransferService;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.plugins.PluginManager;
@@ -74,6 +75,7 @@ public class OcelotModule extends AbstractModule {
         TmPenalizer penalizer = null;
         TmGuiManager tmGuiManager = null;
         LQIGridController lqiGridController = null;
+        FindAndReplaceController frController = null;
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
@@ -106,6 +108,9 @@ public class OcelotModule extends AbstractModule {
                                                       platformSupport);
             eventQueue.registerListener(lqiGridController);
             bind(LQIGridController.class).toInstance(lqiGridController);
+            
+            frController = new FindAndReplaceController(eventQueue);
+            eventQueue.registerListener(frController);
         } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
@@ -117,6 +122,7 @@ public class OcelotModule extends AbstractModule {
         bind(TmPenalizer.class).toInstance(penalizer);
         bind(TmService.class).toInstance(tmService);
         bind(TmGuiManager.class).toInstance(tmGuiManager);
+        bind(FindAndReplaceController.class).toInstance(frController);
 
         bindServices(eventQueue, cfgService, docStats);
     }

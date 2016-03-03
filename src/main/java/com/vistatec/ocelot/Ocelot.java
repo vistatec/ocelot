@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -73,6 +75,7 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -81,8 +84,10 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.gui.LQIKeyEventHandler;
@@ -108,9 +113,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private static Logger LOG = Logger.getLogger(Ocelot.class);
 
 	private JMenuBar menuBar;
-	private JMenu menuFile, menuView, menuExtensions, menuHelp;
+	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs;
+	        menuSave, menuSaveAs, menuFindReplace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JMenuItem menuColumns;
@@ -127,6 +132,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private DetailView itsDetailView;
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
+	private FindAndReplaceController frController;
 
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
@@ -150,7 +156,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		this.lqiGridController = ocelotScope
 		        .getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
-
+		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
 		platformSupport.init(this);
 
@@ -274,6 +280,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			eventQueue.post(new ConfigTmRequestEvent(mainframe));
 		} else if (e.getSource() == this.menuLqiGrid) {
 			lqiGridController.displayLQIGrid();
+		} else if (e.getSource() == this.menuFindReplace) {
+			frController.displayDialog(mainframe);
 		}
 	}
 
@@ -424,6 +432,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuExit.addActionListener(this);
 		menuFile.add(menuExit);
 
+		mnuEdit = new JMenu("Edit");
+		menuFindReplace = new JMenuItem("Find and Replace");
+		menuFindReplace.addActionListener(this);
+		mnuEdit.add(menuFindReplace);
+		menuBar.add(mnuEdit);
+		
+		
 		menuView = new JMenu("View");
 		menuBar.add(menuView);
 
@@ -520,6 +535,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		mainframe.setVisible(true);
 		lqiGridController.setOcelotMainFrame(mainframe);
 		tmConcordanceSplitPane.setDividerLocation(0.4);
+		addEditingListenerToTxtFields();
 	}
 
     private Dimension getUserDefinedWindowSize() {
@@ -542,6 +558,63 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		mainframe.dispose();
 		mainframe.setVisible(false);
 		System.exit(0);
+	}
+
+	private void addEditingListenerToTxtFields() {
+
+		final FocusListener focusListener = new FocusListener() {
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				eventQueue.post(new OcelotEditingEvent(
+				        OcelotEditingEvent.Type.STOP_EDITING));
+			}
+
+			@Override
+			public void focusGained(FocusEvent e) {
+				eventQueue.post(new OcelotEditingEvent(
+				        OcelotEditingEvent.Type.START_EDITING));
+			}
+		};
+		
+		final ContainerListener containerListener = new ContainerListener() {
+
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				addListenersToComponents(e.getChild(), focusListener, this);
+			}
+		};
+
+		addListenersToComponents(mainframe.getContentPane(), focusListener, containerListener);
+
+	}
+
+	private void addListenersToComponents(Component component,
+	        FocusListener focusListener, ContainerListener containerListener ) {
+		if (component instanceof JTextComponent) {
+			component.addFocusListener(focusListener);
+		} else if (component instanceof Container) {
+			Container container = (Container) component;
+			container.addContainerListener(containerListener);
+			if (container.getComponentCount() > 0) {
+				for (int i = 0; i < container.getComponentCount(); i++) {
+					addListenersToComponents(container.getComponent(i),
+							focusListener, containerListener);
+				}
+			}
+		}
+
+	}
+
+	public boolean isEditing() {
+
+		return segmentView.getTable().getEditorComponent() != null;
 	}
 
 	void showModelessDialog(ODialogPanel panel, String title) {

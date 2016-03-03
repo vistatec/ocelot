@@ -50,6 +50,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
@@ -94,12 +95,15 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
+import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.RefreshSegmentView;
+import com.vistatec.ocelot.events.ReplaceDoneEvent;
+import com.vistatec.ocelot.events.ReplaceEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
@@ -110,6 +114,7 @@ import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
@@ -119,8 +124,11 @@ import com.vistatec.ocelot.rules.RuleListener;
 import com.vistatec.ocelot.rules.SegmentSelector;
 import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.HighlightData;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
@@ -152,6 +160,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private boolean isTargetBidi = false;
 
 	private int editingRow = -1;
+
+        private List<Integer> highlightedSegments;
+	private BaseSegmentVariant currHLVariant;
 
 	/**
 	 * Table implementation that recalculates row heights when doLayout() is
@@ -207,6 +218,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		        BorderFactory.createLineBorder(Color.BLUE, 2));
 		initializeTable();
 		eventQueue.registerListener(this);
+		this.highlightedSegments = new ArrayList<Integer>();
 	}
 
 	@Subscribe
@@ -215,6 +227,176 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		isTargetBidi = LocaleId.isBidirectional(e.getDocument().getTgtLocale());
 		xliff = e.getDocument();
 	}
+
+	@Subscribe
+	public void highlightStrings(HighlightEvent e) {
+
+		clearHighlightedSegments();
+		List<FindResult> highlightResults = e.getHighlightDataList();
+		if (highlightResults != null) {
+			FindResult hr = null;
+			int currSegmentIdx = -1;
+			for (int i = 0; i < highlightResults.size(); i++) {
+				hr = highlightResults.get(i);
+				if (hr.getSegmentIndex() < segmentTableModel.getRowCount()) {
+
+					OcelotSegment segment = segmentTableModel.getSegment(hr
+							.getSegmentIndex());
+					BaseSegmentVariant variant = null;
+					if (hr.isTargetScope()) {
+						variant = (BaseSegmentVariant) segment.getTarget();
+					} else {
+						variant = (BaseSegmentVariant) segment.getSource();
+					}
+					if (variant != null) {
+						HighlightData hlData = new HighlightData(
+								hr.getAtomIndex(), new int[] {
+										hr.getStringStartIndex(),
+										hr.getStringEndIndex() });
+						variant.addHighlightData(hlData);
+						if (i == e.getCurrResultIndex()) {
+							variant.setCurrentHighlightedIndex(variant
+									.getHighlightDataList().indexOf(hlData));
+							currHLVariant = variant;
+							currSegmentIdx = hr.getSegmentIndex();
+						}
+						highlightedSegments.add(hr.getSegmentIndex());
+						updateTableRow(hr.getSegmentIndex());
+					}
+				}
+			}
+			sourceTargetTable.scrollRectToVisible(sourceTargetTable
+					.getCellRect(currSegmentIdx, 0, false));
+		}
+
+	}
+
+	
+	private void clearHighlightedSegments() {
+
+		if (!highlightedSegments.isEmpty()) {
+			OcelotSegment hlSegment = null;
+			for (int segIndex : highlightedSegments) {
+				if (segIndex < segmentTableModel.getRowCount()) {
+					hlSegment = segmentTableModel.getSegment(segIndex);
+					((BaseSegmentVariant) hlSegment.getSource())
+							.clearHighlightedText();
+					if (hlSegment.getTarget() != null) {
+						((BaseSegmentVariant) hlSegment.getTarget())
+								.clearHighlightedText();
+					}
+					updateTableRow(segIndex);
+				}
+			}
+			highlightedSegments.clear();
+		}
+	}
+
+	@Subscribe
+	public void replace(ReplaceEvent e) {
+
+		if (e.getAction() == ReplaceEvent.REPLACE && currHLVariant != null) {
+			replaceTarget(e.getNewString(), e.getSegmentIndex());
+		} else if (e.getAction() == ReplaceEvent.REPLACE_ALL) {
+
+			OcelotSegment segment = null;
+			int replacedOccNum = 0;
+			for (int segIdx = 0; segIdx < segmentTableModel.getRowCount(); segIdx++) {
+
+				segment = segmentTableModel.getSegment(segIdx);
+				replacedOccNum += replaceAllTarget(
+						(BaseSegmentVariant) segment.getTarget(),
+						e.getNewString(), segIdx);
+			}
+			eventQueue.post(new ReplaceDoneEvent(replacedOccNum));
+		}
+	}
+
+	private int replaceAllTarget(BaseSegmentVariant target, String newString,
+			int segIdx) {
+		
+		SegmentVariant updatedTarget = target.createCopy();
+		int replacedOccNum = 0;
+		if(target.getHighlightDataList() != null){
+			for(HighlightData hd: target.getHighlightDataList()){
+				int startOffset = 0;
+				for (int i = 0; i < hd.getAtomIndex(); i++) {
+					startOffset += target.getAtoms().get(i).getLength();
+				}
+				startOffset += hd.getHighlightIndices()[0];
+				int oldStringLength = hd.getHighlightIndices()[1]
+						- hd.getHighlightIndices()[0];
+				updatedTarget.modifyChars(startOffset, oldStringLength,
+						newString);
+				replacedOccNum++;
+			}
+			target.clearHighlightedText();
+			eventQueue.post(new SegmentTargetUpdateEvent(xliff,
+					segmentTableModel.getSegment(segIdx),
+					updatedTarget));
+			updateTableRow(segIdx);
+			
+		}
+		return replacedOccNum;
+	}
+
+	private void replaceTarget(String newString, int segmentIndex) {
+		
+		SegmentVariant updatedTarget = currHLVariant.createCopy();
+		if (currHLVariant.getHighlightDataList() != null
+				&& currHLVariant.getCurrentHighlightedIndex() > -1
+				&& currHLVariant.getCurrentHighlightedIndex() < currHLVariant
+						.getHighlightDataList().size()) {
+
+			if(updatedTarget instanceof FragmentVariant){
+				replaceTargetTextXliff20((FragmentVariant)updatedTarget, newString);
+			} else {
+				replaceTargetTextXliff12((BaseSegmentVariant)updatedTarget, newString);
+			}
+			eventQueue.post(new SegmentTargetUpdateEvent(xliff,
+					segmentTableModel.getSegment(segmentIndex),
+					updatedTarget));
+			updateTableRow(segmentIndex);
+			
+		}
+	}
+
+	private void replaceTargetTextXliff12(BaseSegmentVariant target, String replaceString) {
+
+		HighlightData hd = currHLVariant.getHighlightDataList().get(
+				currHLVariant.getCurrentHighlightedIndex());
+		int startOffset = 0;
+		for (int i = 0; i < hd.getAtomIndex(); i++) {
+			startOffset += currHLVariant.getAtoms().get(i).getLength();
+		}
+		startOffset += hd.getHighlightIndices()[0];
+		int oldStringLength = hd.getHighlightIndices()[1]
+				- hd.getHighlightIndices()[0];
+		target.modifyChars(startOffset, oldStringLength,
+				replaceString);
+		currHLVariant.replaced(replaceString);
+		target.setHighlightDataList(currHLVariant.getHighlightDataList());
+	}
+
+	private void replaceTargetTextXliff20(FragmentVariant target, String replaceString ) {
+		
+		HighlightData hd = currHLVariant.getHighlightDataList().get(
+				currHLVariant.getCurrentHighlightedIndex());
+		
+		if(target.getAtoms() != null && hd.getAtomIndex()<target.getAtoms().size()){
+			if(target.getAtoms().get(hd.getAtomIndex()) instanceof TextAtom ) {
+				TextAtom txtAtom = (TextAtom)target.getAtoms().get(hd.getAtomIndex());
+				String newText = txtAtom.getData().substring(0, hd.getHighlightIndices()[0]) + 
+						replaceString + txtAtom.getData().substring(hd.getHighlightIndices()[1]);
+				TextAtom newTextAtom  = new TextAtom(newText);
+				target.getAtoms().set(hd.getAtomIndex(), newTextAtom);
+			}
+		}
+		target.setHighlightDataList(currHLVariant.getHighlightDataList());
+		target.setCurrentHighlightedIndex(currHLVariant.getCurrentHighlightedIndex());
+		target.replaced(replaceString);
+	}
+	
 
 	public final void initializeTable() {
 		sourceTargetTable = new SegmentViewTable(segmentTableModel);

@@ -28,12 +28,6 @@
  */
 package com.vistatec.ocelot.segment.model.okapi;
 
-import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.CodeAtom;
-import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.TextAtom;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +41,14 @@ import net.sf.okapi.lib.xliff2.renderer.XLIFFFragmentRenderer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.HighlightData;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
+import com.vistatec.ocelot.segment.model.TextAtom.HighlightBoundaries;
 
 /**
  * XLIFF 2.0 segment variant, implemented using the Okapi XLIFF 2.0 library Fragment.
@@ -91,7 +93,8 @@ public class FragmentVariant extends BaseSegmentVariant {
         for (IFragmentObject fragPart : fragmentRenderer) {
             Object textObject = fragPart.getObject();
             if (textObject instanceof String) {
-                parsedSegmentAtoms.add(new TextAtom(fragPart.render()));
+				TextAtom txtAtom = new TextAtom(fragPart.render());
+				parsedSegmentAtoms.add(txtAtom);
 
             } else if (textObject instanceof Tag) {
                 Tag tag = (Tag) textObject;
@@ -107,6 +110,9 @@ public class FragmentVariant extends BaseSegmentVariant {
                 System.exit(1);
             }
         }
+		if (highlightDataList != null ){
+			setAtomsHighlightedText();
+		}
         return parsedSegmentAtoms;
     }
 
@@ -227,5 +233,138 @@ public class FragmentVariant extends BaseSegmentVariant {
         FragmentVariant copy = (FragmentVariant) variant;
         this.segmentAtoms = copy.copyAtoms();
     }
+
+	@Override
+	public void addHighlightData(HighlightData highlightData) {
+		super.addHighlightData(highlightData);
+		if (segmentAtoms != null
+				&& highlightData.getAtomIndex() < segmentAtoms.size()) {
+			if (segmentAtoms.get(highlightData.getAtomIndex()) instanceof TextAtom) {
+				TextAtom txtatom = (TextAtom) segmentAtoms.get(highlightData
+						.getAtomIndex());
+				txtatom.addHighlightBoundary(new HighlightBoundaries(
+						highlightData.getHighlightIndices()[0], highlightData
+								.getHighlightIndices()[1]));
+			}
+		}
+	}
+
+	@Override
+	public void setHighlightDataList(List<HighlightData> highlightDataList) {
+		super.setHighlightDataList(highlightDataList);
+		clearAtomsHighlightedText();
+		setAtomsHighlightedText();
+	}
+
+	public void setAtomsHighlightedText() {
+		if (segmentAtoms != null && highlightDataList != null) {
+			HighlightData hd = null;
+			TextAtom txtAtom = null;
+			for(int i = 0; i<highlightDataList.size(); i++){
+				hd = highlightDataList.get(i);
+				if (hd.getAtomIndex() < segmentAtoms.size()
+						&& segmentAtoms.get(hd.getAtomIndex()) instanceof TextAtom) {
+					txtAtom = (TextAtom) segmentAtoms.get(hd.getAtomIndex());
+					HighlightBoundaries hb  = new HighlightBoundaries(hd
+							.getHighlightIndices()[0], hd
+							.getHighlightIndices()[1]);
+					txtAtom.addHighlightBoundary(hb);
+					if(currentHighlightedIndex == i){
+						txtAtom.setCurrentHLBoundaryIdx(txtAtom.getHighlightBoundaries().indexOf(hb));
+					}
+				}
+			}
+		}
+	}
     
+	@Override
+	public void removeHighlightData(int atomIndex, int startIndex, int endIndex) {
+		super.removeHighlightData(atomIndex, startIndex, endIndex);
+		if(segmentAtoms != null && atomIndex < segmentAtoms.size()){
+			if(segmentAtoms.get(atomIndex) instanceof TextAtom){
+				TextAtom txtAtom = (TextAtom) segmentAtoms.get(atomIndex);
+				txtAtom.removeHighlighBoundary(startIndex, endIndex);
+			}
+		}
+	}
+
+	private void clearAtomsHighlightedText() {
+		if (segmentAtoms != null) {
+			for (SegmentAtom a : segmentAtoms) {
+				if (a instanceof TextAtom) {
+					((TextAtom) a).clearHighlights();
+				}
+			}
+		}
+	}
+
+	@Override
+	public void clearHighlightedText() {
+		super.clearHighlightedText();
+		clearAtomsHighlightedText();
+	}
+	
+	@Override
+	public void setCurrentHighlightedIndex(int currentHighlightedIndex) {
+		super.setCurrentHighlightedIndex(currentHighlightedIndex);
+		if(segmentAtoms != null){
+			if(currentHighlightedIndex > -1 ){
+				HighlightData hd = highlightDataList.get(currentHighlightedIndex);
+				if(hd.getAtomIndex() < segmentAtoms.size() && segmentAtoms.get(hd.getAtomIndex()) instanceof TextAtom){
+					TextAtom txtAtom = (TextAtom)segmentAtoms.get(hd.getAtomIndex());
+					if(txtAtom.getHighlightBoundaries() != null){
+						HighlightBoundaries hb = null;
+						for(int i = 0; i<txtAtom.getHighlightBoundaries().size(); i++){
+							hb = txtAtom.getHighlightBoundaries().get(i);
+							if(hb.getFirstIndex() == hd.getHighlightIndices()[0] && hb.getLastIndex() == hd.getHighlightIndices()[1]){
+								txtAtom.setCurrentHLBoundaryIdx(i);
+								break;
+							}
+						}
+					}
+				}
+			} else {
+				for(SegmentAtom atom: segmentAtoms){
+					if(atom instanceof TextAtom) {
+						((TextAtom)atom).setCurrentHLBoundaryIdx(-1);
+					}
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void replaced(String newString) {
+		if (highlightDataList != null) {
+			HighlightData hd = highlightDataList.get(currentHighlightedIndex);
+			if (segmentAtoms != null && hd.getAtomIndex() < segmentAtoms.size()
+					&& segmentAtoms.get(hd.getAtomIndex()) instanceof TextAtom) {
+				TextAtom currAtom = (TextAtom) segmentAtoms.get(hd
+						.getAtomIndex());
+				if (currAtom.getHighlightBoundaries() != null) {
+					HighlightBoundaries currHb = currAtom
+							.getHighlightBoundaries().get(
+									currAtom.getCurrentHLBoundaryIdx());
+					if (currAtom.getCurrentHLBoundaryIdx() < currAtom
+							.getHighlightBoundaries().size() - 1) {
+						int currHbIndex = currAtom.getCurrentHLBoundaryIdx() + 1;
+						int delta = newString.length()
+								- (currHb.getLastIndex() - currHb
+										.getFirstIndex());
+						HighlightBoundaries nextHb = null;
+						while (currHbIndex < currAtom.getHighlightBoundaries()
+								.size()) {
+							nextHb = currAtom.getHighlightBoundaries().get(
+									currHbIndex++);
+							nextHb.setFirstIndex(nextHb.getFirstIndex() + delta);
+							nextHb.setLastIndex(nextHb.getLastIndex() + delta);
+						}
+					}
+					currAtom.getHighlightBoundaries().remove(currHb);
+					currAtom.setCurrentHLBoundaryIdx(-1);
+				}
+			}
+		}
+		super.replaced(newString);
+	}
 }
