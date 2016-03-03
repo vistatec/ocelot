@@ -7,7 +7,7 @@ tags
 .classpath
 .project
 .settings
-.metadata
+.metadata/**
 /nbproject/
 nb-build.xml
 manifest.mf

@@ -12,6 +12,8 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.TerminologyMetaData;
+import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
 import com.vistatec.ocelot.its.stats.model.ITSStats;
 import com.vistatec.ocelot.its.stats.model.LanguageQualityIssueStats;
@@ -57,10 +59,18 @@ public class ITSDocStatsService implements OcelotEventQueueListener {
             for (Provenance prov : seg.getProvenance()) {
                 itsDocStats.addProvenanceStats(prov);
             }
+            for(TextAnalysisMetaData ta: seg.getTextAnalysis()){
+            	itsDocStats.addTextAnalysisStats(ta);
+            }
+            for(TerminologyMetaData term: seg.getTerms()){
+            	itsDocStats.addTerminologyStats(term);
+            }
         }
         eventQueue.post(new ItsDocStatsChangedEvent());
     }
+    
 
+ 
     @Subscribe
     public void addProvenanceStats(ItsDocStatsAddedProvEvent e) {
         Provenance prov = e.getProv();

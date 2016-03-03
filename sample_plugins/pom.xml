@@ -12,6 +12,7 @@
   <modules>
     <module>ITSPlugin</module>
     <module>SegmentPlugin</module>
+    <module></module>
   </modules>
   
 </project>

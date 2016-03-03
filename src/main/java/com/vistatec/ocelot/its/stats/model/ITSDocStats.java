@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.TerminologyMetaData;
+import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.its.stats.model.ProvenanceStats.Type;
 
 /**
@@ -65,11 +67,44 @@ public class ITSDocStats {
         calcProvenanceStats(Type.revOrg, prov.getRevOrg());
         calcProvenanceStats(Type.revTool, prov.getRevTool());
     }
+    
 
     private void calcProvenanceStats(ProvenanceStats.Type type, String value) {
         if (value != null) {
             updateStats(new ProvenanceStats(type, value));
         }
+    }
+    
+    
+    public void addTextAnalysisStats(TextAnalysisMetaData ta){
+    	
+    	calcTaStats(TextAnalysisStats.Type.annotatorsRef, ta.getTaAnnotatorsRef());
+    	calcTaStats(TextAnalysisStats.Type.taClassRef, ta.getTaClassRef());
+    	if(ta.getTaConfidence() != null){
+    		calcTaStats(TextAnalysisStats.Type.taConfidence, String.valueOf(ta.getTaConfidence()));
+    	}
+    	calcTaStats(TextAnalysisStats.Type.taIdentRef, ta.getTaIdentRef());
+    }
+    
+    private void calcTaStats(TextAnalysisStats.Type type, String value){
+    	
+    	if(value != null){
+    		updateStats(new TextAnalysisStats(type, value));
+    	}
+    }
+    
+    public void addTerminologyStats(TerminologyMetaData term){
+    	
+    	calcTermStats(TerminologyStats.Type.term, term.getTerm());
+    	calcTermStats(TerminologyStats.Type.annotatorsRef, term.getAnnotatorsRef());
+    	calcTermStats(TerminologyStats.Type.domain, term.getSense());
+    }
+    
+    private void calcTermStats(TerminologyStats.Type type, String value){
+    	
+    	if(value != null){
+    		updateStats(new TerminologyStats(type, value));
+    	}
     }
 
     public void updateStats(ITSStats stats) {

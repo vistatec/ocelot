@@ -86,6 +86,7 @@ import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
@@ -104,7 +105,7 @@ import com.vistatec.ocelot.ui.OcelotToolBar;
  * 
  */
 public class Ocelot extends JPanel implements Runnable, ActionListener,
-        KeyEventDispatcher, ItemListener {
+        KeyEventDispatcher, ItemListener, OcelotEventQueueListener {
 	/** Default serial ID */
 	private static final long serialVersionUID = 1L;
 	private static String APPNAME = "Ocelot";
@@ -148,6 +149,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		super(new BorderLayout());
 		this.ocelotScope = ocelotScope;
 		this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
+		eventQueue.registerListener(this);
 		this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
 		this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
 		this.eventQueue.registerListener(tmGuiManager);
@@ -565,13 +567,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			@Override
 			public void focusLost(FocusEvent e) {
 				eventQueue.post(new OcelotEditingEvent(
-				        OcelotEditingEvent.STOP_EDITING));
+				        OcelotEditingEvent.Type.STOP_EDITING));
 			}
 
 			@Override
 			public void focusGained(FocusEvent e) {
 				eventQueue.post(new OcelotEditingEvent(
-				        OcelotEditingEvent.START_EDITING));
+				        OcelotEditingEvent.Type.START_EDITING));
 			}
 		};
 		

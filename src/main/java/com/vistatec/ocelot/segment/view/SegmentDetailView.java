@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.segment.view;
 
 import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 import java.awt.Component;
@@ -107,7 +106,7 @@ public class SegmentDetailView extends JScrollPane {
         FontMetrics font = table.getFontMetrics(table.getFont());
         int rowHeight = font.getHeight();
         for (int row = 0; row < DetailTableModel.SEGMENTROWS; row++) {
-            SegmentTextCell segmentCell = new SegmentTextCell();
+            SegmentTextCell segmentCell = SegmentTextCell.createCell();
             segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
             if (tableModel.hasSegment()) {
                 rowHeight = getLabelRowHeight(tableModel.getValueAt(row, 0).toString(),
@@ -212,7 +211,7 @@ public class SegmentDetailView extends JScrollPane {
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object o,
             boolean isSelected, boolean hasFocus, int row, int col) {
-            SegmentTextCell renderTextPane = new SegmentTextCell();
+            SegmentTextCell renderTextPane = SegmentTextCell.createCell();
             if (tableModel.getRowCount() > row) {
                 if (col > 0) {
                     if (row > 2) {

@@ -39,7 +39,17 @@ public enum DataCategoryField {
     PROV_REVPERSON("revPerson", Matchers.RegexMatcher.class),
     PROV_REVTOOL("revTool", Matchers.RegexMatcher.class),
     PROV_PROVREF("provRef", Matchers.RegexMatcher.class),
-    MT_CONFIDENCE("mtConfidence", Matchers.NumericMatcher.class);
+    MT_CONFIDENCE("mtConfidence", Matchers.NumericMatcher.class),
+    TA_IDENT_REF("taIdentRef", Matchers.RegexMatcher.class),
+    TA_CLASS_REF("taClassRef", Matchers.RegexMatcher.class),
+    TA_CONFIDENCE("taConfidence", Matchers.RegexMatcher.class),
+    TA_ENTITY("taEntity", Matchers.RegexMatcher.class),
+    TERM("term", Matchers.RegexMatcher.class),
+    TERM_SOURCE("termSource", Matchers.RegexMatcher.class),
+    TERM_TARGET("termTarget", Matchers.RegexMatcher.class),
+    TERM_SENSE("termSense", Matchers.RegexMatcher.class),
+    TERM_CONFIDENCE("termConfidence", Matchers.RegexMatcher.class),
+    ANNOTATORS_REF("annotatorsRef", Matchers.RegexMatcher.class);
 	
 	private String name;
 	private Class<? extends Matcher> clazz;

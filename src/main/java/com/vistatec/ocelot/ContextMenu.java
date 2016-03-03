@@ -28,11 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.xliff.XLIFFDocument;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -40,9 +35,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
+import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * ITS Metadata context menu.
@@ -52,8 +54,9 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
      * Default serial ID
      */
     private static final long serialVersionUID = 2L;
-    private JMenuItem addLQI, removeLQI, resetTarget;
+	private JMenuItem addLQI, removeLQI, resetTarget, viewEnrichments;
     private OcelotSegment selectedSeg;
+	private SegmentVariant variant;
     private LanguageQualityIssue selectedLQI;
     private XLIFFDocument xliff;
     private OcelotEventQueue eventQueue;
@@ -62,6 +65,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         this.xliff = xliff;
         this.selectedSeg = selectedSeg;
         this.eventQueue = eventQueue;
+		// this.variant = variant;
 
         addLQI = new JMenuItem("Add Issue");
         addLQI.addActionListener(this);
@@ -84,16 +88,43 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
         add(removeLQI);
     }
 
+	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,
+			OcelotEventQueue eventQueue) {
+
+		this(xliff, selectedSeg, eventQueue);
+		this.variant = variant;
+		createEnrichmentMenuItem();
+	}
+
+	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,
+			LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue) {
+		this(xliff, selectedSeg, selectedLQI, eventQueue);
+		this.variant = variant;
+		createEnrichmentMenuItem();
+	}
+	
+	private void createEnrichmentMenuItem(){
+		
+		if (variant != null && variant instanceof BaseSegmentVariant
+		        && ((BaseSegmentVariant) variant).isEnriched()) {
+			viewEnrichments = new JMenuItem("View Enrichments");
+			viewEnrichments.addActionListener(this);
+			add(viewEnrichments);
+		}
+	}
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addLQI) {
             NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView(eventQueue);
             addLQIView.setSegment(selectedSeg);
             SwingUtilities.invokeLater(addLQIView);
-        } else if (e.getSource() == removeLQI) {
+		} else if (e.getSource().equals(removeLQI)) {
             eventQueue.post(new LQIRemoveEvent(selectedLQI, selectedSeg));
-        } else if (e.getSource() == resetTarget) {
+		} else if (e.getSource().equals(resetTarget)) {
             eventQueue.post(new SegmentTargetResetEvent(xliff, selectedSeg));
+		} else if(e.getSource().equals(viewEnrichments) ){
+			eventQueue.post(new EnrichmentViewEvent((BaseSegmentVariant)variant));
         }
     }
 }

@@ -26,10 +26,10 @@
  *
  * Also, see the full LGPL text here: <http://www.gnu.org/copyleft/lesser.html>
  */
-package com.vistatec.ocelot.segment.model.okapi;
+package com.vistatec.ocelot.xliff.okapi;
 
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-import com.vistatec.ocelot.xliff.okapi.OkapiSegmentWriter;
+import com.vistatec.ocelot.xliff.okapi.OkapiXLIFF12Writer;
 
 import net.sf.okapi.common.annotation.GenericAnnotation;
 import net.sf.okapi.common.annotation.GenericAnnotationType;
@@ -49,7 +49,6 @@ import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
-import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 
 public class TestOkapiSegmentWriter {
     private final Mockery mockery = new Mockery();
@@ -68,7 +67,7 @@ public class TestOkapiSegmentWriter {
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_PROVREF, "X")));
         // pass empty provenance properties
-        TestSegmentWriter segmentWriter = new TestSegmentWriter(
+        OkapiXLIFF12Writer segmentWriter = new OkapiXLIFF12Writer(null,
                 new UserProvenance(null, null, null), mockEventQueue);
         // OC-16: make sure this doesn't crash
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
@@ -91,7 +90,7 @@ public class TestOkapiSegmentWriter {
                 GenericAnnotationType.PROV_REVORG, "S",
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_PROVREF, "X")));
-        TestSegmentWriter segmentWriter = new TestSegmentWriter(
+        OkapiXLIFF12Writer segmentWriter = new OkapiXLIFF12Writer(null,
                 new UserProvenance("T", "S", "X"), mockEventQueue);
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(1, provAnns.getAnnotations("its-prov").size());
@@ -113,7 +112,7 @@ public class TestOkapiSegmentWriter {
             oneOf(mockEventQueue).post(with(any(ProvenanceAddEvent.class)));
         }});
 
-        TestSegmentWriter segmentWriter = new TestSegmentWriter(
+        OkapiXLIFF12Writer segmentWriter = new OkapiXLIFF12Writer(null,
                 new UserProvenance("A", "B", "C"), mockEventQueue);
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(2, provAnns.getAnnotations("its-prov").size());
@@ -127,14 +126,5 @@ public class TestOkapiSegmentWriter {
         assertEquals("A", userAnno.getString(GenericAnnotationType.PROV_REVPERSON));
         assertEquals("B", userAnno.getString(GenericAnnotationType.PROV_REVORG));
         assertEquals("C", userAnno.getString(GenericAnnotationType.PROV_PROVREF));
-    }
-
-    class TestSegmentWriter extends OkapiSegmentWriter {
-        TestSegmentWriter(UserProvenance userProvenance, OcelotEventQueue eventQueue) {
-            super(userProvenance, eventQueue);
-        }
-        @Override
-        public void updateSegment(OcelotSegment seg) {
-        }
     }
 }
