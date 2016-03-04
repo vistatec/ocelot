@@ -4,16 +4,18 @@ import com.vistatec.ocelot.events.api.OcelotEvent;
 
 public class OcelotEditingEvent implements OcelotEvent {
 
-	public static final int START_EDITING = 0;
-	public static final int STOP_EDITING = 1;
+    public enum Type {
+        START_EDITING,
+        STOP_EDITING;
+    }
 	
-	private int eventType;
+	private Type eventType;
 	
-	public OcelotEditingEvent(int eventType) {
+	public OcelotEditingEvent(Type eventType) {
 		this.eventType = eventType;
     }
 	
-	public int getEventType(){
+	public Type getEventType(){
 		return eventType;
 	}
 }

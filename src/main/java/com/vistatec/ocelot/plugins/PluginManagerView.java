@@ -157,6 +157,8 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         for (Plugin plugin : plugins) {
             addPluginRow(gridy++, plugin);
         }
+        
+        //TODO
     }
     
     void addPluginRow(int gridy, Plugin plugin) {

@@ -9,7 +9,7 @@ import org.junit.*;
 import com.vistatec.ocelot.rules.RuleConfiguration.FilterMode;
 import com.vistatec.ocelot.rules.RuleConfiguration.StateQualifierMode;
 
-import static com.vistatec.ocelot.rules.RulesTestHelpers.*;
+import static com.vistatec.ocelot.rules.RulesTestHelpers.lqi;
 import static org.junit.Assert.*;
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 

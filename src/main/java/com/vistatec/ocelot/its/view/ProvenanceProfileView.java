@@ -60,7 +60,7 @@ import com.vistatec.ocelot.config.ConfigService;
  */
 public class ProvenanceProfileView extends ODialogPanel implements ActionListener, OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
-    private final Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
     private final JTextField inputRevPerson, inputRevOrg, inputExtRef;
     private final JButton save;

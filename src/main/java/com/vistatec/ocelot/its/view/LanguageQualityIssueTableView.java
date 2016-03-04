@@ -46,6 +46,7 @@ import com.vistatec.ocelot.config.LqiConfigService;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.ITSMetadata;
@@ -53,6 +54,7 @@ import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * Table View for displaying segment ITS metadata.
@@ -60,6 +62,7 @@ import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
 public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
+    private XLIFFDocument xliff;
     private OcelotEventQueue eventQueue;
     
     private LqiConfigService lqiService;
@@ -88,6 +91,11 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
     @Subscribe
     public void handleLQIUpdate(LQIModificationEvent e) {
         getTableModel().fireTableDataChanged();
+    }
+
+    @Subscribe
+    public void openFile(OpenFileEvent e) {
+        this.xliff = e.getDocument();
     }
 
     public void selectedLQI() {
@@ -197,10 +205,10 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
             	LQIGrid lqiGrid;
                 try {
 	                lqiGrid = lqiService.readLQIConfig();
-	                ContextMenu menu = selectedLQI == null ?
-	                		new ContextMenu(getSelectedSegment(), eventQueue, lqiGrid) :
-	                			new ContextMenu(getSelectedSegment(), selectedLQI, eventQueue, lqiGrid);
-	                		menu.show(e.getComponent(), e.getX(), e.getY());
+                ContextMenu menu = selectedLQI == null ?
+                        new ContextMenu(xliff, getSelectedSegment(), eventQueue, lqiGrid) :
+                        new ContextMenu(xliff, getSelectedSegment(), selectedLQI, eventQueue, lqiGrid);
+                menu.show(e.getComponent(), e.getX(), e.getY());
                 } catch (TransferException e1) {
 	                // TODO Auto-generated catch block
 	                e1.printStackTrace();

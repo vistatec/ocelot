@@ -55,10 +55,10 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -86,6 +86,8 @@ import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
@@ -94,16 +96,16 @@ import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
-import com.vistatec.ocelot.tm.gui.TmGuiManager;
 
 /**
  * Main UI Thread class. Handles menu and file operations
  * 
  */
 public class Ocelot extends JPanel implements Runnable, ActionListener,
-        KeyEventDispatcher, ItemListener {
+        KeyEventDispatcher, ItemListener, OcelotEventQueueListener {
 	/** Default serial ID */
 	private static final long serialVersionUID = 1L;
 	private static String APPNAME = "Ocelot";
@@ -111,9 +113,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private static Logger LOG = Logger.getLogger(Ocelot.class);
 
 	private JMenuBar menuBar;
-	private JMenu menuFile, menuView, menuExtensions, menuHelp;
+	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs;
+	        menuSave, menuSaveAs, menuFindReplace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JMenuItem menuColumns;
@@ -130,8 +132,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private DetailView itsDetailView;
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
+	private FindAndReplaceController frController;
 
-	private final String platformOS;
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
 
@@ -140,19 +142,24 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private final OcelotApp ocelotApp;
 	private final LQIGridController lqiGridController;
 
+	private PlatformSupport platformSupport;
+
 	public Ocelot(Injector ocelotScope) throws IOException,
 	        InstantiationException, IllegalAccessException {
 		super(new BorderLayout());
 		this.ocelotScope = ocelotScope;
 		this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
+		eventQueue.registerListener(this);
 		this.ocelotApp = ocelotScope.getInstance(OcelotApp.class);
 		this.tmGuiManager = ocelotScope.getInstance(TmGuiManager.class);
 		this.eventQueue.registerListener(tmGuiManager);
 		this.lqiGridController = ocelotScope
 		        .getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
+		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
+		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
+		platformSupport.init(this);
 
-		platformOS = System.getProperty("os.name");
 		useNativeUI = Boolean.valueOf(System.getProperty("ocelot.nativeUI",
 		        "false"));
 		optionPaneBackgroundColor = (Color) UIManager
@@ -273,6 +280,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			eventQueue.post(new ConfigTmRequestEvent(mainframe));
 		} else if (e.getSource() == this.menuLqiGrid) {
 			lqiGridController.displayLQIGrid();
+		} else if (e.getSource() == this.menuFindReplace) {
+			frController.displayDialog(mainframe);
 		}
 	}
 
@@ -280,13 +289,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
 		fd.setFilenameFilter(new XliffFileFilter());
 		fd.setVisible(true);
-		File detectVersion = getSelectedFile(fd);
 		File sourceFile = getSelectedFile(fd);
 		fd.dispose();
 
 		if (sourceFile != null) {
 			try {
-				ocelotApp.openFile(sourceFile, detectVersion);
+				ocelotApp.openFile(sourceFile);
 				this.setMainTitle(sourceFile.getName());
 				segmentView.reloadTable();
 
@@ -352,14 +360,17 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        JOptionPane.ERROR_MESSAGE);
 	}
 
-	private void showAbout() {
+	/**
+	 * Show the about dialog.
+	 */
+	public void showAbout() {
 		showModelessDialog(new AboutDialog(icon), "About Ocelot");
 	}
 
 	/**
 	 * Exit handler. This should prompt to save unsaved data.
 	 */
-	private void handleApplicationExit() {
+	public void handleApplicationExit() {
 		boolean canQuit = true;
 		if (ocelotApp.isFileDirty()) {
 			int rv = JOptionPane
@@ -377,19 +388,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		}
 		if (canQuit) {
 			quitOcelot();
-		}
-	}
-
-	/**
-	 * Set menu mnemonics for non-Mac platforms. (Mnemonics violate the Mac
-	 * interface guidelines.)
-	 */
-	private void setMenuMnemonics() {
-		if (!isMac()) {
-			menuFile.setMnemonic(KeyEvent.VK_F);
-			menuView.setMnemonic(KeyEvent.VK_V);
-			menuExtensions.setMnemonic(KeyEvent.VK_E);
-			menuHelp.setMnemonic(KeyEvent.VK_H);
 		}
 	}
 
@@ -434,6 +432,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuExit.addActionListener(this);
 		menuFile.add(menuExit);
 
+		mnuEdit = new JMenu("Edit");
+		menuFindReplace = new JMenuItem("Find and Replace");
+		menuFindReplace.addActionListener(this);
+		mnuEdit.add(menuFindReplace);
+		menuBar.add(mnuEdit);
+		
+		
 		menuView = new JMenu("View");
 		menuBar.add(menuView);
 
@@ -483,9 +488,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuAbout.addActionListener(this);
 		menuHelp.add(menuAbout);
 
-		setMenuMnemonics();
-		setMacSpecific();
-
+		platformSupport.setMenuMnemonics(menuFile, menuView, menuExtensions, menuHelp);
 		mainframe.setJMenuBar(menuBar);
 	}
 
@@ -496,11 +499,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private boolean isPlatformKeyDown(KeyEvent ke) {
 		// For reasons that are mysterious to me, the value of
 		// platformKeyMask isn't the same as the modifiers to a KeyEvent.
-		return isMac() ? ke.isMetaDown() : ke.isControlDown();
-	}
-
-	boolean isMac() {
-		return (platformOS.startsWith("Mac"));
+		return platformSupport.isPlatformKeyDown(ke);
 	}
 
 	@Override
@@ -568,13 +567,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			@Override
 			public void focusLost(FocusEvent e) {
 				eventQueue.post(new OcelotEditingEvent(
-				        OcelotEditingEvent.STOP_EDITING));
+				        OcelotEditingEvent.Type.STOP_EDITING));
 			}
 
 			@Override
 			public void focusGained(FocusEvent e) {
 				eventQueue.post(new OcelotEditingEvent(
-				        OcelotEditingEvent.START_EDITING));
+				        OcelotEditingEvent.Type.START_EDITING));
 			}
 		};
 		
@@ -677,27 +676,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Perform Mac OSX-specific platform initialization.
-	 */
-	private void setMacSpecific() {
-		if (isMac()) {
-			OSXPlatformSupport.init();
-			OSXPlatformSupport.setQuitHandler(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					handleApplicationExit();
-				}
-			});
-			OSXPlatformSupport.setAboutHandler(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					showAbout();
-				}
-			});
-		}
 	}
 
 	public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {

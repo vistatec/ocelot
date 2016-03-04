@@ -1,26 +1,22 @@
 package com.vistatec.ocelot.events;
 
 import com.vistatec.ocelot.events.api.OcelotEvent;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class OpenFileEvent implements OcelotEvent {
-    private final String filename, srcLang, tgtLang;
+    private final String filename;
+    private XLIFFDocument xliff;
 
-    public OpenFileEvent(String filename, String srcLang, String tgtLang) {
+    public OpenFileEvent(String filename, XLIFFDocument xliff) {
         this.filename = filename;
-        this.srcLang = srcLang;
-        this.tgtLang = tgtLang;
+        this.xliff = xliff;
     }
 
     public String getFilename() {
         return filename;
     }
 
-    public String getSrcLang() {
-        return srcLang;
+    public XLIFFDocument getDocument() {
+        return xliff;
     }
-
-    public String getTgtLang() {
-        return tgtLang;
-    }
-
 }

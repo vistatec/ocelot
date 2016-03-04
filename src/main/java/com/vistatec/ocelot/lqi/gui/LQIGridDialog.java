@@ -29,6 +29,7 @@ import javax.swing.event.TableColumnModelListener;
 
 import org.apache.log4j.Logger;
 
+import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
@@ -62,7 +63,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	private static final String TITLE_CONF_SUFFIX = " - Configuration";
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(LQIGridDialog.class);
+	private static final Logger logger = Logger.getLogger(LQIGridDialog.class);
 
 	/**
 	 * Dialog mode. It can be set to either <code>ISSUES_ANNOTS_MODE</code> or
@@ -118,6 +119,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	/** The key event handler. */
 	private LQIKeyEventHandler lqiGridKeyEventHandler;
 
+	private PlatformSupport platformSupport;
+
 	/**
 	 * Constructor.
 	 * 
@@ -129,8 +132,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 *            the LQI grid object.
 	 */
 	public LQIGridDialog(JFrame owner, LQIGridController controller,
-	        LQIGrid lqiGrid) {
-		this(owner, controller, lqiGrid, ISSUES_ANNOTS_MODE);
+	        LQIGrid lqiGrid, PlatformSupport platformSupport) {
+		this(owner, controller, lqiGrid, ISSUES_ANNOTS_MODE, platformSupport);
 	}
 
 	/**
@@ -146,13 +149,14 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 *            the dialog mode to set
 	 */
 	public LQIGridDialog(Window owner, LQIGridController controller,
-	        LQIGrid lqiGrid, int mode) {
+	        LQIGrid lqiGrid, int mode, PlatformSupport platformSupport) {
 
 		super(owner);
 		setModal(false);
 		this.lqiGrid = lqiGrid;
 		this.controller = controller;
 		this.mode = mode;
+		this.platformSupport = platformSupport;
 	}
 
 	/**
@@ -165,7 +169,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		LQIKeyEventManager.getInstance().addKeyEventHandler(
 		        lqiGridKeyEventHandler);
 		lqiGridKeyEventHandler.load(lqiGrid);
-		tableHelper = new LQIGridTableHelper();
+		tableHelper = new LQIGridTableHelper(platformSupport);
 		String title = TITLE;
 		if (mode == CONFIG_MODE) {
 			title = title + TITLE_CONF_SUFFIX;
@@ -197,7 +201,6 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 			@Override
 			public void componentResized(ComponentEvent e) {
-				System.out.println("Component resized");
 				setTableSize();
 			}
 		});
@@ -343,9 +346,9 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 *            the category name.
 	 */
 	public void clearCommentCellForCategory(String category) {
-
+		
 		tableHelper.getLqiTableModel().clearCommentForCategory(category);
-	}
+    }
 
 	/**
 	 * Gets the component to be displayed at the bottom of the dialog.
@@ -481,6 +484,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		tableHelper.getLqiTableModel().setMode(mode);
 		tableHelper.configureTable(getGridButtonAction());
 		setTableSize();
+		
 
 	}
 

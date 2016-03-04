@@ -28,27 +28,26 @@
  */
 package com.vistatec.ocelot;
 
-import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
-import com.vistatec.ocelot.events.ItsSelectionEvent;
-import com.vistatec.ocelot.events.SegmentSelectionEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
-import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.its.view.ProvenanceView;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.view.SegmentDetailView;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JPanel;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.events.ItsSelectionEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
+import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
+import com.vistatec.ocelot.its.view.ProvenanceView;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.view.SegmentDetailView;
 
 /**
  * Detail pane displaying data related to a selected segment in the SegmentView.
@@ -87,7 +86,6 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void metadataSelected(ItsSelectionEvent e) {
-    	try{
         if (e.getITSMetadata() instanceof LanguageQualityIssue) {
             removeSegmentDetailView();
             removeProvenanceDetailView();
@@ -101,12 +99,9 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
             provDetailView.setMetadata(selectedSegment, (Provenance)e.getITSMetadata());
         }
         revalidate();
-    	} catch(Exception ex){
-    		ex.printStackTrace();
-    	}
     }
 
-    @Subscribe
+ @Subscribe
     public void setSegment(SegmentSelectionEvent e) {
     	try{
         selectedSegment = e.getSegment();
@@ -122,6 +117,18 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     		ex.printStackTrace();
     	}
     	
+    }
+
+    @Subscribe
+    public void openFile(OpenFileEvent e) {
+        showSegmentDetailView(null);
+    }
+
+    private void showSegmentDetailView(OcelotSegment segment) {
+        removeProvenanceDetailView();
+        removeLQIDetailView();
+        addSegmentDetailView();
+        segDetailView.setSegment(segment);
     }
 
     public void addProvenanceDetailView() {
@@ -143,7 +150,7 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 //            lqiDetailView = new NewLanguageQualityIssueView(eventQueue);
         	try {
 	            lqiDetailView = new LanguageQualityIssuePropsPanel(eventQueue, lqiService.readLQIConfig());
-	            add(lqiDetailView);
+            add(lqiDetailView);
             } catch (TransferException e) {
 	            // TODO Auto-generated catch block
 	            e.printStackTrace();

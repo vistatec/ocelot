@@ -25,11 +25,13 @@ import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
 import com.vistatec.ocelot.its.view.NewLanguageQualityIssueView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class SegmentMenu implements OcelotEventQueueListener {
     private JMenu menu;
     private JMenuItem menuAddIssue, menuRemoveIssue, menuRestoreTarget;
     private OcelotSegment selectedSegment;
+    private XLIFFDocument xliff;
     private LanguageQualityIssue selectedLQI;
 
     private NewLanguageQualityIssueView addLQIView = null;
@@ -76,7 +78,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
         menuRestoreTarget = new JMenuItem("Reset Target");
         menuRestoreTarget.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                eventQueue.post(new SegmentTargetResetEvent(selectedSegment));
+                eventQueue.post(new SegmentTargetResetEvent(xliff, selectedSegment));
             }
         });
         menuRestoreTarget.setEnabled(false);
@@ -96,6 +98,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
         menuRemoveIssue.setEnabled(false);
         menuRestoreTarget.setEnabled(e.getSegment().hasOriginalTarget());
         this.selectedSegment = e.getSegment();
+        this.xliff = e.getDocument();
     }
 
     @Subscribe

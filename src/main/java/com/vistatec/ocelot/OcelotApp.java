@@ -28,11 +28,6 @@
  */
 package com.vistatec.ocelot;
 
-import com.vistatec.ocelot.plugins.PluginManager;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.services.SegmentService;
-import com.vistatec.ocelot.services.XliffService;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,6 +35,7 @@ import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.common.eventbus.Subscribe;
@@ -49,6 +45,14 @@ import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.EditDistanceReportService;
+import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
+import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
 
 /**
  * Main Ocelot application context.
@@ -60,7 +64,8 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private final SegmentService segmentService;
     private final XliffService xliffService;
-    
+    private final EditDistanceReportService editDistService;
+    private XLIFFDocument openXliffFile;
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
@@ -72,6 +77,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.pluginManager = pluginManager;
         this.segmentService = segmentService;
         this.xliffService = xliffService;
+		this.editDistService = new EditDistanceReportService(segmentService);
     }
 
     public File getOpenFile() {
@@ -95,17 +101,18 @@ public class OcelotApp implements OcelotEventQueueListener {
         return fileDirty;
     }
 
-    public void openFile(File openFile, File detectVersion) throws IOException, FileNotFoundException, XMLStreamException {
-        List<OcelotSegment> segments = xliffService.parse(openFile, detectVersion);
+    public void openFile(File openFile) throws IOException, FileNotFoundException, XMLStreamException {
+        openXliffFile = xliffService.parse(openFile);
         segmentService.clearAllSegments();
-        segmentService.setSegments(segments);
+        segmentService.setSegments(openXliffFile);
 
-        this.pluginManager.notifyOpenFile(openFile.getName(), segments);
+        this.pluginManager.notifyOpenFile(openFile.getName(), openXliffFile.getSegments());
+        this.pluginManager.setSourceAndTargetLangs(openXliffFile.getSrcLocale().toString(), openXliffFile.getTgtLocale().toString());
+        this.pluginManager.enrichSegments(openXliffFile.getSegments());
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
-        eventQueue.post(new OpenFileEvent(openFile.getName(),
-                xliffService.getSourceLang(), xliffService.getTargetLang()));
+        eventQueue.post(new OpenFileEvent(openFile.getName(), openXliffFile));
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {
@@ -125,17 +132,20 @@ public class OcelotApp implements OcelotEventQueueListener {
                         "The file " + filename + " can not be saved, because the directory is not writeable.");
             }
         }
-        xliffService.save(saveFile);
+        xliffService.save(openXliffFile, saveFile);
+XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
+		annotationWriter.saveAnnotations(saveFile, segmentService);
         this.fileDirty = false;
+		editDistService.createEditDistanceReport(saveFile.getName());
         pluginManager.notifySaveFile(filename);
     }
 
     public String getFileSourceLang() {
-        return xliffService.getSourceLang();
+        return openXliffFile.getSrcLocale().toString();
     }
 
     public String getFileTargetLang() {
-        return xliffService.getTargetLang();
+        return openXliffFile.getTgtLocale().toString();
     }
 
     @Subscribe
@@ -161,5 +171,12 @@ public class OcelotApp implements OcelotEventQueueListener {
     public List<JMenu> getPluginMenuList(JFrame mainframe) {
         return pluginManager.getPluginMenuList(mainframe);
     }
+
+public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
+			BaseSegmentVariant variant, boolean target) {
+
+		return pluginManager.getSegmentContextMenuItems(segment, variant,
+				target);
+	}
 
 }

@@ -47,6 +47,8 @@ import com.vistatec.ocelot.its.stats.view.ITSDocStatsTableView;
 import com.vistatec.ocelot.its.view.LanguageQualityIssueTableView;
 import com.vistatec.ocelot.its.view.OtherITSTableView;
 import com.vistatec.ocelot.its.view.ProvenanceTableView;
+import com.vistatec.ocelot.its.view.TermsTableView;
+import com.vistatec.ocelot.its.view.TextAnalysisTableView;
 
 /**
  * Displays ITS metadata attached to the selected segment in the SegmentView.
@@ -59,6 +61,8 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
     protected LanguageQualityIssueTableView lqiTableView;
     protected ProvenanceTableView provTableView;
     protected OtherITSTableView itsTableView;
+    protected TextAnalysisTableView taTableView;
+    protected TermsTableView termTableView;
 
     @Inject
     public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsTableView docStatsView, LqiConfigService  lqiService) {
@@ -67,17 +71,26 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
         eventQueue.registerListener(aggregateTableView);
 
 	    lqiTableView = new LanguageQualityIssueTableView(eventQueue, lqiService);
-	    addTab("LQI", lqiTableView);
-	    eventQueue.registerListener(lqiTableView);
+        addTab("LQI", lqiTableView);
+        eventQueue.registerListener(lqiTableView);
 
         provTableView = new ProvenanceTableView(eventQueue);
         addTab("Prov", provTableView);
         eventQueue.registerListener(provTableView);
 
+        taTableView = new TextAnalysisTableView();
+        eventQueue.registerListener(taTableView);
+        addTab("Text-Analysis", taTableView);
+        
+        termTableView = new TermsTableView();
+        eventQueue.registerListener(termTableView);
+        addTab("Terms", termTableView);
+
         itsTableView = new OtherITSTableView();
         eventQueue.registerListener(itsTableView);
         addTab("Other ITS", itsTableView);
         eventQueue.registerListener(itsTableView);
+        
 
         // Deselect metadata to allow reselection for detail view after switching tabs.
         addChangeListener(new ChangeListener() {

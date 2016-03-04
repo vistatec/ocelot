@@ -31,6 +31,7 @@ package com.vistatec.ocelot.segment.view;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.event.InputMethodEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -59,20 +61,87 @@ public class SegmentTextCell extends JTextPane {
 
     private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
     public static final String tagStyle = "tag", regularStyle = "regular",
-            insertStyle = "insert", deleteStyle = "delete";
+            insertStyle = "insert", deleteStyle = "delete", enrichedStyle = "enriched", highlightStyle="highlight", currHighlightStyle="currHighlight";
     private SegmentVariant v;
     
     private boolean inputMethodChanged;
 
-    public SegmentTextCell() {
+    // Shared styles table
+    private static final StyleContext styles = new StyleContext();
+    static {
+        Style style = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style regular = styles.addStyle(regularStyle, style);
+
+        Style s = styles.addStyle(tagStyle, regular);
+        StyleConstants.setBackground(s, Color.LIGHT_GRAY);
+
+        Style insert = styles.addStyle(insertStyle, s);
+        StyleConstants.setForeground(insert, Color.BLUE);
+        StyleConstants.setUnderline(insert, true);
+
+        Style delete = styles.addStyle(deleteStyle, insert);
+        StyleConstants.setForeground(delete, Color.RED);
+        StyleConstants.setStrikeThrough(delete, true);
+        StyleConstants.setUnderline(delete, false);
+        
+        Style highlight = styles.addStyle(highlightStyle, regular);
+        StyleConstants.setBackground(highlight, Color.yellow);
+        
+        Style currHighlight = styles.addStyle(currHighlightStyle, regular);
+        StyleConstants.setBackground(currHighlight, Color.green);
+    }
+
+    /**
+     * Create a dummy cell for the purposes of cell sizing.  This cell
+     * doesn't contain the style information and isn't linked to any of
+     * the control logic.
+     * @return dummy cell
+     */
+    public static SegmentTextCell createDummyCell() {
+        return new SegmentTextCell();
+    }
+
+    /**
+     * Create an empty cell for the purpose of holding live content. This
+     * cell contains style information and is linked to the document.
+     * @return real cell
+     */
+    public static SegmentTextCell createCell() {
+        return new SegmentTextCell(styles);
+    }
+
+    /**
+     * Create an empty cell holding the specified content. This
+     * cell contains style information and is linked to the document.
+     * @param v
+     * @param raw
+     * @param isBidi whether the cell contains bidi content
+     * @return
+     */
+    public static SegmentTextCell createCell(SegmentVariant v, boolean raw, boolean isBidi) {
+        return new SegmentTextCell(v, raw, isBidi);
+    }
+
+    private SegmentTextCell(StyleContext styleContext) {
+        super(new DefaultStyledDocument(styleContext));
         setEditController();
-        setDisplayCategories();
         addCaretListener(new TagSelectingCaretListener());
     }
 
-    public SegmentTextCell(SegmentVariant v, boolean raw) {
-        this();
+    private SegmentTextCell() {
+        super();
+    }
+
+    private SegmentTextCell(SegmentVariant v, boolean raw, boolean isBidi) {
+        this(styles);
         setVariant(v, raw);
+        setBidi(isBidi);
+    }
+
+    public void setBidi(boolean isBidi) {
+        if (isBidi) {
+            setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        }
     }
 
     /**
@@ -113,6 +182,12 @@ public class SegmentTextCell extends JTextPane {
         StyledDocument styleDoc = this.getStyledDocument();
         Style regular = styleDoc.addStyle(regularStyle, style);
 
+        Style highlight = styleDoc.addStyle(highlightStyle, regular);
+        StyleConstants.setBackground(highlight, Color.yellow);
+        
+        Style currHighlight = styleDoc.addStyle(currHighlightStyle, regular);
+        StyleConstants.setBackground(currHighlight, Color.green);
+        
         Style s = styleDoc.addStyle(tagStyle, regular);
         StyleConstants.setBackground(s, Color.LIGHT_GRAY);
 
@@ -124,6 +199,11 @@ public class SegmentTextCell extends JTextPane {
         StyleConstants.setForeground(delete, Color.RED);
         StyleConstants.setStrikeThrough(delete, true);
         StyleConstants.setUnderline(delete, false);
+        
+        Style enriched = styleDoc.addStyle(enrichedStyle, regular);
+        StyleConstants.setForeground(enriched, Color.BLUE);
+        StyleConstants.setUnderline(enriched, true);
+        
     }
 
     public void setTextPane(List<String> styledText) {

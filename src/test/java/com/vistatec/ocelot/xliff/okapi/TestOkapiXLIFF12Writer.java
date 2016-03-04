@@ -33,70 +33,68 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-
-import org.custommonkey.xmlunit.XMLTestCase;
-import org.junit.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
 import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.TestProvenanceConfig;
 import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
+import com.vistatec.ocelot.config.TestProvenanceConfig;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.rules.RulesTestHelpers;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class TestOkapiXLIFF12Writer extends XMLTestCase {
     private final OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
 
-//    @Test
-//    public void testWriteITSNamespace() throws Exception {
-//        checkAgainstGoldXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"), "/gold/no-its-namespace.xlf");
-//    }
+    @Test
+    public void testWriteITSNamespace() throws Exception {
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/no-its-namespace.xlf"), "/gold/no-its-namespace.xlf");
+    }
 
-//    /**
-//     * The actual unittest for OC-21.  This modifies a segment, saves the file,
-//     * re-opens it and modifies it again, then verifies that the XML is correct.
-//     * (In OC-21, the ITS namespace is written out multiple times, rendering the
-//     * file invalid.)
-//     */
-//    @Test
-//    public void testWriteITSNamespaceMultipleTimes() throws Exception {
-//        File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
-//        File detectVersion = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
-//
-//        ByteSource testLoad = Resources.asByteSource(
-//                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-//        OcelotConfigService cfgService = new OcelotConfigService(new XmlConfigTransferService(testLoad, null));
-//        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
-//        eventQueue.registerListener(xliffService);
-//
-//        List<OcelotSegment> segments = xliffService.parse(temp, detectVersion);
-//        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
-//        eventQueue.registerListener(segmentService);
-//
-//        segmentService.setSegments(segments);
-//        temp.delete();
-//
-//        // Remove that LQI we just added
-//        LanguageQualityIssue lqi = segments.get(0).getLQI().get(0);
-//        eventQueue.post(new LQIRemoveEvent(lqi, segments.get(0)));
-//
-//        // Write it back out
-//        checkAgainstGoldXML(saveXliffToTemp(xliffService), "/gold/multiple-its-namespace.xlf");
-//    }
+    /**
+     * The actual unittest for OC-21.  This modifies a segment, saves the file,
+     * re-opens it and modifies it again, then verifies that the XML is correct.
+     * (In OC-21, the ITS namespace is written out multiple times, rendering the
+     * file invalid.)
+     */
+    @Test
+    public void testWriteITSNamespaceMultipleTimes() throws Exception {
+        File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
+
+        ByteSource testLoad = Resources.asByteSource(
+                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+        OcelotConfigService cfgService = new OcelotConfigService(new OcelotXmlConfigTransferService(testLoad, null));
+        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
+        eventQueue.registerListener(xliffService);
+
+        XLIFFDocument xliff = xliffService.parse(temp);
+        SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+        eventQueue.registerListener(segmentService);
+
+        segmentService.setSegments(xliff);
+        temp.delete();
+
+        // Remove that LQI we just added
+        LanguageQualityIssue lqi = xliff.getSegments().get(0).getLQI().get(0);
+        eventQueue.post(new LQIRemoveEvent(lqi, xliff.getSegments().get(0)));
+
+        // Write it back out
+        checkAgainstGoldXML(saveXliffToTemp(xliffService, xliff), "/gold/multiple-its-namespace.xlf");
+    }
 
     @Test
     public void testDontWriteRedundantITSNamespaceInXLIFFElement() throws Exception {
@@ -132,21 +130,21 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
         eventQueue.registerListener(xliffService);
 
         URI uri = getClass().getResource(resourceName).toURI();
-        List<OcelotSegment> segments = xliffService.parse(new File(uri), new File(uri));
+        XLIFFDocument xliff = xliffService.parse(new File(uri));
         SegmentService segmentService = new SegmentServiceImpl(eventQueue);
         eventQueue.registerListener(segmentService);
 
-        segmentService.setSegments(segments);
+        segmentService.setSegments(xliff);
         // Trigger an update
         segmentService.addLQI(new LQIAdditionEvent(RulesTestHelpers.lqi("omission", 90),
-                segments.get(0)));
+                xliff.getSegments().get(0)));
 
-        return saveXliffToTemp(xliffService);
+        return saveXliffToTemp(xliffService, xliff);
     }
 
-    private File saveXliffToTemp(XliffService service) throws IOException {
+    private File saveXliffToTemp(XliffService service, XLIFFDocument xliff) throws IOException {
         File temp = File.createTempFile("ocelot", ".xlf");
-        service.save(temp);
+        service.save(xliff, temp);
         return temp;
     }
 }

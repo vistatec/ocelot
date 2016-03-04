@@ -36,10 +36,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
 import com.vistatec.ocelot.config.xml.OcelotRootConfig;
 import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.events.api.EventBusWrapper;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 public class TestPluginManager {
 
@@ -51,8 +54,9 @@ public class TestPluginManager {
         assertNotNull(url);
 
         File pluginDir = new File(url.toURI());
+        OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
         PluginManager pluginManager = new PluginManager(
-                new OcelotConfigService(new TestConfigTransferService()), pluginDir);
+                new OcelotConfigService(new TestConfigTransferService()), pluginDir, eventQueue);
         pluginManager.discover();
 
         Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();

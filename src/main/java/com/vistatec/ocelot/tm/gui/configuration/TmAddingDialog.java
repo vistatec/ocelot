@@ -37,7 +37,7 @@ public class TmAddingDialog extends JDialog implements Runnable,
 	private static final long serialVersionUID = 7715304755942763439L;
 
 	/** Log. */
-	private final Logger log = Logger.getLogger(TmAddingDialog.class);
+	private static final Logger log = Logger.getLogger(TmAddingDialog.class);
 
 	/** the controller. */
 	private TmGuiConfigController controller;

@@ -25,7 +25,7 @@ public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
     public Component getTableCellRendererComponent(JTable jtable, Object o,
         boolean isSelected, boolean hasFocus, int row, int col) {
         Component comp = super.getTableCellRendererComponent(jtable, o, isSelected, hasFocus, row, col);
-        SegmentTextCell renderTextPane = new SegmentTextCell();
+        SegmentTextCell renderTextPane = SegmentTextCell.createCell();
         SegmentVariant segVariant = (SegmentVariant)o;
         if(o != null){
         	renderTextPane.setVariant(segVariant, false);

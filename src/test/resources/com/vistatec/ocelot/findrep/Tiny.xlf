@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:its="http://www.w3.org/2005/11/its" xmlns:iws="http://www.idiominc.com/ws/asset" version="1.2">
+	<file original="dummy" source-language="en_US" target-language="de_DE">
+		<body>
+			<trans-unit translate="no" id="1" its:provenanceRecordsRef="#RW1">
+				<source>This segment has 22 words that we do not want to translate but would like To show up in the metrics somewhere. Tomato.</source>
+				<target xml:lang="de-de">ghhghhh</target>
+<alt-trans match-quality="100" tool-id="Ocelot" origin="Ocelot" xmlns:okp="okapi-framework:xliff-extensions" okp:matchType="EXACT">
+<source xml:lang="en-us">This segment has 22 words that we do not want to translate but would like to show up in the metrics somewhere.</source>
+<target xml:lang="de-de"></target>
+</alt-trans>
+<note priority="3">22 words</note>
+			</trans-unit>
+			<trans-unit translate="yes" id="2">
+				<source>This segment has a different number of words (26) to segment one and we want these to show up as a different category in the metrics.</source>
+				<target>This segment has a different number of words (26) to segment one and we want these to show up as a different category in the metrics.</target>
+				<note>26 words</note>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

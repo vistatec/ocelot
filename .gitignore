@@ -7,12 +7,12 @@ tags
 .classpath
 .project
 .settings
-.metadata
+.metadata/**
 /nbproject/
 nb-build.xml
 manifest.mf
 /nbbuild/
 /dist/
 target
-ocelot.log
+ocelot.log*
 *.csv

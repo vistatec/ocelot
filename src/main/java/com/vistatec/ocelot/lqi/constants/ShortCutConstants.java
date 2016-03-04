@@ -3,84 +3,16 @@ package com.vistatec.ocelot.lqi.constants;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
+import com.vistatec.ocelot.PlatformSupport;
+
 public class ShortCutConstants {
-
-	/**
-	 * <ul>
-	 * <li>Alt + Tab - Switch between open applications</li>
-	 * <li>Alt + Shift + Tab - Switch between open applications in the reverse
-	 * direction</li>
-	 * <li>Ctrl + Tab - Switches between program groups, tabs, or document
-	 * windows</li>
-	 * <li>Ctrl + Shift + Tab - Switches between program groups, tabs, or
-	 * document windows in the reverse direction</li>
-	 * <li>Ctrl + Alt + Del - Open the Windows option screen for locking
-	 * computer, switching user, Task Manager, etc.</li>
-	 * <li>Ctrl + Alt + Decimal - Open the Windows option screen for locking
-	 * computer, switching user, Task Manager, etc.</li>
-	 * <li>Ctrl + Shift + Esc - Immediately bring up the Windows Task Manager</li>
-	 * <li>Ctrl + Esc - Open the Windows Start menu</li>
-	 * <li>Alt + Esc - Switch between open applications on Taskbar</li>
-	 * <li>Alt + Shift + Esc - Switch between open applications on Taskbar in
-	 * the reverse order</li>
-	 * <li>Alt + Space bar - Drops down the window control menu for the
-	 * currently open Windows program</li>
-	 * <li>Alt + Enter - Opens properties window of selected icon or program</li>
-	 * <li>F1 - Activates help for current open application.</li>
-	 * <li>Alt + F4 - closes the current open program window</li>
-	 * <li>Ctrl + F4 - closes the open window within the current active window</li>
-	 * <li>F10 - Activates the File menu bar in all versions of Windows.</li>
-	 * <li>Ctrl+C - Copy the selected item</li>
-	 * <li>Ctrl+X - Cut the selected item</li>
-	 * <li>Ctrl+V - Paste the selected item</li>
-	 * <li>Ctrl+A - Select all items in a document or window</li>
-	 * <li>Ctrl+Alt+Tab - Use the arrow keys to switch between open items</li>
-	 * <li>Ctrl+Alt+Shift+Tab - Use the arrow keys to switch between open items
-	 * <li>Alt + Shift + Space - Opens the contextual menu of the active window</li>
-	 * in the reverse order</li>
-	 * </ul>
-	 */
-	public static final KeyStroke[] WINDOWS_RESERVED_KEYS = {
-
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.ALT_MASK
-	                + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.CTRL_MASK
-	                + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.ALT_MASK
-	                + KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.CTRL_MASK
-	                + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.ALT_MASK
-	                + KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.ALT_MASK
-	                + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_DECIMAL, KeyEvent.ALT_MASK
-	                + KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.ALT_MASK
-	                + KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.ALT_MASK
-	                + KeyEvent.SHIFT_MASK) };
 
 	/**
 	 * <ul>
@@ -107,27 +39,31 @@ public class ShortCutConstants {
 	 * </ul>
 	 * 
 	 */
-	public static final KeyStroke[] OCELOT_RESERVED_KEYS = {
-
-	        KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK),
+	public static List<KeyStroke> getOcelotReservedKeys(PlatformSupport platform) {
+	    int platformMask = platform.getPlatformKeyMask();
+	    List<KeyStroke> keys = new ArrayList<>();
+	    Collections.addAll(keys,
+	        KeyStroke.getKeyStroke(KeyEvent.VK_L, platformMask),
+	        KeyStroke.getKeyStroke(KeyEvent.VK_R, platformMask),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK
+	        KeyStroke.getKeyStroke(KeyEvent.VK_O, platformMask),
+	        KeyStroke.getKeyStroke(KeyEvent.VK_S, platformMask),
+	        KeyStroke.getKeyStroke(KeyEvent.VK_S, platformMask
 	                + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK),
+	        KeyStroke.getKeyStroke(KeyEvent.VK_P, platformMask),
+	        KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, platformMask),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.ALT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_MASK
+	        KeyStroke.getKeyStroke(KeyEvent.VK_F1, platformMask
 	                + KeyEvent.SHIFT_MASK),
-	        KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_MASK
-	                + KeyEvent.SHIFT_MASK + KeyEvent.SHIFT_MASK) };
+	        KeyStroke.getKeyStroke(KeyEvent.VK_F1, platformMask
+	                + KeyEvent.SHIFT_MASK + KeyEvent.SHIFT_MASK));
+	    return keys;
+    };
 
 	/**
 	 * <ul>
@@ -390,11 +326,10 @@ public class ShortCutConstants {
 		}
 	}
 
-	public static List<KeyStroke> getReservedKeyList() {
-
+	public static List<KeyStroke> getReservedKeyList(PlatformSupport platform) {
 		List<KeyStroke> keys = new ArrayList<KeyStroke>();
-		keys.addAll(Arrays.asList(WINDOWS_RESERVED_KEYS));
-		keys.addAll(Arrays.asList(OCELOT_RESERVED_KEYS));
+		keys.addAll(Arrays.asList(platform.getReservedKeys()));
+		keys.addAll(getOcelotReservedKeys(platform));
 		keys.addAll(Arrays.asList(SWING_RESERVED_KEYS));
 		return keys;
 	}

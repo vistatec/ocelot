@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -12,26 +13,37 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
+import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.resource.TextContainer;
+import net.sf.okapi.common.resource.TextFragment;
+import net.sf.okapi.tm.pensieve.common.TmHit;
+import net.sf.okapi.tm.pensieve.common.TranslationUnit;
+import net.sf.okapi.tm.pensieve.common.TranslationUnitVariant;
 
 import org.apache.log4j.Logger;
 
-import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateFromMatchEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.enrichment.TranslationEnrichment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmService;
+import com.vistatec.ocelot.tm.okapi.PensieveTmMatch;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * This class stands over all graphic processes pertaining the TM match
  * functionalities: translations matches and concordance search. It manages two
  * detachable panels: the <code>TranslationsPanel</code>.
  */
-public class TmGuiMatchController {
+public class TmGuiMatchController implements OcelotEventQueueListener {
 
 	/**
 	 * The TM service providing methods for translations match and concordance
@@ -57,6 +69,9 @@ public class TmGuiMatchController {
 	/** The component containing the TM tabbed panel in Ocelot main frame. */
 	private Container tmPanelContainer;
 
+	/** Current XLIFF document. **/
+	private XLIFFDocument xliff;
+
 	/**
 	 * Constructor.
 	 * 
@@ -70,6 +85,12 @@ public class TmGuiMatchController {
 
 		this.tmService = tmService;
 		this.eventQueue = eventQueue;
+		eventQueue.registerListener(this);
+	}
+
+	@Subscribe
+	public void openFile(OpenFileEvent e) {
+	    this.xliff = e.getDocument();
 	}
 
 	/**
@@ -155,7 +176,7 @@ public class TmGuiMatchController {
 		if (currSelectedSegment != null) {
 			SegmentVariant textContainerVariant = new TextContainerVariant(
 			        new TextContainer(newTarget.getDisplayText()));
-			eventQueue.post(new SegmentTargetUpdateFromMatchEvent(
+			eventQueue.post(new SegmentTargetUpdateFromMatchEvent(xliff,
 			        currSelectedSegment, textContainerVariant));
 		}
 	}
@@ -171,23 +192,62 @@ public class TmGuiMatchController {
 	public void setSelectedSegment(OcelotSegment selectedSegment) {
 		if (!selectedSegment.equals(currSelectedSegment)) {
 			this.currSelectedSegment = selectedSegment;
-			if (translationsPanel != null) {
-				selectTranslationsTab();
-				translationsPanel.setLoading();
-				List<TmMatch> translations = getFuzzyMatches(selectedSegment
-				        .getSource().getAtoms());
-				translationsPanel.setTranslationSearchResults(translations);
-			}
+			update();
+		}
+	}
+
+	/**
+	 * Updates the translation for a specific segment number.
+	 * 
+	 * @param segmentNumber
+	 *            the segment number
+	 */
+	public void update(int segmentNumber) {
+
+		if (currSelectedSegment != null
+				&& currSelectedSegment.getSegmentNumber() == segmentNumber) {
+			update();
 		}
 	}
 	
-	public void sendStartEditingEvent(){
-		
-		eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.START_EDITING));
+	/**
+	 * Updates the translations in the panel.
+	 */
+	private void update() {
+		if (translationsPanel != null ) {
+				selectTranslationsTab();
+				translationsPanel.setLoading();
+				List<TmMatch> translations = getFuzzyMatches(currSelectedSegment
+				        .getSource().getAtoms());
+			if (currSelectedSegment.getSource() instanceof BaseSegmentVariant) {
+				TranslationEnrichment transEnrich = ((BaseSegmentVariant) currSelectedSegment
+						.getSource()).getTranslationEnrichment();
+				if (transEnrich != null) {
+					TmHit hit = new TmHit();
+					TranslationUnit tu = new TranslationUnit();
+					TextFragment fragment = new TextFragment(
+							transEnrich.getTranslation());
+					TranslationUnitVariant tuVariant = new TranslationUnitVariant(
+							new LocaleId(transEnrich.getLanguage()), fragment);
+					tu.setTarget(tuVariant);
+					tuVariant = new TranslationUnitVariant(null,
+							new TextFragment(currSelectedSegment.getSource()
+									.getDisplayText()));
+					tu.setSource(tuVariant);
+					hit.setTu(tu);
+					hit.setScore(100f);
+					TmMatch fremeMatch = new PensieveTmMatch(
+							"FREME e-Translation", hit);
+
+					if (translations == null) {
+						translations = new ArrayList<TmMatch>();
+			}
+					translations.add(0, fremeMatch);
+		}
+
 	}
-	
-	public void sendStopEditingEvent(){
-		eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.STOP_EDITING));
+			translationsPanel.setTranslationSearchResults(translations);
+		}
 	}
 
 	/**

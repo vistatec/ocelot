@@ -33,24 +33,21 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import net.sf.okapi.lib.xliff2.Const;
 import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
 import net.sf.okapi.lib.xliff2.changeTracking.Item;
 import net.sf.okapi.lib.xliff2.changeTracking.Revision;
 import net.sf.okapi.lib.xliff2.changeTracking.Revisions;
-import net.sf.okapi.lib.xliff2.core.CTag;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Note;
@@ -70,14 +67,17 @@ import com.ibm.icu.text.SimpleDateFormat;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.TextAtom;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.segment.model.okapi.OcelotRevision;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.freme.EnrichmentConverterXLIFF20;
 
 /**
  * Parse XLIFF 2.0 file for use in the workbench.
@@ -92,7 +92,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	private Map<Integer, Integer> segmentEventMapping;
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
-
+    private EnrichmentConverterXLIFF20 enrichmentConverter;
+    
 	public List<Event> getEvents() {
 		return this.events;
 	}
@@ -134,14 +135,18 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				if (xliffElement.getTargetLanguage() != null) {
 					this.targetLang = xliffElement.getTargetLanguage();
 				}
+                enrichmentConverter = new EnrichmentConverterXLIFF20(sourceLang, targetLang);
 
 			} else if (event.isUnit()) {
 				Unit unit = event.getUnit();
 				for (Part unitPart : unit) {
 					if (unitPart.isSegment()) {
-						net.sf.okapi.lib.xliff2.core.Segment okapiSegment = (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
+List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getSource());
+                    	List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getTarget());
+                        net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
+                                (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
 						OcelotSegment ocelotSegment = convertPartToSegment(
-						        okapiSegment, segmentUnitPartIndex++);
+						        okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId());
 						if (ocelotSegment.getTarget() != null) {
 							setTargetRevisions(unit, okapiSegment,
 							        ocelotSegment);
@@ -154,6 +159,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 			}
 
 		}
+        reader.close();
 		return segments;
 	}
 
@@ -304,19 +310,27 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	 * @return Segment - Ocelot Segment
 	 * @throws MalformedURLException
 	 */
-	private OcelotSegment convertPartToSegment(
-	        net.sf.okapi.lib.xliff2.core.Segment unitPart,
-	        int segmentUnitPartIndex) throws MalformedURLException {
-		segmentEventMapping
-		        .put(this.documentSegmentNum, this.events.size() - 1);
-		// TODO: load original target from file
+    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments, String unitId) throws MalformedURLException {
+        segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
+        //TODO: load original target from file
 		OkapiSegment seg = new OkapiSegment.Builder()
 		        .segmentNumber(documentSegmentNum++)
 		        .eventNumber(segmentUnitPartIndex)
 		        .source(new FragmentVariant(unitPart, false))
-		        .target(new FragmentVariant(unitPart, true)).build();
+				.target(new FragmentVariant(unitPart, true))
+				.tuId(unitId)
+				.build();
 		seg.addAllLQI(parseLqiData(unitPart));
 		seg.addAllProvenance(parseProvData(unitPart));
+        if(sourceEnrichments != null && !sourceEnrichments.isEmpty() && seg.getSource() != null && seg.getSource() instanceof BaseSegmentVariant){
+        	((BaseSegmentVariant)seg.getSource()).setEnrichments(new HashSet<Enrichment>(sourceEnrichments));
+        	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
+        }
+        if(targetEnrichments != null && !targetEnrichments.isEmpty() && seg.getTarget() != null && seg.getTarget() instanceof BaseSegmentVariant){
+        	((BaseSegmentVariant)seg.getTarget()).setEnrichments(new HashSet<Enrichment>(targetEnrichments));
+        	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
+        }
+        enrichmentConverter.convertEnrichments2ITSMetadata(seg);
 		return seg;
 	}
 
@@ -333,17 +347,6 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		}
 
 		return ocelotLqiList;
-	}
-	
-
-  public static void main(String[] args) {
-		
-  	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-  	Date date = new Date();
-  	Calendar calendar = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-8:00"));
-  	calendar.set(2016, 2, 22, 14, 54);
-  	System.out.println(dateFormat.format(calendar.getTime()));
-  	
 	}
 
 	private List<LanguageQualityIssue> convertOkapiToOcelotLqiData(

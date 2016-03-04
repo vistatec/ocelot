@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 
+import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.constants.ShortCutConstants;
@@ -56,7 +57,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 
 	/** LQI grid table Comment column width constant. */
 	private static final int COMMENT_COLUMN_WITDH = 250;
-
+	
 	/** LQI grid table Weight column width constant. */
 	private static final int WEIGHT_COLUMN_WIDTH = 60;
 
@@ -84,10 +85,13 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	/** The delete severity menu item. */
 	private SeverityMenuItem mnuDelSeverity;
 
+	private PlatformSupport platformSupport;
+
 	/**
 	 * Constructor.
 	 */
-	public LQIGridTableHelper() {
+	public LQIGridTableHelper(PlatformSupport platformSupport) {
+	    this.platformSupport = platformSupport;
 		this.keyEventManager = LQIKeyEventManager.getInstance();
 		severityMenu = new JPopupMenu();
 		mnuSeverityProps = new SeverityMenuItem("Edit", SeverityMenuItem.EDIT);
@@ -138,7 +142,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 				if (errCat.getShortcuts() != null) {
 					for (LQIShortCut shortcut : errCat.getShortcuts()) {
 						shortcutsInUse.add(shortcut.getKeyStroke());
-					}
+				}
 				}
 			}
 		}
@@ -161,12 +165,12 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		int firstSeverityColIdx = lqiTableModel.getSeverityColsStartIndex();
 		for (int i = 0; i < columnColors.length; i++) {
 
-			lqiTable.getTableHeader()
-			        .getColumnModel()
+		lqiTable.getTableHeader()
+		        .getColumnModel()
 			        .getColumn(i + firstSeverityColIdx)
-			        .setHeaderRenderer(
+		        .setHeaderRenderer(
 			                new ColorHeaderCellRenderer(columnColors[i],
-			                        lqiTable.getGridColor()));
+		                        lqiTable.getGridColor()));
 		}
 		lqiTable.getTableHeader()
 		        .getColumnModel()
@@ -175,14 +179,14 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		                new ColorHeaderCellRenderer(lqiTable.getBackground(),
 		                        lqiTable.getGridColor()));
 		int catWeightColIdx = lqiTableModel.getErrorCatWeightColumn();
-		if (catWeightColIdx > -1) {
+		if(catWeightColIdx > -1){
 			lqiTable.getTableHeader()
-			        .getColumnModel()
-			        .getColumn(catWeightColIdx)
-			        .setHeaderRenderer(
-			                new ColorHeaderCellRenderer(lqiTable
-			                        .getBackground(), lqiTable.getGridColor()));
-
+	        .getColumnModel()
+	        .getColumn(catWeightColIdx)
+	        .setHeaderRenderer(
+	                new ColorHeaderCellRenderer(lqiTable.getBackground(),
+	                        lqiTable.getGridColor()));
+			
 		}
 
 		ColorCellRenderer centerRenderer = new ColorCellRenderer(
@@ -200,25 +204,22 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		                new TextAreaColorCellRenderer(lqiTable.getBackground()));
 		lqiTable.getColumnModel().getColumn(lqiTableModel.getCommentColumn())
 		        .setCellEditor(new TextAreaTableCellEditor());
-		if (catWeightColIdx > -1) {
-			lqiTable.getColumnModel().getColumn(catWeightColIdx)
-			        .setCellRenderer(centerRenderer);
-			lqiTable.getColumnModel().getColumn(catWeightColIdx)
-			        .setCellEditor(new FloatCellEditor());
+		if(catWeightColIdx > -1){
+			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellRenderer(centerRenderer);
+			lqiTable.getColumnModel().getColumn(catWeightColIdx).setCellEditor(new FloatCellEditor());
 		}
 		LQIGridButtonEditor buttonEditor = new LQIGridButtonEditor(
 		        gridButtonAction);
 		for (int i = 0; i < columnColors.length; i++) {
-			lqiTable.getColumnModel()
+		lqiTable.getColumnModel()
 			        .getColumn(firstSeverityColIdx + i)
 			        .setCellRenderer(new LQIGridButtonRenderer(columnColors[i]));
 			lqiTable.getColumnModel().getColumn(firstSeverityColIdx + i)
-			        .setCellEditor(buttonEditor);
+		        .setCellEditor(buttonEditor);
 		}
 
 		for (int i = 0; i < lqiTable.getColumnCount(); i++) {
-			if (i != lqiTableModel.getErrorCatWeightColumn()
-			        && i != lqiTableModel.getCommentColumn()) {
+			if (i != lqiTableModel.getErrorCatWeightColumn() && i != lqiTableModel.getCommentColumn()) {
 				lqiTable.getColumnModel().getColumn(i).setWidth(COLUMN_WITDH);
 				lqiTable.getColumnModel().getColumn(i)
 				        .setMinWidth(COLUMN_WITDH);
@@ -245,15 +246,15 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	 * @return newSeverity
 	 */
 	public int getTableWidth() {
-
+		
 		int weightColWidth = 0;
 		int normalColCount = lqiTable.getColumnCount() - 1;
-		if (lqiTableModel.getErrorCatWeightColumn() != -1) {
+		if(lqiTableModel.getErrorCatWeightColumn() != -1){
 			weightColWidth = WEIGHT_COLUMN_WIDTH;
 			normalColCount = lqiTable.getColumnCount() - 2;
 		}
-		return COLUMN_WITDH * (normalColCount) + COMMENT_COLUMN_WITDH
-		        + weightColWidth;
+		return COLUMN_WITDH * (normalColCount)
+		        + COMMENT_COLUMN_WITDH + weightColWidth; 
 	}
 
 	/**
@@ -311,7 +312,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 				if (errorCat.getShortcuts() != null) {
 					for (LQIShortCut shortcut : errorCat.getShortcuts()) {
 						shortcutsInUse.remove(shortcut.getKeyStroke());
-					}
+				}
 				}
 			}
 		}
@@ -375,15 +376,15 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 			LQIShortCut catShortcut = errCat.getShortcut(severityName);
 			if (catShortcut != null) {
 				oldShortcut = catShortcut.getKeyStroke();
-			}
-			lqiTable.getCellEditor(lqiTable.getSelectedRow(),
-			        lqiTable.getSelectedColumn()).stopCellEditing();
-			lqiTableModel.setShortCut(lqiTable.getSelectedRow(),
-			        lqiTable.getSelectedColumn(), keyCode, modifiers);
-			keyEventManager.shortCutChanged(errCat, oldShortcut, severityName);
-			shortcutsInUse.remove(oldShortcut);
-			shortcutsInUse.add(newShortcut);
 		}
+		lqiTable.getCellEditor(lqiTable.getSelectedRow(),
+		        lqiTable.getSelectedColumn()).stopCellEditing();
+		lqiTableModel.setShortCut(lqiTable.getSelectedRow(),
+		        lqiTable.getSelectedColumn(), keyCode, modifiers);
+			keyEventManager.shortCutChanged(errCat, oldShortcut, severityName);
+		shortcutsInUse.remove(oldShortcut);
+		shortcutsInUse.add(newShortcut);
+	}
 	}
 
 	/**
@@ -407,7 +408,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 				if (oldSevCloned.getScore() != newSeverity.getScore()) {
 					lqiTableModel.setScoreForColumn(newSeverity.getScore(),
 					        columnIndex);
-					keyEventManager.errorSeverityScoreChanged(
+			keyEventManager.errorSeverityScoreChanged(
 					        newSeverity.getScore(), oldSevCloned.getName());
 				}
 				if (!oldSevCloned.getName().equals(newSeverity.getName())) {
@@ -425,7 +426,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 					        .getColumn(columnIndex)
 					        .setHeaderValue(
 					                lqiTableModel.getColumnName(columnIndex));
-					SwingUtilities.windowForComponent(lqiTable).repaint();
+			SwingUtilities.windowForComponent(lqiTable).repaint();
 				} else {
 					lqiTableModel.sortSeverityColumns();
 				}
@@ -538,7 +539,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		}
 		KeyStroke shortCut = KeyStroke.getKeyStroke(keyCode, modifier);
 		return shortcutsInUse.contains(shortCut)
-		        || ShortCutConstants.getReservedKeyList().contains(shortCut);
+		        || ShortCutConstants.getReservedKeyList(platformSupport).contains(shortCut);
 	}
 
 	/*

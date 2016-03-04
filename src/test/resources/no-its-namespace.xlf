@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><xliff version="1.2">
     <file source-language="en-US" target-language="fr-FR" original="none" datatype="plaintext">
-        <header><phase-group><phase phase-name="rebuttal" process-name="review"></phase><phase phase-name="translator approval" process-name="review"></phase><phase phase-name="unknown" process-name="unknown"></phase><phase phase-name="review" process-name="review"></phase><phase phase-name="final review" process-name="review"></phase></phase-group><tool tool-id="Ocelot" tool-name="Ocelot"></tool></header>
+        <header><tool tool-id="Ocelot" tool-name="Ocelot"></tool></header>
         <body>
 
             <trans-unit id="2">
