@@ -8,7 +8,7 @@
    </its:locQualityIssues>
    <its:provenanceRecords xml:id="p1">
      <its:provenanceRecord person="person"/>
-     <its:provenanceReocrd orgRef="orgRef"/>
+     <its:provenanceRecord orgRef="orgRef"/>
    </its:provenanceRecords>
    <originalData>
      <data id="d1">\b</data>
