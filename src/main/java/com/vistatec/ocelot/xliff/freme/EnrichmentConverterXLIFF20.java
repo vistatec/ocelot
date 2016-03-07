@@ -65,12 +65,11 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 				switch (codedText.charAt(textIdx)) {
 				case Fragment.MARKER_OPENING:
 					MTag tag = fragment.getMTag(codedText, textIdx);
-					if (tag != null) {
+					if (tag != null && tag.hasITSItem()) {
 						manageMarkerOpeningXliff2_0(tag, currEnrichments,
 						        dataCategoryToDelete, wholeText.toString(),
 						        termAnnotator);
-						if (tag.getITSItems() == null
-						        || tag.getITSItems().isEmpty()) {
+						if (!tag.hasITSItem()) {
 							int tagKey = fragment.getTags().getKey(tag);
 							fragment.getTags().remove(tagKey);
 							codePositionToRemove.add(textIdx++);
@@ -82,7 +81,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 					tag = fragment.getMTag(codedText, textIdx);
 					EnrichmentWrapper enrichmentWrapper = findEnrichmentByTagId(
 					        tag.getId(), currEnrichments);
-					if (enrichmentWrapper != null) {
+					if (enrichmentWrapper != null && tag.hasITSItem()) {
 						enrichmentWrapper.getEnrichment().setOffsetEndIdx(
 						        wholeText.length());
 						currEnrichments.remove(enrichmentWrapper);
@@ -96,8 +95,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 								}
 							}
 						}
-						if (tag.getITSItems() == null
-						        || tag.getITSItems().isEmpty()) {
+						if (!tag.hasITSItem()) {
 							fragment.remove(tag);
 							codePositionToRemove.add(textIdx++);
 							codePositionToRemove.add(textIdx);

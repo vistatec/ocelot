@@ -39,6 +39,10 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 		        .getLogger(EnrichmentConverterXLIFF12.class));
 	}
 
+	private boolean hasAnnotations(Code code) {
+		return (code.getGenericAnnotations() != null && code.getGenericAnnotations().size() >= 0);
+	}
+
 	/**
 	 * Retrieves enrichments from a specific XLIFF 1.2 text unit. Codes embedded
 	 * into the text unit and the skeleton are inspected. The codes representing
@@ -53,7 +57,6 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 	public List<Enrichment> retrieveEnrichments(TextContainer textContainer,
 	        ITextUnit textUnit) {
 
-		logger.debug("Retrieving enrichments for a XLIFF 1.2 text unit.");
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (textContainer != null) {
 			StringBuilder wholeText = new StringBuilder();
@@ -69,23 +72,27 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 					case TextFragment.MARKER_OPENING:
 						index = TextFragment.toIndex(codedText.charAt(++i));
 						openingCode = part.getContent().getCodes().get(index);
-						currEnrichments.addAll(convertAnnots2Enrichments(
-						        openingCode, wholeText.length()));
+						if (hasAnnotations(openingCode)) {
+							currEnrichments.addAll(convertAnnots2Enrichments(
+										openingCode, wholeText.length()));
 
-						// all the annotations from this code have been
-						// translated to enrichments.
-						// the code must be removed
-						if (openingCode.getGenericAnnotations() == null || openingCode.getGenericAnnotations().size() == 0) {
-							codesToRemove.add(openingCode);
+							// all the annotations from this code have been
+							// translated to enrichments.
+							// the code must be removed
+							if (!hasAnnotations(openingCode)) {
+								codesToRemove.add(openingCode);
+							}
 						}
 						break;
 					case TextFragment.MARKER_CLOSING:
 						index = TextFragment.toIndex(codedText.charAt(++i));
 						Code code = part.getContent().getCodes().get(index);
-						// check annotations in the closing code.
-						manageClosingCodeAnnots(code, openingCode);
-						if (code.getGenericAnnotations() == null || code.getGenericAnnotations().size() == 0) {
-							codesToRemove.add(code);
+						if (hasAnnotations(code)) {
+							// check annotations in the closing code.
+							manageClosingCodeAnnots(code, openingCode);
+							if (code.getGenericAnnotations() == null || code.getGenericAnnotations().size() == 0) {
+								codesToRemove.add(code);
+							}
 						}
 						// update end index for all current enrichments.
 						for (Enrichment enrich : currEnrichments) {

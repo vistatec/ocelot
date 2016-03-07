@@ -3,8 +3,6 @@ package com.vistatec.ocelot.its.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import riotcmd.trig;
-
 import com.vistatec.ocelot.rules.DataCategoryField;
 
 /**
