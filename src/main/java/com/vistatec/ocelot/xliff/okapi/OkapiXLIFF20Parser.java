@@ -293,7 +293,6 @@ List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(uni
 		revisions.add(revision);
 		Item item = new Item(Item.PROPERTY_CONTENT_VALUE);
 		item.setText(getFragmentPlainText(target));
-		System.out.println("Item: " + item.getText());
 		revision.add(item);
 		return revisions;
 	}
