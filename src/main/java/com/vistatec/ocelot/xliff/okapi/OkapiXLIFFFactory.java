@@ -33,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -78,10 +79,8 @@ public class OkapiXLIFFFactory implements XLIFFFactory {
                             Iterator<Attribute> attrs = startElement.getAttributes();
                             while (attrs.hasNext()) {
                                 Attribute attr = attrs.next();
-                                String name = attr.getName().getLocalPart();
-                                String value = attr.getValue();
-
-                                if (name.equals("version")) {
+                                if (isXliffVersionAttributeName(attr.getName())) {
+                                    String value = attr.getValue();
                                     reader.close();
                                     if ("2.0".equals(value)) {
                                         return XLIFFVersion.XLIFF20;
@@ -99,6 +98,17 @@ public class OkapiXLIFFFactory implements XLIFFFactory {
             }
             throw new IllegalStateException("Could not detect XLIFF version");
         }
+    }
+
+    // The XLIFF spec is unclear on whether @version is namespaced.  My assumption
+    // is no, it is not namespaced, but just in case other implementations disagree,
+    // we'll be permissive.
+    private boolean isXliffVersionAttributeName(QName name) {
+        if (!"version".equals(name.getLocalPart())) return false;
+        String ns = name.getNamespaceURI();
+        return (ns == null || "".equals(ns) ||
+                "urn:oasis:names:tc:xliff:document:1.2".equals(ns) ||
+                "urn:oasis:names:tc:xliff:document:2.0".equals(ns));
     }
 
     @Override
