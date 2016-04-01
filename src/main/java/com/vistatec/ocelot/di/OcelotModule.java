@@ -33,6 +33,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
 import com.vistatec.ocelot.lqi.LQIGridController;
+import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
@@ -182,8 +183,13 @@ public class OcelotModule extends AbstractModule {
 
 		CharSink configSink = Files.asCharSink(configFile,
 		        Charset.forName("UTF-8"));
-		return new LqiConfigService(new LQIXmlConfigTransferService(
+		LqiConfigService service = new LqiConfigService(new LQIXmlConfigTransferService(
 		        configSource, configSink));
-
+		// If the config file doesn't exist, initialize a default configuration.
+		if (!configFile.exists()) {
+		    LOG.info("Writing default LQI Grid configuration to " + configFile);
+		    service.saveLQIConfig(LQIConstants.getDefaultLQIGrid());
+		}
+		return service;
 	}
 }

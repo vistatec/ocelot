@@ -230,9 +230,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     			}
     		}
     		item.setText(unitPart.getTarget().toString());
-    		System.out.println("Item: " + item.getText());
     		nextVersion.setUpdated(true);
-    		
     	}
     }
     

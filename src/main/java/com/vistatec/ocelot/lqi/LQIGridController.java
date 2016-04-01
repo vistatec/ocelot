@@ -97,7 +97,6 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 * Displays the LQI grid.
 	 */
 	public void displayLQIGrid() {
-
 		logger.debug("Displaying the LQI Grid.");
 		gridDialog = new LQIGridDialog(ocelotMainFrame, this,
 		        readLQIGridConfiguration(), platformSupport);
@@ -135,8 +134,6 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 * @return the LQI grid.
 	 */
 	public LQIGrid readLQIGridConfiguration() {
-
-		logger.debug("Raeding the LQI grid configuration file...");
 		LQIGrid lqiGrid = null;
 		try {
 			lqiGrid = configService.readLQIConfig();
