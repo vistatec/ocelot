@@ -55,7 +55,6 @@ import com.vistatec.ocelot.segment.view.SegmentDetailView;
 public class DetailView extends JPanel implements OcelotEventQueueListener {
     private static final long serialVersionUID = 1L;
 
-//    private NewLanguageQualityIssueView lqiDetailView;
     private LanguageQualityIssuePropsPanel lqiDetailView;
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
@@ -147,13 +146,12 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     public void addLQIDetailView() {
         if (lqiDetailView == null) {
-//            lqiDetailView = new NewLanguageQualityIssueView(eventQueue);
-        	try {
-	            lqiDetailView = new LanguageQualityIssuePropsPanel(eventQueue, lqiService.readLQIConfig());
+            try {
+                lqiDetailView = new LanguageQualityIssuePropsPanel(eventQueue, lqiService.readLQIConfig());
             add(lqiDetailView);
             } catch (TransferException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
     }

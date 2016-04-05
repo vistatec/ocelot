@@ -38,10 +38,6 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 public class LanguageQualityIssuePropsPanel extends JPanel implements
         ActionListener, Runnable {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4489879495975477888L;
 
 	private static final Logger LOG = LoggerFactory

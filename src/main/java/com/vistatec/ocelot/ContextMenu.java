@@ -118,10 +118,6 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addLQI) {
-//            NewLanguageQualityIssueView addLQIView = new NewLanguageQualityIssueView(eventQueue);
-//            addLQIView.setSegment(selectedSeg);
-//            SwingUtilities.invokeLater(addLQIView);
-            
 			LanguageQualityIssuePropsPanel addLQIView = new LanguageQualityIssuePropsPanel(
 			        eventQueue, lqiGrid);
             addLQIView.setSegment(selectedSeg);
