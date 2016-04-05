@@ -2,6 +2,7 @@ package com.vistatec.ocelot.lqi.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * LQI error category object,.
@@ -231,4 +232,19 @@ public class LQIErrorCategory {
 		}
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+        if (obj == this) return true;
+	    if (obj == null || !(obj instanceof LQIErrorCategory)) return false;
+	    LQIErrorCategory c = (LQIErrorCategory)obj;
+	    return Objects.equals(name, c.name) &&
+	           weight == c.weight &&
+	           Objects.equals(comment, c.comment) &&
+	           Objects.equals(shortcuts, c.shortcuts);
+	}
+
+	@Override
+	public int hashCode() {
+	    return Objects.hash(name, weight, comment, shortcuts);
+	}
 }

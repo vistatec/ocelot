@@ -234,8 +234,6 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 			        @Override
 			        public void columnAdded(TableColumnModelEvent e) {
-				        System.out.println("Column added");
-
 				        colAddedNum++;
 				        if (colAddedNum == tableHelper.getLqiTableModel()
 				                .getColumnCount()) {
