@@ -43,6 +43,7 @@ import com.google.inject.Inject;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.plugins.PluginManager;
@@ -155,6 +156,11 @@ XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
 
     @Subscribe
     public void provenanceAdded(ProvenanceAddEvent e) {
+        this.fileDirty = true;
+    }
+
+    @Subscribe
+    public void noteEdit(SegmentNoteEditEvent e) {
         this.fileDirty = true;
     }
 

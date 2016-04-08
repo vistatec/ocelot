@@ -16,6 +16,7 @@ import com.vistatec.ocelot.tm.TmTmxWriter;
 
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.encoder.EncoderContext;
+import net.sf.okapi.common.encoder.QuoteMode;
 import net.sf.okapi.common.encoder.XMLEncoder;
 import net.sf.okapi.common.filterwriter.TMXWriter;
 import net.sf.okapi.common.resource.Code;
@@ -33,7 +34,7 @@ public class OkapiTmxWriter implements TmTmxWriter, OcelotEventQueueListener {
     private boolean hasOpenFile = false;
     private LocaleId sourceLang, targetLang;
     private XMLEncoder attributeEncoder = new XMLEncoder("UTF-8", "\n",
-                    true, true, false, 1 /* XMLEncoder.QuoteMode.ALL */);
+                    true, true, false, QuoteMode.ALL); 
 
     public OkapiTmxWriter(SegmentService segService) {
         this.segService = segService;

@@ -73,6 +73,8 @@ import com.vistatec.ocelot.rules.StateQualifier;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.xliff.XLIFFParser;
@@ -262,10 +264,21 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		List<Enrichment> totEnrichments = new ArrayList<Enrichment>(
 		        sourceEnrichments);
 		totEnrichments.addAll(targetEnrichments);
+		readNotes(segment, tu);
 		return attachITSDataToSegment(segment, tu, srcTu, tgtTu, totEnrichments);
 	}
 
-	public OkapiSegment attachITSDataToSegment(OkapiSegment seg, ITextUnit tu,
+	private void readNotes(OkapiSegment seg, ITextUnit tu) {
+	    Property p = tu.getProperty(Property.NOTE);
+	    if (p != null) {
+	        // XLIFF 1.2 doesn't support note IDs, so we always display notes
+	        Notes notes = new Notes();
+	        notes.add(new Note(Note.OCELOT_ID_PREFIX + "1", p.getValue()));
+	        seg.setNotes(notes);
+	    }
+	}
+
+	private OkapiSegment attachITSDataToSegment(OkapiSegment seg, ITextUnit tu,
 	        TextContainer srcTu, TextContainer tgtTu,
 	        List<Enrichment> enrichments) {
 

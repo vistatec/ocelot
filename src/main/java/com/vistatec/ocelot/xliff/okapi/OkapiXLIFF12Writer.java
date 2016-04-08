@@ -75,6 +75,7 @@ import org.slf4j.LoggerFactory;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
@@ -266,7 +267,34 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
 
 	@Override
     public void updateNotes(OcelotSegment seg) {
-	    // TODO Auto-generated method stub
+	    // TODO: refactor some of this code with updateSegment
+	    OkapiSegment okapiSeg = (OkapiSegment) seg;
+        Event event = getParser().getSegmentEvent(okapiSeg.eventNum);
+        if (event == null) {
+            LOG.error("Failed to find Okapi Event associated with segment #"+okapiSeg.getSegmentNumber());
+
+        } else if (event.isTextUnit()) {
+            ITextUnit textUnit = event.getTextUnit();
+
+            Note note = seg.getNotes().getOcelotNote();
+            if (note == null) {
+                LOG.warn("Tried to update missing note for segment " + seg.getTuId());
+                return;
+            }
+            String noteText = note.getContent();
+            Property prop = textUnit.getProperty(Property.NOTE);
+            if (prop == null) {
+                prop = new Property(Property.NOTE, noteText);
+                textUnit.setProperty(prop);
+            }
+            else {
+                prop.setValue(noteText);
+            }
+            LOG.info("Updated note for " + seg.getTuId() + " to '" + noteText + "'");
+        } else {
+            LOG.error("Event associated with Segment was not an Okapi TextUnit!");
+            LOG.error("Failed to update event for segment #"+okapiSeg.getSegmentNumber());
+        }
     }
 
     private void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
