@@ -278,7 +278,8 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
 
             Note note = seg.getNotes().getOcelotNote();
             if (note == null) {
-                LOG.warn("Tried to update missing note for segment " + seg.getTuId());
+                // The note has been removed, so we should clear the content
+                textUnit.removeProperty(Property.NOTE);
                 return;
             }
             String noteText = note.getContent();
