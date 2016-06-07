@@ -49,7 +49,7 @@ public class AboutDialog extends ODialogPanel {
                         "Report a bug in the <a href=\"https://ocelot.atlassian.net/browse/OC\">issue tracker</a> or " +
                         "get the code on <a href=\"https://github.com/vistatec/ocelot\">GitHub</a>.<br><br>" +
                         "Ocelot is open source software, released under the LGPLv3 license.<br>" +
-                        "Ocelot is part of the <a href=\"http://okapi.opentag.com/\">Okapi Project</a>.<br>" +
+                        "Ocelot is part of the <a href=\"http://okapiframework.org/\">Okapi Project</a>.<br>" +
                         "</html>");
         p.setEditable(false);
         p.addHyperlinkListener(new AboutLinkOpener());
