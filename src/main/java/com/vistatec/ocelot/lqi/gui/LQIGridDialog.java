@@ -27,7 +27,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
@@ -63,7 +64,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	private static final String TITLE_CONF_SUFFIX = " - Configuration";
 
 	/** The logger for this class. */
-	private static final Logger logger = Logger.getLogger(LQIGridDialog.class);
+	private static final Logger logger = LoggerFactory.getLogger(LQIGridDialog.class);
 
 	/**
 	 * Dialog mode. It can be set to either <code>ISSUES_ANNOTS_MODE</code> or

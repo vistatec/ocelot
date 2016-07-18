@@ -23,7 +23,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Modal dialog letting users add a new TM to the list of TMs already configured
@@ -37,7 +38,7 @@ public class TmAddingDialog extends JDialog implements Runnable,
 	private static final long serialVersionUID = 7715304755942763439L;
 
 	/** Log. */
-	private static final Logger log = Logger.getLogger(TmAddingDialog.class);
+	private static final Logger log = LoggerFactory.getLogger(TmAddingDialog.class);
 
 	/** the controller. */
 	private TmGuiConfigController controller;

@@ -87,7 +87,8 @@ import javax.swing.text.JTextComponent;
 
 import net.sf.okapi.common.LocaleId;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -144,7 +145,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
         OcelotEventQueueListener {
 	private static final long serialVersionUID = 1L;
 
-	private static Logger LOG = Logger.getLogger(SegmentView.class);
+	private static Logger LOG = LoggerFactory.getLogger(SegmentView.class);
 
 	protected SegmentTableModel segmentTableModel;
 	protected SegmentViewTable sourceTargetTable;
@@ -199,8 +200,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 			}
 			requireFullRecalc = false;
-			LOG.trace("doLayout() took " + (System.currentTimeMillis() - start)
-			        + "ms for " + updatedRowCount + " rows");
+			LOG.trace("doLayout() took {} ms for {} rows", (System.currentTimeMillis() - start), updatedRowCount);
 		}
 
 		// Dirty the whole layout
@@ -1032,7 +1032,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			if (sq != null) {
 				Color sqColor = ruleConfig.getStateQualifierColor(sq);
 				if (sqColor == null) {
-					LOG.debug("No UI color for state-qualifier '" + sq + "'");
+					LOG.debug("No UI color for state-qualifier '{}'", sq);
 				}
 				return sqColor;
 			}

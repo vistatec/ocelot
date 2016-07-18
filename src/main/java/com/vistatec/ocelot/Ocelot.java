@@ -77,8 +77,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -110,7 +111,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private static final long serialVersionUID = 1L;
 	private static String APPNAME = "Ocelot";
 	private Image icon;
-	private static Logger LOG = Logger.getLogger(Ocelot.class);
+	private static Logger LOG = LoggerFactory.getLogger(Ocelot.class);
 
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
@@ -545,11 +546,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
         }
         Matcher m = Pattern.compile("(\\d+)x(\\d+)").matcher(val);
         if (m.matches()) {
-            LOG.info("Using user-defined window size " + val);
+            LOG.info("Using user-defined window size {}", val);
             return new Dimension(Integer.valueOf(m.group(1)),
                     Integer.valueOf(m.group(2)));
         }
-        LOG.warn("Ignoring unparsable ocelot.windowSize value '" + val + "'");
+        LOG.warn("Ignoring unparsable ocelot.windowSize value '{}'", val);
         return null;
     }
 

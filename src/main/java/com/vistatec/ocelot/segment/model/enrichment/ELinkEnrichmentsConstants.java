@@ -13,7 +13,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
@@ -25,6 +26,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
  * enrichments.
  */
 public abstract class ELinkEnrichmentsConstants {
+    static final Logger LOG = LoggerFactory.getLogger(ELinkEnrichmentsConstants.class);
 
 	/** The long description property. */
 	public static final String LONG_DESCR_PROP = "http://dbpedia.org/ontology/abstract";
@@ -307,11 +309,9 @@ public abstract class ELinkEnrichmentsConstants {
 				}
 			}
 		} catch (MalformedURLException e) {
-			Logger.getLogger(ELinkEnrichmentsConstants.class).error(
-			        "Error in the image URL: " + imagUrl, e);
+			LOG.error("Error in the image URL: " + imagUrl, e);
 		} catch (IOException e) {
-			Logger.getLogger(ELinkEnrichmentsConstants.class).error(
-			        "Error while downloading the image with URL " + imagUrl, e);
+			LOG.error("Error while downloading the image with URL " + imagUrl, e);
 		}
 		return image;
 	}

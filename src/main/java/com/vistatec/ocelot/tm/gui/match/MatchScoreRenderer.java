@@ -3,23 +3,23 @@ package com.vistatec.ocelot.tm.gui.match;
 import java.awt.Color;
 import java.awt.Component;
 
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Table cell renderer for numeric values. It highlight the value with different
  * colors depending on the interval where the value falls.
  */
 public class MatchScoreRenderer extends AlternateRowsColorRenderer {
+    private static final Logger LOG = LoggerFactory.getLogger(MatchScoreRenderer.class);
 
 	/** serial version UID. */
 	private static final long serialVersionUID = -8959470309220918429L;
@@ -69,8 +69,7 @@ public class MatchScoreRenderer extends AlternateRowsColorRenderer {
 				textPane.getHighlighter().addHighlight(0,
 						textPane.getText().length(), painter);
 			} catch (BadLocationException e) {
-				Logger.getLogger(MatchScoreRenderer.class).warn(
-						"Error while highlighting the score " + value
+				LOG.warn("Error while highlighting the score " + value
 								+ "at column " + column + " and row " + row
 								+ ".", e);
 			}

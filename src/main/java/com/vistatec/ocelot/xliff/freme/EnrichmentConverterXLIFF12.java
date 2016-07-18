@@ -13,7 +13,7 @@ import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextPart;
 
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.EntityEnrichment;
@@ -35,7 +35,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 	 */
 	public EnrichmentConverterXLIFF12(String sourceLang, String targetLang) {
 
-		super(sourceLang, targetLang, Logger
+		super(sourceLang, targetLang, LoggerFactory
 		        .getLogger(EnrichmentConverterXLIFF12.class));
 	}
 
@@ -209,7 +209,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 		if (value.startsWith(GenericAnnotationType.REF_PREFIX)) {
 			value = getRefString(value);
 		}
-		logger.debug("Found an Entity Enrichment with value \"" + value + "\".");
+		logger.debug("Found an Entity Enrichment with value \"{}\".", value);
 		EntityEnrichment enrichment = new EntityEnrichment(value);
 		enrichment.setOffsetStartIdx(startOffsetIndex);
 		if (entityAnnotator != null) {

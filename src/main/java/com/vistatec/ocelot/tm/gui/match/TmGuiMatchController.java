@@ -20,7 +20,8 @@ import net.sf.okapi.tm.pensieve.common.TmHit;
 import net.sf.okapi.tm.pensieve.common.TranslationUnit;
 import net.sf.okapi.tm.pensieve.common.TranslationUnitVariant;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.OpenFileEvent;
@@ -44,6 +45,7 @@ import com.vistatec.ocelot.xliff.XLIFFDocument;
  * detachable panels: the <code>TranslationsPanel</code>.
  */
 public class TmGuiMatchController implements OcelotEventQueueListener {
+    private static final Logger LOG = LoggerFactory.getLogger(TmGuiMatchController.class);
 
 	/**
 	 * The TM service providing methods for translations match and concordance
@@ -106,8 +108,7 @@ public class TmGuiMatchController implements OcelotEventQueueListener {
 			matches = tmService.getFuzzyTermMatches(currentSelection);
 			Collections.shuffle(matches);
 		} catch (IOException e) {
-			Logger.getLogger(TmGuiMatchController.class).trace(
-			        "Error while retrieving fuzzy matches.", e);
+			LOG.trace("Error while retrieving fuzzy matches.", e);
 		}
 		if (matches != null) {
 			Collections.sort(matches, new TmMatchComparator());
@@ -129,8 +130,7 @@ public class TmGuiMatchController implements OcelotEventQueueListener {
 		try {
 			matches = tmService.getConcordanceMatches(currentSelection);
 		} catch (IOException e) {
-			Logger.getLogger(TmGuiMatchController.class).trace(
-			        "Error while retrieving concordance search matches.", e);
+			LOG.trace("Error while retrieving concordance search matches.", e);
 			JOptionPane
 			        .showMessageDialog(
 			                concordancePanel.getAttachedComponent(),

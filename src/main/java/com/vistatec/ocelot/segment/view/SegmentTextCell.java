@@ -49,7 +49,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Representation of source/target segment text in segment table view.
@@ -59,7 +60,7 @@ import org.apache.log4j.Logger;
 public class SegmentTextCell extends JTextPane {
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOG = Logger.getLogger(SegmentTextCell.class);
+    private static Logger LOG = LoggerFactory.getLogger(SegmentTextCell.class);
     public static final String tagStyle = "tag", regularStyle = "regular",
             insertStyle = "insert", deleteStyle = "delete", enrichedStyle = "enriched", highlightStyle="highlight", currHighlightStyle="currHighlight";
     private SegmentVariant v;
@@ -214,7 +215,7 @@ public class SegmentTextCell extends JTextPane {
                         doc.getStyle(styledText.get(i + 1)));
             }
         } catch (BadLocationException ex) {
-            LOG.error(ex);
+            LOG.error("Error rendering text", ex);
         }
     }
 

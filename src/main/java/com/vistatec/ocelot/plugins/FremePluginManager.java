@@ -20,7 +20,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.events.DisplayLeftComponentEvent;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
@@ -42,7 +43,7 @@ import com.vistatec.ocelot.xliff.freme.EnrichmentConverter;
 public class FremePluginManager {
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(FremePluginManager.class);
+	private final Logger logger = LoggerFactory.getLogger(FremePluginManager.class);
 
 	/** Ideal segments number per call. */
 	private static final int SEGNUM_PER_CALL = 20;
@@ -194,7 +195,7 @@ public class FremePluginManager {
 			variant.setEnriched(false);
 		}
 		eventQueue.post(new RefreshSegmentView(segNumber));
-		logger.info("Enriching variant for segment " + segNumber + "...");
+		logger.info("Enriching variant for segment {}...", segNumber);
 		VariantWrapper wrapper = new VariantWrapper(variant,
 				variant.getDisplayText(), segNumber, target);
 		if (wrapper.getText() != null && !wrapper.getText().isEmpty()) {
@@ -615,7 +616,7 @@ class VariantWrapper {
 class FremeEnricher implements Runnable {
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(FremeEnricher.class);
+	private final Logger logger = LoggerFactory.getLogger(FremeEnricher.class);
 
 	/** The array of variants. */
 	private VariantWrapper[] variants;
@@ -655,7 +656,7 @@ class FremeEnricher implements Runnable {
 	@Override
 	public void run() {
 
-		logger.debug("Enriching " + variants.length + " variants");
+		logger.debug("Enriching {} variants", variants.length);
 		for (VariantWrapper frag : variants) {
 			if (frag != null) {
 				try {

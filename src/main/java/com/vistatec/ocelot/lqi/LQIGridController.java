@@ -4,10 +4,10 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.inject.Inject;
 import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.LqiConfigService;
@@ -28,7 +28,7 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 public class LQIGridController implements OcelotEventQueueListener {
 
 	/** The logger for this class. */
-	private final Logger logger = Logger.getLogger(LQIGridController.class);
+	private final Logger logger = LoggerFactory.getLogger(LQIGridController.class);
 
 	/** The LQI configuration service. */
 	private LqiConfigService configService;
@@ -202,8 +202,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 	public void createNewLqi(String category, double severity,
 	        String severityName) {
 
-		logger.debug("Creating a new Language Quality Issue: " + category
-		        + " - " + severityName + " - " + severity);
+		logger.debug("Creating a new Language Quality Issue: {} - {} - {}", category, severityName, severity);
 		if (gridDialog == null || gridDialog.canCreateIssue()) {
 			String comment = null;
 			if(gridDialog != null){
@@ -214,8 +213,6 @@ public class LQIGridController implements OcelotEventQueueListener {
 			lqi.setType(category);
 			lqi.setSeverityName(severityName);
 			lqi.setComment(comment);
-			System.out.println("-------- Create LQI " + lqi.toString() + " - "
-			        + lqi.getSeverity() + " - " + comment);
 			if (selectedSegment != null) {
 				eventQueue.post(new LQIAdditionEvent(lqi, selectedSegment));
 			}

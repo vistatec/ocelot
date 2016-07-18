@@ -10,7 +10,8 @@ import java.lang.reflect.Proxy;
 import javax.swing.JMenu;
 import javax.swing.KeyStroke;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Additional platform integration for Mac OSX.  We load the relevant classes
@@ -18,7 +19,7 @@ import org.apache.log4j.Logger;
  * of the JDK.
  */
 public class OSXPlatformSupport implements PlatformSupport {
-    private static Logger LOG = Logger.getLogger(OSXPlatformSupport.class);
+    private static Logger LOG = LoggerFactory.getLogger(OSXPlatformSupport.class);
     private static Application app;
 
     public synchronized void init(final Ocelot ocelot) {
@@ -42,7 +43,7 @@ public class OSXPlatformSupport implements PlatformSupport {
                 }
             });
         } catch (Exception e) {
-            LOG.warn(e);
+            LOG.warn("Failed to initialize OS X UI features", e);
         }
     }
 
@@ -128,7 +129,7 @@ public class OSXPlatformSupport implements PlatformSupport {
             };
             app.setAppMethod("setAboutHandler", aboutHandlerClass, ih);
         } catch (Exception e) {
-            LOG.warn(e);
+            LOG.warn("Failed to initialize OS X UI features", e);
         }
     }
 
@@ -161,7 +162,7 @@ public class OSXPlatformSupport implements PlatformSupport {
             };
             app.setAppMethod("setQuitHandler", quitHandlerClass, ih);
         } catch (Exception e) {
-            LOG.warn(e);;
+            LOG.warn("Failed to initialize OS X UI features", e);
         }
     }
 

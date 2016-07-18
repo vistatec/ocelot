@@ -12,7 +12,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.config.ConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
@@ -30,7 +31,7 @@ import com.vistatec.ocelot.tm.TmManager;
 public class TmGuiConfigController {
 
 	/** The logger for this class. */
-	private static final Logger logger = Logger.getLogger(TmGuiConfigController.class);
+	private static final Logger logger = LoggerFactory.getLogger(TmGuiConfigController.class);
 
 	/** Default fuzzy threshold value. */
 	private static final float DEF_FUZZY_THRESHOLD = 0.75f;
@@ -199,8 +200,7 @@ public class TmGuiConfigController {
 			tmManager.deleteTm(tmName);
 		} catch (Exception e) {
 			deleted = false;
-			Logger.getLogger(TmGuiConfigController.class).trace(
-			        "Error while deleting the TM " + tmName, e);
+			logger.trace("Error while deleting the TM " + tmName, e);
 			JOptionPane
 			        .showMessageDialog(configDialog,
 			                "An error occurred while deleting the TM '"
@@ -246,8 +246,7 @@ public class TmGuiConfigController {
 				tmManager.saveOpenFileAsTmx(selectedFile);
 			}
 		} catch (Exception e) {
-			Logger.getLogger(TmGuiConfigController.class).trace(
-			        "Error while saving the opened file as a tmx.", e);
+			logger.trace("Error while saving the opened file as a tmx.", e);
 			JOptionPane.showMessageDialog(currentWindow,
 			        "An error occurred while saving the tmx file.",
 			        "Save as tmx error", JOptionPane.ERROR_MESSAGE);

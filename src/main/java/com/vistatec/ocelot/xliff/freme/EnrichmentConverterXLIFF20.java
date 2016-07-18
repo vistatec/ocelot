@@ -14,7 +14,7 @@ import net.sf.okapi.lib.xliff2.its.DataCategory;
 import net.sf.okapi.lib.xliff2.its.TermTag;
 import net.sf.okapi.lib.xliff2.its.TextAnalysis;
 
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.EntityEnrichment;
@@ -35,7 +35,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 */
 	public EnrichmentConverterXLIFF20(String sourceLang, String targetLang) {
 
-		super(sourceLang, targetLang, Logger
+		super(sourceLang, targetLang, LoggerFactory
 		        .getLogger(EnrichmentConverterXLIFF20.class));
 	}
 

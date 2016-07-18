@@ -33,7 +33,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Matchers {
 
@@ -110,7 +111,7 @@ public class Matchers {
 	// 		[min]-[max]
 	// Bounds are inclusive.
 	public static class NumericMatcher implements DataCategoryField.Matcher {
-                private static Logger LOG = Logger.getLogger(NumericMatcher.class);
+                private static Logger LOG = LoggerFactory.getLogger(NumericMatcher.class);
 		private double lowerBound = -1, upperBound = -1;
 
 		@Override
@@ -144,7 +145,8 @@ public class Matchers {
 		public void setPattern(String pattern) {
 			Values v = getValues(pattern);
 			if (v == null) {
-			    LOG.error(new IllegalArgumentException(
+			    // XXX This is very strange
+			    LOG.error("Could not create rule", new IllegalArgumentException(
 			            "Unaccepted Numeric Matcher Syntax: "+pattern));
 			}
 			lowerBound = v.min;

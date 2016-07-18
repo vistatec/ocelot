@@ -19,7 +19,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.ui.IntegerDocument;
@@ -29,6 +30,8 @@ import com.vistatec.ocelot.ui.IntegerDocument;
  */
 public class TmSettingsDialog extends JDialog implements Runnable,
         ActionListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TmSettingsDialog.class);
 
     /**serial version UID.  */ 
     private static final long serialVersionUID = -6912724603474734606L;
@@ -248,8 +251,7 @@ public class TmSettingsDialog extends JDialog implements Runnable,
                     controller.saveTmSettings(threshold, maxResults);
                     close();
                 } catch (TransferException e) {
-                    Logger.getLogger(TmSettingsDialog.class).trace(
-                            "Error while saving TM settings: threshold = "
+                    LOG.trace("Error while saving TM settings: threshold = "
                                     + threshold + " - max results = "
                                     + maxResults, e);
                     JOptionPane.showMessageDialog(this,

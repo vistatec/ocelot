@@ -22,7 +22,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -58,7 +59,7 @@ public class XliffFremeAnnotationWriter {
 	private static final String IT_TAG_CLOSE = "</it>";
 
 	/** The logger for this class. */
-	private final Logger logger = Logger
+	private final Logger logger = LoggerFactory
 			.getLogger(XliffFremeAnnotationWriter.class);
 
 	/** The dom document retrieved by parsing the XLIFF file. */
@@ -81,8 +82,7 @@ public class XliffFremeAnnotationWriter {
 	 */
 	public void saveAnnotations(final File xliffFile, SegmentService segService) {
 
-		logger.info("Saving enrichment annotations for file "
-				+ xliffFile.getName());
+		logger.info("Saving enrichment annotations for file {}", xliffFile.getName());
 		try {
 			document = parseFile(xliffFile);
 			// creates the proper helper depending on the file version
@@ -214,8 +214,7 @@ public class XliffFremeAnnotationWriter {
 		// Detect the segment associated to this unit
 		String unitId = xliffHelper.getUnitId(unitElement);
 		int segmentNumber = xliffHelper.getSegmentNumber(unitId, segService);
-		logger.debug("Writing annotations for unit " + unitId + " and segment "
-				+ segmentNumber);
+		logger.debug("Writing annotations for unit {} and segment {}", unitId, segmentNumber);
 		if (segService.getNumSegments() >= segmentNumber) {
 			OcelotSegment segment = segService.getSegment(segmentNumber - 1);
 			if (segmentNumber == 241) {
@@ -231,10 +230,8 @@ public class XliffFremeAnnotationWriter {
 							(BaseSegmentVariant) segment.getTarget());
 				}
 			} else {
-				logger.error("Error while detecting segment with segment number "
-						+ segmentNumber
-						+ ". Obtained segment number is "
-						+ segment.getSegmentNumber());
+				logger.error("Error while detecting segment with segment number {}. Obtained segment number is {}",
+				             segmentNumber, segment.getSegmentNumber());
 			}
 		}
 	}

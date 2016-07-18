@@ -10,10 +10,11 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RulesParser {
-    private static Logger LOG = Logger.getLogger(RulesParser.class);
+    private static Logger LOG = LoggerFactory.getLogger(RulesParser.class);
 
     // ruleLabel.dataCategory = regex
     private Pattern ruleFormat = Pattern.compile("([^.]+)\\.(\\w+)\\s*=(.*)");
@@ -61,7 +62,7 @@ public class RulesParser {
                 if (stateQualifier != null) {
                     config.setStateQualifierColor(stateQualifier, new Color(Integer.decode(hexColor)));
                 } else {
-                    LOG.debug("Ignoring state-qualifier: "+state);
+                    LOG.debug("Ignoring state-qualifier: {}", state);
                 }
 
             } else if (rulePattern.matches()) {
@@ -72,8 +73,7 @@ public class RulesParser {
                 DataCategoryField dataCategoryField =
                         DataCategoryField.byName(dataCategory);
                 if (dataCategoryField == null) {
-                    LOG.error("Unrecognized data category: "+dataCategory
-                            +", line: "+line);
+                    LOG.error("Unrecognized data category: {}, line: {}", dataCategory, line);
                 } else {
                     DataCategoryField.Matcher dcfMatcher = 
                             dataCategoryField.getMatcherClass().newInstance();
@@ -95,7 +95,7 @@ public class RulesParser {
                 } else if (flagType.equals("text")) {
                     config.addText(ruleLabel, value);
                 } else {
-                    LOG.error("Unrecognized flag: "+line);
+                    LOG.error("Unrecognized flag: {}", line);
                 }
             } else if (deprecatedQuickAddPattern.matches()) {
                 hasDeprecatedQuickAddPatterns = true;
@@ -106,8 +106,7 @@ public class RulesParser {
         // Validate rules and remove any that were malformed (no matchers):
         for (Rule r : new ArrayList<Rule>(config.getRules())) {
             if (r.matchers.size() == 0) {
-                LOG.warn("Ignoring rule '" + r.getLabel() + 
-                          "' that has no matchers.");
+                LOG.warn("Ignoring rule '{}' that has no matches.", r.getLabel());
                 config.removeRule(r);
             }
         }
