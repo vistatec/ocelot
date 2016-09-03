@@ -32,6 +32,7 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import java.awt.Color;
 import java.awt.ComponentOrientation;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.DropMode;
 import javax.swing.JComponent;
 import javax.swing.JTextPane;
 import javax.swing.TransferHandler;
@@ -139,6 +141,7 @@ public class SegmentTextCell extends JTextPane {
         addCaretListener(new TagSelectingCaretListener());
         setTransferHandler(new TagAwareTransferHandler());
         setDragEnabled(true);
+        setDropMode(DropMode.INSERT);
     }
 
     private SegmentTextCell() {
@@ -404,27 +407,56 @@ public class SegmentTextCell extends JTextPane {
                 return false;
             }
             SegmentTextCell cell = (SegmentTextCell) support.getComponent();
-            Transferable trfr = support.getTransferable();
             if (support.isDataFlavorSupported(SELECTION_FLAVOR)) {
-                try {
-                    SegmentVariantSelection sel = (SegmentVariantSelection) trfr.getTransferData(SELECTION_FLAVOR);
-                    if (sel.getRow() == cell.row) {
-                        cell.v.replaceSelection(cell.getSelectionStart(), cell.getSelectionEnd(), sel);
+                return importSegmentVariantSelection(cell, support);
+            } else if (support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                return importString(cell, support);
+            }
+            return false;
+        }
+
+        private boolean importSegmentVariantSelection(SegmentTextCell cell, TransferSupport support) {
+            try {
+                Transferable trfr = support.getTransferable();
+                SegmentVariantSelection sel = (SegmentVariantSelection) trfr.getTransferData(SELECTION_FLAVOR);
+                // Check to make sure we're pasting from the same row.
+                if (sel.getRow() == cell.row) {
+                    int start, end;
+                    if (support.isDrop()) {
+                        Point p = support.getDropLocation().getDropPoint();
+                        start = end = cell.viewToModel(p);
+                    } else {
+                        start = cell.getSelectionStart();
+                        end = cell.getSelectionEnd();
+                    }
+                    // Check to make sure we're not pasting into any tags
+                    if (cell.v.containsTag(start, end - start)) {
+                        return false;
+                    } else {
+                        cell.v.replaceSelection(start, end, sel);
                         cell.syncModelToView();
                         return true;
                     }
-                } catch (UnsupportedFlavorException | IOException e) {
-                    LOG.info("", e);
+                } else if (support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    // We're not pasting from the same row so it's not safe to
+                    // import tags. We can import plain text instead.
+                    return importString(cell, support);
                 }
+            } catch (UnsupportedFlavorException | IOException e) {
+                LOG.info("", e);
             }
-            if (support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-                try {
-                    String str = trfr.getTransferData(DataFlavor.stringFlavor).toString();
-                    cell.replaceSelection(str);
-                    return true;
-                } catch (UnsupportedFlavorException | IOException e) {
-                    LOG.debug("", e);
-                }
+            return false;
+        }
+
+        private boolean importString(SegmentTextCell cell, TransferSupport support) {
+            try {
+                Transferable trfr = support.getTransferable();
+                String str = trfr.getTransferData(DataFlavor.stringFlavor).toString();
+                // Rely on SegmentFilter to protect existing tags
+                cell.replaceSelection(str);
+                return true;
+            } catch (UnsupportedFlavorException | IOException e) {
+                LOG.debug("", e);
             }
             return false;
         }
