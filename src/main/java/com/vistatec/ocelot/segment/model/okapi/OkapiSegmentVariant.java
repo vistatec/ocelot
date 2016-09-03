@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.TextAtom;
@@ -34,8 +33,7 @@ public abstract class OkapiSegmentVariant extends BaseSegmentVariant {
                 char codeMarker = tf.charAt(++i);
                 int codeIndex = TextFragment.toIndex(codeMarker);
                 Code code = tf.getCode(codeIndex);
-                atoms.add(new CodeAtom(codeIndex+"", getCodeText(code, false),
-                                       getCodeText(code, true)));
+                atoms.add(new OkapiCodeAtom(codeIndex + "", getCodeText(code, false), getCodeText(code, true), code));
             }
             else {
                 sb.append(tfChar);

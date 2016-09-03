@@ -103,7 +103,10 @@ public class TextContainerVariant extends OkapiSegmentVariant {
         List<Code> tcCodes = tc.getUnSegmentedContentCopy().getCodes();
         TextFragment frag = new TextFragment();
         for (SegmentAtom atom : atoms) {
-            if (atom instanceof CodeAtom) {
+            if (atom instanceof OkapiCodeAtom) {
+                OkapiCodeAtom codeAtom = (OkapiCodeAtom) atom;
+                frag.append(codeAtom.getCode());
+            } else if (atom instanceof CodeAtom) {
                 CodeAtom codeAtom = (CodeAtom) atom;
                 Code c = tcCodes.get( Integer.parseInt(codeAtom.getId()) );
                 frag.append(c);
