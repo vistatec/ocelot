@@ -66,4 +66,8 @@ public class SegmentVariantSelection {
     public String toString() {
         return "Row " + row + " [" + selectionStart + ", " + selectionEnd + "] of " + variant;
     }
+
+    public String getDisplayText() {
+        return variant.getDisplayText().substring(selectionStart, selectionEnd);
+    }
 }

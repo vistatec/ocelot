@@ -32,11 +32,18 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import java.awt.Color;
 import java.awt.ComponentOrientation;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputMethodEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JTextPane;
+import javax.swing.TransferHandler;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.AbstractDocument;
@@ -129,6 +136,7 @@ public class SegmentTextCell extends JTextPane {
         super(new DefaultStyledDocument(styleContext));
         setEditController();
         addCaretListener(new TagSelectingCaretListener());
+        setTransferHandler(new TagAwareTransferHandler());
     }
 
     private SegmentTextCell() {
@@ -229,6 +237,23 @@ public class SegmentTextCell extends JTextPane {
         this.row = row;
         this.v = v;
         this.raw = raw;
+        syncModelToView();
+    }
+
+    private void syncModelToView() {
+        SegmentVariant tmp = v;
+        try {
+            // We temporarily set v to null here to get around the
+            // SegmentFilter, which will prevent us from clearing the text if
+            // there are tags.
+            v = null;
+            StyledDocument doc = getStyledDocument();
+            doc.remove(0, doc.getLength());
+        } catch (BadLocationException e) {
+            LOG.debug("", e);
+        } finally {
+            v = tmp;
+        }
         if (v != null) {
             setTextPane(v.getStyleData(raw));
         }
@@ -326,5 +351,114 @@ public class SegmentTextCell extends JTextPane {
         public void insertChars(String insertText, int offset) {
             v.modifyChars(offset, 0, insertText);
         }
+    }
+
+    static class TagAwareTransferHandler extends TransferHandler {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return TransferHandler.COPY_OR_MOVE;
+        }
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            SegmentTextCell cell = (SegmentTextCell) c;
+            SegmentVariantSelection selection = new SegmentVariantSelection(cell.row, cell.v.createCopy(),
+                    cell.getSelectionStart(), cell.getSelectionEnd());
+            return new SegmentVariantTransferable(selection);
+        }
+
+        @Override
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            if (action == TransferHandler.MOVE) {
+                SegmentTextCell cell = (SegmentTextCell) source;
+                try {
+                    // TODO: This approach doesn't work when drag-and-dropping a
+                    // selection backwards (to a lower index) because the region
+                    // we then try to replace is no longer correct. Fix this.
+                    SegmentVariantSelection sel = (SegmentVariantSelection) data.getTransferData(SELECTION_FLAVOR);
+                    SegmentVariantSelection emptySelection = new SegmentVariantSelection(-1, cell.v.createEmptyTarget(),
+                            0, 0);
+                    cell.v.replaceSelection(sel.getSelectionStart(), sel.getSelectionEnd(), emptySelection);
+                    cell.syncModelToView();
+                } catch (UnsupportedFlavorException | IOException e) {
+                    LOG.debug("", e);
+                }
+            }
+        }
+
+        @Override
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(SELECTION_FLAVOR)
+                    || support.isDataFlavorSupported(DataFlavor.stringFlavor);
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            if (!canImport(support)) {
+                return false;
+            }
+            SegmentTextCell cell = (SegmentTextCell) support.getComponent();
+            Transferable trfr = support.getTransferable();
+            if (support.isDataFlavorSupported(SELECTION_FLAVOR)) {
+                try {
+                    SegmentVariantSelection sel = (SegmentVariantSelection) trfr.getTransferData(SELECTION_FLAVOR);
+                    if (sel.getRow() == cell.row) {
+                        cell.v.replaceSelection(cell.getSelectionStart(), cell.getSelectionEnd(), sel);
+                        cell.syncModelToView();
+                        return true;
+                    }
+                } catch (UnsupportedFlavorException | IOException e) {
+                    LOG.info("", e);
+                }
+            }
+            if (support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                try {
+                    String str = trfr.getTransferData(DataFlavor.stringFlavor).toString();
+                    cell.replaceSelection(str);
+                    return true;
+                } catch (UnsupportedFlavorException | IOException e) {
+                    LOG.debug("", e);
+                }
+            }
+            return false;
+        }
+    }
+
+    static final DataFlavor SELECTION_FLAVOR = new DataFlavor(SegmentVariantSelection.class,
+            SegmentVariantSelection.class.getSimpleName());
+
+    static class SegmentVariantTransferable implements Transferable {
+
+        private static final DataFlavor[] FLAVORS = { SELECTION_FLAVOR, DataFlavor.stringFlavor };
+
+        private final SegmentVariantSelection selection;
+
+        public SegmentVariantTransferable(SegmentVariantSelection selection) {
+            this.selection = selection;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return FLAVORS;
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return Arrays.asList(FLAVORS).contains(flavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (SELECTION_FLAVOR.equals(flavor)) {
+                return selection;
+            } else if (DataFlavor.stringFlavor.equals(flavor)) {
+                return selection.getDisplayText();
+            }
+            throw new UnsupportedFlavorException(flavor);
+        }
+
     }
 }

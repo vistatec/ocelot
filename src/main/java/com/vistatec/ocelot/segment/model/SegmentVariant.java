@@ -99,8 +99,7 @@ public interface SegmentVariant {
 
     /**
      * Replace a selection (specified by offsets) with a selection from
-     * another segment variant.  (This method is currently unused and is
-     * intended as support for copy/paste.)
+     * another segment variant.
      *
      * @param selectionStart start of the selection to be replaced
      * @param selectionEnd end of the selection to be replaced
