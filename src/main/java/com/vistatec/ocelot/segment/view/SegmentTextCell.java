@@ -71,6 +71,7 @@ public class SegmentTextCell extends JTextPane {
     public static final String tagStyle = "tag", regularStyle = "regular",
             insertStyle = "insert", deleteStyle = "delete", enrichedStyle = "enriched", highlightStyle="highlight", currHighlightStyle="currHighlight";
     private int row = -1;
+    private SegmentVariant vOrig;
     private SegmentVariant v;
     private boolean raw;
     
@@ -237,6 +238,7 @@ public class SegmentTextCell extends JTextPane {
     public final void setVariant(int row, SegmentVariant v, boolean raw) {
         this.row = row;
         this.v = v;
+        this.vOrig = v.createCopy();
         this.raw = raw;
         syncModelToView();
     }
@@ -461,5 +463,9 @@ public class SegmentTextCell extends JTextPane {
             throw new UnsupportedFlavorException(flavor);
         }
 
+    }
+
+    public boolean canStopEditing() {
+        return v == null || !v.needsValidation() || v.validateAgainst(vOrig);
     }
 }

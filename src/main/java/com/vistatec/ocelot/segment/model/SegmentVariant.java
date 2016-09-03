@@ -108,6 +108,28 @@ public interface SegmentVariant {
     public void replaceSelection(int selectionStart, int selectionEnd,
             SegmentVariantSelection rsv);
 
+    /**
+     * When true, this segment variant has been modified in an unsafe way (by
+     * {@link #replaceSelection(int, int, SegmentVariantSelection)}) and may not
+     * have valid codes.
+     */
+    public boolean needsValidation();
+
+    /**
+     * Check that this segment variant is consistent with another one
+     * (presumably an original made with {@link #createCopy()} before this one
+     * was modified).
+     * <p>
+     * Variants are considered consistent if they have the same number of tags,
+     * and all tags in the other variant are also present in this one.
+     * 
+     * @param sv
+     *            A known-valid variant to validate against
+     * @return False if this variant's tags are inconsistent with the supplied
+     *         variant's
+     */
+    public boolean validateAgainst(SegmentVariant sv);
+
     @Override
     boolean equals(Object o);
 

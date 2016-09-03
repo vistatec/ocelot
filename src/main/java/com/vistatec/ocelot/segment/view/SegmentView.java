@@ -1212,6 +1212,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			return false;
 		}
 
+        @Override
+        public boolean stopCellEditing() {
+            return editorComponent.canStopEditing() && super.stopCellEditing();
+        }
 	}
 
 	public class SegmentCellEditorListener implements CellEditorListener {

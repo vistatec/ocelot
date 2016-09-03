@@ -23,6 +23,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	
 	private TranslationEnrichment transEnrichment;
 
+    private boolean dirty;
+
 protected List<HighlightData> highlightDataList;
     
     protected int currentHighlightedIndex = -1;
@@ -181,32 +183,58 @@ protected List<HighlightData> highlightDataList;
 		List<SegmentAtom> newAtoms = Lists.newArrayList();
 		newAtoms.addAll(getAtomsForRange(0, selectionStart));
 		newAtoms.addAll(replaceAtoms);
-		newAtoms.addAll(getAtomsForRange(selectionEnd, getLength()));
+		newAtoms.addAll(getAtomsForRange(selectionEnd, getLength()));		
+		setAtoms(newAtoms);
+        dirty = true;
 
-		// Clean up codes that may be duplicates
-		Set<String> codeIds = new HashSet<String>();
-		List<SegmentAtom> cleanedAtoms = Lists.newArrayList();
-		// Strip any atoms that exist twice
-		for (SegmentAtom atom : newAtoms) {
-			if (atom instanceof CodeAtom) {
-				String id = ((CodeAtom) atom).getId();
-				if (!codeIds.contains(id)) {
-					codeIds.add(id);
-					cleanedAtoms.add(atom);
-				}
-			} else {
-				cleanedAtoms.add(atom);
-			}
-		}
-		// Append any atoms that were deleted
-		List<CodeAtom> originalCodes = findCodes(getAtoms());
-		for (CodeAtom code : originalCodes) {
-			if (!codeIds.contains(code.getId())) {
-				cleanedAtoms.add(code);
-			}
-		}
-		setAtoms(cleanedAtoms);
+//		// Clean up codes that may be duplicates
+//		Set<String> codeIds = new HashSet<String>();
+//		List<SegmentAtom> cleanedAtoms = Lists.newArrayList();
+//		// Strip any atoms that exist twice
+//		for (SegmentAtom atom : newAtoms) {
+//			if (atom instanceof CodeAtom) {
+//				String id = ((CodeAtom) atom).getId();
+//				if (!codeIds.contains(id)) {
+//					codeIds.add(id);
+//					cleanedAtoms.add(atom);
+//				}
+//			} else {
+//				cleanedAtoms.add(atom);
+//			}
+//		}
+//		// Append any atoms that were deleted
+//		List<CodeAtom> originalCodes = findCodes(getAtoms());
+//		for (CodeAtom code : originalCodes) {
+//			if (!codeIds.contains(code.getId())) {
+//				cleanedAtoms.add(code);
+//			}
+//		}
+//		setAtoms(cleanedAtoms);
 	}
+
+    @Override
+    public boolean needsValidation() {
+        return dirty;
+    }
+
+    @Override
+    public boolean validateAgainst(SegmentVariant sv) {
+        List<CodeAtom> theseCodes = findCodes(getAtoms());
+        List<CodeAtom> thoseCodes = findCodes(sv.getAtoms());
+        if (theseCodes.size() != thoseCodes.size()) {
+            return false;
+        }
+        Set<String> codeIds = new HashSet<String>();
+        for (CodeAtom code : theseCodes) {
+            codeIds.add(code.getId());
+        }
+        for (CodeAtom code : thoseCodes) {
+            if (!codeIds.contains(code.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 	/**
 	 * Modify the text contents of the segment; Assumes checks for attempting to
