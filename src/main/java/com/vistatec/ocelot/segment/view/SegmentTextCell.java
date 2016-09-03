@@ -63,7 +63,9 @@ public class SegmentTextCell extends JTextPane {
     private static Logger LOG = LoggerFactory.getLogger(SegmentTextCell.class);
     public static final String tagStyle = "tag", regularStyle = "regular",
             insertStyle = "insert", deleteStyle = "delete", enrichedStyle = "enriched", highlightStyle="highlight", currHighlightStyle="currHighlight";
+    private int row = -1;
     private SegmentVariant v;
+    private boolean raw;
     
     private boolean inputMethodChanged;
 
@@ -119,8 +121,8 @@ public class SegmentTextCell extends JTextPane {
      * @param isBidi whether the cell contains bidi content
      * @return
      */
-    public static SegmentTextCell createCell(SegmentVariant v, boolean raw, boolean isBidi) {
-        return new SegmentTextCell(v, raw, isBidi);
+    public static SegmentTextCell createCell(int row, SegmentVariant v, boolean raw, boolean isBidi) {
+        return new SegmentTextCell(row, v, raw, isBidi);
     }
 
     private SegmentTextCell(StyleContext styleContext) {
@@ -133,9 +135,9 @@ public class SegmentTextCell extends JTextPane {
         super();
     }
 
-    private SegmentTextCell(SegmentVariant v, boolean raw, boolean isBidi) {
+    private SegmentTextCell(int row, SegmentVariant v, boolean raw, boolean isBidi) {
         this(styles);
-        setVariant(v, raw);
+        setVariant(row, v, raw);
         setBidi(isBidi);
     }
 
@@ -223,8 +225,10 @@ public class SegmentTextCell extends JTextPane {
         return this.v;
     }
 
-    public final void setVariant(SegmentVariant v, boolean raw) {
+    public final void setVariant(int row, SegmentVariant v, boolean raw) {
+        this.row = row;
         this.v = v;
+        this.raw = raw;
         if (v != null) {
             setTextPane(v.getStyleData(raw));
         }

@@ -114,7 +114,7 @@ public class SegmentDetailView extends JScrollPane {
                 for (int col = 1; col < 2; col++) {
                     int width = table.getColumnModel().getColumn(col).getWidth();
                     SegmentVariant sv = (SegmentVariant) tableModel.getValueAt(row, col);
-                    segmentCell.setVariant(sv, true);
+                    segmentCell.setVariant(row, sv, true);
                     // Need to set width to force text area to calculate a pref height
                     segmentCell.setSize(new Dimension(width, table.getRowHeight(row)));
                     rowHeight = Math.max(rowHeight, segmentCell.getPreferredSize().height);
@@ -218,7 +218,7 @@ public class SegmentDetailView extends JScrollPane {
                         Integer editDistance = (Integer) tableModel.getValueAt(row, col);
                         renderTextPane.setText(editDistance.toString());
                     } else {
-                        renderTextPane.setVariant((SegmentVariant) o, true);
+                        renderTextPane.setVariant(row, (SegmentVariant) o, true);
                     }
                 } else {
                     String s = (String)tableModel.getValueAt(row, col);

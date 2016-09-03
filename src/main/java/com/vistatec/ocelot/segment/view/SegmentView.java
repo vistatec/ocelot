@@ -943,7 +943,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 					}
 				}
 				if (v != null) {
-					renderTextPane.setVariant(v, false);
+                    renderTextPane.setVariant(row, v, false);
 				} else {
 					renderTextPane.setTargetDiff(seg.getTargetDiff());
 				}
@@ -1099,7 +1099,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		        Object value, boolean isSelected, int row, int column) {
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
-			editorComponent = SegmentTextCell.createCell(seg.getSource()
+            editorComponent = SegmentTextCell.createCell(row, seg.getSource()
 			        .createCopy(), false, isSourceBidi);
 			editorComponent.setBackground(table.getSelectionBackground());
 			editorComponent.setSelectionColor(Color.BLUE);
@@ -1157,14 +1157,14 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
 			if (col == segmentTableModel.getSegmentSourceColumnIndex()) {
-				editorComponent = SegmentTextCell.createCell(seg.getSource()
+                editorComponent = SegmentTextCell.createCell(row, seg.getSource()
 				        .createCopy(), false, isSourceBidi);
 				editorComponent.setEditable(false);
 
 			} else if (col == segmentTableModel.getSegmentTargetColumnIndex()) {
 				editListener
 				        .setBeginEdit(seg, seg.getTarget().getDisplayText());
-				editorComponent = SegmentTextCell.createCell(seg.getTarget()
+                editorComponent = SegmentTextCell.createCell(row, seg.getTarget()
 				        .createCopy(), false, isTargetBidi);
 				editorComponent.getInputMap().put(
 				        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
