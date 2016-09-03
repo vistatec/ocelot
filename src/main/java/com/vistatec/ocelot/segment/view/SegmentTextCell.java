@@ -137,6 +137,7 @@ public class SegmentTextCell extends JTextPane {
         setEditController();
         addCaretListener(new TagSelectingCaretListener());
         setTransferHandler(new TagAwareTransferHandler());
+        setDragEnabled(true);
     }
 
     private SegmentTextCell() {
