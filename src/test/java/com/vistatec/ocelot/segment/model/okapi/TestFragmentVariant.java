@@ -64,22 +64,22 @@ public class TestFragmentVariant {
 
     @Test
     public void testPlainCodeAtoms() {
-        assertEquals(Lists.newArrayList(new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),
-                                        new CodeAtom("id1", "</pc>", "</pc>")),
+        assertEquals(Lists.newArrayList(new CodeAtom("id1", "<pcid1>", "<pc id=\"id1\">"),
+                                        new CodeAtom("id1", "</pcid1>", "</pc>")),
             plainCodeFV.getAtoms());
     }
 
     @Test
     public void testGetAtoms() {
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),
-                                        new TextAtom("B"), new CodeAtom("id1", "</pc>", "</pc>")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pcid1>", "<pc id=\"id1\">"),
+                                        new TextAtom("B"), new CodeAtom("id1", "</pcid1>", "</pc>")),
             sampleFV.getAtoms());
     }
 
     @Test
     public void testGetAtomsForTarget() {
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),
-                                        new TextAtom("B"), new CodeAtom("id1", "</pc>", "</pc>")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pcid1>", "<pc id=\"id1\">"),
+                                        new TextAtom("B"), new CodeAtom("id1", "</pcid1>", "</pc>")),
             sampleText(true).getAtoms());
     }
 
@@ -103,8 +103,8 @@ public class TestFragmentVariant {
     @Test
     public void testCreateCopy() {
         FragmentVariant copy = sampleFV.createCopy();
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pc>", "<pc id=\"id1\">"),
-                new TextAtom("B"), new CodeAtom("id1", "</pc>", "</pc>")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("id1", "<pcid1>", "<pc id=\"id1\">"),
+                new TextAtom("B"), new CodeAtom("id1", "</pcid1>", "</pc>")),
                 copy.getAtoms());
     }
 

@@ -118,17 +118,30 @@ public class FragmentVariant extends BaseSegmentVariant {
 
     private CodeAtom convertToCodeAtom(IFragmentObject fragPart, Tag tag) {
         String detailedTag = fragPart.render();
-        String basicTag = getBasicTag(detailedTag);
+        String basicTag = getBasicTag(detailedTag, tag.getId());
         return new TaggedCodeAtom(tag, basicTag, detailedTag);
     }
 
     private CodeAtom convertToCodeAtom(IFragmentObject fragPart) {
         String detailedTag = fragPart.render();
-        String basicTag = getBasicTag(detailedTag);
+        String id = getFragmentObjectId(fragPart);        
+        String basicTag = getBasicTag(detailedTag, id);
         return new CodeAtom("PC"+protectedContentId++, basicTag, detailedTag);
     }
 
-    private String getBasicTag(String detailedTag) {
+    private String getFragmentObjectId(IFragmentObject fragPart) {
+        try {
+            return fragPart.getCTag().getId();
+        } catch (ClassCastException ex) {
+        }
+        try {
+            return fragPart.getMTag().getId();
+        } catch (ClassCastException ex) {
+        }
+        return "";
+    }
+
+    private String getBasicTag(String detailedTag, String id) {
         int tagEndCaratPos = detailedTag.indexOf(">");
         if (tagEndCaratPos < 0) {
             // TODO: Handle this case
@@ -140,7 +153,7 @@ public class FragmentVariant extends BaseSegmentVariant {
         }
         int beginTagAttrPos = detailedTag.indexOf(" ");
         return "<"+detailedTag.substring(1, beginTagAttrPos >= 0 ? beginTagAttrPos : tagEndCaratPos)
-                +detailedTag.substring(tagEndCaratPos, detailedTag.length());
+                + id + detailedTag.substring(tagEndCaratPos, detailedTag.length());
     }
 
     public Fragment getUpdatedOkapiFragment(Fragment fragment) {

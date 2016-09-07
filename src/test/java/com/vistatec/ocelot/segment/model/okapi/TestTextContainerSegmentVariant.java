@@ -85,8 +85,8 @@ public class TestTextContainerSegmentVariant {
 
     @Test
     public void testGetAtoms() {
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("0", "<b>", "<b id=\"1\">"),
-                                        new TextAtom("B"), new CodeAtom("1", "</b>", "</b>")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("0", "<b1>", "<b id=\"1\">"),
+                                        new TextAtom("B"), new CodeAtom("1", "</b1>", "</b>")),
                 tcv.getAtoms());
     }
 
@@ -95,15 +95,15 @@ public class TestTextContainerSegmentVariant {
         List<SegmentAtom> atoms = tcv.getAtoms();
         atoms.add(new TextAtom("X"));
         tcv.setAtoms(atoms);
-        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("0", "<b>", "<b id=\"1\">"),
-                new TextAtom("B"), new CodeAtom("1", "</b>", "</b>"), new TextAtom("X")),
+        assertEquals(Lists.newArrayList(new TextAtom("A"), new CodeAtom("0", "<b1>", "<b id=\"1\">"),
+                new TextAtom("B"), new CodeAtom("1", "</b1>", "</b>"), new TextAtom("X")),
                 tcv.getAtoms());
     }
 
     @Test
     public void testReplaceSelection() {
-        // A<b>B</b>
-        // replace <b>B with B<b>
+        // A<b1>B</b1>
+        // replace <b1>B with B<b1>
         TextContainer tc = new TextContainer();
         TextFragment tf = tc.getFirstContent();
         tf.append("AB");
@@ -111,18 +111,18 @@ public class TestTextContainerSegmentVariant {
         tf.append(new Code(TagType.CLOSING, "b", "</b>"));
         TextContainerVariant replacement = new TextContainerVariant(tc);
 
-        // A < b > B < / b >
-        // 0 1 2 3 4 5 6 7 8
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
         //      - - - 
-        // A B < b > < / b >
-        // 0 1 2 3 4 5 6 7 8
-        tcv.replaceSelection(1, 5, new SegmentVariantSelection(0, replacement, 1, 5));
-        assertEquals("AB<b></b>", tcv.getDisplayText());
+        // A B < b 1 > < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+        tcv.replaceSelection(1, 6, new SegmentVariantSelection(0, replacement, 1, 6));
+        assertEquals("AB<b1></b1>", tcv.getDisplayText());
     }
     
     @Test
     public void testGetDisplayText() {
-        assertEquals("A<b>B</b>", tcv.getDisplayText());
+        assertEquals("A<b1>B</b1>", tcv.getDisplayText());
     }
 
     @Test
@@ -130,11 +130,11 @@ public class TestTextContainerSegmentVariant {
         List<String> expected = new ArrayList<String>();
         expected.add("A");
         expected.add(SegmentTextCell.regularStyle);
-        expected.add("<b>");
+        expected.add("<b1>");
         expected.add(SegmentTextCell.tagStyle);
         expected.add("B");
         expected.add(SegmentTextCell.regularStyle);
-        expected.add("</b>");
+        expected.add("</b1>");
         expected.add(SegmentTextCell.tagStyle);
         assertEquals(expected, tcv.getStyleData(false));
     }
@@ -155,30 +155,33 @@ public class TestTextContainerSegmentVariant {
 
     @Test
     public void testCanInsertAt() {
-        // A < b > B < / b >
-        // 0 1 2 3 4 5 6 7 8
-        // Y Y N N Y Y N N N
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+        // Y Y N N N Y Y N N N N
         assertTrue(tcv.canInsertAt(0));
         assertTrue(tcv.canInsertAt(1));
         assertFalse(tcv.canInsertAt(2));
         assertFalse(tcv.canInsertAt(3));
-        assertTrue(tcv.canInsertAt(4));
+        assertFalse(tcv.canInsertAt(4));
         assertTrue(tcv.canInsertAt(5));
-        assertFalse(tcv.canInsertAt(6));
+        assertTrue(tcv.canInsertAt(6));
         assertFalse(tcv.canInsertAt(7));
         assertFalse(tcv.canInsertAt(8));
+        assertFalse(tcv.canInsertAt(9));
+        assertFalse(tcv.canInsertAt(10));
     }
 
     @Test
     public void testContainsTag() {
-        // A < b > B < / b >
-        // 0 1 2 3 4 5 6 7 8
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
         assertFalse(tcv.containsTag(0, 1));
         assertTrue(tcv.containsTag(0, 2));
         assertTrue(tcv.containsTag(1, 2));
         assertTrue(tcv.containsTag(2, 2));
         assertTrue(tcv.containsTag(3, 2));
-        assertFalse(tcv.containsTag(4, 1));
+        assertTrue(tcv.containsTag(4, 1));
+        assertFalse(tcv.containsTag(5, 1));
         assertTrue(tcv.containsTag(4, 2));
         assertTrue(tcv.containsTag(5, 2));
         assertTrue(tcv.containsTag(6, 2));
@@ -186,70 +189,70 @@ public class TestTextContainerSegmentVariant {
 
     @Test
     public void testModifyChars() {
-        // A < b > B < / b >
-        // 0 1 2 3 4 5 6 7 8
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
         tcv.modifyChars(0, 0, "X");
-        assertEquals("XA<b>B</b>", tcv.getDisplayText());
+        assertEquals("XA<b1>B</b1>", tcv.getDisplayText());
         tcv = sampleText();
         tcv.modifyChars(1, 0, "X");
-        assertEquals("AX<b>B</b>", tcv.getDisplayText());
-        tcv = sampleText();
-        tcv.modifyChars(4, 0, "X");
-        assertEquals("A<b>XB</b>", tcv.getDisplayText());
-        tcv.modifyChars(5, 0, "N");
-        assertEquals("A<b>XNB</b>", tcv.getDisplayText());
+        assertEquals("AX<b1>B</b1>", tcv.getDisplayText());
         tcv = sampleText();
         tcv.modifyChars(5, 0, "X");
-        assertEquals("A<b>BX</b>", tcv.getDisplayText());
+        assertEquals("A<b1>XB</b1>", tcv.getDisplayText());
+        tcv.modifyChars(6, 0, "N");
+        assertEquals("A<b1>XNB</b1>", tcv.getDisplayText());
+        tcv = sampleText();
+        tcv.modifyChars(6, 0, "X");
+        assertEquals("A<b1>BX</b1>", tcv.getDisplayText());
         tcv = sampleText();
         tcv.modifyChars(0,  1, "X");
-        assertEquals("X<b>B</b>", tcv.getDisplayText());
+        assertEquals("X<b1>B</b1>", tcv.getDisplayText());
         tcv = sampleText();
-        tcv.modifyChars(4,  1, "X");
-        assertEquals("A<b>X</b>", tcv.getDisplayText());
+        tcv.modifyChars(5, 1, "X");
+        assertEquals("A<b1>X</b1>", tcv.getDisplayText());
         tcv = sampleText();
         tcv.modifyChars(0, 1, null); // delete
-        assertEquals("<b>B</b>", tcv.getDisplayText());
+        assertEquals("<b1>B</b1>", tcv.getDisplayText());
         tcv = sampleText();
-        tcv.modifyChars(9, 0, "X");
-        assertEquals("A<b>B</b>X", tcv.getDisplayText());
+        tcv.modifyChars(11, 0, "X");
+        assertEquals("A<b1>B</b1>X", tcv.getDisplayText());
     }
 
     @Test
     public void testInsertPlainCode() {
         plainCodeTCV.modifyChars(0, 0, "ABC");
-        assertEquals("ABC<b></b>", plainCodeTCV.getDisplayText());
+        assertEquals("ABC<b1></b1>", plainCodeTCV.getDisplayText());
 
         plainCodeTCV = plainCode();
-        plainCodeTCV.modifyChars(7, 0, "ABC");
-        assertEquals("<b></b>ABC", plainCodeTCV.getDisplayText());
+        plainCodeTCV.modifyChars(9, 0, "ABC");
+        assertEquals("<b1></b1>ABC", plainCodeTCV.getDisplayText());
 
         plainCodeTCV = plainCode();
-        plainCodeTCV.modifyChars(3, 0, "ABC");
-        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+        plainCodeTCV.modifyChars(4, 0, "ABC");
+        assertEquals("<b1>ABC</b1>", plainCodeTCV.getDisplayText());
 
         // These test calls should never be called in real usage, as modifyChars
         // should not be called unless it has already been verified that you are
         // not modifying within a CodeAtom.
         plainCodeTCV = plainCode();
         plainCodeTCV.modifyChars(1, 0, "ABC");
-        assertEquals("ABC<b></b>", plainCodeTCV.getDisplayText());
+        assertEquals("ABC<b1></b1>", plainCodeTCV.getDisplayText());
 
         plainCodeTCV = plainCode();
         plainCodeTCV.modifyChars(2, 0, "ABC");
-        assertEquals("ABC<b></b>", plainCodeTCV.getDisplayText());
+        assertEquals("ABC<b1></b1>", plainCodeTCV.getDisplayText());
 
         plainCodeTCV = plainCode();
         plainCodeTCV.modifyChars(4, 0, "ABC");
-        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+        assertEquals("<b1>ABC</b1>", plainCodeTCV.getDisplayText());
 
         plainCodeTCV = plainCode();
         plainCodeTCV.modifyChars(5, 0, "ABC");
-        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+        assertEquals("<b1>ABC</b1>", plainCodeTCV.getDisplayText());
 
         plainCodeTCV = plainCode();
         plainCodeTCV.modifyChars(6, 0, "ABC");
-        assertEquals("<b>ABC</b>", plainCodeTCV.getDisplayText());
+        assertEquals("<b1>ABC</b1>", plainCodeTCV.getDisplayText());
     }
 
     @Test

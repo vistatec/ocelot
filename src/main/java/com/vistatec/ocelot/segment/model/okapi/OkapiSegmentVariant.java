@@ -53,11 +53,11 @@ public abstract class OkapiSegmentVariant extends BaseSegmentVariant {
         }
         switch (code.getTagType()) {
         case OPENING:
-            return "<" + code.getType() + ">";
+            return "<" + code.getType() + code.getId() + ">";
         case CLOSING:
-            return "</" + code.getType() + ">";
+            return "</" + code.getType() + code.getId() + ">";
         case PLACEHOLDER:
-            return "<" + code.getType() + "/>";
+            return "<" + code.getType() + code.getId() + "/>";
         }
         throw new IllegalStateException();
     }
