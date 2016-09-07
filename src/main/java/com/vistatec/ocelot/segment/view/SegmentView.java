@@ -39,6 +39,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.HeadlessException;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
@@ -49,11 +50,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.print.PrinterException;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
+import javax.print.PrintService;
+import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
@@ -63,6 +68,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -147,6 +153,12 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	private static Logger LOG = LoggerFactory.getLogger(SegmentView.class);
 
+    private static final String TAG_VALIDATION_ERROR_MESSAGE = "This segment's tags are in an "
+            + "inconsistent state and can't be saved. Do you want to discard your work, or keep editing?";
+    private static final String TAG_VALIDATION_ERROR_TITLE = "Tag Error";
+    private static final String TAG_VALIDATION_BUTTON_CONTINUE = "Continue";
+    private static final String TAG_VALIDATION_BUTTON_DISCARD = "Discard";
+
 	protected SegmentTableModel segmentTableModel;
 	protected SegmentViewTable sourceTargetTable;
 	private TableColumnModel tableColumnModel;
@@ -207,6 +219,35 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		public void recalculateAllRowHeights() {
 			this.requireFullRecalc = true;
 		}
+
+        @Override
+        public void columnMoved(TableColumnModelEvent e) {
+            // Unilaterally cancel editing here; see SegmentEditor.stopCellEditing()
+            if (isEditing()) {
+                getCellEditor().cancelCellEditing();
+            }
+            super.columnMoved(e);
+        }
+
+        @Override
+        public void columnMarginChanged(ChangeEvent e) {
+            // Unilaterally cancel editing here; see SegmentEditor.stopCellEditing()
+            if (isEditing()) {
+                getCellEditor().cancelCellEditing();
+            }
+            super.columnMarginChanged(e);
+        }
+
+        @Override
+        public boolean print(PrintMode printMode, MessageFormat headerFormat, MessageFormat footerFormat,
+                boolean showPrintDialog, PrintRequestAttributeSet attr, boolean interactive, PrintService service)
+                throws PrinterException, HeadlessException {
+            // Unilaterally cancel editing here; see SegmentEditor.stopCellEditing()
+            if (isEditing()) {
+                getCellEditor().cancelCellEditing();
+            }
+            return super.print(printMode, headerFormat, footerFormat, showPrintDialog, attr, interactive, service);
+        }
 	}
 
 	@Inject
@@ -1174,9 +1215,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 					        @Override
 					        public void actionPerformed(ActionEvent e) {
-						        fireEditingStopped();
-						        eventQueue.post(new OcelotEditingEvent(
-						                OcelotEditingEvent.Type.STOP_EDITING));
+                                if (stopCellEditing()) {
+                                    fireEditingStopped();
+                                    eventQueue.post(new OcelotEditingEvent(OcelotEditingEvent.Type.STOP_EDITING));
+                                }
 					        }
 				        });
 				editingRow = row;
@@ -1214,7 +1256,25 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
         @Override
         public boolean stopCellEditing() {
-            return editorComponent.canStopEditing() && super.stopCellEditing();
+            if (!editorComponent.canStopEditing()) {
+                // It seems that it's not good to make a blocking call here, as
+                // e.g. window resize events can make us enter this method
+                // multiple times and we get multiple dialogs. However there
+                // seems to be no other way to prompt the user before committing
+                // or cancelling changes, so instead we work around by
+                // overriding JTable methods that might call this method to
+                // first unilaterally cancel editing. See:
+                // columnMoved(), columnMarginChanged(), print()
+                int response = JOptionPane.showOptionDialog(SegmentView.this, TAG_VALIDATION_ERROR_MESSAGE,
+                        TAG_VALIDATION_ERROR_TITLE, JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
+                        new String[] { TAG_VALIDATION_BUTTON_CONTINUE, TAG_VALIDATION_BUTTON_DISCARD },
+                        TAG_VALIDATION_BUTTON_CONTINUE);
+                if (response == 1) {
+                    cancelCellEditing();
+                }
+                return false;
+            }
+            return super.stopCellEditing();
         }
 	}
 
