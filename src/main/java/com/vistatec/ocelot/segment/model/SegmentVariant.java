@@ -117,6 +117,13 @@ public interface SegmentVariant {
             SegmentVariantSelection rsv);
 
     /**
+     * Delete a selection (specified by offsets).
+     * @param selectionStart start of the selection to be cleared
+     * @param selectionEnd end of the selection to be cleared
+     */
+    public void clearSelection(int selectionStart, int selectionEnd);
+
+    /**
      * When true, this segment variant has been modified in an unsafe way (by
      * {@link #replaceSelection(int, int, SegmentVariantSelection)}) and may not
      * have valid codes.

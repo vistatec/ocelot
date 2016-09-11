@@ -225,6 +225,12 @@ protected List<HighlightData> highlightDataList;
 	}
 
     @Override
+    public void clearSelection(int selectionStart, int selectionEnd) {
+        SegmentVariantSelection emptySelection = new SegmentVariantSelection(-1, createEmptyTarget(), 0, 0);
+        replaceSelection(selectionStart, selectionEnd, emptySelection);
+    }
+
+    @Override
     public boolean needsValidation() {
         return dirty;
     }

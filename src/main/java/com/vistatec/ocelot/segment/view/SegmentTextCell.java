@@ -324,8 +324,13 @@ public class SegmentTextCell extends JTextPane {
                 throws BadLocationException {
 
             if (v != null) {
-                // Disallow tag deletions
-                if (!v.containsTag(offset, length)) {
+                // Allow atomic tag deletions
+                if (v.containsTag(offset, length)) {
+                    int start = v.findSelectionStart(offset);
+                    int end = v.findSelectionEnd(offset + length);
+                    v.clearSelection(start, end);
+                    super.remove(fb, start, end - start);
+                } else {
                     // Remove from cell editor
                     super.remove(fb, offset, length);
     
@@ -346,7 +351,13 @@ public class SegmentTextCell extends JTextPane {
         public void replace(FilterBypass fb, int offset, int length, String str,
                 AttributeSet a) throws BadLocationException {
             if (length > 0) {
-                if (!v.containsTag(offset, length)) {
+                if (v.containsTag(offset, length)) {
+                    int start = v.findSelectionStart(offset);
+                    int end = v.findSelectionEnd(offset + length);
+                    v.clearSelection(start, end);
+                    v.modifyChars(offset, 0, str);
+                    super.replace(fb, start, end - start, str, a);
+                } else {
                     // Remove from cell editor
                     super.replace(fb, offset, length, str, a);
 
@@ -431,8 +442,7 @@ public class SegmentTextCell extends JTextPane {
         }
 
         void clearSelection(SegmentTextCell cell, SegmentVariantSelection selection) {
-            SegmentVariantSelection emptySelection = new SegmentVariantSelection(-1, cell.v.createEmptyTarget(), 0, 0);
-            cell.v.replaceSelection(selection.getSelectionStart(), selection.getSelectionEnd(), emptySelection);
+            cell.v.clearSelection(selection.getSelectionStart(), selection.getSelectionEnd());
         }
 
         private boolean importSegmentVariantSelection(SegmentTextCell cell, TransferSupport support) {
