@@ -55,6 +55,18 @@ protected List<HighlightData> highlightDataList;
 		return atomsForRange;
 	}
 
+    @Override
+    public SegmentAtom getAtomAt(int offset) {
+        int index = 0;
+        for (SegmentAtom atom : getAtoms()) {
+            if (index <= offset && offset < index + atom.getLength()) {
+                return atom;
+            }
+            index += atom.getLength();
+        }
+        return null;
+    }
+
 	public int getLength() {
 		int len = 0;
 		for (SegmentAtom atom : getAtoms()) {

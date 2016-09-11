@@ -28,24 +28,28 @@
  */
 package com.vistatec.ocelot.segment.model.okapi;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.TextAtom;
+import com.vistatec.ocelot.segment.view.SegmentTextCell;
+import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextFragment.TagType;
-
-import org.junit.*;
-
-import com.google.common.collect.Lists;
-import com.vistatec.ocelot.segment.model.CodeAtom;
-import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.view.SegmentTextCell;
-import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
-import com.vistatec.ocelot.segment.model.TextAtom;
-
-import static org.junit.Assert.*;
 
 public class TestTextContainerSegmentVariant {
     private TextContainerVariant tcv, plainTextTCV, plainCodeTCV;
@@ -185,6 +189,24 @@ public class TestTextContainerSegmentVariant {
         assertTrue(tcv.containsTag(4, 2));
         assertTrue(tcv.containsTag(5, 2));
         assertTrue(tcv.containsTag(6, 2));
+    }
+
+    @Test
+    public void testGetAtomAt() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+        assertEquals("A", tcv.getAtomAt(0).getData());
+        assertEquals("<b1>", tcv.getAtomAt(1).getData());
+        assertEquals("<b1>", tcv.getAtomAt(2).getData());
+        assertEquals("<b1>", tcv.getAtomAt(3).getData());
+        assertEquals("<b1>", tcv.getAtomAt(4).getData());
+        assertEquals("B", tcv.getAtomAt(5).getData());
+        assertEquals("</b1>", tcv.getAtomAt(6).getData());
+        assertEquals("</b1>", tcv.getAtomAt(7).getData());
+        assertEquals("</b1>", tcv.getAtomAt(8).getData());
+        assertEquals("</b1>", tcv.getAtomAt(9).getData());
+        assertEquals("</b1>", tcv.getAtomAt(10).getData());
+        assertNull(tcv.getAtomAt(11));
     }
 
     @Test

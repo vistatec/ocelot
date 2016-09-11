@@ -28,8 +28,6 @@
  */
 package com.vistatec.ocelot.segment.view;
 
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Point;
@@ -37,6 +35,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputMethodEvent;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +59,10 @@ import javax.swing.text.StyledDocument;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 /**
  * Representation of source/target segment text in segment table view.
@@ -295,6 +298,18 @@ public class SegmentTextCell extends JTextPane {
         super.processInputMethodEvent(e);
     }
 
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        Point p = event.getPoint();
+        int offset = viewToModel(p);
+        if (v != null && v.containsTag(offset, 0)) {
+            SegmentAtom atom = v.getAtomAt(offset);
+            if (atom instanceof CodeAtom) {
+                return ((CodeAtom) atom).getVerboseData();
+            }
+        }
+        return super.getToolTipText(event);
+    }
 
 
 	/**

@@ -1,8 +1,8 @@
 package com.vistatec.ocelot.segment.model;
 
-import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
-
 import java.util.List;
+
+import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 /**
  * Abstract representation of a segment variant (eg, the source
@@ -40,6 +40,14 @@ public interface SegmentVariant {
      * @return
      */
     List<SegmentAtom> getAtoms();
+
+    /**
+     * Get the SegmentAtom at the specified offset.
+     * 
+     * @param offset
+     * @return The atom, or null if the offset is out of bounds
+     */
+    SegmentAtom getAtomAt(int offset);
 
     /**
      * Return the style information for the editable cells.  The return
