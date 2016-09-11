@@ -117,6 +117,15 @@ public interface SegmentVariant {
             SegmentVariantSelection rsv);
 
     /**
+     * Replace a selection (specified by offsets) with a list of atoms.
+     *
+     * @param selectionStart start of the selection to be replaced
+     * @param selectionEnd end of the selection to be replaced
+     * @param atoms content with which to replace the current selection
+     */
+    public void replaceSelection(int selectionStart, int selectionEnd, List<? extends SegmentAtom> atoms);
+
+    /**
      * Delete a selection (specified by offsets).
      * @param selectionStart start of the selection to be cleared
      * @param selectionEnd end of the selection to be cleared
@@ -144,6 +153,18 @@ public interface SegmentVariant {
      *         variant's
      */
     public boolean validateAgainst(SegmentVariant sv);
+
+    /**
+     * Get tags missing from this variant that are present in another one
+     * (presumably an original made with {@link #createCopy()} before this one
+     * was modified).
+     * <p>
+     * 
+     * @param sv
+     *            A known-valid variant to check tags against
+     * @return List of tags
+     */
+    public List<CodeAtom> getMissingTags(SegmentVariant sv);
 
     @Override
     boolean equals(Object o);

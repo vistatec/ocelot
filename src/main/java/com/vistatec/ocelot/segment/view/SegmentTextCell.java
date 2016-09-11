@@ -34,7 +34,10 @@ import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputMethodEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +46,8 @@ import java.util.List;
 
 import javax.swing.DropMode;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.TransferHandler;
 import javax.swing.event.CaretEvent;
@@ -145,6 +150,7 @@ public class SegmentTextCell extends JTextPane {
         setTransferHandler(new TagAwareTransferHandler());
         setDragEnabled(true);
         setDropMode(DropMode.INSERT);
+        addMouseListener(new ContextMenuListener());
     }
 
     private SegmentTextCell() {
@@ -545,5 +551,57 @@ public class SegmentTextCell extends JTextPane {
 
     public boolean canStopEditing() {
         return v == null || !v.needsValidation() || v.validateAgainst(vOrig);
+    }
+
+    class ContextMenuListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                doContextPopup(e.getComponent(), e.getPoint());
+            }
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                doContextPopup(e.getComponent(), e.getPoint());
+            }
+        }
+
+        void doContextPopup(Component c, Point p) {
+            JPopupMenu menu = makeContextPopup(viewToModel(p));
+            menu.show(c, p.x, p.y);
+        }
+    }
+
+    JPopupMenu makeContextPopup(int insertionPoint) {
+        final List<CodeAtom> missing = v.getMissingTags(vOrig);
+        final int correctedPoint = v.findSelectionEnd(insertionPoint);
+        JPopupMenu menu = new JPopupMenu();
+        for (final CodeAtom atom : missing) {
+            JMenuItem restoreOneItem = menu.add("Restore Missing Tag: " + atom.getData());
+            restoreOneItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    v.replaceSelection(correctedPoint, correctedPoint, Arrays.asList(atom));
+                    syncModelToView();
+                }
+            });
+        }
+        if (missing.size() != 1) {
+            // Only offer Restore All if there are zero tags (to make the
+            // feature more visible) or if there are multiple tags. The
+            // single-tag case is handled above.
+            JMenuItem restoreAllItem = menu.add("Restore All Missing Tags");
+            restoreAllItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    v.replaceSelection(correctedPoint, correctedPoint, missing);
+                    syncModelToView();
+                }
+            });
+            restoreAllItem.setEnabled(!missing.isEmpty());
+        }
+        return menu;
     }
 }
