@@ -362,6 +362,7 @@ public class SegmentTextCell extends JTextPane {
     static class TagAwareTransferHandler extends TransferHandler {
 
         private static final long serialVersionUID = 1L;
+        private boolean didClearSelection = false;
 
         @Override
         public int getSourceActions(JComponent c) {
@@ -378,20 +379,18 @@ public class SegmentTextCell extends JTextPane {
 
         @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
-            if (action == TransferHandler.MOVE) {
+            try {
                 SegmentTextCell cell = (SegmentTextCell) source;
-                try {
-                    // TODO: This approach doesn't work when drag-and-dropping a
-                    // selection backwards (to a lower index) because the region
-                    // we then try to replace is no longer correct. Fix this.
-                    SegmentVariantSelection sel = (SegmentVariantSelection) data.getTransferData(SELECTION_FLAVOR);
-                    SegmentVariantSelection emptySelection = new SegmentVariantSelection(-1, cell.v.createEmptyTarget(),
-                            0, 0);
-                    cell.v.replaceSelection(sel.getSelectionStart(), sel.getSelectionEnd(), emptySelection);
+                SegmentVariantSelection sel = (SegmentVariantSelection) data.getTransferData(SELECTION_FLAVOR);
+                if (action == TransferHandler.MOVE && !didClearSelection) {
+                    // Only clear the original selection here if we didn't
+                    // already handle it in importData().
+                    clearSelection(cell, sel);
                     cell.syncModelToView();
-                } catch (UnsupportedFlavorException | IOException e) {
-                    LOG.debug("", e);
+                    didClearSelection = true;
                 }
+            } catch (UnsupportedFlavorException | IOException e) {
+                LOG.debug("", e);
             }
         }
 
@@ -406,6 +405,7 @@ public class SegmentTextCell extends JTextPane {
             if (!canImport(support)) {
                 return false;
             }
+            didClearSelection = false;
             SegmentTextCell cell = (SegmentTextCell) support.getComponent();
             if (support.isDataFlavorSupported(SELECTION_FLAVOR)) {
                 return importSegmentVariantSelection(cell, support);
@@ -413,6 +413,11 @@ public class SegmentTextCell extends JTextPane {
                 return importString(cell, support);
             }
             return false;
+        }
+
+        void clearSelection(SegmentTextCell cell, SegmentVariantSelection selection) {
+            SegmentVariantSelection emptySelection = new SegmentVariantSelection(-1, cell.v.createEmptyTarget(), 0, 0);
+            cell.v.replaceSelection(selection.getSelectionStart(), selection.getSelectionEnd(), emptySelection);
         }
 
         private boolean importSegmentVariantSelection(SegmentTextCell cell, TransferSupport support) {
@@ -432,11 +437,27 @@ public class SegmentTextCell extends JTextPane {
                     // Check to make sure we're not pasting into any tags
                     if (cell.v.containsTag(start, end - start)) {
                         return false;
-                    } else {
-                        cell.v.replaceSelection(start, end, sel);
-                        cell.syncModelToView();
-                        return true;
                     }
+
+                    boolean isDragMove = support.isDrop() && support.getDropAction() == TransferHandler.MOVE;
+                    boolean dragWillInvalidateOriginalOffsets = isDragMove && end < sel.getSelectionStart();
+                    if (isDragMove && dragWillInvalidateOriginalOffsets) {
+                        // If we are moving by DnD to a location before the
+                        // selection, delete the origin selection first so that
+                        // the offsets aren't invalidated by inserting the
+                        // selection. The "real" way to do this is to have a way
+                        // of tracking how the offsets move in the underlying
+                        // model, like javax.swing.text.Position, and always
+                        // handle clearing the selection in exportDone().
+                        // However such an abstraction doesn't appear to be
+                        // possible given how e.g. TextContainerVariant stores
+                        // and retrieves its atoms.
+                        clearSelection(cell, sel);
+                        didClearSelection = true;
+                    }
+                    cell.v.replaceSelection(start, end, sel);
+                    cell.syncModelToView();
+                    return true;
                 } else if (support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     // We're not pasting from the same row so it's not safe to
                     // import tags. We can import plain text instead.
