@@ -46,9 +46,11 @@ import com.vistatec.ocelot.segment.model.TextAtom;
  */
 public class TextContainerVariant extends OkapiSegmentVariant {
     private final TextContainer tc;
+    private List<SegmentAtom> atoms;
 
     public TextContainerVariant(TextContainer tc) {
         this.tc = tc;
+        this.atoms = extractAtoms(tc);
     }
 
     @Override
@@ -59,13 +61,14 @@ public class TextContainerVariant extends OkapiSegmentVariant {
     @Override
     public TextContainerVariant createCopy() {
     	
-        return new TextContainerVariant(tc.clone());
+        return new TextContainerVariant(getTextContainer().clone());
     }
 
     @Override
     public void setContent(SegmentVariant variant) {
         TextContainerVariant other = (TextContainerVariant)variant;
         tc.setContent(other.getTextContainer().getUnSegmentedContentCopy());
+        atoms = extractAtoms(tc);
     }
 
     public TextContainer getTextContainer() {
@@ -74,6 +77,10 @@ public class TextContainerVariant extends OkapiSegmentVariant {
 
     @Override
     public List<SegmentAtom> getAtoms() {
+        return this.atoms;
+    }
+
+    private List<SegmentAtom> extractAtoms(TextContainer tc) {
     	List<SegmentAtom> atoms = convertTextFragment(tc.getUnSegmentedContentCopy());
 		if (highlightDataList != null) {
 			HighlightData hlData = null;
@@ -98,6 +105,11 @@ public class TextContainerVariant extends OkapiSegmentVariant {
 
     @Override
     public void setAtoms(List<SegmentAtom> atoms) {
+        this.atoms = atoms;
+        writeAtoms(atoms, tc);
+    }
+
+    private void writeAtoms(List<SegmentAtom> atoms, TextContainer tc) {
         // Unfortunately, TextContainer's can't view all of the codes
         // they contain.
         List<Code> tcCodes = tc.getUnSegmentedContentCopy().getCodes();
@@ -126,7 +138,7 @@ public class TextContainerVariant extends OkapiSegmentVariant {
         // where equality was checked. Since codes are currently invariant
         // in Ocelot, it will work for now, but break if we ever allow real
         // editing.
-        return tc.getCodedText().equals(((TextContainerVariant)o).getTextContainer().getCodedText());
+        return tc.getCodedText().equals(((TextContainerVariant) o).getTextContainer().getCodedText());
     }
 
     @Override
