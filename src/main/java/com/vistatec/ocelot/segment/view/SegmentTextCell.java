@@ -28,14 +28,23 @@
  */
 package com.vistatec.ocelot.segment.view;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Container;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.InputMethodEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,11 +54,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.DropMode;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.TransferHandler;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.AbstractDocument;
@@ -65,6 +78,7 @@ import javax.swing.text.StyledDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
@@ -85,6 +99,8 @@ public class SegmentTextCell extends JTextPane {
     private SegmentVariant v;
     private boolean raw;
     
+    private JFrame menuFrame;
+
     private boolean inputMethodChanged;
 
     // Shared styles table
@@ -603,5 +619,79 @@ public class SegmentTextCell extends JTextPane {
             restoreAllItem.setEnabled(!missing.isEmpty());
         }
         return menu;
+    }
+
+    void prepareEditingUI() {
+        menuFrame = new JFrame();
+        menuFrame.setUndecorated(true);
+        menuFrame.setAlwaysOnTop(true);
+        menuFrame.setAutoRequestFocus(false);
+        menuFrame.setFocusable(false);
+        Container c = menuFrame.getContentPane();
+        c.setLayout(new BorderLayout());
+        final JButton button = new JButton();
+        button.setFocusable(false);
+        button.setBorder(new EmptyBorder(4, 4, 4, 4));
+        Toolkit kit = Toolkit.getDefaultToolkit();
+        ImageIcon icon = new ImageIcon(kit.getImage(Ocelot.class.getResource("ic_settings_black_14px.png")));
+        button.setIcon(icon);
+        ImageIcon pressedIcon = new ImageIcon(kit.getImage(Ocelot.class.getResource("ic_settings_white_14px.png")));
+        button.setPressedIcon(pressedIcon);
+        c.add(button, BorderLayout.CENTER);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Component c = ((Component) e.getSource());
+                Point p = c.getLocation();
+                p.translate(0, c.getHeight());
+                makeContextPopup(getCaretPosition()).show(c, p.x, p.y);
+            }
+        });
+        menuFrame.pack();
+        addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (e.isTemporary()) {
+                    // Loss is temporary when e.g. the program is no longer the
+                    // active one.
+                    menuFrame.setVisible(false);
+                }
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                setFrameLocation();
+            }
+        });
+        addHierarchyBoundsListener(new HierarchyBoundsListener() {
+            @Override
+            public void ancestorMoved(HierarchyEvent e) {
+                setFrameLocation();
+            }
+
+            @Override
+            public void ancestorResized(HierarchyEvent e) {
+                setFrameLocation();
+            }
+        });
+    }
+    
+    void setFrameLocation() {
+        Rectangle visible = getVisibleRect();
+        boolean showFrame = isShowing() && !visible.isEmpty() && visible.y == 0
+                && visible.height >= menuFrame.getHeight();
+        menuFrame.setVisible(showFrame);
+        if (showFrame) {
+            Container parent = getParent();
+            Point p = parent.getLocationOnScreen();
+            p.translate(parent.getWidth() + 4, 0);
+            menuFrame.setLocation(p);
+        }
+    }
+
+    void closeEditingUI() {
+        if (menuFrame != null) {
+            menuFrame.dispose();
+        }
     }
 }

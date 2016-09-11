@@ -1230,6 +1230,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				        });
 				editingRow = row;
 				editorComponent.setFont(font);
+                editorComponent.prepareEditingUI();
                 ToolTipManager.sharedInstance().registerComponent(editorComponent);
 			}
 			eventQueue.post(new OcelotEditingEvent(
@@ -1293,6 +1294,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
             // called directly in BasicTableUI.Actions.actionPerformed(). Thus
             // we do cleanup here.
             super.removeCellEditorListener(l);
+            editorComponent.closeEditingUI();
             ToolTipManager.sharedInstance().unregisterComponent(editorComponent);
         }
 	}
