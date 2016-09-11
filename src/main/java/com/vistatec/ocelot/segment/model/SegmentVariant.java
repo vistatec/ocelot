@@ -169,4 +169,10 @@ public interface SegmentVariant {
     @Override
     boolean equals(Object o);
 
+    /**
+     * Create an atom at the given offset that will track that location in the
+     * text even as the content changes.
+     */
+    PositionAtom createPosition(int offset);
+
 }

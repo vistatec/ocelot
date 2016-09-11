@@ -38,11 +38,17 @@ protected List<HighlightData> highlightDataList;
 		int end = start + length;
 
 		for (SegmentAtom atom : getAtoms()) {
+			if (index == start && atom instanceof PositionAtom) {
+				// Catch PositionAtom at the very beginning of the range.
+				atomsForRange.add(atom);
+			}
 			if (index >= end) {
 				return atomsForRange;
 			}
 			if (index + atom.getLength() > start) {
 				if (atom instanceof CodeAtom) {
+					atomsForRange.add(atom);
+				} else if (atom instanceof PositionAtom) {
 					atomsForRange.add(atom);
 				} else {
 					int min = Math.max(start - index, 0);
@@ -127,10 +133,12 @@ protected List<HighlightData> highlightDataList;
 			} else {
 				textToStyle.add(atom.getData());
             		textToStyle.add(atom.getTextStyle());
-			}
-            } else {
-            	textToStyle.add(atom.getData());
-			textToStyle.add(atom.getTextStyle());
+				}
+			} else if (atom instanceof PositionAtom) {
+				// Skip
+			} else {
+				textToStyle.add(atom.getData());
+				textToStyle.add(atom.getTextStyle());
 		}
         }
 		return textToStyle;
@@ -182,6 +190,17 @@ protected List<HighlightData> highlightDataList;
 			index += atom.getLength();
 		}
 		return codes;
+	}
+
+	@Override
+	public PositionAtom createPosition(int offset) {
+		List<SegmentAtom> atoms = Lists.newArrayList();
+		atoms.addAll(getAtomsForRange(0, offset));
+		PositionAtom position = new PositionAtom(this);
+		atoms.add(position);
+		atoms.addAll(getAtomsForRange(offset, getLength()));
+		setAtoms(atoms);
+		return position;
 	}
 
 	@Override
