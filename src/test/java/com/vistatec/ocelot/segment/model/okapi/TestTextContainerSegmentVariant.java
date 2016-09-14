@@ -32,8 +32,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -41,6 +44,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.PositionAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.TextAtom;
 import com.vistatec.ocelot.segment.view.SegmentTextCell;
@@ -296,5 +300,180 @@ public class TestTextContainerSegmentVariant {
         List<String> l = Lists.newArrayList("A", "B", "C");
         assertEquals(Lists.newArrayList("C"), l.subList(2, 3));
         assertEquals(Lists.newArrayList(), l.subList(3, 3));
+    }
+
+    @Test
+    public void testReplaceWithAtoms() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+
+        // Insert with zero-length range.
+        tcv.replaceSelection(0, 0, Arrays.asList(new TextAtom("C"), new TextAtom("D")));
+        assertEquals("CDA<b1>B</b1>", tcv.toString());
+        tcv.replaceSelection(0, 3, Arrays.asList(new TextAtom("E")));
+        assertEquals("E<b1>B</b1>", tcv.toString());
+
+        // Range must include entire CodeAtom in order to replace it.
+        tcv.replaceSelection(0, 2, Arrays.asList(new TextAtom("F")));
+        assertEquals("F<b1>B</b1>", tcv.toString());
+        tcv.replaceSelection(0, 3, Arrays.asList(new TextAtom("F")));
+        assertEquals("F<b1>B</b1>", tcv.toString());
+        tcv.replaceSelection(0, 4, Arrays.asList(new TextAtom("F")));
+        assertEquals("F<b1>B</b1>", tcv.toString());
+        tcv.replaceSelection(0, 5, Arrays.asList(new TextAtom("F")));
+        assertEquals("FB</b1>", tcv.toString());
+
+        // Replace with empty list to clear.
+        tcv.replaceSelection(0, 3, Collections.<SegmentAtom> emptyList());
+        assertEquals("</b1>", tcv.toString());
+    }
+
+    @Test
+    public void testSelection() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+
+        // SegmentVariantSelection represents a selection of the textual
+        // representation, not the atomic representation.
+        SegmentVariantSelection sel = new SegmentVariantSelection("", tcv, 0, 1);
+        assertEquals("A", sel.getDisplayText());
+        sel = new SegmentVariantSelection("", tcv, 0, 2);
+        assertEquals("A<", sel.getDisplayText());
+        sel = new SegmentVariantSelection("", tcv, 0, 3);
+        assertEquals("A<b", sel.getDisplayText());
+        sel = new SegmentVariantSelection("", tcv, 0, 4);
+        assertEquals("A<b1", sel.getDisplayText());
+        sel = new SegmentVariantSelection("", tcv, 0, 5);
+        assertEquals("A<b1>", sel.getDisplayText());
+
+        // Selection refers to source SegmentVariant, will become invalid if
+        // source is mutated.
+        tcv.clearSelection(0, tcv.getLength());
+        try {
+            assertEquals("A<b1>", sel.getDisplayText());
+            fail("Selection should no longer be valid");
+        } catch (IndexOutOfBoundsException e) {
+            // OK
+        }
+    }
+
+    @Test
+    public void testReplaceWithSelection() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+
+        SegmentVariantSelection sel = new SegmentVariantSelection("", tcv.createCopy(), 1, 6);
+        assertEquals("<b1>B", sel.getDisplayText());
+
+        tcv.replaceSelection(0, 0, sel);
+        assertEquals("<b1>BA<b1>B</b1>", tcv.toString());
+        tcv.replaceSelection(tcv.getLength(), tcv.getLength(), sel);
+        assertEquals("<b1>BA<b1>B</b1><b1>B", tcv.toString());
+
+        tcv.replaceSelection(0, 11, sel);
+        assertEquals("<b1>B</b1><b1>B", tcv.toString());
+    }
+
+    @Test
+    public void testClearSelection() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+
+        tcv.clearSelection(0, 0);
+        assertEquals("A<b1>B</b1>", tcv.getDisplayText());
+
+        tcv.clearSelection(0, 1);
+        assertEquals("<b1>B</b1>", tcv.getDisplayText());
+
+        // Range must cover entire CodeAtom to remove it.
+        tcv.clearSelection(0, 1);
+        assertEquals("<b1>B</b1>", tcv.getDisplayText());
+        tcv.clearSelection(0, 2);
+        assertEquals("<b1>B</b1>", tcv.getDisplayText());
+        tcv.clearSelection(0, 3);
+        assertEquals("<b1>B</b1>", tcv.getDisplayText());
+        tcv.clearSelection(0, 4);
+        assertEquals("B</b1>", tcv.getDisplayText());
+    }
+
+    @Test
+    public void testValidation() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+
+        TextContainerVariant copy = tcv.createCopy();
+        assertFalse(tcv.needsValidation());
+
+        // Replacing empty selection does not dirty the variant.
+        tcv.replaceSelection(0, 0, Collections.<SegmentAtom> emptyList());
+        assertFalse(tcv.needsValidation());
+
+        // Replacing atoms dirties the variant...
+        tcv.replaceSelection(0, 1, Collections.<SegmentAtom> emptyList());
+        assertTrue(tcv.needsValidation());
+        // ...but tags are still OK here.
+        assertTrue(tcv.validateAgainst(copy));
+        // ...but the variant is still considered dirty because it's up to the
+        // caller to provide the correct original to validate against.
+        assertTrue(tcv.needsValidation());
+
+        tcv = copy.createCopy();
+        assertFalse(tcv.needsValidation());
+
+        // Removing a tag will make the variant fail validation.
+        tcv.replaceSelection(0, 5, Arrays.asList(new TextAtom("Z")));
+        assertTrue(tcv.needsValidation());
+        assertFalse(tcv.validateAgainst(copy));
+
+        // Restore the missing tag to get it to validate.
+        // Note that validation does not handle ordering or nesting issues; it
+        // only cares that the codes in the reference variant are present in the
+        // same number.
+        List<CodeAtom> missing = tcv.getMissingTags(copy);
+        assertEquals(1, missing.size());
+        assertEquals("<b1>", missing.get(0).getData());
+        tcv.replaceSelection(tcv.getLength(), tcv.getLength(), missing);
+        assertTrue(tcv.needsValidation());
+        assertTrue(tcv.validateAgainst(copy));
+    }
+
+    @Test
+    public void testPositions() {
+        // A < b 1 > B < / b 1 >
+        // 0 1 2 3 4 5 6 7 8 9 10
+
+        PositionAtom start = tcv.createPosition(0);
+        assertTrue(start.getData().isEmpty());
+        assertEquals(0, start.getLength());
+        assertEquals(0, start.getPosition());
+        PositionAtom end = tcv.createPosition(6);
+        assertEquals(6, end.getPosition());
+
+        tcv.modifyChars(0, 0, "Z");
+        assertEquals("ZA<b1>B</b1>", tcv.getDisplayText());
+        assertEquals(0, start.getPosition());
+        assertEquals(7, end.getPosition());
+
+        tcv.replaceSelection(start.getPosition(), end.getPosition(), Arrays.asList(new TextAtom("ABCD")));
+        assertEquals("ABCD</b1>", tcv.getDisplayText());
+        assertEquals(0, start.getPosition());
+        assertEquals(4, end.getPosition());
+
+        PositionAtom middle = tcv.createPosition(2);
+        tcv.clearSelection(start.getPosition(), end.getPosition());
+        assertEquals("</b1>", tcv.getDisplayText());
+        try {
+            middle.getPosition();
+            fail("Positions removed from parent segment should throw an exception");
+        } catch (IllegalStateException e) {
+            // OK
+        }
+        assertEquals(0, start.getPosition());
+        assertEquals(0, end.getPosition());
+
+        // Attempting to place a position inside a code atom will result in the
+        // position sliding to the end of the code.
+        PositionAtom inCode = tcv.createPosition(2);
+        assertEquals(5, inCode.getPosition());
     }
 }
