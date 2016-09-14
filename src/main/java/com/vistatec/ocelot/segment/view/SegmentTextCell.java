@@ -80,6 +80,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.PositionAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
@@ -410,7 +411,6 @@ public class SegmentTextCell extends JTextPane {
     static class TagAwareTransferHandler extends TransferHandler {
 
         private static final long serialVersionUID = 1L;
-        private boolean didClearSelection = false;
 
         @Override
         public int getSourceActions(JComponent c) {
@@ -420,25 +420,18 @@ public class SegmentTextCell extends JTextPane {
         @Override
         protected Transferable createTransferable(JComponent c) {
             SegmentTextCell cell = (SegmentTextCell) c;
-            SegmentVariantSelection selection = new SegmentVariantSelection("" + cell.row, cell.v.createCopy(),
-                    cell.getSelectionStart(), cell.getSelectionEnd());
-            return new SegmentVariantTransferable(selection);
+            return new SegmentVariantTransferable("" + cell.row, cell.v, cell.getSelectionStart(),
+                    cell.getSelectionEnd());
         }
 
         @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
-            try {
-                SegmentTextCell cell = (SegmentTextCell) source;
-                SegmentVariantSelection sel = (SegmentVariantSelection) data.getTransferData(SELECTION_FLAVOR);
-                if (action == TransferHandler.MOVE && !didClearSelection) {
-                    // Only clear the original selection here if we didn't
-                    // already handle it in importData().
-                    clearSelection(cell, sel);
-                    cell.syncModelToView();
-                    didClearSelection = true;
-                }
-            } catch (UnsupportedFlavorException | IOException e) {
-                LOG.debug("", e);
+            SegmentTextCell cell = (SegmentTextCell) source;
+            if (action == TransferHandler.MOVE) {
+                // Only clear the original selection here if we didn't
+                // already handle it in importData().
+                ((SegmentVariantTransferable) data).removeText();
+                cell.syncModelToView();
             }
         }
 
@@ -453,7 +446,6 @@ public class SegmentTextCell extends JTextPane {
             if (!canImport(support)) {
                 return false;
             }
-            didClearSelection = false;
             SegmentTextCell cell = (SegmentTextCell) support.getComponent();
             if (support.isDataFlavorSupported(SELECTION_FLAVOR)) {
                 return importSegmentVariantSelection(cell, support);
@@ -461,10 +453,6 @@ public class SegmentTextCell extends JTextPane {
                 return importString(cell, support);
             }
             return false;
-        }
-
-        void clearSelection(SegmentTextCell cell, SegmentVariantSelection selection) {
-            cell.v.clearSelection(selection.getSelectionStart(), selection.getSelectionEnd());
         }
 
         private boolean importSegmentVariantSelection(SegmentTextCell cell, TransferSupport support) {
@@ -484,23 +472,6 @@ public class SegmentTextCell extends JTextPane {
                     // Check to make sure we're not pasting into any tags
                     if (cell.v.containsTag(start, end - start)) {
                         return false;
-                    }
-
-                    boolean isDragMove = support.isDrop() && support.getDropAction() == TransferHandler.MOVE;
-                    boolean dragWillInvalidateOriginalOffsets = isDragMove && end < sel.getSelectionStart();
-                    if (isDragMove && dragWillInvalidateOriginalOffsets) {
-                        // If we are moving by DnD to a location before the
-                        // selection, delete the origin selection first so that
-                        // the offsets aren't invalidated by inserting the
-                        // selection. The "real" way to do this is to have a way
-                        // of tracking how the offsets move in the underlying
-                        // model, like javax.swing.text.Position, and always
-                        // handle clearing the selection in exportDone().
-                        // However such an abstraction doesn't appear to be
-                        // possible given how e.g. TextContainerVariant stores
-                        // and retrieves its atoms.
-                        clearSelection(cell, sel);
-                        didClearSelection = true;
                     }
                     cell.v.replaceSelection(start, end, sel);
                     cell.syncModelToView();
@@ -537,10 +508,20 @@ public class SegmentTextCell extends JTextPane {
 
         private static final DataFlavor[] FLAVORS = { SELECTION_FLAVOR, DataFlavor.stringFlavor };
 
+        private final SegmentVariant source;
+        private final PositionAtom start;
+        private final PositionAtom end;
         private final SegmentVariantSelection selection;
 
-        public SegmentVariantTransferable(SegmentVariantSelection selection) {
-            this.selection = selection;
+        public SegmentVariantTransferable(String id, SegmentVariant source, int start, int end) {
+            this.source = source;
+            this.start = source.createPosition(start);
+            this.end = source.createPosition(end);
+            this.selection = new SegmentVariantSelection(id, source.createCopy(), start, end);
+        }
+
+        void removeText() {
+            source.clearSelection(start.getPosition(), end.getPosition());
         }
 
         @Override
