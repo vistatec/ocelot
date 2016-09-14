@@ -120,7 +120,7 @@ public class TestTextContainerSegmentVariant {
         //      - - - 
         // A B < b 1 > < / b 1 >
         // 0 1 2 3 4 5 6 7 8 9 10
-        tcv.replaceSelection(1, 6, new SegmentVariantSelection(0, replacement, 1, 6));
+        tcv.replaceSelection(1, 6, new SegmentVariantSelection("0", replacement, 1, 6));
         assertEquals("AB<b1></b1>", tcv.getDisplayText());
     }
     

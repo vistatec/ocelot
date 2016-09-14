@@ -420,7 +420,7 @@ public class SegmentTextCell extends JTextPane {
         @Override
         protected Transferable createTransferable(JComponent c) {
             SegmentTextCell cell = (SegmentTextCell) c;
-            SegmentVariantSelection selection = new SegmentVariantSelection(cell.row, cell.v.createCopy(),
+            SegmentVariantSelection selection = new SegmentVariantSelection("" + cell.row, cell.v.createCopy(),
                     cell.getSelectionStart(), cell.getSelectionEnd());
             return new SegmentVariantTransferable(selection);
         }
@@ -472,7 +472,7 @@ public class SegmentTextCell extends JTextPane {
                 Transferable trfr = support.getTransferable();
                 SegmentVariantSelection sel = (SegmentVariantSelection) trfr.getTransferData(SELECTION_FLAVOR);
                 // Check to make sure we're pasting from the same row.
-                if (sel.getRow() == cell.row) {
+                if (sel.getId().equals("" + cell.row)) {
                     int start, end;
                     if (support.isDrop()) {
                         Point p = support.getDropLocation().getDropPoint();

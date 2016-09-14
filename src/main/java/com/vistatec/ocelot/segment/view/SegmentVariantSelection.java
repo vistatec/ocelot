@@ -34,20 +34,20 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
  * Represents a clipboard selection of SegmentVariant content.
  */
 public class SegmentVariantSelection {
-    private int row;
+    private String id;
     private SegmentVariant variant;
     // Indexes into the display representation of variant
     private int selectionStart, selectionEnd;
 
-    public SegmentVariantSelection(int row, SegmentVariant variant, int start, int end) {
-        this.row = row;
+    public SegmentVariantSelection(String id, SegmentVariant variant, int start, int end) {
+        this.id = id;
         this.variant = variant;
         this.selectionStart = start;
         this.selectionEnd = end;
     }
 
-    public int getRow() {
-        return row;
+    public String getId() {
+        return id;
     }
 
     public SegmentVariant getVariant() {
@@ -64,7 +64,7 @@ public class SegmentVariantSelection {
 
     @Override
     public String toString() {
-        return "Row " + row + " [" + selectionStart + ", " + selectionEnd + "] of " + variant;
+        return "ID " + id + " [" + selectionStart + ", " + selectionEnd + "] of " + variant;
     }
 
     public String getDisplayText() {
