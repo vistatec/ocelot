@@ -483,22 +483,47 @@ public class TestTextContainerSegmentVariant {
         // A < b 1 > B < / b 1 >
         // 0 1 2 3 4 5 6 7 8 9 10
 
-        assertEquals(tcv, tcv.createCopy());
+        TextContainerVariant copy = tcv.createCopy();
+
+        // We *currently* do not provide our own notion of equality other than
+        // identity.
+        assertNotEquals(tcv, copy);
+
+        // We *currently* only care that the serialized representation is
+        // correct
+        assertEquals(tcv.getDisplayText(), copy.getDisplayText());
+
+        // Even the underlying TextContainer does not have its own notion of
+        // equality separate from identity. Note that some assumptions in our
+        // code might have to change if this situation ever changes.
+        assertNotEquals(tcv.getTextContainer(), copy.getTextContainer());
+
+        // The number of atoms should be the same as long as the original did
+        // not have PositionAtoms.
+        assertEquals(tcv.getAtoms().size(), copy.getAtoms().size());
+
+        // The atoms themselves are the same in terms of the equals() methods on
+        // the Ocelot base classes. This ignores the fact that the underlying
+        // Okapi Codes do not have a notion of equality. TODO: Is this OK?
+        assertEquals(tcv.getAtoms(), copy.getAtoms());
 
         SegmentVariantSelection sel = new SegmentVariantSelection("", tcv.createCopy(), 1, 5);
         tcv.replaceSelection(tcv.getLength(), tcv.getLength(), sel);
         assertEquals("A<b1>B</b1><b1>", tcv.getDisplayText());
 
-        // Copying TextContainerVariants with modified codes may result in an
-        // unequal copy due to automatic code rebalancing.
-        // TODO: Change how createCopy() works?
-        assertNotEquals(tcv, tcv.createCopy());
+        // Copy should not be affected by change to original.
+        assertNotEquals(tcv.getDisplayText(), copy.getDisplayText());
 
-        sel = new SegmentVariantSelection("", tcv.createCopy(), 6, 10);
-        tcv.replaceSelection(tcv.getLength(), tcv.getLength(), sel);
-        assertEquals("A<b1>B</b1><b1></b1>", tcv.getDisplayText());
+        tcv.createPosition(1);
 
-        assertEquals(tcv, tcv.createCopy());
-        assertEquals(tcv.getDisplayText(), tcv.createCopy().getDisplayText());
+        TextContainerVariant newCopy = tcv.createCopy();
+
+        // Copy should not retain the PositionAtom in the original.
+        assertNotEquals(tcv.getAtoms().size(), newCopy.getAtoms().size());
+        for (SegmentAtom atom : newCopy.getAtoms()) {
+            if (atom instanceof PositionAtom) {
+                fail("Copy should not contain PositionAtoms");
+            }
+        }
     }
 }

@@ -28,17 +28,19 @@
  */
 package com.vistatec.ocelot.segment.model.okapi;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.vistatec.ocelot.segment.model.CodeAtom;
+import com.vistatec.ocelot.segment.model.HighlightData;
+import com.vistatec.ocelot.segment.model.PositionAtom;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
-
-import com.vistatec.ocelot.segment.model.CodeAtom;
-import com.vistatec.ocelot.segment.model.HighlightData;
-import com.vistatec.ocelot.segment.model.SegmentAtom;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.TextAtom;
 
 /**
  * XLIFF 1.2 segment variant, implemented using Okapi
@@ -53,6 +55,14 @@ public class TextContainerVariant extends OkapiSegmentVariant {
         this.atoms = extractAtoms(tc);
     }
 
+    /**
+     * Private constructor for cloning only.
+     */
+    private TextContainerVariant(TextContainer tc, List<SegmentAtom> atoms) {
+        this.tc = tc;
+        this.atoms = atoms;
+    }
+
     @Override
     public TextContainerVariant createEmptyTarget() {
         return new TextContainerVariant(new TextContainer());
@@ -61,7 +71,29 @@ public class TextContainerVariant extends OkapiSegmentVariant {
     @Override
     public TextContainerVariant createCopy() {
     	
-        return new TextContainerVariant(getTextContainer().clone());
+        return new TextContainerVariant(tc.clone(), copyAtoms());
+    }
+
+    private List<SegmentAtom> copyAtoms() {
+        List<SegmentAtom> copyAtoms = new ArrayList<SegmentAtom>();
+        for (SegmentAtom atom : atoms) {
+            if (atom instanceof TextAtom) {
+                copyAtoms.add(new TextAtom(atom.getData()));
+
+            } else if (atom instanceof OkapiCodeAtom) {
+                OkapiCodeAtom okapiCodeAtom = (OkapiCodeAtom) atom;
+                copyAtoms.add(new OkapiCodeAtom(okapiCodeAtom.getId(), okapiCodeAtom.getData(),
+                        okapiCodeAtom.getVerboseData(), okapiCodeAtom.getCode().clone()));
+
+            } else if (atom instanceof CodeAtom) {
+                CodeAtom codeAtom = (CodeAtom) atom;
+                copyAtoms.add(new CodeAtom(codeAtom.getId(), codeAtom.getData(), codeAtom.getVerboseData()));
+            } else if (atom instanceof PositionAtom) {
+                // Don't copy position atoms because no one will have a handle
+                // on the new atom so it will be useless.
+            }
+        }
+        return copyAtoms;
     }
 
     @Override
@@ -128,22 +160,6 @@ public class TextContainerVariant extends OkapiSegmentVariant {
             }
         }
         tc.setContent(frag);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (o == null || !(o instanceof TextContainerVariant)) return false;
-        // XXX This is not correct, but it's based on the legacy behavior
-        // where equality was checked. Since codes are currently invariant
-        // in Ocelot, it will work for now, but break if we ever allow real
-        // editing.
-        return tc.getCodedText().equals(((TextContainerVariant) o).getTextContainer().getCodedText());
-    }
-
-    @Override
-    public int hashCode() {
-        return tc.hashCode();
     }
 
     @Override
