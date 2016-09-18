@@ -161,10 +161,4 @@ public class TextContainerVariant extends OkapiSegmentVariant {
         }
         tc.setContent(frag);
     }
-
-    @Override
-    public String toString() {
-        return getDisplayText();
-    }
-    
 }
