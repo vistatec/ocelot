@@ -461,8 +461,9 @@ public class SegmentTextCell extends JTextPane {
             try {
                 Transferable trfr = support.getTransferable();
                 SegmentVariantSelection sel = (SegmentVariantSelection) trfr.getTransferData(SELECTION_FLAVOR);
-                // Check to make sure we're pasting from the same row.
-                if (sel.getId().equals("" + cell.row)) {
+                // Check to make sure we're pasting from the same row and the
+                // same variant type.
+                if (sel.getId().equals("" + cell.row) && cell.v.getClass().equals(sel.getVariant().getClass())) {
                     int start, end;
                     if (support.isDrop()) {
                         Point p = support.getDropLocation().getDropPoint();
@@ -499,7 +500,19 @@ public class SegmentTextCell extends JTextPane {
             try {
                 Transferable trfr = support.getTransferable();
                 String str = trfr.getTransferData(DataFlavor.stringFlavor).toString();
-                // Rely on SegmentFilter to protect existing tags
+                int start, end;
+                if (support.isDrop()) {
+                    Point p = support.getDropLocation().getDropPoint();
+                    start = end = cell.viewToModel(p);
+                } else {
+                    start = cell.getSelectionStart();
+                    end = cell.getSelectionEnd();
+                }
+                // Check to make sure we're not pasting into any tags
+                if (cell.v.containsTag(start, end - start)) {
+                    return false;
+                }
+                // Rely on SegmentFilter to do the dirty work.
                 cell.replaceSelection(str);
                 return true;
             } catch (UnsupportedFlavorException | IOException e) {

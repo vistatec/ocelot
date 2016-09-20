@@ -391,7 +391,7 @@ public class TestFragmentVariant {
         return new Fragment(store, false);
     }
 
-    class DummyWithStore implements IWithStore {
+    public static class DummyWithStore implements IWithStore {
         @Override
         public Directionality getSourceDir() {
             return Directionality.AUTO;
