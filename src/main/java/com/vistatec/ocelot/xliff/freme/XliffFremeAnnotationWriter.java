@@ -79,8 +79,10 @@ public class XliffFremeAnnotationWriter {
 	 *            the XLIFF file.
 	 * @param segService
 	 *            the segment service.
-	 */
-	public void saveAnnotations(final File xliffFile, SegmentService segService) {
+     * @throws Exception
+     *             If an error occurs while parsing the file
+     */
+    public void saveAnnotations(final File xliffFile, SegmentService segService) throws Exception {
 
 		logger.info("Saving enrichment annotations for file {}", xliffFile.getName());
 		try {
@@ -104,6 +106,7 @@ public class XliffFremeAnnotationWriter {
 			saveFile(xliffFile.getAbsolutePath());
 		} catch (ParserConfigurationException | SAXException e) {
 			logger.error("Error while parsing the file", e);
+            throw e;
 		} catch (IOException e) {
 			logger.error("Error while reading or writing the file", e);
 		} catch (TransformerException e) {

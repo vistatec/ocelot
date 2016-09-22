@@ -31,12 +31,18 @@ package com.vistatec.ocelot;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.xml.stream.XMLStreamException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -59,6 +65,8 @@ import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
  * Main Ocelot application context.
  */
 public class OcelotApp implements OcelotEventQueueListener {
+    private static final Logger LOG = LoggerFactory.getLogger(OcelotApp.class);
+
     private final OcelotEventQueue eventQueue;
 
     private final PluginManager pluginManager;
@@ -122,23 +130,31 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
 
         String filename = saveFile.getName();
-        if (saveFile.exists()) {
-            if (!saveFile.canWrite()) {
-                throw new ErrorAlertException("Unable to save!",
-                        "The file " + filename + " can not be saved, because the file is not writeable.");
-            }
-        } else {
-            if (!saveFile.createNewFile()) {
-                throw new ErrorAlertException("Unable to save",
-                        "The file " + filename + " can not be saved, because the directory is not writeable.");
-            }
+        if (saveFile.exists() && !saveFile.canWrite()) {
+            throw new ErrorAlertException("Unable to save!",
+                    "The file " + filename + " can not be saved, because the file is not writeable.");
         }
-        xliffService.save(openXliffFile, saveFile);
-XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
-		annotationWriter.saveAnnotations(saveFile, segmentService);
+        // Save to temp file, then move over actual target. This lets us ensure
+        // the output is well-formed, as we save and then parse again to save
+        // the annotations.
+        Path tmpPath = Files.createTempFile("ocelot", "save");
+        File tmpFile = tmpPath.toFile();
+        xliffService.save(openXliffFile, tmpFile);
+        try {
+            XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
+            annotationWriter.saveAnnotations(tmpFile, segmentService);
+        } catch (Exception e) {
+            if (!tmpFile.delete()) {
+                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
+            }
+            throw new ErrorAlertException("Unable to save!", "The file " + filename
+                    + " cannot be saved because the content is invalid. "
+                    + "If you edited tags, ensure they are correctly nested.");
+        }
         this.fileDirty = false;
-		editDistService.createEditDistanceReport(saveFile.getName());
+        editDistService.createEditDistanceReport(filename);
         pluginManager.notifySaveFile(filename);
+        Files.move(tmpPath, saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public String getFileSourceLang() {
