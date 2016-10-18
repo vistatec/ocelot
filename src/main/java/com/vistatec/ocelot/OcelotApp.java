@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot;
 
+import java.awt.Window;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -134,7 +135,7 @@ public class OcelotApp implements OcelotEventQueueListener {
             }
         }
         xliffService.save(openXliffFile, saveFile);
-XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
+XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(openXliffFile.getSrcLocale().toString(), openXliffFile.getTgtLocale().toString());
 		annotationWriter.saveAnnotations(saveFile, segmentService);
         this.fileDirty = false;
 		editDistService.createEditDistanceReport(saveFile.getName());
@@ -174,15 +175,22 @@ XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
         }
     }
 
-    public List<JMenu> getPluginMenuList(JFrame mainframe) {
-        return pluginManager.getPluginMenuList(mainframe);
-    }
+	public List<JMenu> getPluginMenuList(JFrame mainframe) {
+		return pluginManager.getPluginMenuList(mainframe);
+	}
 
-public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
+	public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
 			BaseSegmentVariant variant, boolean target) {
 
 		return pluginManager.getSegmentContextMenuItems(segment, variant,
 				target);
+	}
+
+	public List<JMenuItem> getSegmentTextContexPluginMenues(
+			final OcelotSegment segment, final String text, final int offset,
+			final boolean target, Window ownerWindow) {
+		return pluginManager.getSegmentTextContextMenuItems(segment, text,
+				offset, target, ownerWindow);
 	}
 
 }

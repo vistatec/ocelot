@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.plugins;
+package com.vistatec.ocelot.plugins.freme;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -157,21 +157,21 @@ public class FremePluginManager {
 		for (OcelotSegment segment : segments) {
 
 			if (segment.getSource() instanceof BaseSegmentVariant) {
-				resetVariant(segment, (BaseSegmentVariant) segment.getSource());
+				resetVariant(segment, (BaseSegmentVariant) segment.getSource(), false);
 
 			}
 			if (segment.getTarget() != null
 					&& segment.getTarget() instanceof BaseSegmentVariant) {
-				resetVariant(segment, (BaseSegmentVariant) segment.getTarget());
+				resetVariant(segment, (BaseSegmentVariant) segment.getTarget(), true);
 			}
 		}
 		eventQueue.post(new RefreshSegmentView(-1));
 		eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
 	}
 
-	private void resetVariant(OcelotSegment segment, BaseSegmentVariant variant) {
+	private void resetVariant(OcelotSegment segment, BaseSegmentVariant variant, boolean target) {
 
-		EnrichmentConverter.removeEnrichmentMetaData(segment, variant);
+		EnrichmentConverter.removeEnrichmentMetaData(segment, variant, target);
 		variant.clearEnrichments();
 	}
 
@@ -189,9 +189,10 @@ public class FremePluginManager {
 			int segNumber, boolean target, int action) {
 
 		if (action == OVERRIDE_ENRICHMENTS) {
-			resetVariant(getSegmentBySegNum(segNumber), variant);
+			resetVariant(getSegmentBySegNum(segNumber), variant, target);
 		} else {
-			variant.setEnriched(false);
+			variant.setFremeSuccess(false);
+			variant.setSentToFreme(false);
 		}
 		eventQueue.post(new RefreshSegmentView(segNumber));
 		logger.info("Enriching variant for segment " + segNumber + "...");
@@ -471,6 +472,34 @@ public class FremePluginManager {
 			fremeMenuItem.setEnabled(enabled);
 		}
 	}
+	
+	public synchronized List<JMenuItem> getTextContextMenuItems(final OcelotSegment segment, final String text, final int offset, final boolean target, final Window ownerWindow){		
+		
+		List<JMenuItem> items = new ArrayList<JMenuItem>();		
+		ActionListener listener = new ActionListener() {		
+					
+			@Override		
+			public void actionPerformed(ActionEvent e) {		
+						
+				NewLinkedDataDialog dialog = new NewLinkedDataDialog(ownerWindow, text, offset, segment, target, eventQueue);		
+				dialog.open();		
+				//TODO display new Linked data frame		
+//				System.out.println("Add linked data manually");		
+//						
+//				TextAnalysisMetaData ta = new TextAnalysisMetaData();		
+//				ta.setEntity(text);		
+//				ta.setSegPart(target?EnrichmentMetaData.TARGET:EnrichmentMetaData.SOURCE);		
+//				ta.setTaIdentRef("http://blabla.dbpedia.com");		
+//				segment.addTextAnalysis(ta);		
+//				eventQueue.post(new TextAnalysisAddedEvent());		
+//				eventQueue.post(new ItsDocStatsRecalculateEvent(Arrays.asList(new OcelotSegment[]{segment})));		
+			}		
+		};		
+		JMenuItem mnuAddTA = new JMenuItem("Add Linked Data");		
+		mnuAddTA.addActionListener(listener);		
+		items.add(mnuAddTA);		
+		return items;		
+	}
 
 }
 
@@ -673,7 +702,7 @@ class FremeEnricher implements Runnable {
 					}
 					frag.getVariant().setEnrichments(
 							new HashSet<Enrichment>(enrichments));
-					frag.getVariant().setEnriched(true);
+					frag.getVariant().setFremeSuccess(true);
 					OcelotSegment segment = findSegmentBySegNumber(frag
 							.getSegNumber());
 					if (segment != null) {

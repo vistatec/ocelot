@@ -149,7 +149,7 @@ public abstract class ELinkEnrichmentsConstants {
 	 *            the entity URL.
 	 */
 	public static void fillLinkEnrichment(LinkEnrichment linkEnrichment,
-	        Model linkModel, String entityURL) {
+	        Model linkModel, String entityURL ) {
 
 		Resource entityRes = linkModel.createResource(entityURL);
 		NodeIterator nameNodeIt = linkModel
@@ -158,10 +158,15 @@ public abstract class ELinkEnrichmentsConstants {
 		                linkModel
 		                        .createProperty(ELinkEnrichmentsConstants.ENTITY_NAME_PROP));
 		linkEnrichment.setReferenceEntity(entityURL);
-		if (nameNodeIt.hasNext()) {
-			linkEnrichment.setEntityName(nameNodeIt.next().asLiteral()
+		RDFNode currNode = null;
+		while (nameNodeIt.hasNext() && linkEnrichment.getEntityName() == null) {
+			currNode = nameNodeIt.next();
+			if(checkLanguage(currNode, linkEnrichment.getLanguage())){
+				linkEnrichment.setEntityName(currNode.asLiteral()
 			        .getString(), ELinkEnrichmentsConstants.ENTITY_NAME_PROP);
-		} else {
+			}
+		} 
+		if(linkEnrichment.getEntityName() == null) {
 			// String entityUri = entityStmt.getObject().asResource().getURI();
 			int index = entityURL.lastIndexOf("/");
 			linkEnrichment.setEntityName(entityURL.substring(index + 1)
@@ -173,20 +178,30 @@ public abstract class ELinkEnrichmentsConstants {
 		                entityRes,
 		                linkModel
 		                        .createProperty(ELinkEnrichmentsConstants.SHORT_DESCR_PROP));
-		if (shortDescrNodeIt.hasNext()) {
-			linkEnrichment.setShortDescription(shortDescrNodeIt.next()
+//		if (shortDescrNodeIt.hasNext()) {
+		
+		while(shortDescrNodeIt.hasNext() && linkEnrichment.getShortDescription() == null){
+			currNode = shortDescrNodeIt.next();
+			if(checkLanguage(currNode, linkEnrichment.getLanguage() )){
+				linkEnrichment.setShortDescription(currNode
 			        .asLiteral().getString(),
 			        ELinkEnrichmentsConstants.SHORT_DESCR_PROP);
+			}
 		}
+//		}
 		NodeIterator longDescrNodeIt = linkModel
 		        .listObjectsOfProperty(
 		                entityRes,
 		                linkModel
 		                        .createProperty(ELinkEnrichmentsConstants.LONG_DESCR_PROP));
-		if (longDescrNodeIt.hasNext()) {
-			linkEnrichment.setLongDescription(longDescrNodeIt.next()
-			        .asLiteral().getString(),
-			        ELinkEnrichmentsConstants.LONG_DESCR_PROP);
+		
+		while (longDescrNodeIt.hasNext() && linkEnrichment.getLongDescription() == null) {
+			currNode = longDescrNodeIt.next();
+			if(checkLanguage(currNode, linkEnrichment.getLanguage())){
+				linkEnrichment.setLongDescription(currNode
+				        .asLiteral().getString(),
+				        ELinkEnrichmentsConstants.LONG_DESCR_PROP);
+			}
 		}
 
 		NodeIterator imageNodeIt = linkModel
@@ -233,12 +248,13 @@ public abstract class ELinkEnrichmentsConstants {
 		                entityRes,
 		                linkModel
 		                        .createProperty(ELinkEnrichmentsConstants.WIKI_LINK_PROP));
-		if (wikiNodeIt.hasNext()) {
+		
+		while (wikiNodeIt.hasNext() && linkEnrichment.getWikiPage() == null) {
 			RDFNode wikiNode = wikiNodeIt.next();
 			if (wikiNode.isResource()) {
 				linkEnrichment.setWikiPage(wikiNode.asResource().getURI(),
 				        ELinkEnrichmentsConstants.WIKI_LINK_PROP);
-			} else {
+			} else if(checkLanguage(wikiNode, linkEnrichment.getLanguage())){
 				linkEnrichment.setWikiPage(wikiNode.asLiteral().getString(),
 				        ELinkEnrichmentsConstants.WIKI_LINK_PROP);
 			}
@@ -248,12 +264,12 @@ public abstract class ELinkEnrichmentsConstants {
 		                entityRes,
 		                linkModel
 		                        .createProperty(ELinkEnrichmentsConstants.HOMEPAGE_LINK_PROP));
-		if (homePageNodeIt.hasNext()) {
+		while (homePageNodeIt.hasNext() && linkEnrichment.getHomePage() == null) {
 			RDFNode homePageNode = homePageNodeIt.next();
 			if (homePageNode.isResource()) {
 				linkEnrichment.setHomePage(homePageNode.asResource().getURI(),
 				        ELinkEnrichmentsConstants.HOMEPAGE_LINK_PROP);
-			} else {
+			} else if(checkLanguage(homePageNode, linkEnrichment.getLanguage())) {
 				linkEnrichment.setHomePage(
 				        homePageNode.asLiteral().getString(),
 				        ELinkEnrichmentsConstants.HOMEPAGE_LINK_PROP);
@@ -265,11 +281,13 @@ public abstract class ELinkEnrichmentsConstants {
 		        .getInfoProperties()) {
 			infoNodeIt = linkModel.listObjectsOfProperty(entityRes,
 			        linkModel.createProperty(infoProp.getPropName()));
-			if (infoNodeIt.hasNext()) {
+			if (infoNodeIt.hasNext() ) {
 				RDFNode node = infoNodeIt.next();
 				System.out.println("Property name: " + infoProp.getPropName());
 				if (node.isLiteral()) {
-					infoProp.setValue(node.asLiteral().getString());
+//					if(checkLanguage(node, language)) {
+						infoProp.setValue(node.asLiteral().getString());
+//					}
 				} else {
 					infoProp.setValue(node.asResource().getURI());
 				}
@@ -277,6 +295,11 @@ public abstract class ELinkEnrichmentsConstants {
 			}
 		}
 		linkEnrichment.setInfoList(enrichmentInfo);
+	}
+	
+	private static boolean checkLanguage(RDFNode node, String language) {
+		
+		return node.asLiteral().getLanguage().equals(language) || node.asLiteral().getLanguage().equals(""); 
 	}
 
 	/**

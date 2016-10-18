@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.TextAnalysisAddedEvent;
 import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
@@ -16,6 +18,13 @@ public class TextAnalysisTableView extends SegmentAttributeTablePane<TextAnalysi
 	/** The serial version UID. */
     private static final long serialVersionUID = 1L;
 
+    
+    @Subscribe		
+    public void handleTextAnalysisAddedEvent(TextAnalysisAddedEvent event){		
+    			
+    	getTableModel().fireTableDataChanged();		
+    }
+    
     /*
      * (non-Javadoc)
      * @see com.vistatec.ocelot.segment.view.SegmentAttributeTablePane#createTableModel()

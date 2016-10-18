@@ -2,7 +2,10 @@ package com.vistatec.ocelot.xliff.freme;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +36,9 @@ import org.xml.sax.SAXException;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.impl.ModelListenerAdapter;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
@@ -57,6 +63,7 @@ public class XliffFremeAnnotationWriter {
 	
 	private static final String IT_TAG_CLOSE = "</it>";
 
+	
 	/** The logger for this class. */
 	private final Logger logger = Logger
 			.getLogger(XliffFremeAnnotationWriter.class);
@@ -69,6 +76,17 @@ public class XliffFremeAnnotationWriter {
 
 	/** The last id used for FREME mrk tag. */
 	private int lastFremeMrkId;
+
+	private String sourceLang;
+	
+	private String targetLang;
+	
+	
+	public XliffFremeAnnotationWriter(final String sourceLang, final String targetLang) {
+		
+		this.sourceLang = sourceLang;
+		this.targetLang = targetLang;
+	}
 
 	/**
 	 * For each enrichment in the Ocelot segments, a proper annotation is
@@ -225,10 +243,10 @@ public class XliffFremeAnnotationWriter {
 				if (segment.getSource() instanceof BaseSegmentVariant) {
 					writeAnnotations(unitElement,
 							xliffHelper.getSourceElement(unitElement),
-							(BaseSegmentVariant) segment.getSource());
+							(BaseSegmentVariant) segment.getSource(), sourceLang);
 					writeAnnotations(unitElement,
 							xliffHelper.getTargetElement(unitElement),
-							(BaseSegmentVariant) segment.getTarget());
+							(BaseSegmentVariant) segment.getTarget(), targetLang);
 				}
 			} else {
 				logger.error("Error while detecting segment with segment number "
@@ -250,7 +268,7 @@ public class XliffFremeAnnotationWriter {
 	 *            the Ocelot variant
 	 */
 	private void writeAnnotations(Element unitElement, Element variantElement,
-			BaseSegmentVariant variant) {
+			BaseSegmentVariant variant, String language) {
 		if (variant != null && variant.getEnirchments() != null
 				&& !variant.getEnirchments().isEmpty()) {
 			List<Enrichment> varEnrichments = new ArrayList<Enrichment>(variant.getEnirchments());
@@ -295,7 +313,7 @@ public class XliffFremeAnnotationWriter {
 				}
 			}
 			writeTripleEnrichments(unitElement, variantElement,
-					tripleEnrichments);
+					tripleEnrichments, language);
 		}
 	}
 
@@ -601,7 +619,7 @@ public class XliffFremeAnnotationWriter {
 	 * @param tripleEnrichments
 	 */
 	private void writeTripleEnrichments(Element unitElement,
-			Element variantElement, List<Enrichment> tripleEnrichments) {
+			Element variantElement, List<Enrichment> tripleEnrichments, String language) {
 
 		Model tripleModel = ModelFactory.createDefaultModel();
 		Set<TermEnrichmentWrapper> allTermEnrichmentsWrap = new HashSet<TermEnrichmentWrapper>();
@@ -635,6 +653,10 @@ public class XliffFremeAnnotationWriter {
 			if (extraNodeList != null && extraNodeList.getLength() > 0) {
 				Node extraNode = extraNodeList.item(0);
 				Text modelText = (Text) extraNode.getFirstChild();
+				Model existingModel = ModelFactory.createDefaultModel();
+				StringReader reader = new StringReader(modelText.getData());
+				existingModel.read(reader, "", EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
+				tripleModel.add(existingModel);
 				StringWriter writer = new StringWriter();
 				tripleModel.write(writer,
 						EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
@@ -673,6 +695,22 @@ public class XliffFremeAnnotationWriter {
 				removeAnnotationNode(variantElement, currTerm.getEnrichment());
 			}
 		}
+	}
+	
+	public static void main(String[] args) {
+		
+		Model model = ModelFactory.createDefaultModel();
+		model.setNsPrefix("xsd", "http://www.w3.org/2001/XMLSchema#");
+		model.setNsPrefix("itsrdf", "http://www.w3.org/2005/11/its/rdf#");
+		model.setNsPrefix("nif", "http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#");
+		Resource res = model.createResource("http://freme-project.eu/#char=0,42");
+		Property prop = model.createProperty("http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#", "isString");
+		model.add(res, prop, "Welcome to Berlin, the capital of Germany!", "en");
+		model.add(res, prop, "Benvenuti a Berlino, la capitale della Germania!", "it");
+		
+		model.write(new OutputStreamWriter(System.out), "JSON-LD", "");
+		
+		
 	}
 }
 
@@ -713,6 +751,8 @@ class TermEnrichmentWrapper {
 	public int hashCode() {
 		return offsetString.hashCode();
 	}
+	
+	
 }
 
 class EnrichmentComparator implements Comparator<Enrichment> {

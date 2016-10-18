@@ -40,7 +40,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 	}
 
 	private boolean hasAnnotations(Code code) {
-		return (code.getGenericAnnotations() != null && code.getGenericAnnotations().size() >= 0);
+		return (code.getGenericAnnotations() != null && code.getGenericAnnotations().size() > 0);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 	 * @return the list of retrieved enrichments
 	 */
 	public List<Enrichment> retrieveEnrichments(TextContainer textContainer,
-	        ITextUnit textUnit) {
+	        ITextUnit textUnit, String language) {
 
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (textContainer != null) {
@@ -114,7 +114,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 		}
 		// retrieve all triple enrichments.
 		enrichments.addAll(retrieveTriplesEnrichments(textUnit.getSkeleton(),
-		        enrichments));
+		        enrichments, language));
 		return enrichments;
 	}
 
@@ -432,7 +432,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 	 * @return the complete list of enrichments.
 	 */
 	private List<Enrichment> retrieveTriplesEnrichments(ISkeleton skeleton,
-	        List<Enrichment> enrichments) {
+	        List<Enrichment> enrichments, String language) {
 		List<Enrichment> triplesEnrichments = new ArrayList<Enrichment>();
 		if (skeleton != null) {
 			String skelString = skeleton.toString();
@@ -445,7 +445,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 				        + LinkEnrichment.MARKER_TAG);
 				stringJson = stringJson.substring(0, endJsonIdx);
 				triplesEnrichments.addAll(retrieveTriplesEnrichments(
-				        stringJson, enrichments));
+				        stringJson, enrichments, language));
 			}
 		}
 

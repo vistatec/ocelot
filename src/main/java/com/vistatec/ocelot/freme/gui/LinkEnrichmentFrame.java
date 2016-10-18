@@ -87,8 +87,10 @@ public class LinkEnrichmentFrame extends JDialog implements Runnable {
 	private Component getMainPanel() {
 
 		JTabbedPane tabbedPane = new JTabbedPane();
-		tabbedPane.addTab("Abstract", new AbstractPanel(enrichment
-		        .getLongDescription().getValue()));
+		if (enrichment.getLongDescription() != null) {
+			tabbedPane.addTab("Abstract", new AbstractPanel(enrichment
+					.getLongDescription().getValue()));
+		}
 		tabbedPane.addTab("Info", new InfoPanel(enrichment.getInfoList()));
 		tabbedPane.addTab("Image", getImagePanel());
 		tabbedPane.addTab("Links", getLinksPanel());

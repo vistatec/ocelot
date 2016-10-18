@@ -223,6 +223,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 try {
                     pluginManager.discover(fc.getSelectedFile());
+                    pluginManager.pluginsAdded();
                     initPlugins(pluginManager.getPlugins());
                     revalidate();
                 } catch (IOException ex) {

@@ -141,8 +141,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				Unit unit = event.getUnit();
 				for (Part unitPart : unit) {
 					if (unitPart.isSegment()) {
-List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getSource());
-                    	List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getTarget());
+List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getSource(), sourceLang);
+                    	List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getTarget(), targetLang);
                         net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
                                 (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
 						OcelotSegment ocelotSegment = convertPartToSegment(
@@ -323,11 +323,11 @@ List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(uni
 		seg.addAllProvenance(parseProvData(unitPart));
         if(sourceEnrichments != null && !sourceEnrichments.isEmpty() && seg.getSource() != null && seg.getSource() instanceof BaseSegmentVariant){
         	((BaseSegmentVariant)seg.getSource()).setEnrichments(new HashSet<Enrichment>(sourceEnrichments));
-        	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
+//        	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
         }
         if(targetEnrichments != null && !targetEnrichments.isEmpty() && seg.getTarget() != null && seg.getTarget() instanceof BaseSegmentVariant){
         	((BaseSegmentVariant)seg.getTarget()).setEnrichments(new HashSet<Enrichment>(targetEnrichments));
-        	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
+//        	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
         }
         enrichmentConverter.convertEnrichments2ITSMetadata(seg);
 		return seg;
