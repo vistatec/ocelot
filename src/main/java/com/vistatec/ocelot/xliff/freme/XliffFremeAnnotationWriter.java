@@ -118,7 +118,7 @@ public class XliffFremeAnnotationWriter {
 							segService);
 				}
 			}
-
+			printDocument();
 			saveFile(xliffFile.getAbsolutePath());
 		} catch (ParserConfigurationException | SAXException e) {
 			logger.error("Error while parsing the file", e);
@@ -130,6 +130,46 @@ public class XliffFremeAnnotationWriter {
 			logger.error("Error while creating the XLIFF helper", e);
 		}
 
+	}
+	
+	private void printDocument(){
+		
+		StringBuilder strBuilder = new StringBuilder();
+		printDocument(document.getFirstChild(), strBuilder);
+		System.out.println(strBuilder.toString());
+	}
+	
+	private void printDocument(Node node, StringBuilder strBuilder){
+		
+		if(node.getNodeType() == Node.TEXT_NODE){
+			strBuilder.append(node.getTextContent());
+			strBuilder.append("\n");
+		} else {
+		strBuilder.append("<");
+		strBuilder.append(node.getNodeName());
+		if(node.getAttributes() != null){
+			NamedNodeMap attrMap = node.getAttributes();
+			for(int i = 0; i<attrMap.getLength(); i++){
+				strBuilder.append(" ");
+				strBuilder.append(attrMap.item(i).getNodeName());
+				strBuilder.append("=\"");
+				strBuilder.append(attrMap.item(i).getNodeValue());
+				strBuilder.append("\"");
+			}
+		}
+		strBuilder.append(">\n");
+		
+		if(node.getChildNodes() != null ){
+			for(int i = 0; i<node.getChildNodes().getLength(); i++){
+				printDocument(node.getChildNodes().item(i), strBuilder);
+			}
+		}
+		
+		strBuilder.append("</");
+		strBuilder.append(node.getNodeName());
+		strBuilder.append(">\n");
+		}
+		
 	}
 
 	/**

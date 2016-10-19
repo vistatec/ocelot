@@ -65,7 +65,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 				switch (codedText.charAt(textIdx)) {
 				case Fragment.MARKER_OPENING:
 					MTag tag = fragment.getMTag(codedText, textIdx);
-					if (tag != null && tag.hasITSItem()) {
+					if (tag != null && (tag.hasITSItem() || tag instanceof TermTag)) {
 						manageMarkerOpeningXliff2_0(tag, currEnrichments,
 						        dataCategoryToDelete, wholeText.toString(),
 						        termAnnotator);
@@ -81,7 +81,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 					tag = fragment.getMTag(codedText, textIdx);
 					EnrichmentWrapper enrichmentWrapper = findEnrichmentByTagId(
 					        tag.getId(), currEnrichments);
-					if (enrichmentWrapper != null && tag.hasITSItem()) {
+					if (enrichmentWrapper != null ) {
 						enrichmentWrapper.getEnrichment().setOffsetEndIdx(
 						        wholeText.length());
 						currEnrichments.remove(enrichmentWrapper);
