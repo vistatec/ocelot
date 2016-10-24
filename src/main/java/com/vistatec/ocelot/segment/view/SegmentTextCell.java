@@ -45,7 +45,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyEvent;
-import java.awt.event.InputMethodEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -101,8 +100,6 @@ public class SegmentTextCell extends JTextPane {
     private boolean raw;
     
     private JFrame menuFrame;
-
-    private boolean inputMethodChanged;
 
     // Shared styles table
     private static final StyleContext styles = new StyleContext();
@@ -297,29 +294,6 @@ public class SegmentTextCell extends JTextPane {
     public void setTargetDiff(List<String> targetDiff) {
         setTextPane(targetDiff);
     }
-    
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.swing.text.JTextComponent#processInputMethodEvent(java.awt.event
-     * .InputMethodEvent)
-     */
-    @Override
-    protected void processInputMethodEvent(InputMethodEvent e) {
-        /*
-         * Some keyboards, such as Traditional Chinese keyboard, trigger the
-         * INPUT_METHOD_TEXT_CHANGED event while typing text. This event causes
-         * the remove method in the DocumentFilter to be invoked, resulting in
-         * some characters erroneously deleted. The inputMethodChanged field
-         * value is set to true in case this event is triggered. This field is
-         * then checked within the remove method, and the characters are
-         * actually removed only if this field is false.
-         */
-        inputMethodChanged = e.getID() == InputMethodEvent.INPUT_METHOD_TEXT_CHANGED;
-        super.processInputMethodEvent(e);
-    }
 
     @Override
     public String getToolTipText(MouseEvent event) {
@@ -346,6 +320,13 @@ public class SegmentTextCell extends JTextPane {
         public void remove(FilterBypass fb, int offset, int length)
                 throws BadLocationException {
 
+            // When composing text (CJK, etc., input) allow all edits to the
+            // view only.
+            if (getStyledDocument().getCharacterElement(offset).getAttributes()
+                    .isDefined(StyleConstants.ComposedTextAttribute)) {
+                fb.remove(offset, length);
+                return;
+            }
             if (v != null) {
                 // Allow atomic tag deletions
                 if (v.containsTag(offset, length)) {
@@ -357,22 +338,27 @@ public class SegmentTextCell extends JTextPane {
                     // Remove from cell editor
                     super.remove(fb, offset, length);
     
-                    if(!inputMethodChanged){
-	                    // Remove from underlying segment structure
-	                    deleteChars(offset, length);
-                    }
+                    // Remove from underlying segment structure
+                    deleteChars(offset, length);
                 }
             }
             else {
                 // TODO: why does this correct the spacing issue?
                 super.remove(fb, offset, length);
             }
-            inputMethodChanged = false;
         }
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String str,
                 AttributeSet a) throws BadLocationException {
+
+            // When composing text (CJK, etc., input) allow all edits to the
+            // view only.
+            if (a.isDefined(StyleConstants.ComposedTextAttribute)) {
+                fb.replace(offset, length, str, a);
+                return;
+            }
+
             if (length > 0) {
                 if (v.containsTag(offset, length)) {
                     int start = v.findSelectionStart(offset);
@@ -395,8 +381,6 @@ public class SegmentTextCell extends JTextPane {
                     insertChars(str, offset);
                 }
             }
-            inputMethodChanged = false;
-
         }
 
         public void deleteChars(int offset, int charsToRemove) {
