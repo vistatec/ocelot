@@ -1,8 +1,8 @@
 package com.vistatec.ocelot.segment.model;
 
-import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
-
 import java.util.List;
+
+import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 /**
  * Abstract representation of a segment variant (eg, the source
@@ -40,6 +40,14 @@ public interface SegmentVariant {
      * @return
      */
     List<SegmentAtom> getAtoms();
+
+    /**
+     * Get the SegmentAtom at the specified offset.
+     * 
+     * @param offset
+     * @return The atom, or null if the offset is out of bounds
+     */
+    SegmentAtom getAtomAt(int offset);
 
     /**
      * Return the style information for the editable cells.  The return
@@ -99,8 +107,7 @@ public interface SegmentVariant {
 
     /**
      * Replace a selection (specified by offsets) with a selection from
-     * another segment variant.  (This method is currently unused and is
-     * intended as support for copy/paste.)
+     * another segment variant.
      *
      * @param selectionStart start of the selection to be replaced
      * @param selectionEnd end of the selection to be replaced
@@ -109,7 +116,63 @@ public interface SegmentVariant {
     public void replaceSelection(int selectionStart, int selectionEnd,
             SegmentVariantSelection rsv);
 
+    /**
+     * Replace a selection (specified by offsets) with a list of atoms.
+     *
+     * @param selectionStart start of the selection to be replaced
+     * @param selectionEnd end of the selection to be replaced
+     * @param atoms content with which to replace the current selection
+     */
+    public void replaceSelection(int selectionStart, int selectionEnd, List<? extends SegmentAtom> atoms);
+
+    /**
+     * Delete a selection (specified by offsets).
+     * @param selectionStart start of the selection to be cleared
+     * @param selectionEnd end of the selection to be cleared
+     */
+    public void clearSelection(int selectionStart, int selectionEnd);
+
+    /**
+     * When true, this segment variant has been modified in an unsafe way (by
+     * {@link #replaceSelection(int, int, SegmentVariantSelection)}) and may not
+     * have valid codes.
+     */
+    public boolean needsValidation();
+
+    /**
+     * Check that this segment variant is consistent with another one
+     * (presumably an original made with {@link #createCopy()} before this one
+     * was modified).
+     * <p>
+     * Variants are considered consistent if they have the same number of tags,
+     * and all tags in the other variant are also present in this one.
+     * 
+     * @param sv
+     *            A known-valid variant to validate against
+     * @return False if this variant's tags are inconsistent with the supplied
+     *         variant's
+     */
+    public boolean validateAgainst(SegmentVariant sv);
+
+    /**
+     * Get tags missing from this variant that are present in another one
+     * (presumably an original made with {@link #createCopy()} before this one
+     * was modified).
+     * <p>
+     * 
+     * @param sv
+     *            A known-valid variant to check tags against
+     * @return List of tags
+     */
+    public List<CodeAtom> getMissingTags(SegmentVariant sv);
+
     @Override
     boolean equals(Object o);
+
+    /**
+     * Create an atom at the given offset that will track that location in the
+     * text even as the content changes.
+     */
+    PositionAtom createPosition(int offset);
 
 }

@@ -28,7 +28,7 @@ public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
         SegmentTextCell renderTextPane = SegmentTextCell.createCell();
         SegmentVariant segVariant = (SegmentVariant)o;
         if(o != null){
-        	renderTextPane.setVariant(segVariant, false);
+            renderTextPane.setVariant(row, segVariant, false);
         	renderTextPane.setBackground(comp.getBackground());
             if (isSelected) {
                 renderTextPane.setForeground(comp.getForeground());

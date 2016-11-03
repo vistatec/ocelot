@@ -3,6 +3,8 @@ package com.vistatec.ocelot.xliff.freme;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,9 +44,9 @@ import com.vistatec.ocelot.segment.model.enrichment.LinkEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.xliff.freme.helper.DocumentTreeHelper;
+import com.vistatec.ocelot.xliff.freme.helper.DocumentTreeHelper.NodeWrapper;
 import com.vistatec.ocelot.xliff.freme.helper.FremeXliffHelper;
 import com.vistatec.ocelot.xliff.freme.helper.FremeXliffHelperFactory;
-import com.vistatec.ocelot.xliff.freme.helper.DocumentTreeHelper.NodeWrapper;
 import com.vistatec.ocelot.xliff.freme.helper.FremeXliffHelperFactory.UnsupportedVersionException;
 
 public class XliffFremeAnnotationWriter {
@@ -79,8 +81,10 @@ public class XliffFremeAnnotationWriter {
 	 *            the XLIFF file.
 	 * @param segService
 	 *            the segment service.
-	 */
-	public void saveAnnotations(final File xliffFile, SegmentService segService) {
+     * @throws Exception
+     *             If an error occurs while parsing the file
+     */
+    public void saveAnnotations(final File xliffFile, SegmentService segService) throws Exception {
 
 		logger.info("Saving enrichment annotations for file {}", xliffFile.getName());
 		try {
@@ -104,6 +108,7 @@ public class XliffFremeAnnotationWriter {
 			saveFile(xliffFile.getAbsolutePath());
 		} catch (ParserConfigurationException | SAXException e) {
 			logger.error("Error while parsing the file", e);
+            throw e;
 		} catch (IOException e) {
 			logger.error("Error while reading or writing the file", e);
 		} catch (TransformerException e) {
@@ -130,10 +135,11 @@ public class XliffFremeAnnotationWriter {
 				.newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
 		DOMSource source = new DOMSource(document);
-		StreamResult result = new StreamResult(new FileWriterWithEncoding(
-				new File(filePath), "UTF-8"));
-		transformer.transform(source, result);
-		System.out.println("File saved!");
+        try (Writer writer = new FileWriterWithEncoding(new File(filePath), StandardCharsets.UTF_8)) {
+            StreamResult result = new StreamResult(writer);
+            transformer.transform(source, result);
+            System.out.println("File saved!");
+        }
 	}
 
 	/**

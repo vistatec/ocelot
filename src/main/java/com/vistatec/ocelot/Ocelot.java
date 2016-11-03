@@ -381,7 +381,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			                "Save Unsaved Changes",
 			                JOptionPane.YES_NO_CANCEL_OPTION);
 			if (rv == JOptionPane.YES_OPTION) {
-				save(ocelotApp.getOpenFile());
+				canQuit = save(ocelotApp.getOpenFile());
 			} else if (rv != JOptionPane.NO_OPTION) {
 				canQuit = false;
 			}

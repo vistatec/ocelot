@@ -2,6 +2,7 @@ package com.vistatec.ocelot.segment.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	
 	private TranslationEnrichment transEnrichment;
 
+    private boolean dirty;
+
 protected List<HighlightData> highlightDataList;
     
     protected int currentHighlightedIndex = -1;
@@ -35,11 +38,17 @@ protected List<HighlightData> highlightDataList;
 		int end = start + length;
 
 		for (SegmentAtom atom : getAtoms()) {
+			if (index == start && atom instanceof PositionAtom) {
+				// Catch PositionAtom at the very beginning of the range.
+				atomsForRange.add(atom);
+			}
 			if (index >= end) {
 				return atomsForRange;
 			}
 			if (index + atom.getLength() > start) {
 				if (atom instanceof CodeAtom) {
+					atomsForRange.add(atom);
+				} else if (atom instanceof PositionAtom) {
 					atomsForRange.add(atom);
 				} else {
 					int min = Math.max(start - index, 0);
@@ -52,6 +61,18 @@ protected List<HighlightData> highlightDataList;
 		}
 		return atomsForRange;
 	}
+
+    @Override
+    public SegmentAtom getAtomAt(int offset) {
+        int index = 0;
+        for (SegmentAtom atom : getAtoms()) {
+            if (index <= offset && offset < index + atom.getLength()) {
+                return atom;
+            }
+            index += atom.getLength();
+        }
+        return null;
+    }
 
 	public int getLength() {
 		int len = 0;
@@ -112,10 +133,12 @@ protected List<HighlightData> highlightDataList;
 			} else {
 				textToStyle.add(atom.getData());
             		textToStyle.add(atom.getTextStyle());
-			}
-            } else {
-            	textToStyle.add(atom.getData());
-			textToStyle.add(atom.getTextStyle());
+				}
+			} else if (atom instanceof PositionAtom) {
+				// Skip
+			} else {
+				textToStyle.add(atom.getData());
+				textToStyle.add(atom.getTextStyle());
 		}
         }
 		return textToStyle;
@@ -170,6 +193,17 @@ protected List<HighlightData> highlightDataList;
 	}
 
 	@Override
+	public PositionAtom createPosition(int offset) {
+		List<SegmentAtom> atoms = Lists.newArrayList();
+		atoms.addAll(getAtomsForRange(0, offset));
+		PositionAtom position = new PositionAtom(this);
+		atoms.add(position);
+		atoms.addAll(getAtomsForRange(offset, getLength()));
+		setAtoms(atoms);
+		return position;
+	}
+
+	@Override
 	public void replaceSelection(int selectionStart, int selectionEnd,
 			SegmentVariantSelection rsv) {
 
@@ -178,35 +212,89 @@ protected List<HighlightData> highlightDataList;
 				rsv.getSelectionStart(),
 				rsv.getSelectionEnd() - rsv.getSelectionStart());
 
+        replaceSelection(selectionStart, selectionEnd, replaceAtoms);
+    }
+
+	@Override
+	public void replaceSelection(int selectionStart, int selectionEnd, List<? extends SegmentAtom> atoms) {
+		if (selectionStart == selectionEnd && atoms.isEmpty()) {
+			// No-op
+			return;
+		}
 		List<SegmentAtom> newAtoms = Lists.newArrayList();
 		newAtoms.addAll(getAtomsForRange(0, selectionStart));
-		newAtoms.addAll(replaceAtoms);
+		newAtoms.addAll(atoms);
 		newAtoms.addAll(getAtomsForRange(selectionEnd, getLength()));
+		setAtoms(mergeNeighboringTextAtoms(newAtoms));
+        dirty = true;
 
-		// Clean up codes that may be duplicates
-		Set<String> codeIds = new HashSet<String>();
-		List<SegmentAtom> cleanedAtoms = Lists.newArrayList();
-		// Strip any atoms that exist twice
-		for (SegmentAtom atom : newAtoms) {
-			if (atom instanceof CodeAtom) {
-				String id = ((CodeAtom) atom).getId();
-				if (!codeIds.contains(id)) {
-					codeIds.add(id);
-					cleanedAtoms.add(atom);
-				}
-			} else {
-				cleanedAtoms.add(atom);
-			}
-		}
-		// Append any atoms that were deleted
-		List<CodeAtom> originalCodes = findCodes(getAtoms());
-		for (CodeAtom code : originalCodes) {
-			if (!codeIds.contains(code.getId())) {
-				cleanedAtoms.add(code);
-			}
-		}
-		setAtoms(cleanedAtoms);
+//		// Clean up codes that may be duplicates
+//		Set<String> codeIds = new HashSet<String>();
+//		List<SegmentAtom> cleanedAtoms = Lists.newArrayList();
+//		// Strip any atoms that exist twice
+//		for (SegmentAtom atom : newAtoms) {
+//			if (atom instanceof CodeAtom) {
+//				String id = ((CodeAtom) atom).getId();
+//				if (!codeIds.contains(id)) {
+//					codeIds.add(id);
+//					cleanedAtoms.add(atom);
+//				}
+//			} else {
+//				cleanedAtoms.add(atom);
+//			}
+//		}
+//		// Append any atoms that were deleted
+//		List<CodeAtom> originalCodes = findCodes(getAtoms());
+//		for (CodeAtom code : originalCodes) {
+//			if (!codeIds.contains(code.getId())) {
+//				cleanedAtoms.add(code);
+//			}
+//		}
+//		setAtoms(cleanedAtoms);
 	}
+
+    @Override
+    public void clearSelection(int selectionStart, int selectionEnd) {
+        replaceSelection(selectionStart, selectionEnd, Collections.<SegmentAtom> emptyList());
+    }
+
+    @Override
+    public boolean needsValidation() {
+        return dirty;
+    }
+
+    @Override
+    public boolean validateAgainst(SegmentVariant sv) {
+        List<CodeAtom> theseCodes = findCodes(getAtoms());
+        List<CodeAtom> thoseCodes = findCodes(sv.getAtoms());
+        if (theseCodes.size() != thoseCodes.size()) {
+            return false;
+        }
+        Set<String> codeIds = new HashSet<String>();
+        for (CodeAtom code : theseCodes) {
+            codeIds.add(code.getId());
+        }
+        for (CodeAtom code : thoseCodes) {
+            if (!codeIds.contains(code.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public List<CodeAtom> getMissingTags(SegmentVariant sv) {
+        List<CodeAtom> theseCodes = findCodes(getAtoms());
+        List<CodeAtom> thoseCodes = findCodes(sv.getAtoms());
+        
+        List<CodeAtom> missing = Lists.newArrayList();
+        for (CodeAtom code : thoseCodes) {
+            if (!theseCodes.contains(code)) {
+                missing.add(code);
+            }
+        }
+        return missing;
+    }
 
 	/**
 	 * Modify the text contents of the segment; Assumes checks for attempting to
@@ -474,5 +562,10 @@ protected List<HighlightData> highlightDataList;
 //    		}
 //    	}
     	return transEnrichment;
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayText();
     }
 }

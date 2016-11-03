@@ -45,7 +45,7 @@ public class ReadOnlyCellEditor extends AbstractCellEditor implements TableCellE
 //		Component comp = super.getTableCellEditorComponent(table, value, isSelected, row, column);
 		SegmentTextCell renderedComp = (SegmentTextCell)table.getCellRenderer(row, column).getTableCellRendererComponent(table, value, isSelected, true, row, column);
 		editorComp = SegmentTextCell.createCell();
-		editorComp.setVariant(renderedComp.getVariant().createCopy(), false);
+        editorComp.setVariant(row, renderedComp.getVariant().createCopy(), false);
 		editorComp.setBackground(table.getSelectionBackground());
 		editorComp.setSelectionColor(Color.BLUE);
 		editorComp.setSelectedTextColor(Color.WHITE);
