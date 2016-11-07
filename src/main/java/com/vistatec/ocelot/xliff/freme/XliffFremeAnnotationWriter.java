@@ -2,6 +2,7 @@ package com.vistatec.ocelot.xliff.freme;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +73,17 @@ public class XliffFremeAnnotationWriter {
 
 	/** The last id used for FREME mrk tag. */
 	private int lastFremeMrkId;
+	
+	private String sourceLang;
+	
+	private String targetLang;
 
+	public XliffFremeAnnotationWriter(final String sourceLang, final String targetLang) {
+		
+		this.sourceLang = sourceLang;
+		this.targetLang = targetLang;
+    }
+	
 	/**
 	 * For each enrichment in the Ocelot segments, a proper annotation is
 	 * written into the XLIFF file.
@@ -230,10 +241,10 @@ public class XliffFremeAnnotationWriter {
 				if (segment.getSource() instanceof BaseSegmentVariant) {
 					writeAnnotations(unitElement,
 							xliffHelper.getSourceElement(unitElement),
-							(BaseSegmentVariant) segment.getSource());
+							(BaseSegmentVariant) segment.getSource(), sourceLang);
 					writeAnnotations(unitElement,
 							xliffHelper.getTargetElement(unitElement),
-							(BaseSegmentVariant) segment.getTarget());
+							(BaseSegmentVariant) segment.getTarget(), targetLang);
 				}
 			} else {
 				logger.error("Error while detecting segment with segment number {}. Obtained segment number is {}",
@@ -253,7 +264,7 @@ public class XliffFremeAnnotationWriter {
 	 *            the Ocelot variant
 	 */
 	private void writeAnnotations(Element unitElement, Element variantElement,
-			BaseSegmentVariant variant) {
+			BaseSegmentVariant variant, String language) {
 		if (variant != null && variant.getEnirchments() != null
 				&& !variant.getEnirchments().isEmpty()) {
 			List<Enrichment> varEnrichments = new ArrayList<Enrichment>(variant.getEnirchments());
@@ -298,7 +309,7 @@ public class XliffFremeAnnotationWriter {
 				}
 			}
 			writeTripleEnrichments(unitElement, variantElement,
-					tripleEnrichments);
+					tripleEnrichments, language);
 		}
 	}
 
@@ -604,7 +615,7 @@ public class XliffFremeAnnotationWriter {
 	 * @param tripleEnrichments
 	 */
 	private void writeTripleEnrichments(Element unitElement,
-			Element variantElement, List<Enrichment> tripleEnrichments) {
+			Element variantElement, List<Enrichment> tripleEnrichments, String language) {
 
 		Model tripleModel = ModelFactory.createDefaultModel();
 		Set<TermEnrichmentWrapper> allTermEnrichmentsWrap = new HashSet<TermEnrichmentWrapper>();
@@ -638,6 +649,10 @@ public class XliffFremeAnnotationWriter {
 			if (extraNodeList != null && extraNodeList.getLength() > 0) {
 				Node extraNode = extraNodeList.item(0);
 				Text modelText = (Text) extraNode.getFirstChild();
+				Model existingModel = ModelFactory.createDefaultModel();
+				StringReader reader = new StringReader(modelText.getData());
+				existingModel.read(reader, "", EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
+				tripleModel.add(existingModel);
 				StringWriter writer = new StringWriter();
 				tripleModel.write(writer,
 						EnrichmentAnnotationsConstants.JSON_LD_FORMAT);

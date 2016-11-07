@@ -52,6 +52,9 @@ public class LinkEnrichment extends Enrichment {
 
 	/** The context for the triples model. */
 	private Map<String, String> context;
+	
+	/** The link language. */
+	private String language;
 
 	/**
 	 * Constructor.
@@ -59,8 +62,9 @@ public class LinkEnrichment extends Enrichment {
 	 * @param nifOffsetString
 	 *            the NIF offset string.
 	 */
-	public LinkEnrichment(String nifOffsetString) {
+	public LinkEnrichment(String nifOffsetString, String language) {
 		super(Enrichment.LINK_TYPE, nifOffsetString);
+		this.language = language;
 	}
 
 	/**
@@ -71,8 +75,9 @@ public class LinkEnrichment extends Enrichment {
 	 * @param offsetEndIndex
 	 *            the offset end index.
 	 */
-	public LinkEnrichment(int offsetStartIndex, int offsetEndIndex) {
+	public LinkEnrichment(int offsetStartIndex, int offsetEndIndex, String language) {
 		super(Enrichment.LINK_TYPE, offsetStartIndex, offsetEndIndex);
+		this.language = language;
 	}
 
 	/*
@@ -349,6 +354,15 @@ public class LinkEnrichment extends Enrichment {
 		// TODO Auto-generated method stub
 		return MARKER_TAG;
 	}
+	
+	
+	/**
+	 * Gets the link language.
+	 * @return the link language.
+	 */
+	public String getLanguage() {
+		return language;
+	}
 
 	public Model getPropertiesModel() {
 
@@ -359,17 +373,17 @@ public class LinkEnrichment extends Enrichment {
 		Resource resource = model.createResource(referenceEntity);
 		if (entityName != null) {
 			model.add(resource, model.createProperty(entityName.getPropName()),
-					entityName.getValue());
+					entityName.getValue(), language);
 		}
 		if (shortDescription != null) {
 			model.add(resource,
 					model.createProperty(shortDescription.getPropName()),
-					shortDescription.getValue());
+					shortDescription.getValue(), language);
 		}
 		if (longDescription != null) {
 			model.add(resource,
 					model.createProperty(longDescription.getPropName()),
-					longDescription.getValue());
+					longDescription.getValue(), language);
 		}
 		if (imageURL != null) {
 			model.add(resource, model.createProperty(imageURL.getPropName()),
@@ -377,16 +391,16 @@ public class LinkEnrichment extends Enrichment {
 		}
 		if (homePage != null) {
 			model.add(resource, model.createProperty(homePage.getPropName()),
-					homePage.getValue());
+					homePage.getValue(), language);
 		}
 		if (wikiPage != null) {
 			model.add(resource, model.createProperty(wikiPage.getPropName()),
-					wikiPage.getValue());
+					wikiPage.getValue(), language);
 		}
 		if (infoList != null) {
 			for (LinkInfoData info : infoList) {
 				model.add(resource, model.createProperty(info.getPropName()),
-						info.getValue());
+						info.getValue(), language);
 			}
 		}
 		return model;

@@ -141,9 +141,13 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				Unit unit = event.getUnit();
 				for (Part unitPart : unit) {
 					if (unitPart.isSegment()) {
-List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getSource());
-                    	List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit, unitPart.getTarget());
-                        net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
+						List<Enrichment> sourceEnrichments = enrichmentConverter
+						        .retrieveEnrichments(unit,
+						                unitPart.getSource(), sourceLang);
+						List<Enrichment> targetEnrichments = enrichmentConverter
+						        .retrieveEnrichments(unit,
+						                unitPart.getTarget(), targetLang);
+						net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
                                 (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
 						OcelotSegment ocelotSegment = convertPartToSegment(
 						        okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId());

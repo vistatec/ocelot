@@ -141,7 +141,9 @@ public class OcelotApp implements OcelotEventQueueListener {
         File tmpFile = tmpPath.toFile();
         xliffService.save(openXliffFile, tmpFile);
         try {
-            XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter();
+			XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
+			        openXliffFile.getSrcLocale().toString(), openXliffFile
+			                .getTgtLocale().toString());
             annotationWriter.saveAnnotations(tmpFile, segmentService);
         } catch (Exception e) {
             if (!tmpFile.delete()) {

@@ -70,7 +70,7 @@ public abstract class EnrichmentConverter {
 	 * @return the complete list of enrichments.
 	 */
 	protected List<Enrichment> retrieveTriplesEnrichments(String jsonString,
-	        List<Enrichment> enrichments) {
+	        List<Enrichment> enrichments, String language) {
 		List<Enrichment> triplesEnrichments = new ArrayList<Enrichment>();
 		Model tripleModel = ModelFactory.createDefaultModel();
 		tripleModel.read(new StringReader(jsonString), null,
@@ -90,7 +90,7 @@ public abstract class EnrichmentConverter {
 					if (enrichment.getType().equals(Enrichment.ENTITY_TYPE)) {
 						LinkEnrichment link = new LinkEnrichment(
 						        enrichment.getOffsetStartIdx(),
-						        enrichment.getOffsetEndIdx());
+						        enrichment.getOffsetEndIdx(), language);
 						ELinkEnrichmentsConstants.fillLinkEnrichment(link,
 						        tripleModel, currRes.getURI());
 						triplesEnrichments.add(link);
@@ -328,7 +328,7 @@ public abstract class EnrichmentConverter {
 					taAnnot = createTaMetaData((EntityEnrichment) enrich,
 					        sourceText, segmentPart);
 					TextAnalysisMetaData existingMetaData = findTaMetaData(
-					        taAnnot.getEntity(), segment.getTextAnalysis());
+					        taAnnot.getEntity(), segment.getTextAnalysis(), segmentPart);
 					if (existingMetaData == null) {
 						segment.addTextAnalysis(taAnnot);
 					} else {
@@ -352,18 +352,19 @@ public abstract class EnrichmentConverter {
 	 * @param variant the variant
 	 */
 	public static void removeEnrichmentMetaData(OcelotSegment segment,
-			BaseSegmentVariant variant) {
+			BaseSegmentVariant variant, boolean target) {
 
 		if (variant.getEnirchments() != null) {
 			for (Enrichment enrich : variant.getEnirchments()) {
 				String sourceText = variant.getDisplayText();
 				TerminologyMetaData termAnnot = null;
 				TextAnalysisMetaData taAnnot = null;
+				String segPart = target?TextAnalysisMetaData.TARGET:TextAnalysisMetaData.SOURCE;
 				if (enrich.getType().equals(Enrichment.ENTITY_TYPE)) {
 					taAnnot = createTaMetaData((EntityEnrichment) enrich,
 					        sourceText, null);
 					TextAnalysisMetaData existingMetaData = findTaMetaData(
-					        taAnnot.getEntity(), segment.getTextAnalysis());
+					        taAnnot.getEntity(), segment.getTextAnalysis(), segPart);
 					if(existingMetaData != null){
 						if(taAnnot.getTaAnnotatorsRef() != null){
 							existingMetaData.setTaAnnotatorsRef(null);
@@ -384,7 +385,7 @@ public abstract class EnrichmentConverter {
 				} else if (enrich.getType().equals(Enrichment.TERMINOLOGY_TYPE)) {
 					termAnnot = createTermMetaData(
 					        (TerminologyEnrichment) enrich, sourceText,
-					        null);
+					        segPart);
 					segment.removeTerm(termAnnot);
 					
 				}
@@ -402,12 +403,12 @@ public abstract class EnrichmentConverter {
 	 * @return the Text-Analysis meta data related to the entity
 	 */
 	private static TextAnalysisMetaData findTaMetaData(String entity,
-	        List<TextAnalysisMetaData> metaDataList) {
+	        List<TextAnalysisMetaData> metaDataList, String segPart) {
 
 		TextAnalysisMetaData taMetaData = null;
 		if (metaDataList != null) {
 			for (TextAnalysisMetaData metaData : metaDataList) {
-				if (metaData.getEntity().equals(entity)) {
+				if (metaData.getEntity().equals(entity) && metaData.getSegPart().equals(segPart)) {
 					taMetaData = metaData;
 					break;
 				}

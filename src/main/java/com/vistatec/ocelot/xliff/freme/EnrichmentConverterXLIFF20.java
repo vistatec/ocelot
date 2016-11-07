@@ -48,7 +48,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 *            the current involved fragment
 	 * @return the list of enrichments for this unit.
 	 */
-	public List<Enrichment> retrieveEnrichments(Unit unit, Fragment fragment) {
+	public List<Enrichment> retrieveEnrichments(Unit unit, Fragment fragment, String language) {
 
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (fragment != null) {
@@ -65,7 +65,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 				switch (codedText.charAt(textIdx)) {
 				case Fragment.MARKER_OPENING:
 					MTag tag = fragment.getMTag(codedText, textIdx);
-					if (tag != null && tag.hasITSItem()) {
+					if (tag != null && (tag.hasITSItem() || tag instanceof TermTag)) {
 						manageMarkerOpeningXliff2_0(tag, currEnrichments,
 						        dataCategoryToDelete, wholeText.toString(),
 						        termAnnotator);
@@ -81,7 +81,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 					tag = fragment.getMTag(codedText, textIdx);
 					EnrichmentWrapper enrichmentWrapper = findEnrichmentByTagId(
 					        tag.getId(), currEnrichments);
-					if (enrichmentWrapper != null && tag.hasITSItem()) {
+					if (enrichmentWrapper != null ) {
 						enrichmentWrapper.getEnrichment().setOffsetEndIdx(
 						        wholeText.length());
 						currEnrichments.remove(enrichmentWrapper);
@@ -116,7 +116,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 			newCodedText.append(codedText.substring(lastIndex));
 			fragment.setCodedText(newCodedText.toString());
 			enrichments.addAll(retrieveTriplesEnrichments(
-			        unit.getExtElements(), enrichments));
+			        unit.getExtElements(), enrichments, language));
 		}
 		return enrichments;
 	}
@@ -225,7 +225,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 * @return the complete list of enrichments.
 	 */
 	private List<Enrichment> retrieveTriplesEnrichments(
-	        final ExtElements elements, final List<Enrichment> enrichments) {
+	        final ExtElements elements, final List<Enrichment> enrichments, String language) {
 
 		List<Enrichment> triplesEnrichments = new ArrayList<Enrichment>();
 		if (elements != null) {
@@ -240,7 +240,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 						String jsonString = ((ExtContent) elem.getChildren()
 						        .get(0)).getText();
 						triplesEnrichments.addAll(retrieveTriplesEnrichments(
-						        jsonString, enrichments));
+						        jsonString, enrichments, language));
 					}
 
 				}

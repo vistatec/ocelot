@@ -213,11 +213,11 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
 
 		List<Enrichment> sourceEnrichments = enrichmentConverter
-		        .retrieveEnrichments(srcTu, tu);
+		        .retrieveEnrichments(srcTu, tu, LocaleId.fromString(getSourceLang()).getLanguage());
 		List<Enrichment> targetEnrichments = enrichmentConverter
-		        .retrieveEnrichments(tgtTu, tu);
+		        .retrieveEnrichments(tgtTu, tu, LocaleId.fromString(getTargetLang()).getLanguage());
 		List<Enrichment> originalTargetEnrichments = enrichmentConverter
-		        .retrieveEnrichments(oriTgtTu, tu);
+		        .retrieveEnrichments(oriTgtTu, tu, LocaleId.fromString(getTargetLang()).getLanguage());
 
 		OkapiSegment.Builder segBuilder = new OkapiSegment.Builder()
 		        .segmentNumber(documentSegmentNum++)

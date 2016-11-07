@@ -158,21 +158,21 @@ public class FremePluginManager {
 		for (OcelotSegment segment : segments) {
 
 			if (segment.getSource() instanceof BaseSegmentVariant) {
-				resetVariant(segment, (BaseSegmentVariant) segment.getSource());
+				resetVariant(segment, (BaseSegmentVariant) segment.getSource(), false);
 
 			}
 			if (segment.getTarget() != null
 					&& segment.getTarget() instanceof BaseSegmentVariant) {
-				resetVariant(segment, (BaseSegmentVariant) segment.getTarget());
+				resetVariant(segment, (BaseSegmentVariant) segment.getTarget(), true);
 			}
 		}
 		eventQueue.post(new RefreshSegmentView(-1));
 		eventQueue.post(new ItsDocStatsRecalculateEvent(segments));
 	}
 
-	private void resetVariant(OcelotSegment segment, BaseSegmentVariant variant) {
+	private void resetVariant(OcelotSegment segment, BaseSegmentVariant variant, boolean target) {
 
-		EnrichmentConverter.removeEnrichmentMetaData(segment, variant);
+		EnrichmentConverter.removeEnrichmentMetaData(segment, variant, target);
 		variant.clearEnrichments();
 	}
 
@@ -190,7 +190,7 @@ public class FremePluginManager {
 			int segNumber, boolean target, int action) {
 
 		if (action == OVERRIDE_ENRICHMENTS) {
-			resetVariant(getSegmentBySegNum(segNumber), variant);
+			resetVariant(getSegmentBySegNum(segNumber), variant, target);
 		} else {
 			variant.setEnriched(false);
 		}
