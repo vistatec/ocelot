@@ -82,6 +82,10 @@ public abstract class ELinkEnrichmentsConstants {
 
 	/** The entity name property. */
 	public static final String ENTITY_NAME_PROP = "http://www.w3.org/2000/01/rdf-schema#label";
+	
+	/** The see Also property */
+	public static final String SEE_ALSO_PROP = "http://dbpedia.org/ontology/wikiPageExternalLink";
+	
 
 	/**
 	 * Gets the info properties.
@@ -114,6 +118,7 @@ public abstract class ELinkEnrichmentsConstants {
 		properties.add(new LinkInfoData(TYPE_PROP, "Type", String.class));
 		properties
 		        .add(new LinkInfoData(LOCATION_PROP, "Location", String.class));
+		
 
 		return properties;
 
@@ -275,6 +280,21 @@ public abstract class ELinkEnrichmentsConstants {
 				        ELinkEnrichmentsConstants.HOMEPAGE_LINK_PROP);
 			}
 		}
+		
+		NodeIterator seeAlsoNodeIt = linkModel.listObjectsOfProperty(linkModel
+				.createProperty(ELinkEnrichmentsConstants.SEE_ALSO_PROP));
+		
+		List<String> seeAlsoLinks = new ArrayList<String>();
+		List<String> existingLinks = linkEnrichment.getLinks();
+		while(seeAlsoNodeIt.hasNext()){
+			
+			String link = seeAlsoNodeIt.next().asResource().getURI();
+			if(!existingLinks.contains(link)){
+				seeAlsoLinks.add(link);
+			}
+		}
+		linkEnrichment.setSeeAlsoLinks(seeAlsoLinks, ELinkEnrichmentsConstants.SEE_ALSO_PROP);
+		
 		NodeIterator infoNodeIt = null;
 		List<LinkInfoData> enrichmentInfo = new ArrayList<LinkInfoData>();
 		for (LinkInfoData infoProp : ELinkEnrichmentsConstants

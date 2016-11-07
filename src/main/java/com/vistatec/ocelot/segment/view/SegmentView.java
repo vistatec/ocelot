@@ -780,7 +780,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	public void updateSegmentView(RefreshSegmentView event) {
 		try {
 			synchronized (segmentTableModel) {
-				if (segmentTableModel.getRowCount() > 0) {
+				if (segmentTableModel.getRowCount() > 0 && event.getSegmentNumber() > -1) {
 					segmentTableModel.fireTableRowsUpdated(
 					        event.getSegmentNumber() - 1,
 					        event.getSegmentNumber() - 1);

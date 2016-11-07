@@ -8,6 +8,9 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.SystemColor;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -25,7 +29,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
 import com.vistatec.ocelot.segment.model.enrichment.LinkEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.LinkInfoData;
@@ -123,38 +134,78 @@ public class LinkEnrichmentFrame extends JDialog implements Runnable {
 	private JPanel getLinksPanel() {
 
 		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		if (enrichment.getLinks() != null) {
-			ActionListener listener = new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-
-					JButton btn = (JButton) e.getSource();
-					if (Desktop.isDesktopSupported()) {
-						try {
-							Desktop.getDesktop().browse(new URI(btn.getText()));
-						} catch (IOException ex) { /* TODO: error handling */
-							ex.printStackTrace();
-						} catch (URISyntaxException e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
-			};
-			for (String link : enrichment.getLinks()) {
-				JButton button = new JButton(link);
-				button.setHorizontalAlignment(SwingConstants.LEFT);
-				button.setBorderPainted(false);
-				button.setOpaque(false);
-				button.setBackground(Color.WHITE);
-				button.setToolTipText(link);
-				button.addActionListener(listener);
-				button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-				button.setForeground(Color.BLUE);
-				panel.add(button);
-			}
-		}
+		panel.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+//		JPanel linksPanel = new JPanel();
+//		linksPanel.setLayout(new BoxLayout(linksPanel, BoxLayout.Y_AXIS));
+//		JScrollPane linksScroll = new JScrollPane(linksPanel);
+//		if (enrichment.getLinks() != null || enrichment.getSeeAlsoLinks() != null) {
+//			ActionListener listener = new ActionListener() {
+//
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//
+//					JButton btn = (JButton) e.getSource();
+//					if (Desktop.isDesktopSupported()) {
+//						try {
+//							Desktop.getDesktop().browse(new URI(btn.getText()));
+//						} catch (IOException ex) { /* TODO: error handling */
+//							ex.printStackTrace();
+//						} catch (URISyntaxException e1) {
+//							e1.printStackTrace();
+//						}
+//					}
+//				}
+//			};
+//			if (enrichment.getLinks() != null) {
+//				for (String link : enrichment.getLinks()) {
+//					JButton button = new JButton(link);
+//					button.setHorizontalAlignment(SwingConstants.LEFT);
+//					button.setBorderPainted(false);
+//					button.setOpaque(false);
+//					button.setBackground(Color.WHITE);
+//					button.setToolTipText(link);
+//					button.addActionListener(listener);
+//					button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+//					button.setForeground(Color.BLUE);
+//					linksPanel.add(button);
+//				}
+//			}
+		LinksPanel linksPanel = new LinksPanel(enrichment.getLinks(), null);
+			c.gridx = 0;
+			c.gridy = 0;
+			c.fill = GridBagConstraints.BOTH;
+			c.weightx = 0.5;
+			c.weighty = 0.5;
+			c.anchor = GridBagConstraints.NORTH;
+			panel.add(linksPanel, c);
+//			panel.add(linksScroll);
+		
+			
+//			if(enrichment.getSeeAlsoLinks() != null ){
+//				JPanel seeAlsoPanel = new JPanel();
+//				seeAlsoPanel.setBorder(BorderFactory.createTitledBorder(" See also "));
+//				seeAlsoPanel.setLayout(new BoxLayout(seeAlsoPanel, BoxLayout.Y_AXIS));
+//				JScrollPane seeAlsoScroll = new JScrollPane(seeAlsoPanel);
+//				for(String link: enrichment.getSeeAlsoLinks().getListOfValues()){
+//					JButton button = new JButton(link);
+//					button.setHorizontalAlignment(SwingConstants.LEFT);
+//					button.setBorderPainted(false);
+//					button.setOpaque(false);
+//					button.setBackground(Color.WHITE);
+//					button.setToolTipText(link);
+//					button.addActionListener(listener);
+//					button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+//					button.setForeground(Color.BLUE);
+//					seeAlsoPanel.add(button);
+//				}
+			LinksPanel seeAlsoPanel = new LinksPanel(enrichment.getSeeAlsoLinks().getListOfValues(), " See Also ");
+				c.gridy = 1;
+				c.anchor = GridBagConstraints.SOUTH;
+				panel.add(seeAlsoPanel, c);
+//				panel.add(seeAlsoScroll);
+//			}
+//		}
 
 		return panel;
 	}
@@ -289,5 +340,78 @@ class InfoPanel extends JScrollPane {
 			container.add(new JLabel(data.getDisplayString()));
 		}
 	}
+	
+	
+}
 
+class LinksPanel extends JScrollPane {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6177859656426366570L;
+
+	public LinksPanel(List<String> links, String title) {
+		
+		makePanel(links, title);
+		
+	}
+
+	private void makePanel(List<String> links, String title) {
+		
+		if(title != null){
+			setBorder(BorderFactory.createTitledBorder(title));
+		}
+		
+		if(links != null){
+			JTextPane textPane = new JTextPane();
+			textPane.setBackground(SystemColor.control);
+			StyledDocument styleDoc = textPane.getStyledDocument();
+			SimpleAttributeSet attr = new SimpleAttributeSet();
+			
+			try {
+				ActionListener listener = new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+
+						JButton btn = (JButton) e.getSource();
+						if (Desktop.isDesktopSupported()) {
+							try {
+								Desktop.getDesktop().browse(new URI(btn.getText()));
+							} catch (IOException ex) { /* TODO: error handling */
+								ex.printStackTrace();
+							} catch (URISyntaxException e1) {
+								e1.printStackTrace();
+							}
+						}
+					}
+				};
+				JButton button = null;
+				for (String link : links) {
+//					sampleLabel = new JLabel(link);
+					button = new JButton(link);
+					button.setHorizontalAlignment(SwingConstants.LEFT);
+					button.setBorderPainted(false);
+					button.setOpaque(false);
+					button.setBackground(Color.WHITE);
+					button.setToolTipText(link);
+					button.addActionListener(listener);
+					button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+					button.setForeground(Color.BLUE);
+//					StyleConstants.setComponent(regular, button);
+					textPane.insertComponent(button);
+					styleDoc.insertString(styleDoc.getLength(), " \n",
+							attr);
+				}
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			setViewportView(textPane);
+			textPane.setCaretPosition(0);
+		}
+		
+	}
+	
 }

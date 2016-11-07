@@ -20,6 +20,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import net.sf.okapi.common.resource.TextContainer;
+
 import org.apache.log4j.Logger;
 
 import com.vistatec.ocelot.events.DisplayLeftComponentEvent;
@@ -32,7 +34,9 @@ import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.xliff.freme.EnrichmentConverter;
 
 /**
@@ -173,6 +177,31 @@ public class FremePluginManager {
 
 		EnrichmentConverter.removeEnrichmentMetaData(segment, variant, target);
 		variant.clearEnrichments();
+	}
+	
+	private void replaceAllTargets() {
+		
+		if(segments != null){
+			
+			for(OcelotSegment segment: segments){
+				if (segment.getSource() instanceof BaseSegmentVariant ) {
+					
+					BaseSegmentVariant source = (BaseSegmentVariant) segment.getSource();
+					SegmentVariant textContainerVariant = null;
+					if(source.getTranslationEnrichment() != null){
+						textContainerVariant = new TextContainerVariant(
+						        new TextContainer(source.getTranslationEnrichment().getTranslation()));
+					} else {
+						textContainerVariant = new TextContainerVariant(
+						        new TextContainer());
+					}
+					segment.getTarget().setContent(textContainerVariant);
+
+				}
+			}
+			eventQueue.post(new RefreshSegmentView(-1));
+			
+		}
 	}
 
 	/**
@@ -370,6 +399,8 @@ public class FremePluginManager {
 								enrich(fremePlugin,
 										FremePluginManager.OVERRIDE_ENRICHMENTS);
 							}
+						} else if (menuItem.getMenuType() == FremeMenu.SAVE_TRANS_MENU){
+							replaceAllTargets();
 						}
 					}
 				}

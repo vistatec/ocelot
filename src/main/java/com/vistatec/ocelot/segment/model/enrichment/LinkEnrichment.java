@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -55,6 +56,9 @@ public class LinkEnrichment extends Enrichment {
 	
 	/** The link language. */
 	private String language;
+	
+	/** List of links about topics related to this entity. */
+	private LinkInfoData seeAlsoLinks;
 	
 	/**
 	 * Constructor.
@@ -166,6 +170,16 @@ public class LinkEnrichment extends Enrichment {
 		this.longDescription = new LinkInfoData(propName, null, String.class);
 		this.longDescription.setValue(longDescription);
 	}
+	
+	public LinkInfoData getSeeAlsoLinks(){
+		return seeAlsoLinks;
+	}
+	
+	public void setSeeAlsoLinks(List<String> links, String propName){
+		this.seeAlsoLinks = new LinkInfoData(propName, null, String.class );
+		this.seeAlsoLinks.setValueList(links);
+	}
+	
 
 	/**
 	 * Gets the list of info data.
@@ -398,6 +412,16 @@ public class LinkEnrichment extends Enrichment {
 		if (wikiPage != null) {
 			model.add(resource, model.createProperty(wikiPage.getPropName()),
 					wikiPage.getValue(), language);
+		}
+		if(seeAlsoLinks != null){
+			
+			List<String> seeAlsoValues = seeAlsoLinks.getListOfValues();
+			if(seeAlsoValues != null){
+				Property seeAlsoProp = model.createProperty(seeAlsoLinks.getPropName());
+				for(String value: seeAlsoValues){
+					model.add(resource, seeAlsoProp, model.createResource(value));
+				}
+			}
 		}
 		if (infoList != null) {
 			for (LinkInfoData info : infoList) {
