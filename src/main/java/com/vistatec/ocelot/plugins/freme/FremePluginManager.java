@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.plugins;
+package com.vistatec.ocelot.plugins.freme;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -23,6 +23,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Model;
 import com.vistatec.ocelot.events.DisplayLeftComponentEvent;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
 import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
@@ -664,12 +665,14 @@ class FremeEnricher implements Runnable {
 					String sourceTarget = null;
 					frag.getVariant().setSentToFreme(true);
 					if (frag.isTarget()) {
-						enrichments = fremePlugin.enrichTargetContent(frag
+						Model model = fremePlugin.enrichTargetContent(frag
 								.getText());
+						enrichments = fremePlugin.getEnrichmentFromModel(model, true);
 						sourceTarget = EnrichmentMetaData.TARGET;
 					} else {
-						enrichments = fremePlugin.enrichSourceContent(frag
+						Model model = fremePlugin.enrichSourceContent(frag
 								.getText());
+						enrichments = fremePlugin.getEnrichmentFromModel(model, false);
 						sourceTarget = EnrichmentMetaData.SOURCE;
 					}
 					frag.getVariant().setEnrichments(
