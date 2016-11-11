@@ -65,8 +65,9 @@ public interface FremePlugin extends Plugin {
 	 *             the exception raised when an error occurs while enriching a
 	 *             text.
 	 */
-	Model enrichSourceContent(final String plainText) throws FremeEnrichmentException;
-	
+	Model enrichSourceContent(final String plainText)
+	        throws FremeEnrichmentException;
+
 	/**
 	 * Enriches the text from the target.
 	 * 
@@ -77,18 +78,21 @@ public interface FremePlugin extends Plugin {
 	 *             the exception raised when an error occurs while enriching a
 	 *             text.
 	 */
-	Model enrichTargetContent(final String plainText) throws FremeEnrichmentException;
-	
-	
+	Model enrichTargetContent(final String plainText)
+	        throws FremeEnrichmentException;
+
 	/**
-	 * Gets the enrichments existing in the triple model.	
-	 * @param tripleModel the triple model.
-	 * @param isTarget states if the triple model derives from target or source enrichment.
+	 * Gets the enrichments existing in the triple model.
+	 * 
+	 * @param tripleModel
+	 *            the triple model.
+	 * @param isTarget
+	 *            states if the triple model derives from target or source
+	 *            enrichment.
 	 * @return the list of enrichments.
 	 */
 	List<Enrichment> getEnrichmentFromModel(Model tripleModel, boolean isTarget);
-	
-	
+
 	/**
 	 * Sets the source and the target languages.
 	 * 
@@ -98,7 +102,7 @@ public interface FremePlugin extends Plugin {
 	 *            the target language.
 	 */
 	public void setSourceAndTargetLanguages(String sourceLanguage,
-			String targetLanguage);
+	        String targetLanguage);
 
 	/**
 	 * Gets the Entity Categories filter panel.
@@ -106,5 +110,13 @@ public interface FremePlugin extends Plugin {
 	 * @return the Entity categories filter panel.
 	 */
 	public Component getCategoryFilterPanel();
+
+	/**
+	 * Gets the Swing component displaying the entities graph retrieved by the
+	 * model.
+	 * 
+	 * @return the component displaying the graph.
+	 */
+	public Component getGraphComponent(Model tripleModel, int segNum);
 
 }

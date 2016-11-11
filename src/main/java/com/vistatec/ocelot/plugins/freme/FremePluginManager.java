@@ -667,11 +667,13 @@ class FremeEnricher implements Runnable {
 					if (frag.isTarget()) {
 						Model model = fremePlugin.enrichTargetContent(frag
 								.getText());
+						frag.getVariant().setTripleModel(model);
 						enrichments = fremePlugin.getEnrichmentFromModel(model, true);
 						sourceTarget = EnrichmentMetaData.TARGET;
 					} else {
 						Model model = fremePlugin.enrichSourceContent(frag
 								.getText());
+						frag.getVariant().setTripleModel(model);
 						enrichments = fremePlugin.getEnrichmentFromModel(model, false);
 						sourceTarget = EnrichmentMetaData.SOURCE;
 					}

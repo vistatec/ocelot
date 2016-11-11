@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TranslationEnrichment;
 import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
@@ -20,6 +21,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	
 	private boolean sentToFreme;
 
+	private Model tripleModel;
+	
 	private Set<Enrichment> enrichments;
 	
 	private TranslationEnrichment transEnrichment;
@@ -562,6 +565,14 @@ protected List<HighlightData> highlightDataList;
 //    		}
 //    	}
     	return transEnrichment;
+    }
+    
+    public void setTripleModel(Model model){
+    	this.tripleModel = model;
+    }
+    
+    public Model getTripleModel(){
+    	return tripleModel;
     }
 
     @Override
