@@ -40,6 +40,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
@@ -249,6 +250,35 @@ public class SegmentView extends JScrollPane implements RuleListener,
             }
             return super.print(printMode, headerFormat, footerFormat, showPrintDialog, attr, interactive, service);
         }
+        
+		@Override
+		public String getToolTipText(MouseEvent event) {
+			int row = rowAtPoint(event.getPoint());
+			int col = columnAtPoint(event.getPoint());
+			Object o = getValueAt(row, col);
+			if (o instanceof SegmentVariant) {
+				// Table cells don't exist as components so we must materialize
+				// an actual component in order to figure out where in the text
+				// we are pointing.
+				TableCellRenderer renderer = getCellRenderer(row, col);
+				Component comp = renderer.getTableCellRendererComponent(this, o, false, false, row, col);
+				if (comp instanceof SegmentTextCell) {
+					SegmentTextCell cell = (SegmentTextCell) comp;
+					// Set the bounds of the component to match where the table
+					// cell was painted.
+					Rectangle rect = getCellRect(row, col, true);
+					cell.setBounds(rect);
+					Point p = event.getPoint();
+					// Convert from table coordinates to cell coordinates.
+					p.translate(-rect.x, -rect.y);
+					String tip = cell.getToolTipText(p);
+					if (tip != null) {
+						return tip;
+					}
+				}
+			}
+			return super.getToolTipText(event);
+		}
 	}
 
 	@Inject
