@@ -64,7 +64,7 @@ public class SegmentDetailView extends JScrollPane {
         tableModel = new DetailTableModel();
         table = new JTable(tableModel);
         table.getTableHeader().setReorderingAllowed(false);
-        table.setDefaultRenderer(String.class, new TextRenderer());
+        table.setDefaultRenderer(Object.class, new TextRenderer());
         TableColumnModel tableColumnModel = table.getColumnModel();
         tableColumnModel.getColumn(0).setMinWidth(15);
         tableColumnModel.getColumn(0).setPreferredWidth(60);
