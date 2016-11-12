@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -23,6 +22,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
 import com.vistatec.ocelot.Ocelot;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.gui.AbstractDetachableTmPanel;
 
@@ -148,6 +148,9 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 				tableModel.getSegmentNumColumnIdx());
 		numCol.setPreferredWidth(50);
 		numCol.setMaxWidth(50);
+		// Set renderer for source/match diff column.
+		TableColumn diffCol = matchesTable.getColumnModel().getColumn(tableModel.getSourceColumnIdx());
+		diffCol.setCellRenderer(new SegmentVariantDiffCellRenderer());
 		// Set appropriate renderer to the match score column and set size
 		TableColumn scoreCol = matchesTable.getColumnModel().getColumn(
 				tableModel.getMatchScoreColumnIdx());
@@ -227,7 +230,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 	 * @param matches
 	 *            the translation matches.
 	 */
-	public void setTranslationSearchResults(final List<TmMatch> matches) {
+	public void setTranslationSearchResults(final OcelotSegment segment, final List<TmMatch> matches) {
 
 		if (matches != null && !matches.isEmpty()) {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -235,7 +238,7 @@ public class TranslationsPanel extends AbstractDetachableTmPanel {
 				@Override
 				public void run() {
 					targetEditor.stopCellEditing();
-					tableModel.setModel(matches);
+					tableModel.setModel(segment, matches);
 					scrollPanel.setViewportView(matchesTable);
 					scrollPanel.repaint();
 					matchesTable.getSelectionModel().setSelectionInterval(0, 0);

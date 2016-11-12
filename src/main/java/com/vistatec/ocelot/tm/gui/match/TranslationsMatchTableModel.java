@@ -1,7 +1,10 @@
 package com.vistatec.ocelot.tm.gui.match;
 
+import java.util.Collections;
 import java.util.List;
 
+import com.vistatec.ocelot.segment.editdistance.EditDistance;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
 
@@ -24,6 +27,9 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 	public static final int TARGET_COL = 3;
 	/** The TM name column index. */
 	public static final int TM_NAME_COL = 4;
+
+	/** The segment for which matches were found. */
+	private OcelotSegment segment;
 
 	/**
 	 * Constructor.
@@ -52,6 +58,8 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 			clazz = String.class;
 			break;
 		case SOURCE_COL:
+			clazz = List.class;
+			break;
 		case TARGET_COL:
 			clazz = SegmentVariant.class;
 			break;
@@ -90,7 +98,7 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 			TmMatch currMatch = model.get(row);
 			switch (column) {
 			case SOURCE_COL:
-				retValue = currMatch.getSource();
+				retValue = getDiff(currMatch.getSource());
 				break;
 			case MATCH_SCORE_COL:
 				retValue = (int) (currMatch.getMatchScore());
@@ -109,6 +117,14 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 			}
 		}
 		return retValue;
+	}
+
+	List<String> getDiff(SegmentVariant matchSource) {
+		if (segment == null) {
+			return Collections.singletonList(matchSource.getDisplayText());
+		} else {
+			return EditDistance.styleTextDifferences(matchSource, segment.getSource());
+		}
 	}
 
 	/*
@@ -164,5 +180,17 @@ public class TranslationsMatchTableModel extends TmMatchTableModel {
 		return SEG_NUM_COL;
 	}
 	
+	/**
+	 * Sets the TM list and reference segment.
+	 * 
+	 * @param segment
+	 *			the segment for which matches were found. Can be null.
+	 * @param model
+	 *			the TM list.
+	 */
+	public void setModel(OcelotSegment segment, List<TmMatch> model) {
+		this.segment = segment;
+		setModel(model);
+	}
 
 }

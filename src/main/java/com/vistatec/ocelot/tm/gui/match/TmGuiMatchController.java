@@ -246,7 +246,7 @@ public class TmGuiMatchController implements OcelotEventQueueListener {
 		}
 
 	}
-			translationsPanel.setTranslationSearchResults(translations);
+			translationsPanel.setTranslationSearchResults(currSelectedSegment, translations);
 		}
 	}
 
