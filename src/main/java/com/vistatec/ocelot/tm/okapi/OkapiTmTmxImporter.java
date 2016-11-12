@@ -33,16 +33,17 @@ public class OkapiTmTmxImporter {
         RawDocument rawDoc = new RawDocument(new FileInputStream(tmx), "UTF-8",
                 sourceLocale, targetLocale);
 
-        TmxFilter filter = new TmxFilter();
-        filter.open(rawDoc);
-        while (filter.hasNext()) {
-            Event event = filter.next();
+        try (TmxFilter filter = new TmxFilter()) {
+            filter.open(rawDoc);
+            while (filter.hasNext()) {
+                Event event = filter.next();
 
-            if (event.isTextUnit()) {
-                ITextUnit tu = event.getTextUnit();
-                indexTranslationUnit(tu, writer);
+                if (event.isTextUnit()) {
+                    ITextUnit tu = event.getTextUnit();
+                    indexTranslationUnit(tu, writer);
+                }
+
             }
-
         }
     }
 
