@@ -141,6 +141,9 @@
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>3.0</version>
+      <!-- Guice AOP prevents breakpoints from working.
+           Un-comment to disable AOP for debugging purposes.
+      <classifier>no_aop</classifier>-->
     </dependency>
     <dependency>
     <groupId>org.apache.jena</groupId>
