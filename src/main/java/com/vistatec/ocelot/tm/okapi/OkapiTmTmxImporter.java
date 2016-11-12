@@ -51,6 +51,10 @@ public class OkapiTmTmxImporter {
         TextContainer srcTu = tu.getSource();
         TextContainer tgtTu = tu.getTarget(targetLocale);
 
+        if (srcTu == null || tgtTu == null) {
+            return;
+        }
+
         TranslationUnit pensieveTu = new TranslationUnit(
                 new TranslationUnitVariant(sourceLocale, srcTu.getUnSegmentedContentCopy()),
                 new TranslationUnitVariant(targetLocale, tgtTu.getUnSegmentedContentCopy()));
