@@ -297,17 +297,23 @@ public class SegmentTextCell extends JTextPane {
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        Point p = event.getPoint();
-        int offset = viewToModel(p);
+        String text = getToolTipText(event.getPoint());
+        return text == null ? super.getToolTipText(event) : text;
+    }
+
+    String getToolTipText(Point p) {
+        return getToolTipText(viewToModel(p));
+    }
+
+    String getToolTipText(int offset) {
         if (v != null && v.containsTag(offset, 0)) {
             SegmentAtom atom = v.getAtomAt(offset);
             if (atom instanceof CodeAtom) {
                 return ((CodeAtom) atom).getVerboseData();
             }
         }
-        return super.getToolTipText(event);
+        return null;
     }
-
 
 	/**
      * Handles edit behavior in segment text cell.
