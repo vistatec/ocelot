@@ -578,12 +578,6 @@ protected List<HighlightData> highlightDataList;
 			enrichIndexMapping[tagIdx] = noTagIdx;
 			
 		}
-		synchronized (BaseSegmentVariant.class) {
-	        
-		for(int i = 0; i<enrichIndexMapping.length; i++){
-			System.out.println(i + " = " + enrichIndexMapping[i]);
-		}
-		}
 		
 	}
 	
