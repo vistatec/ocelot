@@ -1,14 +1,24 @@
 package com.vistatec.ocelot.xliff.freme.helper;
 
+import java.util.List;
+
+import org.apache.xerces.dom.DeferredAttrImpl;
+import org.apache.xerces.dom.DeferredElementImpl;
+import org.apache.xerces.dom.ElementImpl;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.services.SegmentService;
 
 public class FremeXliff2_0Helper extends FremeXliffHelper {
 
 	private static final String UNIT_NODE_NAME = "unit";
 
 	private static final String SEGMENT_NODE_NAME = "segment";
+	
+	private static final String SEGMENT_ID_ATTR_NAME = "id";
 
 	private static final String TARGET_NODE_NAME = "target";
 
@@ -33,12 +43,12 @@ public class FremeXliff2_0Helper extends FremeXliffHelper {
 //		return segmentNumber;
 //	}
 
-	private Element getSegmentElement(Element unitElement) {
-		NodeList nodes = unitElement.getChildNodes();
+	private Element getSegmentElement(Element unitElement, String segmentId) {
+		NodeList nodes = unitElement.getElementsByTagName(SEGMENT_NODE_NAME);
 		Element segment = null;
 		int i = 0;
 		while (i < nodes.getLength() && segment == null) {
-			if (nodes.item(i).getNodeName().equals(SEGMENT_NODE_NAME)) {
+			if (isDesiredSegment((Element)nodes.item(i), segmentId)) {
 				segment = (Element) nodes.item(i);
 			} else {
 				i++;
@@ -48,10 +58,15 @@ public class FremeXliff2_0Helper extends FremeXliffHelper {
 		return segment;
 	}
 
+	private boolean isDesiredSegment(Element node, String segId ){
+		
+		return node.getAttribute(SEGMENT_ID_ATTR_NAME).equals(segId);
+	}
+	
 	@Override
-	public Element getSourceElement(Element unitElement) {
+	public Element getSourceElement(Element unitElement, String segmentId) {
 		Element source = null;
-		Element segmentElement = getSegmentElement(unitElement);
+		Element segmentElement = getSegmentElement(unitElement, segmentId);
 		if (segmentElement != null) {
 			NodeList nodes = segmentElement.getChildNodes();
 			int i = 0;
@@ -68,9 +83,9 @@ public class FremeXliff2_0Helper extends FremeXliffHelper {
 	}
 
 	@Override
-	public Element getTargetElement(Element unitElement) {
+	public Element getTargetElement(Element unitElement, String segmentId) {
 		Element targetElement = null;
-		Element segmentElement = getSegmentElement(unitElement);
+		Element segmentElement = getSegmentElement(unitElement, segmentId);
 		if (segmentElement != null) {
 			NodeList nodes = segmentElement.getChildNodes();
 			int i = 0;

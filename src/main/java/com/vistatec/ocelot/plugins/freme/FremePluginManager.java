@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.plugins;
+package com.vistatec.ocelot.plugins.freme;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;

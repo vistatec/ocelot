@@ -9,6 +9,7 @@ import net.sf.okapi.lib.xliff2.core.ExtElement;
 import net.sf.okapi.lib.xliff2.core.ExtElements;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
+import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.Unit;
 import net.sf.okapi.lib.xliff2.its.DataCategory;
 import net.sf.okapi.lib.xliff2.its.TermTag;
@@ -16,9 +17,12 @@ import net.sf.okapi.lib.xliff2.its.TextAnalysis;
 
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.EntityEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.TaggedCodeAtom;
 
 /**
  * This class provides methods for converting XLIFF 2.0 tags to enrichments.
@@ -52,10 +56,12 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (fragment != null) {
+			FragmentVariant fragVar = new FragmentVariant(fragment, false);
 			StringBuilder wholeText = new StringBuilder();
 			List<EnrichmentWrapper> currEnrichments = new ArrayList<EnrichmentWrapper>();
 			List<Integer> codePositionToRemove = new ArrayList<Integer>();
 			List<DataCategory> dataCategoryToDelete = new ArrayList<DataCategory>();
+			List<Tag> tagsToRemove = new ArrayList<Tag>();
 			String termAnnotator = null;
 			if (unit.getAnnotatorsRef() != null) {
 				termAnnotator = unit.getAnnotatorsRef().get("terminology");
@@ -70,10 +76,19 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 						        dataCategoryToDelete, wholeText.toString(),
 						        termAnnotator);
 						if (!tag.hasITSItem()) {
-							int tagKey = fragment.getTags().getKey(tag);
-							fragment.getTags().remove(tagKey);
+							tagsToRemove.add(tag);
 							codePositionToRemove.add(textIdx++);
 							codePositionToRemove.add(textIdx);
+						} else {
+							TaggedCodeAtom atom = findCodeAtom(fragVar, tag);
+							if(atom != null){
+								wholeText.append(atom.getData());
+								textIdx++;
+							}
+						}
+					}  else {
+						if(manageCode(tag, fragVar, wholeText)){
+							textIdx++;
 						}
 					}
 					break;
@@ -96,16 +111,30 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 							}
 						}
 						if (!tag.hasITSItem()) {
-							fragment.remove(tag);
+							tagsToRemove.add(tag);
 							codePositionToRemove.add(textIdx++);
 							codePositionToRemove.add(textIdx);
 						}
+					} else {
+						if(manageCode(tag, fragVar, wholeText)){
+							textIdx++;
+						}
 					}
+					break;
+				case Fragment.CODE_OPENING:
+				case Fragment.CODE_CLOSING:
+				case Fragment.CODE_STANDALONE:
+					manageCode(fragment.getCTag(codedText, textIdx++), fragVar, wholeText);
+					break;
+				case Fragment.PCONT_STANDALONE:
 					break;
 				default:
 					wholeText.append(codedText.charAt(textIdx));
 					break;
 				}
+			}
+			for(Tag tag: tagsToRemove){
+				fragment.remove(tag);
 			}
 			StringBuilder newCodedText = new StringBuilder();
 			int lastIndex = 0;
@@ -121,6 +150,28 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 		return enrichments;
 	}
 
+	private boolean manageCode(Tag code, FragmentVariant variant, StringBuilder text){
+		boolean managed = false;
+		TaggedCodeAtom atom = findCodeAtom(variant, code);
+		if(atom != null){
+			text.append(atom.getData());
+			managed = true;
+		}
+		return managed;
+	}
+	
+	private TaggedCodeAtom findCodeAtom(FragmentVariant variant, Tag code){
+		
+		TaggedCodeAtom atom = null;
+		for(SegmentAtom currAtom: variant.getAtoms()){
+			if(currAtom instanceof TaggedCodeAtom && ((TaggedCodeAtom)currAtom).getTag().equals(code)){
+				atom = (TaggedCodeAtom) currAtom;
+			}
+		}
+		return atom;
+	}
+	
+	
 	/**
 	 * Manages an opening marker for XLIFF 2.0: depending on the type of the
 	 * tag, the proper enrichment is created.

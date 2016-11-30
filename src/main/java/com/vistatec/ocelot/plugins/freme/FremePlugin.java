@@ -1,9 +1,10 @@
-package com.vistatec.ocelot.plugins;
+package com.vistatec.ocelot.plugins.freme;
 
 import java.awt.Component;
 import java.awt.Window;
 import java.util.List;
 
+import com.vistatec.ocelot.plugins.Plugin;
 import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;

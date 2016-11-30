@@ -24,12 +24,25 @@ public abstract class Enrichment {
 	/** The enrichment type. */
 	private String type;
 
-	/** The offset start index. */
+	/** The offset start index as it is in the NIF file. */
 	protected int offsetStartIdx;
 
-	/** The offset end index. */
+	/** The offset end index as it is in the NIF file. */
 	protected int offsetEndIdx;
 
+	/**
+	 * The offset start index related to the text obtained by discarding tags.
+	 * It has the same value as <code>offsetStartIdx</code> if the text does not
+	 * contain any tags.
+	 */
+	protected int offsetNoTagsStartIdx;
+	/**
+	 * The offset start index related to the text obtained by discarding tags.
+	 * It has the same value as <code>offsetStartIdx</code> if the text does not
+	 * contain any tags.
+	 */
+	protected int offsetNoTagsEndIdx;
+	
 	/** the marker id. */
 	protected String id;
 
@@ -155,6 +168,49 @@ public abstract class Enrichment {
 	public void setOffsetEndIdx(int offsetEndIdx) {
 		this.offsetEndIdx = offsetEndIdx;
 	}
+	
+	/**
+	 * Gets the start index of the offset related to the string deprived of
+	 * tags.
+	 * 
+	 * @return the no tags offset start index.
+	 */
+	public int getOffsetNoTagsStartIdx() {
+		return offsetNoTagsStartIdx;
+	}
+
+	/**
+	 * Sets the start index of the offset related to the string deprived of
+	 * tags.
+	 * 
+	 * @param offsetNoTagsStartIdx
+	 *            the no tags offset start index.
+	 */
+	public void setOffsetNoTagsStartIdx(int offsetNoTagsStartIdx) {
+		this.offsetNoTagsStartIdx = offsetNoTagsStartIdx;
+	}
+
+	/**
+	 * Gets the end index of the offset related to the string deprived of tags.
+	 * 
+	 * @return the no tags offset end index.
+	 */
+	public int getOffsetNoTagsEndIdx() {
+		return offsetNoTagsEndIdx;
+	}
+
+	/**
+	 * Sets the end index of the offset related to the string deprived of tags.
+	 * 
+	 * @param offsetNoTagsEndIdx
+	 *            the no tags offset end index.
+	 */
+	public void setOffsetNoTagsEndIdx(int offsetNoTagsEndIdx) {
+		this.offsetNoTagsEndIdx = offsetNoTagsEndIdx;
+	}
+
+	
+
 
 	/**
 	 * Gets the enriched text

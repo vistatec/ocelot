@@ -43,10 +43,11 @@ public class OkapiSegment extends BaseSegment {
     public final String phaseName;
     private final StateQualifier stateQualifier;
     private String tuId;
+    private String segmentId;
     
     public OkapiSegment(int segNum, int eventNum, SegmentVariant source,
             SegmentVariant target, SegmentVariant originalTarget,
-            StateQualifier stateQualifier, String phaseName, String tuId) {
+            StateQualifier stateQualifier, String phaseName, String tuId, String segId) {
         super(segNum, source, target, originalTarget);
 
         this.stateQualifier = stateQualifier;
@@ -54,6 +55,7 @@ public class OkapiSegment extends BaseSegment {
 
         this.eventNum = eventNum;
         this.tuId = tuId;
+        this.segmentId = segId;
         
     }
 
@@ -79,6 +81,7 @@ public class OkapiSegment extends BaseSegment {
         private StateQualifier stateQualifier;
         private String phaseName;
         private String tuId;
+        private String segId;
 
         public Builder segmentNumber(int segNum) {
             this.segmentNumber = segNum;
@@ -119,11 +122,21 @@ public class OkapiSegment extends BaseSegment {
         	this.tuId = tuId;
         	return this;
         }
+        
+        public Builder segId(String segId){
+        	this.segId = segId;
+        	return this;
+        }
 
         public OkapiSegment build() {
             return new OkapiSegment(segmentNumber, eventNum,
-                    source, target, originalTarget, stateQualifier, phaseName, tuId);
+                    source, target, originalTarget, stateQualifier, phaseName, tuId, segId);
         }
 
+    }
+
+	@Override
+    public String getSegmentId() {
+	    return segmentId;
     }
 }

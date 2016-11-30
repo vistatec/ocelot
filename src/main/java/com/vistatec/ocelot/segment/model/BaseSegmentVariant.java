@@ -1,7 +1,6 @@
 package com.vistatec.ocelot.segment.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -25,6 +24,8 @@ public abstract class BaseSegmentVariant implements SegmentVariant {
 	private TranslationEnrichment transEnrichment;
 
     private boolean dirty;
+    
+    private Integer[] enrichIndexMapping;
 
 protected List<HighlightData> highlightDataList;
     
@@ -200,6 +201,7 @@ protected List<HighlightData> highlightDataList;
 		atoms.add(position);
 		atoms.addAll(getAtomsForRange(offset, getLength()));
 		setAtoms(atoms);
+		clearEnrichIndexMapping();
 		return position;
 	}
 
@@ -213,6 +215,7 @@ protected List<HighlightData> highlightDataList;
 				rsv.getSelectionEnd() - rsv.getSelectionStart());
 
         replaceSelection(selectionStart, selectionEnd, replaceAtoms);
+        
     }
 
 	@Override
@@ -227,6 +230,7 @@ protected List<HighlightData> highlightDataList;
 		newAtoms.addAll(getAtomsForRange(selectionEnd, getLength()));
 		setAtoms(mergeNeighboringTextAtoms(newAtoms));
         dirty = true;
+        clearEnrichIndexMapping();
 
 //		// Clean up codes that may be duplicates
 //		Set<String> codeIds = new HashSet<String>();
@@ -251,6 +255,10 @@ protected List<HighlightData> highlightDataList;
 //			}
 //		}
 //		setAtoms(cleanedAtoms);
+	}
+	
+	private void clearEnrichIndexMapping(){
+		enrichIndexMapping = null;
 	}
 
     @Override
@@ -376,6 +384,7 @@ protected List<HighlightData> highlightDataList;
 		}
 
 		setAtoms(mergeNeighboringTextAtoms(newAtoms));
+		clearEnrichIndexMapping();
 	}
 
 	/**
@@ -500,9 +509,12 @@ protected List<HighlightData> highlightDataList;
 	}
 
 	public void setEnrichments(Set<Enrichment> enrichments) {
-		checkTranslation(enrichments);
-		enrichments.remove(transEnrichment);
-		this.enrichments = enrichments;
+		this.enrichments = null;
+		if(enrichments != null){
+			for(Enrichment enrich: enrichments){
+				addEnrichment(enrich);
+			}
+		}
 	}
 
 	public void addEnrichment(final Enrichment enrichment){
@@ -514,31 +526,74 @@ protected List<HighlightData> highlightDataList;
             	this.transEnrichment = (TranslationEnrichment) enrichment;
             } else {
             	enrichments.add(enrichment);
+            	adjustOffsets(enrichment);
             }
         }
     }
-    
-    public void addEnrichmentList(final List<Enrichment> enrichmentList){
-        if(enrichmentList != null){
-            if(enrichments == null){
-                enrichments = new HashSet<Enrichment>();
-            }
-            checkTranslation(enrichmentList);
-            enrichmentList.remove(transEnrichment);
-            enrichments.addAll(enrichmentList);
-        }
-    }
-    
-    private void checkTranslation(final Collection<Enrichment> enrichmentList){
-		if (enrichmentList != null) {
-			for (Enrichment enrich : enrichmentList) {
-				if (enrich != null && enrich.getType().equals(
-				        Enrichment.TRANSLATION_TYPE)) {
-					this.transEnrichment = (TranslationEnrichment) enrich;
-					break;
-				}
+	
+	private void adjustOffsets(final Enrichment enrichment ){
+		if(enrichIndexMapping == null){
+			buildIndexMapping();
+		}
+		enrichment.setOffsetNoTagsStartIdx(enrichIndexMapping[enrichment.getOffsetStartIdx()]);
+		enrichment.setOffsetNoTagsEndIdx(enrichIndexMapping[enrichment.getOffsetEndIdx()]);
+	}
+	
+	
+	public String getPlainText(){
+		
+		StringBuilder plainTextSb = new StringBuilder();
+		for(SegmentAtom atom: getAtoms()){
+			if(atom instanceof TextAtom){
+				plainTextSb.append(atom.getData());
 			}
 		}
+		
+		return plainTextSb.toString();
+	}
+	
+	private void buildIndexMapping(){
+		String enrichedText = getDisplayText();
+		String plainText = getPlainText();
+		enrichIndexMapping = new Integer[enrichedText.length() + 1];
+		if(enrichedText.equals(plainText)){
+			for(int i = 0; i<enrichIndexMapping.length; i++){
+				enrichIndexMapping[i] = i;
+			}
+		} else {
+			int tagIdx = 0;
+			int noTagIdx = 0;
+			boolean inTag = false;
+			while (tagIdx < enrichedText.length() && noTagIdx < plainText.length()) {
+				if( !inTag && (enrichedText.charAt(tagIdx) == plainText.charAt(noTagIdx)) ){
+					enrichIndexMapping[tagIdx] = noTagIdx++;
+				} else if (enrichedText.charAt(tagIdx) == '<'){
+					inTag = true;
+					enrichIndexMapping[tagIdx] = noTagIdx;
+				} else if (enrichedText.charAt(tagIdx) == '>'){
+					inTag = false;
+				}
+				tagIdx++;
+			}
+			enrichIndexMapping[tagIdx] = noTagIdx;
+			
+		}
+		synchronized (BaseSegmentVariant.class) {
+	        
+		for(int i = 0; i<enrichIndexMapping.length; i++){
+			System.out.println(i + " = " + enrichIndexMapping[i]);
+		}
+		}
+		
+	}
+	
+    
+    public void addEnrichmentList(final List<Enrichment> enrichmentList){
+    	if(enrichmentList != null){
+    		for(Enrichment enrich: enrichmentList){
+    			addEnrichment(enrich);
+    		}
+    	}
     }
     
     
@@ -552,15 +607,6 @@ protected List<HighlightData> highlightDataList;
     
     public TranslationEnrichment getTranslationEnrichment(){
     	
-//    	TranslationEnrichment transEnrichment = null;
-//    	if(enrichments != null){
-//    		for(Enrichment enrich: enrichments){
-//    			if(enrich.getType().equals("translation")) {
-//    				transEnrichment = (TranslationEnrichment)enrich;
-//    				break;
-//    			}
-//    		}
-//    	}
     	return transEnrichment;
     }
 

@@ -61,6 +61,7 @@ public interface OcelotSegment {
     public SegmentVariant getOriginalTarget();
     
     public String getTuId();
+    public String getSegmentId();
 
     /**
      * Should only set the original target if one does not exist already,
