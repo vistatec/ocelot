@@ -52,7 +52,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 *            the current involved fragment
 	 * @return the list of enrichments for this unit.
 	 */
-	public List<Enrichment> retrieveEnrichments(Unit unit, Fragment fragment, String language) {
+	public List<Enrichment> retrieveEnrichments(Unit unit, Fragment fragment, String language, String segmentId) {
 
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (fragment != null) {
@@ -145,7 +145,7 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 			newCodedText.append(codedText.substring(lastIndex));
 			fragment.setCodedText(newCodedText.toString());
 			enrichments.addAll(retrieveTriplesEnrichments(
-			        unit.getExtElements(), enrichments, language));
+			        unit.getExtElements(), enrichments, language, segmentId));
 		}
 		return enrichments;
 	}
@@ -276,30 +276,54 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 * @return the complete list of enrichments.
 	 */
 	private List<Enrichment> retrieveTriplesEnrichments(
-	        final ExtElements elements, final List<Enrichment> enrichments, String language) {
+	        final ExtElements elements, final List<Enrichment> enrichments, String language, String segmentId) {
 
 		List<Enrichment> triplesEnrichments = new ArrayList<Enrichment>();
 		if (elements != null) {
-			Iterator<ExtElement> elemsIt = elements.iterator();
-			ExtElement elem = null;
-			while (elemsIt.hasNext()) {
-				elem = elemsIt.next();
-				if (elem.getQName().getPrefix().equals("ex")
-				        && elem.getQName().getLocalPart().equals("json-ld")
-				        && !elem.getChildren().isEmpty()) {
-					if (elem.getChildren().get(0) instanceof ExtContent) {
-						String jsonString = ((ExtContent) elem.getChildren()
-						        .get(0)).getText();
-						triplesEnrichments.addAll(retrieveTriplesEnrichments(
-						        jsonString, enrichments, language));
-					}
-
+//			Iterator<ExtElement> elemsIt = elements.iterator();
+			ExtElement elem = getExtElementForSegment(elements, segmentId);
+			if(elem != null && !elem.getChildren().isEmpty()){
+				if (elem.getChildren().get(0) instanceof ExtContent) {
+					String jsonString = ((ExtContent) elem.getChildren()
+					        .get(0)).getText();
+					triplesEnrichments.addAll(retrieveTriplesEnrichments(
+					        jsonString, enrichments, language));
 				}
 			}
 		}
 
 		return triplesEnrichments;
 	}
+	
+	private ExtElement getExtElementForSegment(ExtElements elements, String segmentId){
+		
+		ExtElement element = null;
+		Iterator<ExtElement> elemsIt = elements.iterator();
+		ExtElement currElem = null;
+		while(elemsIt.hasNext() && element == null){
+			currElem = elemsIt.next();
+			if(isExtElemForSegment(currElem, segmentId)){
+				element = currElem;
+			}
+		}
+		return element;
+	}
+	
+	
+	private boolean isExtElemForSegment(ExtElement elem, String segmentId){
+		
+		boolean isJsonLDNode = elem.getQName().getPrefix()
+		        .equals(EnrichmentAnnotationsConstants.JSON_TAG_PREFIX)
+		        && elem.getQName()
+		                .getLocalPart()
+		                .equals(EnrichmentAnnotationsConstants.JSON_TAG_LOCAL_NAME);
+
+		boolean isRelatedToSegment = segmentId == null
+		        || segmentId.equals(elem.getAttributes().getAttributeValue("",
+		                EnrichmentAnnotationsConstants.JSON_TAG_SEG_ATTR));
+		return isJsonLDNode && isRelatedToSegment;
+	}
+	
 }
 
 /**

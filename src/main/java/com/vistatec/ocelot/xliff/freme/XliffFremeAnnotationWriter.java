@@ -28,6 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 import net.sf.okapi.lib.xliff2.core.CTag;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
+import org.apache.xerces.dom.AttrImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -243,11 +244,11 @@ public class XliffFremeAnnotationWriter {
 					writeAnnotations(unitElement,
 					        xliffHelper.getSourceElement(unitElement, segment.getSegmentId()),
 					        (BaseSegmentVariant) segment.getSource(),
-					        sourceLang);
+					        sourceLang, segment.getSegmentId());
 					writeAnnotations(unitElement,
 					        xliffHelper.getTargetElement(unitElement, segment.getSegmentId()),
 					        (BaseSegmentVariant) segment.getTarget(),
-					        targetLang);
+					        targetLang, segment.getSegmentId());
 				}
 		}
 	}
@@ -263,7 +264,7 @@ public class XliffFremeAnnotationWriter {
 	 *            the Ocelot variant
 	 */
 	private void writeAnnotations(Element unitElement, Element variantElement,
-	        BaseSegmentVariant variant, String language) {
+	        BaseSegmentVariant variant, String language, String segmentId) {
 		if (variant != null && variant.getEnirchments() != null
 		        && !variant.getEnirchments().isEmpty()) {
 			List<Enrichment> varEnrichments = new ArrayList<Enrichment>(
@@ -311,7 +312,7 @@ public class XliffFremeAnnotationWriter {
 				}
 			}
 			writeTripleEnrichments(unitElement, variantElement,
-			        tripleEnrichments, language);
+			        tripleEnrichments, language, segmentId);
 		}
 	}
 
@@ -644,7 +645,7 @@ public class XliffFremeAnnotationWriter {
 	 */
 	private void writeTripleEnrichments(Element unitElement,
 	        Element variantElement, List<Enrichment> tripleEnrichments,
-	        String language) {
+	        String language, String segmentId) {
 
 		Model tripleModel = ModelFactory.createDefaultModel();
 		Set<TermEnrichmentWrapper> allTermEnrichmentsWrap = new HashSet<TermEnrichmentWrapper>();
@@ -675,8 +676,10 @@ public class XliffFremeAnnotationWriter {
 			        allTermEnrichments);
 			NodeList extraNodeList = unitElement
 			        .getElementsByTagName(EnrichmentAnnotationsConstants.JSON_TAG_NAME);
-			if (extraNodeList != null && extraNodeList.getLength() > 0) {
-				Node extraNode = extraNodeList.item(0);
+			Node extraNode = getExtraNodeForSegment(segmentId, extraNodeList);
+//			if (extraNodeList != null && extraNodeList.getLength() > 0) {
+//				Node extraNode = extraNodeList.item(0);
+			if(extraNode != null){
 				Text modelText = (Text) extraNode.getFirstChild();
 				Model existingModel = ModelFactory.createDefaultModel();
 				StringReader reader = new StringReader(modelText.getData());
@@ -699,10 +702,37 @@ public class XliffFremeAnnotationWriter {
 				tripleNode.setAttribute(
 				        EnrichmentAnnotationsConstants.JSON_TAG_DOMAIN_ATTR,
 				        EnrichmentAnnotationsConstants.JSON_TAG_DOMAIN);
+				if(segmentId != null){
+					tripleNode.setAttribute(
+					        EnrichmentAnnotationsConstants.JSON_TAG_SEG_ATTR,
+					        segmentId);
+				}
 				tripleNode.appendChild(propTextNode);
 				xliffHelper.insertLinkNode(unitElement, tripleNode);
 			}
 		}
+	}
+	
+	private Node getExtraNodeForSegment(String segmentId,  NodeList extraNodeList){
+		
+		Node extraNode = null;
+		if(extraNodeList != null && extraNodeList.getLength() > 0){
+			if(segmentId == null){
+				extraNode = extraNodeList.item(0);
+			} else {
+				Node currNode = null;
+				for(int i = 0; i<extraNodeList.getLength(); i++){
+					currNode = extraNodeList.item(i);
+					AttrImpl segAttr = (AttrImpl) currNode.getAttributes().getNamedItem(EnrichmentAnnotationsConstants.JSON_TAG_SEG_ATTR);
+					if(segAttr != null && segmentId.equals(segAttr.getValue())){
+						extraNode = currNode;
+						break;
+					}
+				}
+			}
+		}
+		return extraNode;
+		
 	}
 
 	private void deleteTermEnrichments(Element variantElement,
