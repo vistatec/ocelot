@@ -38,11 +38,14 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SimpleSegment;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 
 public class TestOkapiXliff20Parser {
 
@@ -74,6 +77,23 @@ public class TestOkapiXliff20Parser {
         List<OcelotSegment> testSegments = parser.parse(testFile);
         assertEquals(6, testSegments.size());
     }
+    
+    @Test
+	public void testEnrichedFile() throws Exception {
+
+		File testFile = new File(getClass().getResource(
+		        "/xliff20/xliff2.0.enriched.xlf").toURI());
+		OkapiXLIFF20Parser parser = new OkapiXLIFF20Parser();
+		List<OcelotSegment> testSegments = parser.parse(testFile);
+		Map<String, List<Enrichment>> expectedEnrichMap = EnrichmentBuilder
+		        .getExpectedEnrichmentsXliff20();
+		for (OcelotSegment segment : testSegments) {
+			EnrichmentAssertor.assertEnrichments(
+			        expectedEnrichMap.get(segment.getSegmentId()),
+			        new ArrayList<Enrichment>(((BaseSegmentVariant) segment
+			                .getSource()).getEnirchments()));
+		}
+	}
 
     public void compareSegmentsIgnoringWhitespace(List<OcelotSegment> testSegs, List<OcelotSegment> goalSegs) {
         Iterator<OcelotSegment> testIter = testSegs.iterator();
@@ -193,4 +213,5 @@ public class TestOkapiXliff20Parser {
         segs.add(seg8.build());
         return segs;
     }
+    
 }
