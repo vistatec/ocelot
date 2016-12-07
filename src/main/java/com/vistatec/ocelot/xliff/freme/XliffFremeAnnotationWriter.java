@@ -155,7 +155,7 @@ public class XliffFremeAnnotationWriter {
 		        StandardCharsets.UTF_8)) {
 			StreamResult result = new StreamResult(writer);
 			transformer.transform(source, result);
-			System.out.println("File saved!");
+			logger.debug("File saved!");
 		}
 	}
 

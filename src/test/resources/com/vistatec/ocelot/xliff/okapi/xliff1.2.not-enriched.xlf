@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" xmlns:okp="okapi-framework:xliff-extensions" its:version="2.0" version="1.2">
+<file datatype="x-text/plain" original="Content_en-US_fr-fr.txt" source-language="en-us" target-language="fr-fr">
+<body>
+<trans-unit id="1" xml:space="preserve">
+<source xml:lang="en-us">Bray Vacations</source>
+<target xml:lang="fr-fr">Bray Vacations</target>
+</trans-unit>
+<trans-unit id="2" xml:space="preserve">
+<source xml:lang="en-us">Welcome to Bray</source>
+<target xml:lang="fr-fr">Welcome to Bray</target>
+</trans-unit>
+<trans-unit id="3" xml:space="preserve">
+<source xml:lang="en-us">19 miles (31 kilometers) to the northeast of Wicklow, is Bray, a popular spot for visitors wishing to discover more of the region.</source>
+<target xml:lang="fr-fr">19 miles (31 kilometers) to the northeast of Wicklow, is Bray, a popular spot for visitors wishing to discover more of the region.</target>
+</trans-unit>
+<trans-unit id="4" xml:space="preserve">
+<source xml:lang="en-us">Coming from Dublin Airport in Wicklow, Bray lies 17 miles (27 kilometers) to the south.</source>
+<target xml:lang="fr-fr">Coming from Dublin Airport in Wicklow, Bray lies 17 miles (27 kilometers) to the south.</target>
+</trans-unit>
+<trans-unit id="5" xml:space="preserve">
+<source xml:lang="en-us">Bray is a great place to base yourself while you are in Wicklow as many of the city most popular attractions are within easy driving distance.</source>
+<target xml:lang="fr-fr">Bray is a great place to base yourself while you are in Wicklow as many of the city s most popular attractions are within easy driving distance.</target>
+</trans-unit>
+<trans-unit id="6" translate="yes">
+<source>A single line of text containing both <ph ctype="x-label-tag" id="2bc">&lt;&lt;placeholder&gt;&gt;</ph> and <bpt id="1">&lt;h2&gt;</bpt>paired<ept id="1">&lt;/h2&gt;</ept> tags.</source>
+<target>A single line of text containing both <ph ctype="x-label-tag" id="2bc">&lt;&lt;placeholder&gt;&gt;</ph> and <bpt id="1">&lt;h2&gt;</bpt>paired<ept id="1">&lt;/h2&gt;</ept> tags.</target>
+</trans-unit>
+</body>
+</file>
+</xliff>
