@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 
 /**
@@ -53,16 +54,20 @@ public abstract class LQIConstants {
 	public static LQIGrid getDefaultLQIGrid() {
 
 		LQIGrid lqiGrid = new LQIGrid();
+		LQIGridConfiguration lqiGridConf = new LQIGridConfiguration();
+		lqiGridConf.setName("Default Configuration");
 		List<LQISeverity> severities = new ArrayList<LQISeverity>();
 		severities.add(new LQISeverity(DEFAULT_MINOR_SEV_NAME, DEFAULT_MINOR_SCORE));
 		severities.add(new LQISeverity(DEFAULT_MAJOR_SEV_NAME, DEFAULT_MAJOR_SCORE));
 		severities.add(new LQISeverity(DEFAULT_CRITICAL_SEV_NAME, DEFAULT_CRITICAL_SCORE));
-		lqiGrid.setSeverities(severities);
+		lqiGridConf.setSeverities(severities);
 		List<LQIErrorCategory> errorCategories = new ArrayList<LQIErrorCategory>();
 		for (String catName : DEFAULT_CATEGORIES_NAMES) {
 			errorCategories.add(new LQIErrorCategory(catName));
 		}
-		lqiGrid.setErrorCategories(errorCategories);
+		lqiGridConf.setErrorCategories(errorCategories);
+		lqiGrid.addConfiguration(lqiGridConf);
+		lqiGrid.setActiveConfName(lqiGridConf.getName());
 		return lqiGrid;
 	}
 }

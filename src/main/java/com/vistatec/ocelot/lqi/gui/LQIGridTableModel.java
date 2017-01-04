@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.swing.table.AbstractTableModel;
 
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
@@ -48,7 +48,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	private Map<LQIGridColumn, Boolean> enabledColumns;
 
 	/** The LQI grid object. */
-	private LQIGrid lqiGridObj;
+	private LQIGridConfiguration lqiGridObj;
 
 	/** The current mode (Issue creation/configuration) */
 	private int mode;
@@ -70,7 +70,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @param mode
 	 *            the current LQI grid mode.
 	 */
-	public LQIGridTableModel(final LQIGrid lqiGridObj, final int mode) {
+	public LQIGridTableModel(final LQIGridConfiguration lqiGridObj, final int mode) {
 		this.lqiGridObj = lqiGridObj;
 		this.mode = mode;
 		initColumns();
@@ -263,7 +263,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 				        && errorCat.getWeight() > 0) {
 					retValue = errorCat.getWeight();
 				} else if (col.equals(fixedColumns.get(COMMENT_COLUMN))) {
-					errorCat.getComment();
+					retValue = errorCat.getComment();
 				}
 			} else if (severityColumns.contains(col)) {
 				retValue = errorCat.getShortcut(col.getName());
@@ -527,7 +527,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * 
 	 * @return the LQI grid object.
 	 */
-	public LQIGrid getLQIGrid() {
+	public LQIGridConfiguration getLQIGrid() {
 		return lqiGridObj;
 	}
 
@@ -537,7 +537,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @param lqiGrid
 	 *            the LQI grid.
 	 */
-	public void setLQIGrid(LQIGrid lqiGrid) {
+	public void setLQIGrid(LQIGridConfiguration lqiGrid) {
 		this.lqiGridObj = lqiGrid;
 		initColumns();
 		fireTableDataChanged();

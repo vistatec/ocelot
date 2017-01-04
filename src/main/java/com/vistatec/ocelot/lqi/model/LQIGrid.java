@@ -8,139 +8,91 @@ import java.util.List;
  */
 public class LQIGrid {
 
-	/** List of severities. */
-	private List<LQISeverity> severities;
-
-	/** List of error categories. */
-	private List<LQIErrorCategory> errorCategories;
-
-	/**
-	 * Gets the list of error categories.
-	 * 
-	 * @return the list of error categories.
-	 */
-	public List<LQIErrorCategory> getErrorCategories() {
-		return errorCategories;
+	private String activeConfName;
+	
+	private List<LQIGridConfiguration> configurations;
+	
+	public void setActiveConfName(String activeConfName){
+		this.activeConfName = activeConfName;
 	}
-
-	/**
-	 * Sets the list of error categories.
-	 * 
-	 * @param errorCategories
-	 *            the list of error categories.
-	 */
-	public void setErrorCategories(List<LQIErrorCategory> errorCategories) {
-		this.errorCategories = errorCategories;
+	
+	public String getActiveConfName(){
+		return activeConfName;
 	}
-
-	/**
-	 * Gets the list of severities.
-	 * 
-	 * @return the list of severities.
-	 */
-	public List<LQISeverity> getSeverities() {
-		return severities;
+	
+	public void setConfigurations(List<LQIGridConfiguration> configurations){ 
+		this.configurations = configurations;
 	}
-
-	/**
-	 * Sets the list of severities.
-	 * 
-	 * @param severities
-	 *            the list of severities.
-	 */
-	public void setSeverities(List<LQISeverity> severities) {
-		this.severities = severities;
+	
+	public List<LQIGridConfiguration> getConfigurations(){
+		return configurations;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#clone()
-	 */
+	
+	public void addConfiguration(LQIGridConfiguration configuration){
+		if(configurations == null){
+			configurations = new ArrayList<LQIGridConfiguration>();
+		}
+		
+		configurations.add(configuration);
+	}
+	
+	public LQIGridConfiguration getActiveConfiguration(){
+		
+		LQIGridConfiguration activeConf = null;
+		if(configurations != null){
+			for(LQIGridConfiguration currConf: configurations){
+				if(currConf.getName().equals(activeConfName)){
+					activeConf = currConf;
+					break;
+				}
+			}
+		}
+		return activeConf;
+	}
+	
+	public boolean isEmpty(){
+		
+		return configurations == null || configurations.isEmpty();
+	}
+	
+	
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-
-		LQIGrid clonedGrid = new LQIGrid();
-		if (severities != null) {
-			List<LQISeverity> clonedSeverities = new ArrayList<LQISeverity>();
-			for (LQISeverity severity : severities) {
-				clonedSeverities.add((LQISeverity) severity.clone());
+	 
+		LQIGrid lqiGrid = new LQIGrid();
+		lqiGrid.setActiveConfName(activeConfName);
+		if(configurations != null){
+			for(LQIGridConfiguration conf: configurations){
+				lqiGrid.addConfiguration((LQIGridConfiguration)conf.clone());
 			}
-			clonedGrid.setSeverities(clonedSeverities);
 		}
-		if (errorCategories != null) {
-			List<LQIErrorCategory> clonedCategories = new ArrayList<LQIErrorCategory>();
-			for (LQIErrorCategory currCat : errorCategories) {
-				clonedCategories.add(currCat.clone(severities));
-			}
-			clonedGrid.setErrorCategories(clonedCategories);
-		}
-		return clonedGrid;
+	    return lqiGrid;
 	}
+//	public LQIGridConfiguration getConfigurationByName(String name){
+//		
+//		LQIGridConfiguration config = null;
+//		
+//		if(configurations != null){
+//			for(LQIGridConfiguration conf: configurations){
+//				if(conf.getName().equals(name)){
+//					config = conf;
+//					break;
+//				}
+//			}
+//		}
+//		return config;
+//	}
 
-	/**
-	 * Checks if this LQI grid is empty.
-	 * 
-	 * @return <code>true</code> if it is empty; <code>false</code> otherwise
-	 */
-	public boolean isEmpty() {
+	public void updateConfiguration(LQIGridConfiguration updatedConf) {
 
-		return (errorCategories == null || errorCategories.isEmpty())
-		        && (severities == null || severities.isEmpty());
-	}
-
-	/**
-	 * Gets the severity score for a specific severity.
-	 * @param severityName the severity name.
-	 * @return the severity score.
-	 */
-	public double getSeverityScore(String severityName) {
-
-		double score = 0;
-		if (severities != null) {
-			for (LQISeverity sev : severities) {
-				if (sev.getName().equals(severityName)) {
-					score = sev.getScore();
+		if(configurations != null){
+			for(int i = 0; i<configurations.size(); i++){
+				if(configurations.get(i).getName().equals(updatedConf.getName())){
+					configurations.set(i, updatedConf);
 					break;
 				}
 			}
 		}
-		return score;
-	}
-
-	/**
-	 * Sets the severity score for a specific severity.
-	 * @param severityName the severity name.
-	 * @param score the severity score.
-	 */
-	public void setSeverityScore(String severityName, double score) {
-
-		if (severities != null) {
-			for (LQISeverity sev : severities) {
-				if (sev.getName().equals(severityName)) {
-					sev.setScore(score);
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Gets the severity having a specific name.
-	 * @param severityName the severity name. 
-	 * @return the severity.
-	 */
-	public LQISeverity getSeverity(String severityName) {
-
-		LQISeverity severity = null;
-		if (severities != null) {
-			for (LQISeverity sev : severities) {
-				if (sev.getName().equals(severityName)) {
-					severity = sev;
-					break;
-				}
-			}
-		}
-		return severity;
-	}
+    }
+	
 }

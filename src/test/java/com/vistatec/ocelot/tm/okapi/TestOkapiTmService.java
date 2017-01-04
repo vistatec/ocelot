@@ -13,9 +13,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.OcelotRootConfig;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.OcelotRootConfig;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 import com.vistatec.ocelot.tm.TmMatch;
@@ -30,7 +31,7 @@ public class TestOkapiTmService {
     private File testTm;
 
     @Before
-    public void before() throws URISyntaxException, IOException, ConfigTransferService.TransferException {
+    public void before() throws URISyntaxException, IOException, TransferException {
         File testTmIndices = OkapiTmTestHelpers.getTestOkapiTmDir();
         OkapiTmTestHelpers.deleteDirectory(testTmIndices);
         testTmIndices.mkdirs();
@@ -39,7 +40,7 @@ public class TestOkapiTmService {
     }
 
     @Test
-    public void testFuzzy() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
+    public void testFuzzy() throws TransferException, URISyntaxException, IOException {
         final OcelotRootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
                     .tmName("simple_tm")
                     .testTmFileResource(testTm)
@@ -72,7 +73,7 @@ public class TestOkapiTmService {
     }
 
     @Test
-    public void testConcordance() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
+    public void testConcordance() throws TransferException, URISyntaxException, IOException {
         final OcelotRootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
                     .tmName("simple_tm")
                     .testTmFileResource(testTm)
@@ -87,7 +88,7 @@ public class TestOkapiTmService {
     }
 
     @Test
-    public void testSearchOnlyEnabled() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
+    public void testSearchOnlyEnabled() throws TransferException, URISyntaxException, IOException {
         final OcelotRootConfig config = new TmConfigBuilder(OkapiTmTestHelpers.getTestOkapiTmDir())
                     .tmName("simple_tm")
                     .testTmFileResource(testTm)
@@ -117,13 +118,13 @@ public class TestOkapiTmService {
             this.config = config;
         }
 
-        public OkapiTmService build() throws ConfigTransferService.TransferException, URISyntaxException, IOException {
+        public OkapiTmService build() throws TransferException, URISyntaxException, IOException {
             TmTmxWriter tmxWriter = mockery.mock(TmTmxWriter.class);
             final TmPenalizer penalizer = mockery.mock(TmPenalizer.class);
 
             mockery.checking(new Expectations() {
                 {
-                    allowing(cfgXService).parse();
+                    allowing(cfgXService).read();
                         will(returnValue(config));
                     allowing(cfgXService).save(with(any(OcelotRootConfig.class)));
                     allowing(penalizer).applyPenalties(with(any(List.class)));
@@ -131,7 +132,7 @@ public class TestOkapiTmService {
                 }
             });
 
-            OcelotConfigService cfgService = new OcelotConfigService(cfgXService);
+            OcelotJsonConfigService cfgService = new OcelotJsonConfigService(cfgXService);
             OkapiTmManager tmManager = new OkapiTmManager(OkapiTmTestHelpers.getTestOkapiTmDir(), cfgService, tmxWriter);
             return new OkapiTmService(tmManager, penalizer, cfgService);
         }

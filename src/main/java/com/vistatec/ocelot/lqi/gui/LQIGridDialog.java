@@ -31,12 +31,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.PlatformSupport;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
@@ -74,6 +75,8 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 	/** the LQI grid object. */
 	private LQIGrid lqiGrid;
+	
+	private LQIGridConfiguration activeLQIConf;
 
 	/** Configure button. */
 	private JButton btnConfig;
@@ -155,6 +158,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		super(owner);
 		setModal(false);
 		this.lqiGrid = lqiGrid;
+		activeLQIConf = lqiGrid.getActiveConfiguration();
 		this.controller = controller;
 		this.mode = mode;
 		this.platformSupport = platformSupport;
@@ -169,7 +173,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		        getRootPane());
 		LQIKeyEventManager.getInstance().addKeyEventHandler(
 		        lqiGridKeyEventHandler);
-		lqiGridKeyEventHandler.load(lqiGrid);
+		lqiGridKeyEventHandler.load(activeLQIConf);
 		tableHelper = new LQIGridTableHelper(platformSupport);
 		String title = TITLE;
 		if (mode == CONFIG_MODE) {
@@ -196,7 +200,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 		} catch (CloneNotSupportedException e) {
 			// never happens
 		}
-		scrollPane = new JScrollPane(tableHelper.createLQIGridTable(clonedGrid,
+		scrollPane = new JScrollPane(tableHelper.createLQIGridTable(clonedGrid.getActiveConfiguration(),
 		        mode, getGridButtonAction()));
 		tableHelper.getLqiTable().addComponentListener(new ComponentAdapter() {
 
@@ -282,9 +286,9 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 					int severityIndex = button.getSeverityColumn()
 					        - tableHelper.getLqiTableModel()
 					                .getSeverityColsStartIndex();
-					double severity = lqiGrid.getSeverities()
+					double severity = activeLQIConf.getSeverities()
 					        .get(severityIndex).getScore();
-					String severityName = lqiGrid.getSeverities()
+					String severityName = activeLQIConf.getSeverities()
 					        .get(severityIndex).getName();
 					String categoryName = tableHelper
 					        .getLqiTable()
@@ -494,10 +498,11 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 
 		try {
 			if (tableHelper.getLqiTableModel().isChanged()) {
-				controller.saveLQIGridConfiguration(tableHelper
-				        .getLqiTableModel().getLQIGrid());
-				lqiGrid = (LQIGrid) tableHelper.getLqiTableModel().getLQIGrid()
-				        .clone();
+				lqiGrid.updateConfiguration((LQIGridConfiguration)tableHelper
+				        .getLqiTableModel().getLQIGrid().clone());
+				controller.saveLQIGridConfiguration(lqiGrid);
+//				lqiGrid = (LQIGrid) tableHelper.getLqiTableModel().getLQIGrid()
+//				        .clone();
 				tableHelper.getLqiTableModel().setChanged(false);
 			}
 			switchToIssuesAnnotsMode();
@@ -528,7 +533,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 			                JOptionPane.YES_NO_OPTION);
 			if (option == JOptionPane.YES_OPTION) {
 				try {
-					tableHelper.replaceConfiguration((LQIGrid) lqiGrid.clone());
+					tableHelper.replaceConfiguration((LQIGridConfiguration)lqiGrid.getActiveConfiguration().clone());
 
 				} catch (CloneNotSupportedException e) {
 					// never happens
@@ -654,7 +659,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	 */
 	private void close() {
 
-		lqiGridKeyEventHandler.removeActions(lqiGrid);
+		lqiGridKeyEventHandler.removeActions(lqiGrid.getActiveConfiguration());
 		setVisible(false);
 		controller.close();
 	}
@@ -712,7 +717,7 @@ public class LQIGridDialog extends JDialog implements ActionListener, Runnable {
 	        String newSeverityName) {
 
 		boolean validName = true;
-		LQIGrid modelGrid = tableHelper.getLqiTableModel().getLQIGrid();
+		LQIGridConfiguration modelGrid = tableHelper.getLqiTableModel().getLQIGrid();
 		if (modelGrid.getSeverities() != null) {
 			for (LQISeverity sev : modelGrid.getSeverities()) {
 				if (!sev.equals(severity)

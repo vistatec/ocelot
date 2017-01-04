@@ -3,7 +3,6 @@ package com.vistatec.ocelot.findrep;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,12 +16,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.ByteSource;
-import com.google.common.io.CharSink;
-import com.google.common.io.Files;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -43,15 +39,9 @@ public class FindTest {
 			IOException, XMLStreamException {
 		OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
 		File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
-		File configFile = new File(ocelotDir, "ocelot_cfg.xml");
-		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
-				: Files.asByteSource(configFile);
-
-		CharSink configSink = Files.asCharSink(configFile,
-				Charset.forName("UTF-8"));
-		OcelotConfigService confService = new OcelotConfigService(
-				new OcelotXmlConfigTransferService(configSource, configSink));
-		xliffService = new OkapiXliffService(confService, eventQueue);
+		File configFile = new File(ocelotDir, "ocelot_cfg.json");
+		OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(configFile));
+		xliffService = new OkapiXliffService(cfgService, eventQueue);
 		frManager = new WordFinder();
 	}
 

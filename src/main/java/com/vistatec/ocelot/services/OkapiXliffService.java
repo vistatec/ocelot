@@ -28,13 +28,6 @@
  */
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.xliff.XLIFFFactory;
-import com.vistatec.ocelot.xliff.XLIFFDocument;
-import com.vistatec.ocelot.xliff.XLIFFParser;
-import com.vistatec.ocelot.xliff.XLIFFVersion;
-import com.vistatec.ocelot.xliff.XLIFFWriter;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,14 +35,20 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import net.sf.okapi.common.LocaleId;
+
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
+import com.vistatec.ocelot.xliff.XLIFFFactory;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.XLIFFVersion;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
 import com.vistatec.ocelot.xliff.okapi.OkapiXLIFFFactory;
-
-import net.sf.okapi.common.LocaleId;
 
 /**
  * Service for performing Okapi XLIFF operations.
@@ -57,10 +56,10 @@ import net.sf.okapi.common.LocaleId;
 public class OkapiXliffService implements XliffService {
     private XLIFFFactory xliffFactory = new OkapiXLIFFFactory();
 
-    private final ConfigService cfgService;
+    private final JsonConfigService cfgService;
     private final OcelotEventQueue eventQueue;
 
-    public OkapiXliffService(ConfigService cfgService, OcelotEventQueue eventQueue) {
+    public OkapiXliffService(JsonConfigService cfgService, OcelotEventQueue eventQueue) {
         this.cfgService = cfgService;
         this.eventQueue = eventQueue;
     }

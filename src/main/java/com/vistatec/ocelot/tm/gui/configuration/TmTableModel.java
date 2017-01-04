@@ -6,7 +6,8 @@ import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
-import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
+
 
 /**
  * Table model for TM elements. It is the data model associated to the table

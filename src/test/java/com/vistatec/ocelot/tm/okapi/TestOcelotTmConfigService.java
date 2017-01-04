@@ -2,49 +2,59 @@ package com.vistatec.ocelot.tm.okapi;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
 import javax.xml.bind.JAXBException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.io.ByteSource;
 import com.google.common.io.CharSink;
 import com.google.common.io.CharStreams;
-import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
-import com.vistatec.ocelot.config.xml.OcelotRootConfig;
-import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.JsonConfigTransferService;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
+import com.vistatec.ocelot.config.TestOcelotJsonConfigTransferService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.OcelotRootConfig;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 
 public class TestOcelotTmConfigService {
-    private OcelotConfigService cfgService;
-    private TestCharSink testOutput;
+    private OcelotJsonConfigService cfgService;
+    private StringWriter writer;
 
     @Before
-    public void setup() throws JAXBException, ConfigTransferService.TransferException {
-        testOutput = new TestCharSink();
-        ConfigTransferService cfgXService = new OcelotXmlConfigTransferService(ByteSource.empty(),
-                testOutput);
-        this.cfgService = new OcelotConfigService(cfgXService);
+    public void setup() throws TransferException, IOException {
+        File testFile = File.createTempFile("OcelotTest", "TmConfig");
+        FileWriter fileWriter = new FileWriter(testFile);
+        fileWriter.write("{}");
+        fileWriter.close();
+        writer = new StringWriter();
+        JsonConfigTransferService cfgXService = new TestOcelotJsonConfigTransferService(testFile, writer);
+        this.cfgService = new OcelotJsonConfigService(cfgXService);
     }
 
     @Test
-    public void testCreateTmConfig() throws URISyntaxException, IOException, ConfigTransferService.TransferException, JAXBException {
+    public void testCreateTmConfig() throws URISyntaxException, IOException, TransferException, JAXBException {
         OcelotRootConfig config = TestOkapiTmManager.setupNewForeignDataDir();
         cfgService.createNewTmConfig("config_test", true,
                 config.getTmManagement().getTms().get(0).getTmDataDir());
-        ConfigTransferService svc = new OcelotXmlConfigTransferService(
-                ByteSource.wrap(testOutput.getString().getBytes(StandardCharsets.UTF_8)),
-                new TestCharSink());
-        List<TmConfig> tms = ((OcelotRootConfig)svc.parse()).getTmManagement().getTms();
+        System.out.println(writer.toString());
+        File testFile = File.createTempFile("OcelotTest", "TmConfig");
+        FileWriter fileWriter = new FileWriter(testFile);
+        fileWriter.write(writer.toString());
+        fileWriter.close();
+        JsonConfigTransferService svc = new OcelotJsonConfigTransferService(testFile);
+        List<TmConfig> tms = ((OcelotRootConfig)svc.read()).getTmManagement().getTms();
         assertEquals(1, tms.size());
         assertEquals("config_test", tms.get(0).getTmName());
         Path tmDir = Paths.get(tms.get(0).getTmDataDir());

@@ -93,6 +93,7 @@ import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
+import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
@@ -526,7 +527,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		//adding LQI Key listener
 		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(lqiGridController, mainframe.getRootPane());
 		LQIKeyEventManager.getInstance().addKeyEventHandler(ocelotKeyEventHandler);
-		LQIKeyEventManager.getInstance().load(lqiGridController.readLQIGridConfiguration());
+		LQIGrid lqiGrid = lqiGridController.readLQIGridConfiguration();
+		if(lqiGrid != null){
+			LQIKeyEventManager.getInstance().load(lqiGrid.getActiveConfiguration());
+		}
 		// Display the window
 		Dimension userWindowSize = getUserDefinedWindowSize();
 		if (userWindowSize != null) {

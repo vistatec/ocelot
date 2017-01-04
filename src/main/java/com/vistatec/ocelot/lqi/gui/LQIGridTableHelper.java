@@ -30,7 +30,7 @@ import com.vistatec.ocelot.lqi.gui.renderer.ColorHeaderCellRenderer;
 import com.vistatec.ocelot.lqi.gui.renderer.LQIGridButtonRenderer;
 import com.vistatec.ocelot.lqi.gui.renderer.TextAreaColorCellRenderer;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
@@ -114,7 +114,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	 *            the action for LQI grid buttons.
 	 * @return the LQI grid table.
 	 */
-	public JTable createLQIGridTable(LQIGrid lqiGridObj, int mode,
+	public JTable createLQIGridTable(LQIGridConfiguration lqiGridObj, int mode,
 	        final Action gridButtonAction) {
 
 		initUsedShortcutList(lqiGridObj);
@@ -134,7 +134,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	 * @param lqiGridObj
 	 *            the LQI grid.
 	 */
-	private void initUsedShortcutList(LQIGrid lqiGridObj) {
+	private void initUsedShortcutList(LQIGridConfiguration lqiGridObj) {
 
 		shortcutsInUse = new ArrayList<KeyStroke>();
 		if (lqiGridObj.getErrorCategories() != null) {
@@ -509,9 +509,9 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	 * @param lqiGridObject
 	 *            the new configuration
 	 */
-	public void replaceConfiguration(LQIGrid lqiGridObject) {
+	public void replaceConfiguration(LQIGridConfiguration lqiGridObject) {
 
-		LQIGrid lqiGridToDiscard = lqiTableModel.getLQIGrid();
+		LQIGridConfiguration lqiGridToDiscard = lqiTableModel.getLQIGrid();
 		lqiTableModel.setLQIGrid(lqiGridObject);
 		updateTableHeader();
 		lqiTableModel.setChanged(false);

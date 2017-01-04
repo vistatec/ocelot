@@ -19,7 +19,7 @@ public class LQIErrorCategory {
 	private String comment;
 
 	/** The weight. */
-	private float weight;
+	private double weight;
 
 	/**
 	 * Default constructor.
@@ -98,7 +98,7 @@ public class LQIErrorCategory {
 	 * 
 	 * @return the weight.
 	 */
-	public float getWeight() {
+	public double getWeight() {
 		return weight;
 	}
 
@@ -108,7 +108,7 @@ public class LQIErrorCategory {
 	 * @param weight
 	 *            the weight.
 	 */
-	public void setWeight(float weight) {
+	public void setWeight(double weight) {
 		this.weight = weight;
 	}
 

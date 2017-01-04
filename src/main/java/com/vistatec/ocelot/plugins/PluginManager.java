@@ -60,8 +60,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
 import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
@@ -102,10 +102,10 @@ public class PluginManager implements OcelotEventQueueListener {
 	private FremePluginManager fremeManager;
 	private ClassLoader classLoader;
 	private File pluginDir;
-	private final ConfigService cfgService;
+	private final JsonConfigService cfgService;
 	private QualityPluginManager qualityPluginManager;
 
-	public PluginManager(ConfigService cfgService, File pluginDir,
+	public PluginManager(JsonConfigService cfgService, File pluginDir,
 			OcelotEventQueue eventQueue) {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
@@ -188,7 +188,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	}
 
 	public void setEnabled(Plugin plugin, boolean enabled)
-	        throws ConfigTransferService.TransferException {
+	        throws TransferException {
 		if (plugin instanceof ITSPlugin) {
 			ITSPlugin itsPlugin = (ITSPlugin) plugin;
 			itsPlugins.put(itsPlugin, enabled);

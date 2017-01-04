@@ -41,8 +41,8 @@ import javax.swing.table.AbstractTableModel;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.ContextMenu;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
@@ -65,9 +65,9 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
     private XLIFFDocument xliff;
     private OcelotEventQueue eventQueue;
     
-    private LqiConfigService lqiService;
+    private LqiJsonConfigService lqiService;
 
-    public LanguageQualityIssueTableView(OcelotEventQueue eventQueue, LqiConfigService lqiService) {
+    public LanguageQualityIssueTableView(OcelotEventQueue eventQueue, LqiJsonConfigService lqiService) {
         this.eventQueue = eventQueue;
         this.lqiService = lqiService;
         addMouseListener(new LQIPopupMenuListener());

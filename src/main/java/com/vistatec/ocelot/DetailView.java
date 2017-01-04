@@ -35,8 +35,8 @@ import javax.swing.JPanel;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
@@ -59,12 +59,12 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     private ProvenanceView provDetailView;
     private SegmentDetailView segDetailView;
     private OcelotSegment selectedSegment;
-    private LqiConfigService lqiService;
+    private LqiJsonConfigService lqiService;
     
     private final OcelotEventQueue eventQueue;
 
     @Inject
-    public DetailView(OcelotEventQueue eventQueue, LqiConfigService lqiService) {
+    public DetailView(OcelotEventQueue eventQueue, LqiJsonConfigService lqiService) {
         this.eventQueue = eventQueue;
         this.lqiService = lqiService;
         setLayout(new BorderLayout());

@@ -40,10 +40,8 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Resources;
-import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
 import com.vistatec.ocelot.config.TestProvenanceConfig;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
@@ -75,9 +73,8 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
     public void testWriteITSNamespaceMultipleTimes() throws Exception {
         File temp = roundtripXliffAndAddLQI("/no-its-namespace.xlf");
 
-        ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-        OcelotConfigService cfgService = new OcelotConfigService(new OcelotXmlConfigTransferService(testLoad, null));
+        File testFile = new File(TestProvenanceConfig.class.getResource("test_load_provenance.json").toURI());
+        OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 
@@ -103,7 +100,7 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
 
     @Test
     public void testDontWriteEmptyProvenance() throws Exception {
-        checkAgainstGoldXML(roundtripXliffAndAddLQI("/test.xlf", "test_empty_provenance.xml"),
+        checkAgainstGoldXML(roundtripXliffAndAddLQI("/test.xlf", "test_empty_provenance.json"),
                             "/gold/lqi_no_provenance.xlf");
     }
 
@@ -117,15 +114,14 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
     }
     
     private File roundtripXliffAndAddLQI(String resourceName) throws Exception {
-        return roundtripXliffAndAddLQI(resourceName, "test_load_provenance.xml");
+        return roundtripXliffAndAddLQI(resourceName, "test_load_provenance.json");
     }
 
     private File roundtripXliffAndAddLQI(String resourceName, String provenanceConfig) throws Exception {
         // Note that we need non-null provenance to be added, so we supply
         // a dummy revPerson value
-        ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource(provenanceConfig));
-        OcelotConfigService cfgService = new OcelotConfigService(new OcelotXmlConfigTransferService(testLoad, null));
+        File testFile = new File(TestProvenanceConfig.class.getResource(provenanceConfig).toURI());
+        OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
         XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
         eventQueue.registerListener(xliffService);
 

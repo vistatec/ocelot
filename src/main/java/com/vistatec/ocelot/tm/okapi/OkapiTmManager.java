@@ -19,11 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
-import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.xml.TmManagement;
-import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig.TmxFile;
 import com.vistatec.ocelot.tm.TmManager;
 import com.vistatec.ocelot.tm.TmTmxWriter;
 
@@ -34,12 +33,12 @@ public class OkapiTmManager implements TmManager {
 	private static final Logger LOG = LoggerFactory
 	        .getLogger(OkapiTmManager.class);
 	private final File tmRootDir;
-	private final ConfigService cfgService;
+	private final JsonConfigService cfgService;
 	private final TmTmxWriter tmxWriter;
 
-	public OkapiTmManager(File tmDir, ConfigService cfgService,
+	public OkapiTmManager(File tmDir, JsonConfigService cfgService,
 	        TmTmxWriter tmxWriter) throws IOException,
-	        ConfigTransferService.TransferException {
+	        TransferException {
 		this.tmRootDir = tmDir;
 		this.cfgService = cfgService;
 		this.tmxWriter = tmxWriter;
@@ -47,11 +46,11 @@ public class OkapiTmManager implements TmManager {
 	}
 
 	private void discover() throws IOException,
-	        ConfigTransferService.TransferException {
+	        TransferException {
 		Set<String> configuredTms = new HashSet<>();
 
-		List<TmConfig> tms = new ArrayList<TmManagement.TmConfig>(this.cfgService.getTms());
-		for (TmManagement.TmConfig tm : tms) {
+		List<TmConfig> tms = new ArrayList<TmConfig>(this.cfgService.getTms());
+		for (TmConfig tm : tms) {
 			if (verifyExistingTm(tm)) {
 				configuredTms.add(tm.getTmName());
 			}
@@ -69,8 +68,8 @@ public class OkapiTmManager implements TmManager {
 	 * If TM config points to a non-existent directory for the root or data,
 	 * delete the configuration; otherwise generate Pensieve index if missing.
 	 */
-	private boolean verifyExistingTm(TmManagement.TmConfig tmConfig)
-	        throws IOException, ConfigTransferService.TransferException {
+	private boolean verifyExistingTm(TmConfig tmConfig)
+	        throws IOException, TransferException {
 		File tmDir = new File(this.tmRootDir, tmConfig.getTmName());
 		if (!tmDir.exists()) {
 			removeTmConfig(tmConfig);
@@ -110,10 +109,10 @@ public class OkapiTmManager implements TmManager {
 		boolean exists = true;
 		File tmDir = new File(tm.getTmDataDir());
 		if (tmDir.exists() && tm.getTmxFiles() != null
-		        && tm.getTmxFiles().getTmxFile() != null && !tm.getTmxFiles().getTmxFile().isEmpty()) {
+		        && tm.getTmxFiles() != null && !tm.getTmxFiles().isEmpty()) {
 			File tmxFile = null;
-			for (String tmxFileName : tm.getTmxFiles().getTmxFile()) {
-				tmxFile = new File(tm.getTmDataDir(), tmxFileName);
+			for (TmxFile currTmxFile : tm.getTmxFiles()) {
+				tmxFile = new File(tm.getTmDataDir(), currTmxFile.getName());
 				if (!tmxFile.exists()) {
 					exists = false;
 					break;
@@ -127,7 +126,7 @@ public class OkapiTmManager implements TmManager {
 
 	@Override
 	public void initializeNewTm(String tmName, File tmDataDir)
-	        throws IOException, ConfigTransferService.TransferException {
+	        throws IOException, TransferException {
 		LOG.debug("Creating new TM '{}' with data directory '{}'", tmName,
 		        tmDataDir.getAbsolutePath());
 		if (cfgService.getTmConfig(tmName) != null) {
@@ -208,8 +207,8 @@ public class OkapiTmManager implements TmManager {
 
 	@Override
 	public void deleteTm(String tmName) throws IOException,
-	        ConfigTransferService.TransferException {
-		TmManagement.TmConfig config = cfgService.getTmConfig(tmName);
+	        TransferException {
+		TmConfig config = cfgService.getTmConfig(tmName);
 		if (config == null) {
 			throw new IOException("'" + tmName + "' missing TM configuration!");
 		}
@@ -229,9 +228,9 @@ public class OkapiTmManager implements TmManager {
 		this.tmxWriter.exportTmx(tmx);
 	}
 
-	private void removeTmConfig(TmManagement.TmConfig config)
-	        throws ConfigTransferService.TransferException {
-		List<TmManagement.TmConfig> configs = cfgService.getTms();
+	private void removeTmConfig(TmConfig config)
+	        throws TransferException {
+		List<TmConfig> configs = cfgService.getTms();
 		configs.remove(config);
 		cfgService.saveConfig();
 	}
@@ -284,7 +283,7 @@ public class OkapiTmManager implements TmManager {
 	@Override
 	public void regenerateTm(String tmName) throws IOException {
 		deletePensieveIndex(tmName);
-		TmManagement.TmConfig config = cfgService.getTmConfig(tmName);
+		TmConfig config = cfgService.getTmConfig(tmName);
 		File tmDataDir = new File(config.getTmDataDir());
 		for (File tmx : tmDataDir.listFiles()) {
 			indexTmx(tmName, tmx);
@@ -308,8 +307,8 @@ public class OkapiTmManager implements TmManager {
 
 	@Override
 	public void changeTmDataDir(String tmName, File tmDataDir)
-	        throws IOException, ConfigTransferService.TransferException {
-		TmManagement.TmConfig tmConfig = cfgService.getTmConfig(tmName);
+	        throws IOException, TransferException {
+		TmConfig tmConfig = cfgService.getTmConfig(tmName);
 		if (tmConfig == null) {
 			throw new IOException("TM '" + tmName + "' does not exist!");
 		}
@@ -335,7 +334,7 @@ public class OkapiTmManager implements TmManager {
 			        + "' does not exist");
 		}
 
-		TmManagement.TmConfig config = cfgService.getTmConfig(tmName);
+		TmConfig config = cfgService.getTmConfig(tmName);
 		File tmDataDir = new File(
 		        (config == null) ? constructDefaultTmDataDir(tmName)
 		                : config.getTmDataDir());
@@ -360,7 +359,7 @@ public class OkapiTmManager implements TmManager {
 			try {
 				cfgService.createNewTmConfig(tmName, true,
 				        tmDataDir.getAbsolutePath());
-			} catch (ConfigTransferService.TransferException e) {
+			} catch (TransferException e) {
 				String errorMsg = "Failed to create new TM configuration for '"
 				        + tmName + "' when importing file '"
 				        + tmx.getAbsolutePath() + "'";
@@ -375,7 +374,7 @@ public class OkapiTmManager implements TmManager {
 		DirectoryWrapper luceneIndex;
 		try {
 			luceneIndex = loadTm(tmName);
-		} catch (ConfigTransferService.TransferException e) {
+		} catch (TransferException e) {
 			LOG.error(
 			        "Failed to save new TM configuration for '{}' when importing '{}'",
 			        tmName, tmx.getAbsolutePath());
@@ -393,7 +392,7 @@ public class OkapiTmManager implements TmManager {
 	 * Ensure the given TM is visible by the TM manager
 	 */
 	private DirectoryWrapper loadTm(String tmName) throws IOException,
-	        ConfigTransferService.TransferException {
+	        TransferException {
 		if (cfgService.getTmConfig(tmName) == null) {
 			throw new IOException(tmName + " is missing a TM configuration!");
 		}
@@ -408,12 +407,12 @@ public class OkapiTmManager implements TmManager {
 	 */
 	Iterator<TmPair> getSeekers() throws IOException {
 		List<TmPair> seekers = new ArrayList<>();
-		for (TmManagement.TmConfig tm : this.cfgService.getTms()) {
+		for (TmConfig tm : this.cfgService.getTms()) {
 			try {
 				DirectoryWrapper luceneIndex = loadTm(tm.getTmName());
 				seekers.add(new TmPair(tm.getTmName(), new PensieveSeeker(
 				        luceneIndex.luceneDir)));
-			} catch (ConfigTransferService.TransferException e) {
+			} catch (TransferException e) {
 				LOG.error("Failed to create TM config for '" + tm.getTmName()
 				        + "'", e);
 			}
@@ -422,18 +421,18 @@ public class OkapiTmManager implements TmManager {
 	}
 
 	@Override
-	public List<TmManagement.TmConfig> fetchTms() {
+	public List<TmConfig> fetchTms() {
 		return cfgService.getTms();
 	}
 
 	@Override
-	public TmManagement.TmConfig fetchTm(String tmName) {
+	public TmConfig fetchTm(String tmName) {
 		return cfgService.getTmConfig(tmName);
 	}
 
 	@Override
-	public void saveTmOrdering(List<TmManagement.TmConfig> orderedTms)
-	        throws ConfigTransferService.TransferException {
+	public void saveTmOrdering(List<TmConfig> orderedTms)
+	        throws TransferException {
 		cfgService.saveTms(orderedTms);
 	}
 

@@ -36,7 +36,7 @@ import javax.swing.event.ChangeListener;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -65,7 +65,7 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
     protected TermsTableView termTableView;
 
     @Inject
-    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsTableView docStatsView, LqiConfigService  lqiService) {
+    public SegmentAttributeView(OcelotEventQueue eventQueue, ITSDocStatsTableView docStatsView, LqiJsonConfigService  lqiService) {
         aggregateTableView = docStatsView;
         addTab("Doc Stats", aggregateTableView);
         eventQueue.registerListener(aggregateTableView);

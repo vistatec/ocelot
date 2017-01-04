@@ -15,10 +15,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.xml.TmManagement;
-import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.TmManagement;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig.TmxFile;
 import com.vistatec.ocelot.tm.TmManager;
 
 /**
@@ -43,7 +44,7 @@ public class TmGuiConfigController {
 	private TmManager tmManager;
 
 	/** The Ocelot configuration service. */
-	private ConfigService cfgService;
+	private JsonConfigService cfgService;
 
 	/** The TM configuration dialog. */
 	private TmConfigDialog configDialog;
@@ -75,7 +76,7 @@ public class TmGuiConfigController {
 	 *            the configuration service
 	 */
 	public TmGuiConfigController(final TmManager tmManager,
-	        final ConfigService cfgService) {
+	        final JsonConfigService cfgService) {
 
 		this.tmManager = tmManager;
 		this.cfgService = cfgService;
@@ -176,8 +177,12 @@ public class TmGuiConfigController {
 			newTm.setEnabled(true);
 			newTm.setTmDataDir(tmDataDir);
 			newTm.setTmName(tmName.toString());
-			TmManagement.TmConfig.TmxFiles tmxFilesConf = new TmManagement.TmConfig.TmxFiles();
-			tmxFilesConf.setTmxFile(tmxFileNames);
+			List<TmxFile> tmxFilesConf = new ArrayList<TmManagement.TmConfig.TmxFile>();
+			if(tmxFileNames != null){
+				for(String tmxFileName: tmxFileNames){
+					tmxFilesConf.add(new TmxFile(tmxFileName));
+				}
+			}
 			newTm.setTmxFiles(tmxFilesConf);
 			tmManager.initializeNewTm(tmName.toString(), tmxFiles);
 			configDialog.addNewTm(newTm);

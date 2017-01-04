@@ -2,7 +2,6 @@ package com.vistatec.ocelot.di;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import javax.xml.bind.JAXBException;
 
@@ -10,24 +9,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.ByteSource;
-import com.google.common.io.CharSink;
-import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.vistatec.ocelot.DefaultPlatformSupport;
 import com.vistatec.ocelot.OSXPlatformSupport;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.PlatformSupport;
-import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
-import com.vistatec.ocelot.config.LQIXmlConfigTransferService;
-import com.vistatec.ocelot.config.LqiConfigService;
-import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigTransferService;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
@@ -71,8 +66,8 @@ public class OcelotModule extends AbstractModule {
 
         bind(PlatformSupport.class).toInstance(platformSupport);
 
-        ConfigService cfgService = null;
-		LqiConfigService lqiCfgService = null;
+        JsonConfigService jsonCfgService = null;
+		LqiJsonConfigService lqiCfgService = null;
         RuleConfiguration ruleConfig = null;
         PluginManager pluginManager = null;
         TmManager tmManager = null;
@@ -87,11 +82,11 @@ public class OcelotModule extends AbstractModule {
 
             Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            cfgService = setupConfigService(ocelotDir);
+            jsonCfgService = setupJsonConfigService(ocelotDir);
 			lqiCfgService = setupLQIConfigService(ocelotDir);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
-            pluginManager = new PluginManager(cfgService, new File(ocelotDir, "plugins"), eventQueue);
+            pluginManager = new PluginManager(jsonCfgService, new File(ocelotDir, "plugins"), eventQueue);
             pluginManager.discover();
             eventQueue.registerListener(pluginManager);
 
@@ -103,12 +98,12 @@ public class OcelotModule extends AbstractModule {
             tm.mkdirs();
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
-            tmManager = new OkapiTmManager(tm, cfgService, tmxWriter);
+            tmManager = new OkapiTmManager(tm, jsonCfgService, tmxWriter);
             
             bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
             penalizer = new SimpleTmPenalizer(tmManager);
-            tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, cfgService);
-            tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, cfgService);
+            tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, jsonCfgService);
+            tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, jsonCfgService);
             
             lqiGridController = new LQIGridController(lqiCfgService, eventQueue,
                                                       platformSupport);
@@ -117,7 +112,7 @@ public class OcelotModule extends AbstractModule {
             
             frController = new FindAndReplaceController(eventQueue);
             eventQueue.registerListener(frController);
-        } catch (IOException | JAXBException | ConfigTransferService.TransferException ex) {
+        } catch (IOException | JAXBException | TransferException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
         }
@@ -130,7 +125,7 @@ public class OcelotModule extends AbstractModule {
         bind(TmGuiManager.class).toInstance(tmGuiManager);
         bind(FindAndReplaceController.class).toInstance(frController);
 
-		bindServices(eventQueue, cfgService, lqiCfgService, docStats);
+		bindServices(eventQueue, jsonCfgService, lqiCfgService, docStats);
     }
     
     public static PlatformSupport getPlatformSupport() {
@@ -143,12 +138,12 @@ public class OcelotModule extends AbstractModule {
 
 
 	private void bindServices(OcelotEventQueue eventQueue,
-	        ConfigService cfgService, LqiConfigService lqiCfgService,
+	         JsonConfigService jsonCfgService, LqiJsonConfigService lqiCfgService,
             ITSDocStats docStats) {
-        bind(ConfigService.class).toInstance(cfgService);
-		bind(LqiConfigService.class).toInstance(lqiCfgService);
+        bind(JsonConfigService.class).toInstance(jsonCfgService);
+		bind(LqiJsonConfigService.class).toInstance(lqiCfgService);
 
-        ProvenanceService provService = new ProvenanceService(eventQueue, cfgService);
+        ProvenanceService provService = new ProvenanceService(eventQueue, jsonCfgService);
         bind(ProvenanceService.class).toInstance(provService);
         eventQueue.registerListener(provService);
 
@@ -156,35 +151,34 @@ public class OcelotModule extends AbstractModule {
         bind(ITSDocStatsService.class).toInstance(docStatsService);
         eventQueue.registerListener(docStatsService);
 
-        XliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
+        XliffService xliffService = new OkapiXliffService(jsonCfgService, eventQueue);
         bind(XliffService.class).toInstance(xliffService);
         eventQueue.registerListener(xliffService);
 
     }
 
-    private OcelotConfigService setupConfigService(File ocelotDir) throws ConfigTransferService.TransferException, JAXBException {
-        File configFile = new File(ocelotDir, "ocelot_cfg.xml");
-        ByteSource configSource = !configFile.exists() ?
-                ByteSource.empty() :
-                Files.asByteSource(configFile);
 
-        CharSink configSink = Files.asCharSink(configFile,
-                Charset.forName("UTF-8"));
-		return new OcelotConfigService(new OcelotXmlConfigTransferService(
-                configSource, configSink));
+    private OcelotJsonConfigService setupJsonConfigService(File ocelotDir) throws TransferException {
+    	
+
+		File confFile = new File(ocelotDir, "ocelot_cfg.json");
+		return new OcelotJsonConfigService(new OcelotJsonConfigTransferService(
+		        confFile));
+    	
     }
-
-	private LqiConfigService setupLQIConfigService(File ocelotDir)
+    
+    
+	private LqiJsonConfigService setupLQIConfigService(File ocelotDir)
 	        throws TransferException, JAXBException {
 
-		File configFile = new File(ocelotDir, "lqi_cfg.xml");
-		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
-		        : Files.asByteSource(configFile);
-
-		CharSink configSink = Files.asCharSink(configFile,
-		        Charset.forName("UTF-8"));
-		LqiConfigService service = new LqiConfigService(new LQIXmlConfigTransferService(
-		        configSource, configSink));
+		File configFile = new File(ocelotDir, "lqi_cfg.json");
+//		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
+//		        : Files.asByteSource(configFile);
+//
+//		CharSink configSink = Files.asCharSink(configFile,
+//		        Charset.forName("UTF-8"));
+		LqiJsonConfigService service = new LqiJsonConfigService(new LqiJsonConfigTransferService(
+				configFile));
 		// If the config file doesn't exist, initialize a default configuration.
 		if (!configFile.exists()) {
 		    LOG.info("Writing default LQI Grid configuration to " + configFile);

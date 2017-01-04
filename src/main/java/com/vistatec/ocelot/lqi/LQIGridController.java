@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.PlatformSupport;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
@@ -31,7 +31,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 	private final Logger logger = LoggerFactory.getLogger(LQIGridController.class);
 
 	/** The LQI configuration service. */
-	private LqiConfigService configService;
+	private LqiJsonConfigService configService;
 
 	/** The event queue. */
 	private OcelotEventQueue eventQueue;
@@ -58,7 +58,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 * @param eventQueue
 	 *            the event queue.
 	 */
-	public LQIGridController(final LqiConfigService configService,
+	public LQIGridController(final LqiJsonConfigService configService,
 	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport) {
 
 		this(configService, eventQueue, platformSupport, null);
@@ -74,7 +74,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 * @param ocelotMainFrame
 	 *            the Ocelot main frame.
 	 */
-	public LQIGridController(final LqiConfigService configService,
+	public LQIGridController(final LqiJsonConfigService configService,
 	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport, final JFrame ocelotMainFrame) {
 
 		this.configService = configService;
@@ -231,7 +231,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 		gridDialog = null;
     }
 	
-	public LqiConfigService getConfigService(){
+	public LqiJsonConfigService getConfigService(){
 		return configService;
 	}
 }
