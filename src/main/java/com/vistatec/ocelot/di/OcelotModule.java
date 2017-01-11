@@ -52,6 +52,8 @@ import com.vistatec.ocelot.tm.penalty.SimpleTmPenalizer;
  */
 public class OcelotModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(OcelotModule.class);
+    
+    private static final String CONF_FOLDER = "conf";
 
     @Override
     protected void configure() {
@@ -79,11 +81,12 @@ public class OcelotModule extends AbstractModule {
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
-
+            File configFolder = getConfigurationFolder(ocelotDir);
+            //TODO CHECK 
             Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            jsonCfgService = setupJsonConfigService(ocelotDir);
-			lqiCfgService = setupLQIConfigService(ocelotDir);
+            jsonCfgService = setupJsonConfigService(configFolder);
+			lqiCfgService = setupLQIConfigService(configFolder);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
             pluginManager = new PluginManager(jsonCfgService, new File(ocelotDir, "plugins"), eventQueue);
@@ -94,7 +97,7 @@ public class OcelotModule extends AbstractModule {
             bind(SegmentService.class).toInstance(segmentService);
             eventQueue.registerListener(segmentService);
 
-            File tm = new File(ocelotDir, "tm");
+            File tm = new File(configFolder, "tm");
             tm.mkdirs();
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
@@ -158,25 +161,19 @@ public class OcelotModule extends AbstractModule {
     }
 
 
-    private OcelotJsonConfigService setupJsonConfigService(File ocelotDir) throws TransferException {
+    private OcelotJsonConfigService setupJsonConfigService(File confFolder) throws TransferException {
     	
-
-		File confFile = new File(ocelotDir, "ocelot_cfg.json");
+		File confFile = new File(confFolder, "ocelot_cfg.json");
 		return new OcelotJsonConfigService(new OcelotJsonConfigTransferService(
 		        confFile));
     	
     }
     
     
-	private LqiJsonConfigService setupLQIConfigService(File ocelotDir)
+	private LqiJsonConfigService setupLQIConfigService(File confFolder)
 	        throws TransferException, JAXBException {
 
-		File configFile = new File(ocelotDir, "lqi_cfg.json");
-//		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
-//		        : Files.asByteSource(configFile);
-//
-//		CharSink configSink = Files.asCharSink(configFile,
-//		        Charset.forName("UTF-8"));
+		File configFile = new File(confFolder, "lqi_cfg.json");
 		LqiJsonConfigService service = new LqiJsonConfigService(new LqiJsonConfigTransferService(
 				configFile));
 		// If the config file doesn't exist, initialize a default configuration.
@@ -185,5 +182,14 @@ public class OcelotModule extends AbstractModule {
 		    service.saveLQIConfig(LQIConstants.getDefaultLQIGrid());
 		}
 		return service;
+	}
+	
+	private File getConfigurationFolder(File ocelotDir ){
+		
+		File confFolder = new File(ocelotDir, CONF_FOLDER);
+    	if(!confFolder.exists()){
+    		confFolder.mkdirs();
+    	}
+    	return confFolder;
 	}
 }
