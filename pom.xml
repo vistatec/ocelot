@@ -359,6 +359,43 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <activation>
+        <os>
+          <name>mac os x</name>
+        </os>
+        <property>
+          <name>codesignId</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <id>exec</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>codesign</executable>
+              <arguments>
+                <argument>-s</argument>
+                <argument>${codesignId}</argument>
+                <argument>-vvv</argument>
+                <argument>${project.build.directory}/Ocelot.app</argument>
+              </arguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
   <reporting>
     <plugins>
