@@ -35,6 +35,16 @@ This will run the `codesign` tool with the specified id.  You must have XCode to
 installed and a valid certificate for the specified ID installed in your local keychain
 for this to work.
 
+### Release packaging
+Use
+
+    mvn clean install -P release
+
+This will also generate javadoc, etc, as well as do additional zip packaging of the Mac
+build.  This can be run in conjunction with codesigning on the Mac:
+
+    mvn clean install -P release -DcodeSignId="Developer ID Application: Foo Bar"
+
 Features
 ========
 ## Filter Rules ##
