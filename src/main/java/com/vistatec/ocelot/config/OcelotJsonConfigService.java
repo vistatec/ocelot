@@ -207,4 +207,19 @@ public class OcelotJsonConfigService implements JsonConfigService {
 		return createNewTmConfig(tmName, enabled, null, tmxFiles);
 	}
 
+	@Override
+    public boolean isTmPanelVisible() {
+	    return config.getLayout().isShowTranslations();
+    }
+
+	@Override
+    public boolean isAttributesViewVisible() {
+	    return config.getLayout().isShowAttrsView();
+    }
+
+	@Override
+    public boolean isDetailsViewVisible() {
+	    return config.getLayout().isShowDetailsView();
+    }
+
 }

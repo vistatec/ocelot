@@ -83,6 +83,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
@@ -135,6 +137,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
 	private FindAndReplaceController frController;
+	private OcelotJsonConfigService configService;
 
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
@@ -159,6 +162,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        .getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
 		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
+		this.configService = (OcelotJsonConfigService) ocelotScope.getInstance(JsonConfigService.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
 		platformSupport.init(this);
 
@@ -190,6 +194,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        setupSegAttrDetailPanes(segAttrView, detailView),
 		        setupSegmentTmPanes());
 		mainSplitPane.setOneTouchExpandable(true);
+		
 
 		return mainSplitPane;
 	}
@@ -216,6 +221,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		tmConcordanceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 		        tmGuiManager.getTmPanel(), segmentView);
 		tmConcordanceSplitPane.setOneTouchExpandable(true);
+		
 		tmConcordanceSplitPane.addContainerListener(new ContainerListener() {
 			@Override
 			public void componentRemoved(ContainerEvent e) {
@@ -224,7 +230,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 			@Override
 			public void componentAdded(ContainerEvent e) {
-				tmConcordanceSplitPane.setDividerLocation(0.3);
+//				if(configService.isTmPanelVisible()){
+//					tmConcordanceSplitPane.setDividerLocation(0.3);
+//				} else {
+//					tmConcordanceSplitPane.setDividerLocation(0);
+//				}
 			}
 		});
 		return tmConcordanceSplitPane;
@@ -539,7 +549,19 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		mainframe.pack();
 		mainframe.setVisible(true);
 		lqiGridController.setOcelotMainFrame(mainframe);
-		tmConcordanceSplitPane.setDividerLocation(0.4);
+		if(configService.isTmPanelVisible()){
+			tmConcordanceSplitPane.setDividerLocation(0.4);
+		} else {
+			tmConcordanceSplitPane.setDividerLocation(0);
+		}
+		if(!configService.isAttributesViewVisible() && !configService.isDetailsViewVisible() ){
+			mainSplitPane.setDividerLocation(0);
+		} else if(!configService.isAttributesViewVisible() && configService.isDetailsViewVisible()) {
+			segAttrSplitPane.setDividerLocation(0);
+		} else if(configService.isAttributesViewVisible() && !configService.isDetailsViewVisible()) {
+			segAttrSplitPane.setDividerLocation(1.0);
+		}
+//		tmConcordanceSplitPane.setDividerLocation(0.4);
 		addEditingListenerToTxtFields();
 	}
 

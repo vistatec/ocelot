@@ -11,6 +11,10 @@ public class TmManagement {
 	private double fuzzyThreshold;
 	private int maxResults;
 	private List<TmConfig> tms;
+	
+	public TmManagement() {
+		tms = new ArrayList<TmManagement.TmConfig>();
+    }
 
 	public void setFuzzyThreshold(double fuzzyThreshold) {
 		this.fuzzyThreshold = fuzzyThreshold;
@@ -39,9 +43,6 @@ public class TmManagement {
 	public void addTm(TmConfig tm) {
 
 		if (tm != null) {
-			if (tms == null) {
-				tms = new ArrayList<TmManagement.TmConfig>();
-			}
 			tms.add(tm);
 		}
 	}

@@ -39,5 +39,10 @@ public interface JsonConfigService {
 	        List<String> tmxFiles) throws TransferException;
     
     public TmManagement.TmConfig createNewTmConfig(String tmName, boolean enabled, List<String> tmxFiles) throws TransferException;
-
+    
+    public boolean isTmPanelVisible();
+    
+    public boolean isAttributesViewVisible();
+    
+    public boolean isDetailsViewVisible();
 }

@@ -57,11 +57,6 @@ public class TestLQIConfig {
 
 	private LqiJsonConfigService createConfigService(final File configFile)
 	        throws TransferException, JAXBException {
-//		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
-//		        : Files.asByteSource(configFile);
-//
-//		CharSink configSink = Files.asCharSink(configFile,
-//		        Charset.forName("UTF-8"));
 		return new LqiJsonConfigService(new LqiJsonConfigTransferService(
 				configFile));
 

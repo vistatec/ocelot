@@ -8,12 +8,14 @@ public class OcelotRootConfig implements RootConfig {
 	private List<PluginConfig> plugins;
 	private ProvenanceConfig userProvenance;
 	private TmManagement tmManagement;
+	private LayoutConfig layout;
 
 	public OcelotRootConfig() {
 		
 		plugins = new ArrayList<PluginConfig>();
 		userProvenance = new ProvenanceConfig();
 		tmManagement = new TmManagement();
+		
     }
 	
 	public void setPlugins(List<PluginConfig> plugins) {
@@ -46,6 +48,14 @@ public class OcelotRootConfig implements RootConfig {
 			plugins.add(plugin);
 		}
 	}
+	
+	public void setLayout(LayoutConfig layout){
+		this.layout = layout;
+	}
+	
+	public LayoutConfig getLayout(){
+		return layout;
+	}
 
 	@Override
 	public String toString() {
@@ -65,6 +75,10 @@ public class OcelotRootConfig implements RootConfig {
 				strBuilder.append(plugin.toString());
 				strBuilder.append("\n");
 			}
+		}
+		if(layout != null){
+			strBuilder.append(layout.toString());
+			strBuilder.append("\n");
 		}
 		return strBuilder.toString();
 	}
