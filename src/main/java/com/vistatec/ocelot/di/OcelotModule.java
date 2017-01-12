@@ -22,6 +22,8 @@ import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.LqiJsonConfigTransferService;
 import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
+import com.vistatec.ocelot.config.ProfileConfigService;
+import com.vistatec.ocelot.config.ProfileConfigTransferService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -30,6 +32,7 @@ import com.vistatec.ocelot.its.stats.model.ITSDocStats;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 import com.vistatec.ocelot.rules.RulesParser;
 import com.vistatec.ocelot.services.ITSDocStatsService;
@@ -70,6 +73,7 @@ public class OcelotModule extends AbstractModule {
 
         JsonConfigService jsonCfgService = null;
 		LqiJsonConfigService lqiCfgService = null;
+		ProfileConfigService profileCfgService = null;
         RuleConfiguration ruleConfig = null;
         PluginManager pluginManager = null;
         TmManager tmManager = null;
@@ -78,15 +82,20 @@ public class OcelotModule extends AbstractModule {
         TmGuiManager tmGuiManager = null;
         LQIGridController lqiGridController = null;
         FindAndReplaceController frController = null;
+        ProfileManager profileManager = null;
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
             File configFolder = getConfigurationFolder(ocelotDir);
+            profileCfgService = setupProfileCfgService(configFolder);
+            profileManager = new ProfileManager(configFolder, profileCfgService, eventQueue);
+            File profileFolder = new File(configFolder, profileCfgService.getProfileName());
+            
             //TODO CHECK 
             Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            jsonCfgService = setupJsonConfigService(configFolder);
-			lqiCfgService = setupLQIConfigService(configFolder);
+            jsonCfgService = setupJsonConfigService(profileFolder);
+			lqiCfgService = setupLQIConfigService(profileFolder);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
             pluginManager = new PluginManager(jsonCfgService, new File(ocelotDir, "plugins"), eventQueue);
@@ -97,7 +106,7 @@ public class OcelotModule extends AbstractModule {
             bind(SegmentService.class).toInstance(segmentService);
             eventQueue.registerListener(segmentService);
 
-            File tm = new File(configFolder, "tm");
+            File tm = new File(profileFolder, "tm");
             tm.mkdirs();
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
@@ -127,11 +136,17 @@ public class OcelotModule extends AbstractModule {
         bind(TmService.class).toInstance(tmService);
         bind(TmGuiManager.class).toInstance(tmGuiManager);
         bind(FindAndReplaceController.class).toInstance(frController);
+        bind(ProfileManager.class).toInstance(profileManager);
 
-		bindServices(eventQueue, jsonCfgService, lqiCfgService, docStats);
+		bindServices(eventQueue, profileCfgService, jsonCfgService, lqiCfgService, docStats);
     }
     
-    public static PlatformSupport getPlatformSupport() {
+    private ProfileConfigService setupProfileCfgService(File configFolder) throws TransferException {
+    	File profFile = new File(configFolder, "profile.json");
+    	return new ProfileConfigService(new ProfileConfigTransferService(profFile));
+    }
+
+	public static PlatformSupport getPlatformSupport() {
         String os = System.getProperty("os.name");
         if (os.startsWith("Mac")) {
             return new OSXPlatformSupport();
@@ -141,8 +156,10 @@ public class OcelotModule extends AbstractModule {
 
 
 	private void bindServices(OcelotEventQueue eventQueue,
-	         JsonConfigService jsonCfgService, LqiJsonConfigService lqiCfgService,
+	         ProfileConfigService profileCfgService, JsonConfigService jsonCfgService, LqiJsonConfigService lqiCfgService,
             ITSDocStats docStats) {
+		
+		bind(ProfileConfigService.class).toInstance(profileCfgService);
         bind(JsonConfigService.class).toInstance(jsonCfgService);
 		bind(LqiJsonConfigService.class).toInstance(lqiCfgService);
 
@@ -192,4 +209,5 @@ public class OcelotModule extends AbstractModule {
     	}
     	return confFolder;
 	}
+	
 }

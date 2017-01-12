@@ -81,6 +81,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.config.JsonConfigService;
@@ -88,6 +89,7 @@ import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
@@ -97,6 +99,7 @@ import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
 import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.plugins.PluginManagerView;
+import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
@@ -119,7 +122,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs, menuFindReplace;
+	        menuSave, menuSaveAs, menuFindReplace, menuProfile;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JMenuItem menuColumns;
@@ -138,6 +141,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private TmGuiManager tmGuiManager;
 	private FindAndReplaceController frController;
 	private OcelotJsonConfigService configService;
+	private ProfileManager profileManager;
 
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
@@ -163,6 +167,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		eventQueue.registerListener(ocelotApp);
 		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
 		this.configService = (OcelotJsonConfigService) ocelotScope.getInstance(JsonConfigService.class);
+		this.profileManager = ocelotScope.getInstance(ProfileManager.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
 		platformSupport.init(this);
 
@@ -194,7 +199,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        setupSegAttrDetailPanes(segAttrView, detailView),
 		        setupSegmentTmPanes());
 		mainSplitPane.setOneTouchExpandable(true);
-		
 
 		return mainSplitPane;
 	}
@@ -269,6 +273,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			this.eventQueue.registerListener(userProfileView);
 			showModelessDialog(userProfileView, "Credentials");
 
+		} else if (e.getSource().equals(menuProfile)) {
+			profileManager.displayProfileDialog(mainframe);
 		} else if (e.getSource() == this.menuExit) {
 			handleApplicationExit();
 		} else if (e.getSource() == this.menuSaveAs) {
@@ -434,11 +440,18 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		// TODO add accelerator
 		menuFile.add(menuSaveAsTmx);
 
-		menuProv = new JMenuItem("Profile");
+		menuProv = new JMenuItem("Provenance");
 		menuProv.addActionListener(this);
 		menuProv.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
 		        getPlatformKeyMask()));
 		menuFile.add(menuProv);
+		
+		menuProfile = new JMenuItem("Profile");
+		menuProfile.addActionListener(this);
+		menuProfile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
+		        getPlatformKeyMask()));
+		menuFile.add(menuProfile);
+		
 
 		menuExit = new JMenuItem("Exit");
 		menuExit.addActionListener(this);
@@ -552,16 +565,19 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		if(configService.isTmPanelVisible()){
 			tmConcordanceSplitPane.setDividerLocation(0.4);
 		} else {
-			tmConcordanceSplitPane.setDividerLocation(0);
+			tmConcordanceSplitPane.getLeftComponent().setMinimumSize(new Dimension());
+			tmConcordanceSplitPane.setDividerLocation(0.0);
 		}
 		if(!configService.isAttributesViewVisible() && !configService.isDetailsViewVisible() ){
-			mainSplitPane.setDividerLocation(0);
+			mainSplitPane.getLeftComponent().setMinimumSize(new Dimension());
+			mainSplitPane.setDividerLocation(0.0);
 		} else if(!configService.isAttributesViewVisible() && configService.isDetailsViewVisible()) {
-			segAttrSplitPane.setDividerLocation(0);
+			segAttrSplitPane.getLeftComponent().setMinimumSize(new Dimension());
+			segAttrSplitPane.setDividerLocation(0.0);
 		} else if(configService.isAttributesViewVisible() && !configService.isDetailsViewVisible()) {
+			segAttrSplitPane.getRightComponent().setMinimumSize(new Dimension());
 			segAttrSplitPane.setDividerLocation(1.0);
 		}
-//		tmConcordanceSplitPane.setDividerLocation(0.4);
 		addEditingListenerToTxtFields();
 	}
 
@@ -579,11 +595,58 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
         LOG.warn("Ignoring unparsable ocelot.windowSize value '{}'", val);
         return null;
     }
+    
+    @Subscribe
+    public void onProfileChanged(ProfileChangedEvent event){
+    	restart();
+    }
 
+    private void restart() {
+    
+    	try {
+    		close();
+	        startOcelot();
+        } catch (Exception e) {
+        	LOG.error("Error while starting Ocelot.", e);
+	        e.printStackTrace();
+        }
+    }
+    
+    public static void startOcelot() throws IOException, InstantiationException, IllegalAccessException{
+    	Injector ocelotScope = Guice.createInjector(new OcelotModule());
+
+		Ocelot ocelot = new Ocelot(ocelotScope);
+		DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager()
+		        .addKeyEventDispatcher(ocelot);
+
+		try {
+			if (ocelot.useNativeUI) {
+				UIManager.setLookAndFeel(UIManager
+				        .getSystemLookAndFeelClassName());
+			} else {
+				UIManager.setLookAndFeel(UIManager
+				        .getCrossPlatformLookAndFeelClassName());
+			}
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
+		SwingUtilities.invokeLater(ocelot);
+    }
+    
+    public void close(){
+    	LQIKeyEventManager.destroy();
+    	SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				mainframe.dispose();
+				mainframe.setVisible(false);
+			}
+		});
+    }
+    
 	private void quitOcelot() {
-		LQIKeyEventManager.destroy();
-		mainframe.dispose();
-		mainframe.setVisible(false);
+		close();
 		System.exit(0);
 	}
 
@@ -668,24 +731,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			        .getProperty("log4j.configuration"));
 		}
 
-		Injector ocelotScope = Guice.createInjector(new OcelotModule());
-
-		Ocelot ocelot = new Ocelot(ocelotScope);
-		DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager()
-		        .addKeyEventDispatcher(ocelot);
-
-		try {
-			if (ocelot.useNativeUI) {
-				UIManager.setLookAndFeel(UIManager
-				        .getSystemLookAndFeelClassName());
-			} else {
-				UIManager.setLookAndFeel(UIManager
-				        .getCrossPlatformLookAndFeelClassName());
-			}
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
-		SwingUtilities.invokeLater(ocelot);
+		startOcelot();
 	}
 
 	// TODO
@@ -777,4 +823,5 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
         }
 
     }
+
 }
