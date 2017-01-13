@@ -19,6 +19,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
 
+import org.apache.log4j.Logger;
+
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.segment.view.SegmentTableModel;
@@ -69,6 +72,12 @@ public class ColumnSelector extends ODialogPanel implements ActionListener {
         for (Map.Entry<SegmentViewColumn, Boolean> e : enabledColumns.entrySet()) {
             model.setColumnEnabled(e.getKey(), e.getValue());
         }
+        try {
+			model.saveColumnConfiguration();
+		} catch (TransferException e) {
+			Logger.getLogger(ColumnSelector.class).error(
+					"Error while saving the columns configuration", e);
+		}
         getDialog().dispose();
         model.fireTableStructureChanged();
     }

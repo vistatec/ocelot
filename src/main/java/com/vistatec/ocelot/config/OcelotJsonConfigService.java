@@ -1,12 +1,14 @@
 package com.vistatec.ocelot.config;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.config.json.OcelotRootConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.ProvenanceConfig;
@@ -221,5 +223,83 @@ public class OcelotJsonConfigService implements JsonConfigService {
     public boolean isDetailsViewVisible() {
 	    return config.getLayout().isShowDetailsView();
     }
+	
+public boolean isColumnEnabled(SegmentViewColumn column){
+		
+		boolean enabled = false;
+		switch (column) {
+		case SegNum:
+			enabled = config.getLayout().getSegmentsGrid().isShowSegNum();
+			break;
+		case EditDistance:
+			enabled = config.getLayout().getSegmentsGrid().isShowEditDist();
+			break;
+		case Notes:
+			enabled = config.getLayout().getSegmentsGrid().isShowNotes();
+			break;
+		case Original:
+			enabled = config.getLayout().getSegmentsGrid().isShowOriginalTarget();
+			break;
+		case Source:
+			enabled = config.getLayout().getSegmentsGrid().isShowSource();
+			break;
+		case Target:
+			enabled = config.getLayout().getSegmentsGrid().isShowTarget();
+			break;
+		default:
+			if(column.isFlagColumn() ){
+				enabled = isFlagColumnEnabled(column);
+			}
+			break;
+		}
+		return enabled;
+	}
+
+	private boolean isFlagColumnEnabled(SegmentViewColumn flagColumn){
+		
+		boolean enabled = false;
+		boolean[] showFlags = config.getLayout().getSegmentsGrid().getShowFlags();
+		if(showFlags != null && flagColumn.getFlagIndex() < showFlags.length){
+			enabled = showFlags[flagColumn.getFlagIndex()];
+		}
+		return enabled;
+	}
+	
+	@Override
+	public void saveColumnConfiguration(EnumMap<SegmentViewColumn, Boolean> enabledColumns)
+			throws TransferException {
+
+		boolean[] flagColsEnabled = new boolean[SegmentViewColumn.getFlagColumnCount()];
+		for(SegmentViewColumn col: SegmentViewColumn.values()){
+			switch (col) {
+			case EditDistance:
+				config.getLayout().getSegmentsGrid().setShowEditDist(enabledColumns.get(col));
+				break;
+			case Notes:
+				config.getLayout().getSegmentsGrid().setShowNotes(enabledColumns.get(col));
+				break;
+			case Original:
+				config.getLayout().getSegmentsGrid().setShowOriginalTarget(enabledColumns.get(col));
+				break;
+			case SegNum:
+				config.getLayout().getSegmentsGrid().setShowSegNum(enabledColumns.get(col));
+				break;
+			case Source:
+				config.getLayout().getSegmentsGrid().setShowSource(enabledColumns.get(col));
+				break;
+			case Target:
+				config.getLayout().getSegmentsGrid().setShowTarget(enabledColumns.get(col));
+				break;
+			default:
+				if(col.isFlagColumn()){
+					flagColsEnabled[col.getFlagIndex()] = enabledColumns.get(col);
+				}
+				break;
+			}
+		}
+		config.getLayout().getSegmentsGrid().setShowFlags(flagColsEnabled);
+		cfgXservice.save(config);
+		
+	}
 
 }

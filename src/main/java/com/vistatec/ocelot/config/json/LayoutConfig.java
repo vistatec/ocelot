@@ -7,6 +7,93 @@ public class LayoutConfig {
 	private boolean showAttrsView;
 
 	private boolean showDetailsView;
+	
+private SegmentsGridConfig segmentsGrid;
+	
+	public static class SegmentsGridConfig {
+		
+		private boolean showSegNum;
+		
+		private boolean showSource;
+		
+		private boolean showTarget;
+		
+		private boolean showOriginalTarget;
+		
+		private boolean showNotes;
+		
+		private boolean showEditDist;
+		
+		private boolean[] showFlags;
+
+		public boolean isShowSegNum() {
+			return showSegNum;
+		}
+
+		public void setShowSegNum(boolean showSegNum) {
+			this.showSegNum = showSegNum;
+		}
+
+		public boolean isShowSource() {
+			return showSource;
+		}
+
+		public void setShowSource(boolean showSource) {
+			this.showSource = showSource;
+		}
+
+		public boolean isShowTarget() {
+			return showTarget;
+		}
+
+		public void setShowTarget(boolean showTarget) {
+			this.showTarget = showTarget;
+		}
+
+		public boolean isShowOriginalTarget() {
+			return showOriginalTarget;
+		}
+
+		public void setShowOriginalTarget(boolean showOriginalTarget) {
+			this.showOriginalTarget = showOriginalTarget;
+		}
+
+		public boolean isShowNotes() {
+			return showNotes;
+		}
+
+		public void setShowNotes(boolean showNotes) {
+			this.showNotes = showNotes;
+		}
+
+		public boolean isShowEditDist() {
+			return showEditDist;
+		}
+
+		public void setShowEditDist(boolean showEditDist) {
+			this.showEditDist = showEditDist;
+		}
+
+		public boolean[] getShowFlags() {
+			return showFlags;
+		}
+
+		public void setShowFlags(boolean[] showFlags) {
+			this.showFlags = showFlags;
+		}
+		
+		@Override
+		public String toString() {
+		
+			return "show Segment #: " + showSegNum + 
+					" - show Source: " + showSource +
+					" - show Target: "  + showTarget + 
+					" - show Original Target: " + showOriginalTarget + 
+					" - show Notes: " + showNotes +
+					" - show Edit Distance: " + showEditDist + 
+					" - show Flags: " + showFlags;
+		}
+	}
 
 	public void setShowTranslations(boolean showTranslations) {
 
@@ -32,12 +119,21 @@ public class LayoutConfig {
 	public boolean isShowDetailsView() {
 		return showDetailsView;
 	}
+	
+	public void setSegmentsGrid(SegmentsGridConfig segmentsGrid) {
+		this.segmentsGrid = segmentsGrid;
+	}
+	
+	public SegmentsGridConfig getSegmentsGrid(){
+		return segmentsGrid;
+	}
 
 	@Override
 	public String toString() {
 
 		return "show Translations: " + showTranslations
 		        + " - show Attributes View: " + showAttrsView
-		        + " - show Details View: " + showDetailsView;
+		        + " - show Details View: " + showDetailsView
+		        + "Main Grid Configuration: [" + segmentsGrid.toString() + "]";
 	}
 }
