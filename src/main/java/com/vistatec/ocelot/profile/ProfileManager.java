@@ -10,18 +10,16 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.config.DirectoryConfigurationHelper;
 import com.vistatec.ocelot.config.ProfileConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 public class ProfileManager implements IProfileManager {
-
-	private static final String DEF_DIR = "Default";
 
 	private final Logger log = LoggerFactory.getLogger(ProfileManager.class);
 
@@ -155,15 +153,16 @@ public class ProfileManager implements IProfileManager {
 	private void createProfileDir(String selProfile) throws IOException,
 	        ProfileException {
 		log.debug("Creating a new profile directory \"" + selProfile + "\"...");
-		File newProfileDir = new File(confDir, selProfile);
-		if (newProfileDir.mkdir()) {
-			File defDir = new File(confDir, DEF_DIR);
-			FileUtils.copyDirectory(defDir, newProfileDir);
-		} else {
-			log.error("The new profile directory has not been created.");
-			throw new ProfileException(
-			        "Impossible to create a directory for the new configuration profile.");
-		}
+		DirectoryConfigurationHelper.createNewProfileFolder(confDir, selProfile);
+//		File newProfileDir = new File(confDir, selProfile);
+//		if (newProfileDir.mkdir()) {
+//			File defDir = new File(confDir, DEF_DIR);
+//			FileUtils.copyDirectory(defDir, newProfileDir);
+//		} else {
+//			log.error("The new profile directory has not been created.");
+//			throw new ProfileException(
+//			        "Impossible to create a directory for the new configuration profile.");
+//		}
 
 	}
 

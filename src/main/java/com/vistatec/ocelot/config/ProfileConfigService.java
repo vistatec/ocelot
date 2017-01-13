@@ -7,9 +7,6 @@ import com.vistatec.ocelot.config.json.ProfileConfig;
 
 public class ProfileConfigService  {
 
-	public static final String DEFAULT_PROFILE_NAME = "Default";
-	
-	public static final String PROF_FILE_NAME = "profile.json";
 	
 	private final Logger log = LoggerFactory.getLogger(ProfileConfigService.class);
 	
@@ -29,13 +26,13 @@ public class ProfileConfigService  {
 	}
 	
 	public boolean mustPromptMessage(){
-		return config.getProfile().equals(DEFAULT_PROFILE_NAME) && config.getPromptMessage(); 
+		return config.getProfile().equalsIgnoreCase(ProfileConfig.DEFAULT_PROF_NAME) && config.getPromptMessage(); 
 	}
 	
 	public void changeActiveProfile(String profileName) throws TransferException{
 		
 		log.debug("Changing active profile");
-		if(profileName.equals(DEFAULT_PROFILE_NAME)){
+		if(profileName.equals(ProfileConfig.DEFAULT_PROF_NAME)){
 			config.setDefaultProfile();
 		} else {
 			config.setProfile(profileName);

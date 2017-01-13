@@ -3,8 +3,6 @@ package com.vistatec.ocelot.di;
 import java.io.File;
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,21 +14,18 @@ import com.vistatec.ocelot.OSXPlatformSupport;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.Configs;
+import com.vistatec.ocelot.config.ConfigurationException;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
+import com.vistatec.ocelot.config.DirectoryConfigurationHelper;
 import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
-import com.vistatec.ocelot.config.LqiJsonConfigTransferService;
-import com.vistatec.ocelot.config.OcelotJsonConfigService;
-import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
 import com.vistatec.ocelot.config.ProfileConfigService;
-import com.vistatec.ocelot.config.ProfileConfigTransferService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
 import com.vistatec.ocelot.lqi.LQIGridController;
-import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.RuleConfiguration;
@@ -56,8 +51,6 @@ import com.vistatec.ocelot.tm.penalty.SimpleTmPenalizer;
 public class OcelotModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(OcelotModule.class);
     
-    private static final String CONF_FOLDER = "conf";
-
     @Override
     protected void configure() {
         OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
@@ -86,16 +79,20 @@ public class OcelotModule extends AbstractModule {
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
-            File configFolder = getConfigurationFolder(ocelotDir);
-            profileCfgService = setupProfileCfgService(configFolder);
-            profileManager = new ProfileManager(configFolder, profileCfgService, eventQueue);
-            File profileFolder = new File(configFolder, profileCfgService.getProfileName());
+            //TODO invoke ConfigurationManager
+//            File configFolder = getConfigurationFolder(ocelotDir);
+//            profileCfgService = setupProfileCfgService(configFolder);
+            File confFolder = DirectoryConfigurationHelper.getConfigurationFolder(ocelotDir);
+            profileCfgService = DirectoryConfigurationHelper.setupProfileConfService(confFolder);
+            profileManager = new ProfileManager(confFolder, profileCfgService, eventQueue);
+//            File profileFolder = new File(confFolder, profileCfgService.getProfileName());
+            File profileFolder = DirectoryConfigurationHelper.getActiveProfileFolder(confFolder, profileCfgService.getProfileName());
             
             //TODO CHECK 
             Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            jsonCfgService = setupJsonConfigService(profileFolder);
-			lqiCfgService = setupLQIConfigService(profileFolder);
+            jsonCfgService = DirectoryConfigurationHelper.setupOcelotConfService(profileFolder);
+			lqiCfgService = DirectoryConfigurationHelper.setupLqiConfService(profileFolder);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
             pluginManager = new PluginManager(jsonCfgService, new File(ocelotDir, "plugins"), eventQueue);
@@ -106,8 +103,7 @@ public class OcelotModule extends AbstractModule {
             bind(SegmentService.class).toInstance(segmentService);
             eventQueue.registerListener(segmentService);
 
-            File tm = new File(profileFolder, "tm");
-            tm.mkdirs();
+            File tm = DirectoryConfigurationHelper.getTmFolder(profileFolder);
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
             tmManager = new OkapiTmManager(tm, jsonCfgService, tmxWriter);
@@ -124,7 +120,7 @@ public class OcelotModule extends AbstractModule {
             
             frController = new FindAndReplaceController(eventQueue);
             eventQueue.registerListener(frController);
-        } catch (IOException | JAXBException | TransferException ex) {
+        } catch (IOException | TransferException | ConfigurationException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
         }
@@ -141,10 +137,10 @@ public class OcelotModule extends AbstractModule {
 		bindServices(eventQueue, profileCfgService, jsonCfgService, lqiCfgService, docStats);
     }
     
-    private ProfileConfigService setupProfileCfgService(File configFolder) throws TransferException {
-    	File profFile = new File(configFolder, "profile.json");
-    	return new ProfileConfigService(new ProfileConfigTransferService(profFile));
-    }
+//    private ProfileConfigService setupProfileCfgService(File configFolder) throws TransferException {
+//    	File profFile = new File(configFolder, "profile.json");
+//    	return new ProfileConfigService(new ProfileConfigTransferService(profFile));
+//    }
 
 	public static PlatformSupport getPlatformSupport() {
         String os = System.getProperty("os.name");
@@ -178,36 +174,36 @@ public class OcelotModule extends AbstractModule {
     }
 
 
-    private OcelotJsonConfigService setupJsonConfigService(File confFolder) throws TransferException {
-    	
-		File confFile = new File(confFolder, "ocelot_cfg.json");
-		return new OcelotJsonConfigService(new OcelotJsonConfigTransferService(
-		        confFile));
-    	
-    }
-    
-    
-	private LqiJsonConfigService setupLQIConfigService(File confFolder)
-	        throws TransferException, JAXBException {
-
-		File configFile = new File(confFolder, "lqi_cfg.json");
-		LqiJsonConfigService service = new LqiJsonConfigService(new LqiJsonConfigTransferService(
-				configFile));
-		// If the config file doesn't exist, initialize a default configuration.
-		if (!configFile.exists()) {
-		    LOG.info("Writing default LQI Grid configuration to " + configFile);
-		    service.saveLQIConfig(LQIConstants.getDefaultLQIGrid());
-		}
-		return service;
-	}
-	
-	private File getConfigurationFolder(File ocelotDir ){
-		
-		File confFolder = new File(ocelotDir, CONF_FOLDER);
-    	if(!confFolder.exists()){
-    		confFolder.mkdirs();
-    	}
-    	return confFolder;
-	}
+//    private OcelotJsonConfigService setupJsonConfigService(File confFolder) throws TransferException {
+//    	
+//		File confFile = new File(confFolder, "ocelot_cfg.json");
+//		return new OcelotJsonConfigService(new OcelotJsonConfigTransferService(
+//		        confFile));
+//    	
+//    }
+//    
+//    
+//	private LqiJsonConfigService setupLQIConfigService(File confFolder)
+//	        throws TransferException, JAXBException {
+//
+//		File configFile = new File(confFolder, "lqi_cfg.json");
+//		LqiJsonConfigService service = new LqiJsonConfigService(new LqiJsonConfigTransferService(
+//				configFile));
+//		// If the config file doesn't exist, initialize a default configuration.
+//		if (!configFile.exists()) {
+//		    LOG.info("Writing default LQI Grid configuration to " + configFile);
+//		    service.saveLQIConfig(LQIConstants.getDefaultLQIGrid());
+//		}
+//		return service;
+//	}
+//	
+//	private File getConfigurationFolder(File ocelotDir ){
+//		
+//		File confFolder = new File(ocelotDir, CONF_FOLDER);
+//    	if(!confFolder.exists()){
+//    		confFolder.mkdirs();
+//    	}
+//    	return confFolder;
+//	}
 	
 }

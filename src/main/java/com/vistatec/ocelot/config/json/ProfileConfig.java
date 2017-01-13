@@ -1,8 +1,9 @@
 package com.vistatec.ocelot.config.json;
 
+
 public class ProfileConfig implements RootConfig {
 
-	public static final String DEFAULT_PROFILE = "default";
+	public final static String DEFAULT_PROF_NAME = "Default";
 	
 	private String profile;
 	
@@ -25,7 +26,7 @@ public class ProfileConfig implements RootConfig {
 	}
 	
 	public void setDefaultProfile(){
-		profile = DEFAULT_PROFILE;
+		profile = DEFAULT_PROF_NAME;
 		promptMessage = true;
 				
 	}
