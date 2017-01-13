@@ -226,21 +226,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        tmGuiManager.getTmPanel(), segmentView);
 		tmConcordanceSplitPane.setOneTouchExpandable(true);
 		
-		tmConcordanceSplitPane.addContainerListener(new ContainerListener() {
-			@Override
-			public void componentRemoved(ContainerEvent e) {
-
-			}
-
-			@Override
-			public void componentAdded(ContainerEvent e) {
-//				if(configService.isTmPanelVisible()){
-//					tmConcordanceSplitPane.setDividerLocation(0.3);
-//				} else {
-//					tmConcordanceSplitPane.setDividerLocation(0);
-//				}
-			}
-		});
 		return tmConcordanceSplitPane;
 	}
 
@@ -579,6 +564,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			segAttrSplitPane.setDividerLocation(1.0);
 		}
 		addEditingListenerToTxtFields();
+		profileManager.checkProfileAndPromptMessage(mainframe);
 	}
 
     private Dimension getUserDefinedWindowSize() {

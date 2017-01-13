@@ -14,6 +14,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 
+
+/**
+ * A combo box for String objects, providing the auto completion feature.
+ */
 public class AutocompleteJComboBox extends JComboBox<String> {
 
 	private static final long serialVersionUID = -6590880332131797609L;

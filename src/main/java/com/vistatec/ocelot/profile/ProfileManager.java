@@ -70,17 +70,6 @@ public class ProfileManager implements IProfileManager {
 	}
 
 	/**
-	 * Checks if the default profile warning message must be prompted to the
-	 * user.
-	 * 
-	 * @return <code>true</code> if the message must be prompted;
-	 *         <code>false</code> otherwise.
-	 */
-	public boolean mustPromptProfileMessage() {
-		return configService.mustPromptMessage();
-	}
-
-	/**
 	 * Changes the active profile.
 	 */
 	@Override
@@ -178,6 +167,27 @@ public class ProfileManager implements IProfileManager {
 
 	}
 
+	private void promptDefaultProfileMessage(Window currWindow){
+		
+		DefaultProfileWarningDialog warnDialog = new DefaultProfileWarningDialog(currWindow);
+		warnDialog.promptWarningMessage();
+		if(warnDialog.isDoNotShowAgainFlagged()){
+			log.debug("Do not show again the default configuration message.");
+			 try {
+	            configService.doNotShowAgain();
+            } catch (TransferException e) {
+            	log.error("Error while setting the do not show again flag", e);
+            }
+		}
+	}
+	
+	public void checkProfileAndPromptMessage(Window currWindow){
+		
+		if(configService.mustPromptMessage()){
+			promptDefaultProfileMessage(currWindow);
+		}
+	}
+	
 }
 
 class DirectoryFilter implements FileFilter {
