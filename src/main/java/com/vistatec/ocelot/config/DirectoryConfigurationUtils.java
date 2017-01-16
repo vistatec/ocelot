@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.vistatec.ocelot.config.json.ProfileConfig;
 
-public class DirectoryConfigurationHelper {
+public class DirectoryConfigurationUtils {
 
 	private static final String CONF_DIR = "conf";
 
@@ -39,7 +39,8 @@ public class DirectoryConfigurationHelper {
 	private static void checkProfilesFolders(
 	        ProfileConfigService profConfService, File confFolder)
 	        throws IOException, ConfigurationException, TransferException {
-
+		// check if the active profile folder exists.
+				// If not, gets the default folder and warn the user.
 		String activeProfName = profConfService.getProfileName();
 		if (!isDefaultProfile(activeProfName)) {
 			File profFolder = new File(confFolder, activeProfName);
@@ -76,9 +77,6 @@ public class DirectoryConfigurationHelper {
 
 	public static File getActiveProfileFolder(File configFolder, String profileName) throws IOException {
 
-		// TODO check if the active profile folder exists and if it contains the
-		// proper configuration files.
-		// If not, gets the default folder and warn the user.
 		File profileFolder = new File(configFolder, profileName);
 		if(isDefaultProfile(profileName)){
 			checkDefaultConfFolder(profileFolder);
@@ -89,11 +87,9 @@ public class DirectoryConfigurationHelper {
 	private static void checkDefaultConfFolder(File defConfFolder)
 	        throws IOException {
 
-		// File confFolder = null;
 		if (!defConfFolder.exists()) {
 			defConfFolder = createConfigurationFolder(defConfFolder.getParentFile(), defConfFolder.getName());
 		}
-		// return confFolder;
 	}
 
 	private static File createConfigurationFolder(File parentDir,
@@ -115,7 +111,7 @@ public class DirectoryConfigurationHelper {
 		File defFile = new File(confFolder, fileName);
 		if (!defFile.exists()) {
 			defFile.createNewFile();
-			InputStream defOcelotFileStream = DirectoryConfigurationHelper.class
+			InputStream defOcelotFileStream = DirectoryConfigurationUtils.class
 			        .getResourceAsStream("/conf/" + fileName);
 			FileUtils.copyInputStreamToFile(defOcelotFileStream, defFile);
 		}
@@ -150,19 +146,6 @@ public class DirectoryConfigurationHelper {
 		return tm;
 	}
 
-	public static void main(String[] args) {
-		String activeProfName = "Test";
-		JOptionPane
-		        .showOptionDialog(
-		                null,
-		                "The configuration \""
-		                        + activeProfName
-		                        + "\" does not exist. The \"Default\" configuration will be loaded.\nDo you wish to continue?",
-		                "Missing Configuration Error", 0,
-		                JOptionPane.ERROR_MESSAGE, null, new String[] {
-		                        "Continue", "Abort" }, "Continue");
-	}
-	
 	private static boolean isDefaultProfile(String profileName){
 		
 		return ProfileConfig.DEFAULT_PROF_NAME.equalsIgnoreCase(profileName);
@@ -174,12 +157,4 @@ public class DirectoryConfigurationHelper {
 		
 	}
 
-	// public static void createDefaultProfileFile(File ocelotDir){
-	//
-	//
-	// }
-	//
-	// public static void checkConfigurationFolder(){
-	//
-	// }
 }

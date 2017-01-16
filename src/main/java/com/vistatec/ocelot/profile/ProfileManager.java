@@ -13,7 +13,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vistatec.ocelot.config.DirectoryConfigurationHelper;
+import com.vistatec.ocelot.config.DirectoryConfigurationUtils;
 import com.vistatec.ocelot.config.ProfileConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
@@ -153,17 +153,7 @@ public class ProfileManager implements IProfileManager {
 	private void createProfileDir(String selProfile) throws IOException,
 	        ProfileException {
 		log.debug("Creating a new profile directory \"" + selProfile + "\"...");
-		DirectoryConfigurationHelper.createNewProfileFolder(confDir, selProfile);
-//		File newProfileDir = new File(confDir, selProfile);
-//		if (newProfileDir.mkdir()) {
-//			File defDir = new File(confDir, DEF_DIR);
-//			FileUtils.copyDirectory(defDir, newProfileDir);
-//		} else {
-//			log.error("The new profile directory has not been created.");
-//			throw new ProfileException(
-//			        "Impossible to create a directory for the new configuration profile.");
-//		}
-
+		DirectoryConfigurationUtils.createNewProfileFolder(confDir, selProfile);
 	}
 
 	private void promptDefaultProfileMessage(Window currWindow){
