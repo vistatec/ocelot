@@ -15,8 +15,8 @@ import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.ConfigurationException;
+import com.vistatec.ocelot.config.ConfigurationManager;
 import com.vistatec.ocelot.config.DirectoryBasedConfigs;
-import com.vistatec.ocelot.config.DirectoryConfigurationUtils;
 import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.ProfileConfigService;
@@ -79,15 +79,26 @@ public class OcelotModule extends AbstractModule {
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
-            File confFolder = DirectoryConfigurationUtils.getConfigurationFolder(ocelotDir);
-            profileCfgService = DirectoryConfigurationUtils.setupProfileConfService(confFolder);
+            //TODO
+            ConfigurationManager confManager = new ConfigurationManager();
+            confManager.readAndCheckConfiguration(ocelotDir);
+            profileCfgService = confManager.getProfileConnfigService();
+            File confFolder = confManager.getOcelotMainConfigurationFolder();
             profileManager = new ProfileManager(confFolder, profileCfgService, eventQueue);
-            File profileFolder = DirectoryConfigurationUtils.getActiveProfileFolder(confFolder, profileCfgService.getProfileName());
+            jsonCfgService = confManager.getOcelotConfigService();
+            lqiCfgService = confManager.getLqiConfigService();
+            //
+            
+            
+//            File confFolder = DirectoryConfigurationUtils.getConfigurationFolder(ocelotDir);
+//            profileCfgService = DirectoryConfigurationUtils.setupProfileConfService(confFolder);
+//            profileManager = new ProfileManager(confFolder, profileCfgService, eventQueue);
+//            File profileFolder = DirectoryConfigurationUtils.getActiveProfileFolder(confFolder, profileCfgService.getProfileName());
             
             Configs configs = new DirectoryBasedConfigs(ocelotDir);
 
-            jsonCfgService = DirectoryConfigurationUtils.setupOcelotConfService(profileFolder);
-			lqiCfgService = DirectoryConfigurationUtils.setupLqiConfService(profileFolder);
+//            jsonCfgService = DirectoryConfigurationUtils.setupOcelotConfService(profileFolder);
+//			lqiCfgService = DirectoryConfigurationUtils.setupLqiConfService(profileFolder);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
             pluginManager = new PluginManager(jsonCfgService, new File(ocelotDir, "plugins"), eventQueue);
@@ -98,7 +109,8 @@ public class OcelotModule extends AbstractModule {
             bind(SegmentService.class).toInstance(segmentService);
             eventQueue.registerListener(segmentService);
 
-            File tm = DirectoryConfigurationUtils.getTmFolder(profileFolder);
+            File tm = confManager.getTmConfigDir();
+//            File tm = DirectoryConfigurationUtils.getTmFolder(profileFolder);
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
             tmManager = new OkapiTmManager(tm, jsonCfgService, tmxWriter);
