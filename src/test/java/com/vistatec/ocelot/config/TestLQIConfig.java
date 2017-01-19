@@ -3,6 +3,7 @@ package com.vistatec.ocelot.config;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -29,9 +31,11 @@ public class TestLQIConfig {
 
 	@Test
 	public void testWriteConfiguration() throws IOException, TransferException,
-	        JAXBException, URISyntaxException, SAXException {
+	        JAXBException, URISyntaxException, SAXException, ConfigurationException {
 
 		File configFile = File.createTempFile("lqi_config", "json");
+		InputStream lqiConfStream = getClass().getResourceAsStream("lqi_config_plain.json");
+		FileUtils.copyInputStreamToFile(lqiConfStream, configFile);
 		LqiJsonConfigService confService = createConfigService(configFile);
 		confService.saveLQIConfig(getTestLqiGrid());
 		File expectedConfFile = new File(getClass().getResource(
@@ -45,7 +49,7 @@ public class TestLQIConfig {
 
 	@Test
 	public void testReadConfiguration() throws URISyntaxException,
-	        TransferException, JAXBException {
+	        TransferException, JAXBException, ConfigurationException {
 
 		File configFile = new File(getClass().getResource(
 		        RES_FOLDER + "lqi_config.json").toURI());
@@ -56,7 +60,7 @@ public class TestLQIConfig {
 	}
 
 	private LqiJsonConfigService createConfigService(final File configFile)
-	        throws TransferException, JAXBException {
+	        throws TransferException, JAXBException, ConfigurationException {
 		return new LqiJsonConfigService(new LqiJsonConfigTransferService(
 				configFile));
 

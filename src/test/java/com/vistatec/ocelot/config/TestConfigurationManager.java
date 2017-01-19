@@ -74,6 +74,49 @@ public class TestConfigurationManager {
 	}
 
 	
+	@Test
+	public void testIncosistentLQIConfNoActiveConf() throws IOException, ConfigurationException{
+
+		InputStream lqiNoActiveConfStream = getClass().getResourceAsStream("lqi_config_noactiveConf.json");
+		createTestFolder(lqiNoActiveConfStream);
+		thrown.expect(ConfigurationException.class);
+		thrown.expectMessage("an active configuration is not declared");
+	    confManager.readAndCheckConfiguration(testOcelotDir);
+	}
+	
+	@Test
+	public void testIncosistentLQIConfActiveConfNotExisting() throws IOException, ConfigurationException{
+
+		InputStream lqiNoActiveConfStream = getClass().getResourceAsStream("lqi_config_not_existing.json");
+		createTestFolder(lqiNoActiveConfStream);
+		thrown.expect(ConfigurationException.class);
+		thrown.expectMessage("the active configuration Configuration C is not defined");
+		confManager.readAndCheckConfiguration(testOcelotDir);
+	}
+	
+	@Test
+	public void testIncosistentLQIConfSeverityNotExisting() throws IOException, ConfigurationException{
+
+		InputStream lqiNoActiveConfStream = getClass().getResourceAsStream("lqi_config_wrong_severity.json");
+		createTestFolder(lqiNoActiveConfStream);
+		thrown.expect(ConfigurationException.class);
+		thrown.expectMessage("the category mistranslation has a shortcut associated to a not existent severity Test Severity");
+		confManager.readAndCheckConfiguration(testOcelotDir);
+	}
+
+
+	private void createTestFolder(InputStream lqiConfStream) throws IOException{
+		
+		createNotDefProfileFile();
+		File testFolder = new File(testOcelotDir.getAbsolutePath() + File.separator + ConfigurationManager.CONF_DIR, "Test");
+		testFolder.mkdir();
+		InputStream defOcelotConfFile = getClass().getResourceAsStream("ocelot_cfg.json");
+		File testOcelotFile = new File(testFolder, ConfigurationManager.OCELOT_CONF_FILE_NAME);
+		FileUtils.copyInputStreamToFile(defOcelotConfFile, testOcelotFile);
+		File testLqiConfFile = new File(testFolder, ConfigurationManager.LQI_CONF_FILE_NAME);
+		FileUtils.copyInputStreamToFile(lqiConfStream, testLqiConfFile);
+	}
+	
 	private void createNotDefProfileFile() throws IOException{
 		
 		File confFolder = new File(testOcelotDir, ConfigurationManager.CONF_DIR);
@@ -84,6 +127,7 @@ public class TestConfigurationManager {
 		FileUtils.copyInputStreamToFile(testProfFileStream, profileConfFile);
 		
 	}
+	
 
 }
 
