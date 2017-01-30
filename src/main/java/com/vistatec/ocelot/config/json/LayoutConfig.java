@@ -8,7 +8,9 @@ public class LayoutConfig {
 
 	private boolean showDetailsView;
 	
-private SegmentsGridConfig segmentsGrid;
+	private boolean showManageConfs;
+	
+	private SegmentsGridConfig segmentsGrid;
 	
 	public static class SegmentsGridConfig {
 		
@@ -119,6 +121,14 @@ private SegmentsGridConfig segmentsGrid;
 	public boolean isShowDetailsView() {
 		return showDetailsView;
 	}
+
+	public void setShowManageConfs(boolean showManageConfs){
+		this.showManageConfs = showManageConfs;
+	}
+	
+	public boolean isShowManageConfs(){
+		return showManageConfs;
+	}
 	
 	public void setSegmentsGrid(SegmentsGridConfig segmentsGrid) {
 		this.segmentsGrid = segmentsGrid;
@@ -127,6 +137,7 @@ private SegmentsGridConfig segmentsGrid;
 	public SegmentsGridConfig getSegmentsGrid(){
 		return segmentsGrid;
 	}
+	
 
 	@Override
 	public String toString() {
@@ -134,6 +145,7 @@ private SegmentsGridConfig segmentsGrid;
 		return "show Translations: " + showTranslations
 		        + " - show Attributes View: " + showAttrsView
 		        + " - show Details View: " + showDetailsView
+		        + " - show Manage Configs button: " + showManageConfs
 		        + "Main Grid Configuration: [" + segmentsGrid.toString() + "]";
 	}
 }

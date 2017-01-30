@@ -176,11 +176,12 @@ public class LQIKeyEventHandler {
 	 */
 	public void categoryNameChanged(LQIErrorCategory errorCat, String oldName) {
 
-		for (LQIShortCut shortcut : errorCat.getShortcuts()) {
-			replaceActionNameErrCat(oldName, errorCat.getName(), shortcut
-			        .getSeverity().getName(), shortcut.getKeyStroke());
+		if (errorCat != null && errorCat.getShortcuts() != null) {
+			for (LQIShortCut shortcut : errorCat.getShortcuts()) {
+				replaceActionNameErrCat(oldName, errorCat.getName(), shortcut
+				        .getSeverity().getName(), shortcut.getKeyStroke());
+			}
 		}
-
 	}
 
 	/**

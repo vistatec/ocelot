@@ -85,6 +85,8 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void metadataSelected(ItsSelectionEvent e) {
+    	
+    	try{
         if (e.getITSMetadata() instanceof LanguageQualityIssue) {
             removeSegmentDetailView();
             removeProvenanceDetailView();
@@ -98,6 +100,9 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
             provDetailView.setMetadata(selectedSegment, (Provenance)e.getITSMetadata());
         }
         revalidate();
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
     }
 
  @Subscribe

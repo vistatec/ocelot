@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.window;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -67,10 +67,10 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 	 * @param errorCatTitle the error category name
 	 * @param lqiShortCut the shortcut.
 	 */
-	public ShortCutDialog(LQIGridDialog gridDialog, String errorCatTitle,
+	public ShortCutDialog(LQIConfigurationEditDialog owner, String errorCatTitle,
 	        LQIShortCut lqiShortCut) {
 
-		super(gridDialog);
+		super(owner);
 		setModal(true);
 		this.errorCatTitle = errorCatTitle;
 		this.lqiShortcut = lqiShortCut;
@@ -272,7 +272,7 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 			modifiers[2] = KeyEvent.SHIFT_DOWN_MASK;
 		}
 		int keyCode = ((KeyItem) cmbKeys.getSelectedItem()).getKey();
-		LQIGridDialog lqiDialog = (LQIGridDialog) getOwner();
+		LQIConfigurationEditDialog lqiDialog = (LQIConfigurationEditDialog) getOwner();
 		if (lqiDialog.isReservedShortcut(keyCode, modifiers)) {
 			JOptionPane
 			        .showMessageDialog(
@@ -280,7 +280,7 @@ public class ShortCutDialog extends JDialog implements Runnable, ActionListener 
 			                "This is a reserved shortcut. Please, choose a different one.",
 			                "Reserved Short Cut", JOptionPane.WARNING_MESSAGE);
 		} else {
-			((LQIGridDialog) getOwner()).saveShortcut(
+			((LQIConfigurationEditDialog) getOwner()).saveShortcut(
 			        ((KeyItem) cmbKeys.getSelectedItem()).getKey(), modifiers);
 			close();
 		}

@@ -95,8 +95,8 @@ public class OcelotModule extends AbstractModule {
 //            profileManager = new ProfileManager(confFolder, profileCfgService, eventQueue);
 //            File profileFolder = DirectoryConfigurationUtils.getActiveProfileFolder(confFolder, profileCfgService.getProfileName());
             
-            Configs configs = new DirectoryBasedConfigs(ocelotDir);
-
+//            Configs configs = new DirectoryBasedConfigs(ocelotDir);
+            Configs configs = confManager.getRulesConfigs();
 //            jsonCfgService = DirectoryConfigurationUtils.setupOcelotConfService(profileFolder);
 //			lqiCfgService = DirectoryConfigurationUtils.setupLqiConfService(profileFolder);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
@@ -121,7 +121,7 @@ public class OcelotModule extends AbstractModule {
             tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, jsonCfgService);
             
             lqiGridController = new LQIGridController(lqiCfgService, eventQueue,
-                                                      platformSupport);
+                                                      platformSupport, confManager.getOcelotConfigService().canShowManageConfsButton());
             eventQueue.registerListener(lqiGridController);
             bind(LQIGridController.class).toInstance(lqiGridController);
             

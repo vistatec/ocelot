@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.window;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,6 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
+import com.vistatec.ocelot.lqi.gui.FloatDocument;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 
 /**
@@ -51,7 +52,7 @@ public class SeverityColumnPropsDialog extends JDialog implements
 	private static final String TITILE_SUFFIX = " Severity Score";
 
 	/** The LQI grid dialog. */
-	private LQIGridDialog lqiGridDialog;
+	private LQIConfigurationEditDialog lqiGridDialog;
 
 	/** The severity. */
 	private LQISeverity severity;
@@ -74,7 +75,7 @@ public class SeverityColumnPropsDialog extends JDialog implements
 	 * @param location the location
 	 * @param severity the severity
 	 */
-	public SeverityColumnPropsDialog(LQIGridDialog ownerDialog, Point location,
+	public SeverityColumnPropsDialog(LQIConfigurationEditDialog ownerDialog, Point location,
 	        LQISeverity severity) {
 
 		super(ownerDialog, true);

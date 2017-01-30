@@ -51,7 +51,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentAttributeTablePane;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
@@ -202,7 +202,7 @@ public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<Lan
                 }
             }
             if (e.isPopupTrigger() && getSelectedSegment() != null) {
-            	LQIGrid lqiGrid;
+            	LQIGridConfigurations lqiGrid;
                 try {
 	                lqiGrid = lqiService.readLQIConfig();
                 ContextMenu menu = selectedLQI == null ?

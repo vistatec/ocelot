@@ -6,19 +6,10 @@ import java.util.List;
 /**
  * The LQI grid object.
  */
-public class LQIGrid {
+public class LQIGridConfigurations {
 
-	private String activeConfName;
-	
 	private List<LQIGridConfiguration> configurations;
 	
-	public void setActiveConfName(String activeConfName){
-		this.activeConfName = activeConfName;
-	}
-	
-	public String getActiveConfName(){
-		return activeConfName;
-	}
 	
 	public void setConfigurations(List<LQIGridConfiguration> configurations){ 
 		this.configurations = configurations;
@@ -41,13 +32,22 @@ public class LQIGrid {
 		LQIGridConfiguration activeConf = null;
 		if(configurations != null){
 			for(LQIGridConfiguration currConf: configurations){
-				if(currConf.getName().equals(activeConfName)){
+				if(currConf.isActive()){
 					activeConf = currConf;
 					break;
 				}
 			}
 		}
 		return activeConf;
+	}
+	
+	public void setActiveConfiguration(LQIGridConfiguration activeConf){
+		
+		if(configurations != null){
+			for(LQIGridConfiguration conf: configurations ){
+				conf.setActive(conf.equals(activeConf));
+			}
+		}
 	}
 	
 	public boolean isEmpty(){
@@ -59,8 +59,7 @@ public class LQIGrid {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 	 
-		LQIGrid lqiGrid = new LQIGrid();
-		lqiGrid.setActiveConfName(activeConfName);
+		LQIGridConfigurations lqiGrid = new LQIGridConfigurations();
 		if(configurations != null){
 			for(LQIGridConfiguration conf: configurations){
 				lqiGrid.addConfiguration((LQIGridConfiguration)conf.clone());

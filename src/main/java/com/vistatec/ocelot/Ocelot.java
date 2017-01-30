@@ -86,8 +86,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
+import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -97,7 +100,8 @@ import com.vistatec.ocelot.its.view.ProvenanceProfileView;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
@@ -122,7 +126,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
 	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs, menuFindReplace, menuProfile;
+	        menuSave, menuSaveAs, menuFindReplace, menuWorkspace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JMenuItem menuColumns;
@@ -256,9 +260,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			ProvenanceProfileView userProfileView = ocelotScope
 			        .getInstance(ProvenanceProfileView.class);
 			this.eventQueue.registerListener(userProfileView);
-			showModelessDialog(userProfileView, "Credentials");
+			showModelessDialog(userProfileView, "Provenance");
 
-		} else if (e.getSource().equals(menuProfile)) {
+		} else if (e.getSource().equals(menuWorkspace)) {
 			profileManager.displayProfileDialog(mainframe);
 		} else if (e.getSource() == this.menuExit) {
 			handleApplicationExit();
@@ -282,7 +286,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		} else if (e.getSource() == this.menuConfigTm) {
 			eventQueue.post(new ConfigTmRequestEvent(mainframe));
 		} else if (e.getSource() == this.menuLqiGrid) {
-			lqiGridController.displayLQIGrid();
+			lqiGridController.displayLQIGrid(mainframe);
 		} else if (e.getSource() == this.menuFindReplace) {
 			frController.displayDialog(mainframe);
 		}
@@ -431,11 +435,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        getPlatformKeyMask()));
 		menuFile.add(menuProv);
 		
-		menuProfile = new JMenuItem("Profile");
-		menuProfile.addActionListener(this);
-		menuProfile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
+		menuWorkspace = new JMenuItem("Workspace");
+		menuWorkspace.addActionListener(this);
+		menuWorkspace.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
 		        getPlatformKeyMask()));
-		menuFile.add(menuProfile);
+		menuFile.add(menuWorkspace);
 		
 
 		menuExit = new JMenuItem("Exit");
@@ -528,17 +532,21 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		mainframe.setIconImage(icon);
 
 		initializeMenuBar();
-		toolBar = new OcelotToolBar(this);
+		try {
+	        toolBar = new OcelotToolBar(this, lqiGridController.getConfigService().readLQIConfig(), eventQueue);
+        } catch (TransferException e1) {
+	        // TODO Auto-generated catch block
+	        e1.printStackTrace();
+        }
         mainframe.getContentPane().add(toolBar, BorderLayout.NORTH);
         mainframe.getContentPane().add(this, BorderLayout.CENTER);
 		
 		//adding LQI Key listener
-		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(lqiGridController, mainframe.getRootPane());
+        LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(lqiGridController, mainframe.getRootPane());
 		LQIKeyEventManager.getInstance().addKeyEventHandler(ocelotKeyEventHandler);
-		LQIGrid lqiGrid = lqiGridController.readLQIGridConfiguration();
-		if(lqiGrid != null){
-			LQIKeyEventManager.getInstance().load(lqiGrid.getActiveConfiguration());
-		}
+		LQIGridConfigurations lqiGrid = lqiGridController.readLQIGridConfiguration(mainframe);
+		loadLQIKeyListener(null, lqiGrid.getActiveConfiguration());
+		
 		// Display the window
 		Dimension userWindowSize = getUserDefinedWindowSize();
 		if (userWindowSize != null) {
@@ -546,7 +554,6 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		}
 		mainframe.pack();
 		mainframe.setVisible(true);
-		lqiGridController.setOcelotMainFrame(mainframe);
 		if(configService.isTmPanelVisible()){
 			tmConcordanceSplitPane.setDividerLocation(0.4);
 		} else {
@@ -585,6 +592,33 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
     @Subscribe
     public void onProfileChanged(ProfileChangedEvent event){
     	restart();
+    }
+    
+    @Subscribe
+    public void handleLqiConfigSavedEvent(LQIConfigurationsChangedEvent event){
+    	try{
+    	toolBar.setLQIConfigurations(event.getLqiGridSavedConfigurations());
+    	if(event.isActiveConfChanged()){
+    		loadLQIKeyListener(event.getOldActiveConfiguration(), event.getLqiGridSavedConfigurations().getActiveConfiguration());
+    	}
+    	}catch (Exception e){
+    		e.printStackTrace();
+    	}
+    }
+    
+    @Subscribe
+    public void handleNewLqiConfigSelected(LQIConfigurationSelectionChangedEvent event){
+    	//TODO
+    	loadLQIKeyListener(event.getOldSelectedConfiguration(), event.getNewSelectedConfiguration());
+    }
+    
+    private void loadLQIKeyListener(LQIGridConfiguration oldGridConfiguration, LQIGridConfiguration newLqiGridConfiguration){
+		if(oldGridConfiguration != null){
+			LQIKeyEventManager.getInstance().removeActions(oldGridConfiguration);
+		} 
+		if(newLqiGridConfiguration != null){
+			LQIKeyEventManager.getInstance().load(newLqiGridConfiguration);
+		}
     }
 
     private void restart() {

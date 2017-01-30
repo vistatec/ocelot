@@ -127,7 +127,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
@@ -172,7 +172,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
-        private LQIGrid lqiGrid;
+        private LQIGridConfigurations lqiGrid;
 
 
 	private XLIFFDocument xliff;

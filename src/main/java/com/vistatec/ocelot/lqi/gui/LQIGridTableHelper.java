@@ -26,9 +26,12 @@ import com.vistatec.ocelot.lqi.gui.editor.CategoryCellEditor;
 import com.vistatec.ocelot.lqi.gui.editor.FloatCellEditor;
 import com.vistatec.ocelot.lqi.gui.editor.LQIGridButtonEditor;
 import com.vistatec.ocelot.lqi.gui.editor.TextAreaTableCellEditor;
+import com.vistatec.ocelot.lqi.gui.renderer.ColorCellRenderer;
 import com.vistatec.ocelot.lqi.gui.renderer.ColorHeaderCellRenderer;
 import com.vistatec.ocelot.lqi.gui.renderer.LQIGridButtonRenderer;
 import com.vistatec.ocelot.lqi.gui.renderer.TextAreaColorCellRenderer;
+import com.vistatec.ocelot.lqi.gui.window.LQIConfigurationEditDialog;
+import com.vistatec.ocelot.lqi.gui.window.SeverityColumnPropsDialog;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
@@ -40,6 +43,8 @@ import com.vistatec.ocelot.lqi.model.LQIShortCut;
 public class LQIGridTableHelper implements MouseListener, TableCellListener,
         ActionListener {
 
+	
+	
 	/** Minor severity column color. */
 	private static final Color MINOR_COL_COLOR = new Color(217, 234, 211);
 
@@ -137,7 +142,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	private void initUsedShortcutList(LQIGridConfiguration lqiGridObj) {
 
 		shortcutsInUse = new ArrayList<KeyStroke>();
-		if (lqiGridObj.getErrorCategories() != null) {
+		if (lqiGridObj != null && lqiGridObj.getErrorCategories() != null) {
 			for (LQIErrorCategory errCat : lqiGridObj.getErrorCategories()) {
 				if (errCat.getShortcuts() != null) {
 					for (LQIShortCut shortcut : errCat.getShortcuts()) {
@@ -237,6 +242,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 			        .getColumn(lqiTableModel.getErrorCatWeightColumn())
 			        .setMinWidth(WEIGHT_COLUMN_WIDTH);
 		}
+		
 
 	}
 
@@ -471,16 +477,16 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		}
 	}
 
-	/**
-	 * Displays the dialog for creating a new severity.
-	 */
-	public void displayNewSeverityDialog() {
-
-		SeverityColumnPropsDialog dialog = new SeverityColumnPropsDialog(
-		        (LQIGridDialog) SwingUtilities.windowForComponent(lqiTable),
-		        null, null);
-		dialog.setVisible(true);
-	}
+//	/**
+//	 * Displays the dialog for creating a new severity.
+//	 */
+//	public void displayNewSeverityDialog() {
+//
+//		SeverityColumnPropsDialog dialog = new SeverityColumnPropsDialog(
+//		        (LQIGridDialog) SwingUtilities.windowForComponent(lqiTable),
+//		        null, null);
+//		dialog.setVisible(true);
+//	}
 
 	/**
 	 * Handles the event the user clicked on the table header.
@@ -489,7 +495,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 	 *            the mouse event
 	 */
 	private void handleClickOnHeaderEvent(MouseEvent e) {
-		if (lqiTableModel.getMode() == LQIGridDialog.CONFIG_MODE
+		if (lqiTableModel.getMode() == LQIGridTableModel.CONFIG_MODE
 		        && e.getButton() == MouseEvent.BUTTON3) {
 			JTableHeader tableHeader = (JTableHeader) e.getSource();
 			final int colIndex = tableHeader.getColumnModel()
@@ -692,7 +698,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 
 		System.out.println("Edit");
 		final SeverityColumnPropsDialog severityDialog = new SeverityColumnPropsDialog(
-		        (LQIGridDialog) SwingUtilities.windowForComponent(lqiTable),
+		        (LQIConfigurationEditDialog) SwingUtilities.windowForComponent(lqiTable),
 		        null, lqiSeverity);
 		severityDialog.setVisible(true);
 	}

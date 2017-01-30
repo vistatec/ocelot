@@ -7,8 +7,6 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 
-import com.vistatec.ocelot.lqi.gui.ColorCellRenderer;
-
 /**
  * Renderer for button cells of the LQI grid.
  */

@@ -41,7 +41,7 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.view.LanguageQualityIssuePropsPanel;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
@@ -59,11 +59,11 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     private OcelotSegment selectedSeg;
 	private SegmentVariant variant;
     private LanguageQualityIssue selectedLQI;
-    private LQIGrid lqiGrid;
+    private LQIGridConfigurations lqiGrid;
     private XLIFFDocument xliff;
     private OcelotEventQueue eventQueue;
 
-    public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+    public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, OcelotEventQueue eventQueue, LQIGridConfigurations lqiGrid) {
         this.xliff = xliff;
         this.selectedSeg = selectedSeg;
         this.eventQueue = eventQueue;
@@ -81,7 +81,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     }
 
     public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, LanguageQualityIssue selectedLQI,
-                       OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+                       OcelotEventQueue eventQueue, LQIGridConfigurations lqiGrid) {
         this(xliff, selectedSeg, eventQueue, lqiGrid);
         this.selectedLQI = selectedLQI;
 
@@ -91,7 +91,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
     }
 
 	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,
-			OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+			OcelotEventQueue eventQueue, LQIGridConfigurations lqiGrid) {
 
 		this(xliff, selectedSeg, eventQueue, lqiGrid);
 		this.variant = variant;
@@ -99,7 +99,7 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
 	}
 
 	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,
-			LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+			LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue, LQIGridConfigurations lqiGrid) {
 		this(xliff, selectedSeg, selectedLQI, eventQueue, lqiGrid);
 		this.variant = variant;
 		createEnrichmentMenuItem();

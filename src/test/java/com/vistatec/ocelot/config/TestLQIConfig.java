@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
@@ -31,10 +31,12 @@ public class TestLQIConfig {
 
 	@Test
 	public void testWriteConfiguration() throws IOException, TransferException,
-	        JAXBException, URISyntaxException, SAXException, ConfigurationException {
+	        JAXBException, URISyntaxException, SAXException,
+	        ConfigurationException {
 
 		File configFile = File.createTempFile("lqi_config", "json");
-		InputStream lqiConfStream = getClass().getResourceAsStream("lqi_config_plain.json");
+		InputStream lqiConfStream = getClass().getResourceAsStream(
+		        "lqi_config_plain.json");
 		FileUtils.copyInputStreamToFile(lqiConfStream, configFile);
 		LqiJsonConfigService confService = createConfigService(configFile);
 		confService.saveLQIConfig(getTestLqiGrid());
@@ -54,26 +56,26 @@ public class TestLQIConfig {
 		File configFile = new File(getClass().getResource(
 		        RES_FOLDER + "lqi_config.json").toURI());
 		LqiJsonConfigService confService = createConfigService(configFile);
-		LQIGrid lqiGrid = confService.readLQIConfig();
-		LQIGrid expectedLqiGrid = getTestLqiGrid();
+		LQIGridConfigurations lqiGrid = confService.readLQIConfig();
+		LQIGridConfigurations expectedLqiGrid = getTestLqiGrid();
 		assertLQIGrid(expectedLqiGrid, lqiGrid);
 	}
 
 	private LqiJsonConfigService createConfigService(final File configFile)
 	        throws TransferException, JAXBException, ConfigurationException {
 		return new LqiJsonConfigService(new LqiJsonConfigTransferService(
-				configFile));
+		        configFile));
 
 	}
 
-	private LQIGrid getTestLqiGrid() {
-		LQIGrid grid = new LQIGrid();
-		grid.setActiveConfName("Configuration A");
+	private LQIGridConfigurations getTestLqiGrid() {
+		LQIGridConfigurations grid = new LQIGridConfigurations();
 
 		LQIGridConfiguration gridConf = new LQIGridConfiguration();
 		gridConf.setName("Configuration A");
 		gridConf.setThreshold(80.0);
 		gridConf.setSupplier("Google");
+		gridConf.setActive(true);
 		// severities
 		List<LQISeverity> severities = new ArrayList<LQISeverity>();
 		severities.add(new LQISeverity("Minor", 1.0));
@@ -114,81 +116,93 @@ public class TestLQIConfig {
 		errCat.setWeight(15.0f);
 		categories.add(errCat);
 
-
 		gridConf.setErrorCategories(categories);
 		grid.addConfiguration(gridConf);
-		
+
 		gridConf = new LQIGridConfiguration();
 		gridConf.setName("Configuration B");
 		gridConf.setSupplier("Nike");
 		gridConf.setThreshold(85.0);
-		
+
 		grid.addConfiguration(gridConf);
-		
+
 		gridConf.addSeverity(new LQISeverity("Severity 1", 1.0));
 		gridConf.addSeverity(new LQISeverity("Severity 2", 2.0));
 		gridConf.addSeverity(new LQISeverity("Severity 3", 3.0));
-		
+
 		errCat = new LQIErrorCategory("Category 1");
 		errCat.setWeight(2.0);
 		shortcuts = new ArrayList<LQIShortCut>();
-		shortcuts.add(new LQIShortCut(gridConf.getSeverity("Severity 1"), 60, "Alt"));
-		shortcuts.add(new LQIShortCut(gridConf.getSeverity("Severity 3"), 63, "Shift+Ctrl"));
+		shortcuts.add(new LQIShortCut(gridConf.getSeverity("Severity 1"), 60,
+		        "Alt"));
+		shortcuts.add(new LQIShortCut(gridConf.getSeverity("Severity 3"), 63,
+		        "Shift+Ctrl"));
 		errCat.setShortcuts(shortcuts);
 		gridConf.addErrorCategory(errCat, 0);
-		
+
 		errCat = new LQIErrorCategory("Category 2");
 		errCat.setWeight(0.0);
 		gridConf.addErrorCategory(errCat, 1);
-		
+
 		errCat = new LQIErrorCategory("Category 3");
 		errCat.setWeight(1.0);
 		shortcuts = new ArrayList<LQIShortCut>();
-		shortcuts.add(new LQIShortCut(gridConf.getSeverity("Severity 2"), 65, "Ctrl+Alt"));
+		shortcuts.add(new LQIShortCut(gridConf.getSeverity("Severity 2"), 65,
+		        "Ctrl+Alt"));
 		errCat.setShortcuts(shortcuts);
 		gridConf.addErrorCategory(errCat, 2);
 
 		return grid;
 	}
 
-	private void assertLQIGrid(LQIGrid expected, LQIGrid actual) {
+	private void assertLQIGrid(LQIGridConfigurations expected, LQIGridConfigurations actual) {
 
 		if (expected != null && actual != null) {
-			
-			Assert.assertEquals(expected.getActiveConfName(), actual.getActiveConfName());
-			assertLQIGridConfigurations(expected.getConfigurations(), actual.getConfigurations());
+
+			assertLQIGridConfigurations(expected.getConfigurations(),
+			        actual.getConfigurations());
 		} else {
 			Assert.assertTrue(expected == null && actual == null);
 		}
 	}
-	
-	
-	private void assertLQIGridConfigurations(List<LQIGridConfiguration> expected, List<LQIGridConfiguration> actual){
-		
-		if(expected != null && actual != null){
+
+	private void assertLQIGridConfigurations(
+	        List<LQIGridConfiguration> expected,
+	        List<LQIGridConfiguration> actual) {
+
+		if (expected != null && actual != null) {
 			Assert.assertEquals(expected.size(), actual.size());
 			Comparator<LQIGridConfiguration> confComparator = new Comparator<LQIGridConfiguration>() {
-				
+
 				@Override
-				public int compare(LQIGridConfiguration o1, LQIGridConfiguration o2) {
+				public int compare(LQIGridConfiguration o1,
+				        LQIGridConfiguration o2) {
 					return o1.getName().compareTo(o2.getName());
 				}
 			};
 			Collections.sort(expected, confComparator);
 			Collections.sort(actual, confComparator);
-			for(int i = 0; i<expected.size(); i++){
-				Assert.assertEquals(expected.get(i).getName(), actual.get(i).getName());
-				Assert.assertEquals(expected.get(i).getSupplier(), actual.get(i).getSupplier());
-				Assert.assertEquals(expected.get(i).getThreshold(), actual.get(i).getThreshold(), 0.0);
-				assertLQICategories(expected.get(i).getErrorCategories(), actual.get(i).getErrorCategories());
-				assertLQISeverities(expected.get(i).getSeverities(), actual.get(i).getSeverities());
+			for (int i = 0; i < expected.size(); i++) {
+				Assert.assertEquals(expected.get(i).getName(), actual.get(i)
+				        .getName());
+				Assert.assertEquals(expected.get(i).getSupplier(), actual
+				        .get(i).getSupplier());
+				Assert.assertEquals(expected.get(i).getThreshold(),
+				        actual.get(i).getThreshold(), 0.0);
+				Assert.assertTrue((expected.get(i).isActive() && actual.get(i)
+				        .isActive())
+				        || (!expected.get(i).isActive() && !actual.get(i)
+				                .isActive()));
+				assertLQICategories(expected.get(i).getErrorCategories(),
+				        actual.get(i).getErrorCategories());
+				assertLQISeverities(expected.get(i).getSeverities(), actual
+				        .get(i).getSeverities());
 			}
 		} else {
 			Assert.assertNull(expected);
 			Assert.assertNull(actual);
 		}
 	}
-	
 
 	private void assertLQISeverities(List<LQISeverity> expected,
 	        List<LQISeverity> actual) {

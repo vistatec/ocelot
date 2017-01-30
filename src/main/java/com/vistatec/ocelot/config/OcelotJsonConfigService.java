@@ -224,6 +224,11 @@ public class OcelotJsonConfigService implements JsonConfigService {
 	    return config.getLayout().isShowDetailsView();
     }
 	
+	@Override
+	public boolean canShowManageConfsButton(){
+		return config.getLayout().isShowManageConfs();
+	}
+	
 public boolean isColumnEnabled(SegmentViewColumn column){
 		
 		boolean enabled = false;

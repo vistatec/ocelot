@@ -48,6 +48,8 @@ public interface JsonConfigService {
     
     public boolean isDetailsViewVisible();
     
+    public boolean canShowManageConfsButton();
+    
     public boolean isColumnEnabled(SegmentViewColumn column);
     
     public void saveColumnConfiguration(EnumMap<SegmentViewColumn, Boolean> enabledColumns) throws TransferException;

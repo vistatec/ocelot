@@ -9,14 +9,21 @@ public class LQIGridConfiguration {
 
 	private String name;
 
-	private double threshold;
+	private Double threshold;
 
 	private String supplier;
 
+	private boolean active;
+	
 	private List<LQIErrorCategory> errorCategories;
 
 	private List<LQISeverity> severities;
 
+	public LQIGridConfiguration() {
+	 
+		name = "";
+    }
+	
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -25,11 +32,11 @@ public class LQIGridConfiguration {
 		return name;
 	}
 
-	public void setThreshold(double threshold) {
+	public void setThreshold(Double threshold) {
 		this.threshold = threshold;
 	}
 
-	public double getThreshold() {
+	public Double getThreshold() {
 		return threshold;
 	}
 
@@ -92,6 +99,14 @@ public class LQIGridConfiguration {
 		}
 		errorCategories.add(position, errorCat);
 	}
+	
+	public boolean isActive(){
+		return active;
+	}
+	
+	public void setActive(boolean active){
+		this.active = active;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -106,6 +121,7 @@ public class LQIGridConfiguration {
 		clonedGrid.setName(name);
 		clonedGrid.setSupplier(supplier);
 		clonedGrid.setThreshold(threshold);
+		clonedGrid.setActive(active);
 		if (severities != null) {
 			List<LQISeverity> clonedSeverities = new ArrayList<LQISeverity>();
 			for (LQISeverity severity : severities) {
@@ -200,6 +216,22 @@ public class LQIGridConfiguration {
 		if (severities != null) {
 			Collections.sort(severities, new SeverityComparator());
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if(obj != null && obj instanceof LQIGridConfiguration ){
+			LQIGridConfiguration conf = (LQIGridConfiguration)obj;
+			return name.equals(conf.getName());
+		} else {
+			return super.equals(obj);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+	    return name.hashCode();
 	}
 }
 

@@ -32,7 +32,7 @@ import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -48,7 +48,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 
 	// private List<LQIErrorCategory> errorCategories;
 
-	private LQIGrid lqiGrid;
+	private LQIGridConfigurations lqiGrid;
 
 	private boolean enabled = true;
 
@@ -98,7 +98,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 	private JScrollPane commentScroll;
 
 	public LanguageQualityIssuePropsPanel(OcelotEventQueue eventQueue,
-	        LQIGrid lqiGrid) {
+	        LQIGridConfigurations lqiGrid) {
 
 		this.eventQueue = eventQueue;
 		this.lqiGrid = lqiGrid;

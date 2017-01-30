@@ -23,6 +23,12 @@ public class LQIGridTableModel extends AbstractTableModel {
 	/** Serial version UID. */
 	private static final long serialVersionUID = -1813995821444213075L;
 
+	/** Issues annotations mode constant. */
+	public static final int ISSUES_ANNOTS_MODE = 0;
+
+	/** Configuration mode constant. */
+	public static final int CONFIG_MODE = 1;
+	
 	/** Error category column index. */
 	private static final int ERROR_CAT_COLUMN = 0;
 
@@ -70,7 +76,8 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 * @param mode
 	 *            the current LQI grid mode.
 	 */
-	public LQIGridTableModel(final LQIGridConfiguration lqiGridObj, final int mode) {
+	public LQIGridTableModel(final LQIGridConfiguration lqiGridObj,
+	        final int mode) {
 		this.lqiGridObj = lqiGridObj;
 		this.mode = mode;
 		initColumns();
@@ -81,7 +88,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 	 */
 	private void changedMode() {
 		enabledColumns.put(fixedColumns.get(ERROR_CAT_WEIGHT_COLUMN),
-		        mode == LQIGridDialog.CONFIG_MODE);
+		        mode == CONFIG_MODE);
 		fireTableStructureChanged();
 	}
 
@@ -107,7 +114,9 @@ public class LQIGridTableModel extends AbstractTableModel {
 		tableColumns = new ArrayList<LQIGridColumn>();
 		tableColumns.add(fixedColumns.get(ERROR_CAT_COLUMN));
 		tableColumns.add(fixedColumns.get(ERROR_CAT_WEIGHT_COLUMN));
-		tableColumns.addAll(severityColumns);
+		if (severityColumns != null) {
+			tableColumns.addAll(severityColumns);
+		}
 		tableColumns.add(fixedColumns.get(COMMENT_COLUMN));
 		changedMode();
 	}
@@ -140,9 +149,11 @@ public class LQIGridTableModel extends AbstractTableModel {
 				count++;
 			}
 		}
-		for (LQIGridColumn col : severityColumns) {
-			if (enabledColumns.get(col)) {
-				count++;
+		if (severityColumns != null) {
+			for (LQIGridColumn col : severityColumns) {
+				if (enabledColumns.get(col)) {
+					count++;
+				}
 			}
 		}
 		return count;
@@ -233,7 +244,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 		if (colIndex < tableColumns.size()) {
 			LQIGridColumn column = getColumn(colIndex);
 			colName = column.getName();
-			if (severityColumns.contains(column)) {
+			if (severityColumns != null && severityColumns.contains(column)) {
 				colName += " (" + lqiGridObj.getSeverityScore(colName) + ")";
 			}
 		}
@@ -290,7 +301,7 @@ public class LQIGridTableModel extends AbstractTableModel {
 			if (col != null) {
 				if (col.equals(fixedColumns.get(ERROR_CAT_COLUMN))) {
 					if (aValue != null && !((String) aValue).isEmpty()
-					        && !errorCat.getName().equals((String) aValue)) {
+					        && (errorCat == null || !((String) aValue).equals(errorCat.getName()))) {
 						TableCellEvent event = new TableCellEvent(
 						        errorCat.getName(), aValue, rowIndex,
 						        columnIndex);
@@ -324,10 +335,10 @@ public class LQIGridTableModel extends AbstractTableModel {
 
 		LQIGridColumn col = getColumn(columnIndex);
 		return col != null
-		        && (mode == LQIGridDialog.ISSUES_ANNOTS_MODE && !col
-		                .equals(fixedColumns.get(ERROR_CAT_COLUMN)))
-		        || (mode == LQIGridDialog.CONFIG_MODE && !col
-		                .equals(fixedColumns.get(COMMENT_COLUMN)));
+		        && (mode == ISSUES_ANNOTS_MODE && !col.equals(fixedColumns
+		                .get(ERROR_CAT_COLUMN)))
+		        || (mode == CONFIG_MODE && !col.equals(fixedColumns
+		                .get(COMMENT_COLUMN)));
 	}
 
 	/**
@@ -827,6 +838,7 @@ class LQISeverityComparator implements Comparator<LQISeverity> {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
 	@Override

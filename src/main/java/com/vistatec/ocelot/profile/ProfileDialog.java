@@ -102,7 +102,7 @@ public class ProfileDialog extends JDialog implements ActionListener, Runnable {
 	private Component getMainPanel() {
 
 		mainPanel = new JPanel();
-		JLabel lblProfile = new JLabel("Profile");
+		JLabel lblProfile = new JLabel("Workspace");
 		List<String> profiles = manager.getProfiles();
 		cmbProfiles = new JComboBox<String>(
 		        profiles.toArray(new String[profiles.size()]));
@@ -175,9 +175,9 @@ public class ProfileDialog extends JDialog implements ActionListener, Runnable {
 
 	private void setTitle() {
 		if (mode == VIEW_MODE) {
-			setTitle("Profiles");
+			setTitle("Workspace");
 		} else {
-			setTitle("Profiles - Edit");
+			setTitle("Workspace - Edit");
 		}
 	}
 

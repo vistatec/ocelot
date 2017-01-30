@@ -1,10 +1,12 @@
-package com.vistatec.ocelot.lqi.gui;
+package com.vistatec.ocelot.lqi.gui.renderer;
 
 import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+
+import com.vistatec.ocelot.lqi.gui.LQIGridTableModel;
 
 /**
  * Renderer for LQI grid cells. It displays cells colored with a specific color.
@@ -75,7 +77,7 @@ public class ColorCellRenderer extends DefaultTableCellRenderer {
 	private boolean isConfigurationModeOn(JTable table) {
 
 		return table.getModel() instanceof LQIGridTableModel
-		        && ((LQIGridTableModel) table.getModel()).getMode() == LQIGridDialog.CONFIG_MODE;
+		        && ((LQIGridTableModel) table.getModel()).getMode() == LQIGridTableModel.CONFIG_MODE;
 	}
 
 }

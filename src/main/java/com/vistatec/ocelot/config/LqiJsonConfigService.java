@@ -9,8 +9,8 @@ import com.vistatec.ocelot.config.json.LqiGridConfig.LQICategory;
 import com.vistatec.ocelot.config.json.LqiGridConfig.LQICategory.Shortcut;
 import com.vistatec.ocelot.config.json.LqiGridConfig.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
 public class LqiJsonConfigService {
@@ -25,14 +25,14 @@ public class LqiJsonConfigService {
 		this.cfgXservice = cfgXservice;
 		 this.rootConfig = (LQIGridRootConfig) cfgXservice.read();
 		 checkConfigurationConsistency();
-//		rootConfig = new LQIGridRootConfig();
 	}
 
-	public void saveLQIConfig(LQIGrid lqiGrid) throws TransferException {
+	public void saveLQIConfig(LQIGridConfigurations lqiGrid) throws TransferException {
 
 		if (lqiGrid != null) {
 			rootConfig.clear();
-			rootConfig.setActiveConfName(lqiGrid.getActiveConfName());
+//			rootConfig.setActiveConfName(lqiGrid.getActiveConfName());
+			
 			if (lqiGrid.getConfigurations() != null) {
 				LqiGridConfig confConfig = null;
 				for (LQIGridConfiguration modelConf : lqiGrid
@@ -41,6 +41,9 @@ public class LqiJsonConfigService {
 					confConfig.setName(modelConf.getName());
 					confConfig.setSupplier(modelConf.getSupplier());
 					confConfig.setThreshold(modelConf.getThreshold());
+					if(modelConf.isActive()){
+						rootConfig.setActiveConfName(modelConf.getName());
+					}
 					if (modelConf.getErrorCategories() != null) {
 						LQICategory confErrCat = null;
 						LQIErrorCategory modelCat = null;
@@ -83,13 +86,12 @@ public class LqiJsonConfigService {
 		}
 	}
 
-	public LQIGrid readLQIConfig() throws TransferException {
+	public LQIGridConfigurations readLQIConfig() throws TransferException {
 
-		LQIGrid modelRootGrid = null;
+		LQIGridConfigurations modelRootGrid = null;
 		rootConfig = (LQIGridRootConfig) cfgXservice.read();
 		if (rootConfig != null) {
-			modelRootGrid = new LQIGrid();
-			modelRootGrid.setActiveConfName(rootConfig.getActiveConfName());
+			modelRootGrid = new LQIGridConfigurations();
 			if (rootConfig.getLqiConfigurations() != null) {
 				LQIGridConfiguration modelConfig = null;
 				for (LqiGridConfig confConfig : rootConfig
@@ -98,6 +100,7 @@ public class LqiJsonConfigService {
 					modelConfig.setName(confConfig.getName());
 					modelConfig.setSupplier(confConfig.getSupplier());
 					modelConfig.setThreshold(confConfig.getThreshold());
+					modelConfig.setActive(rootConfig.getActiveConfName().equals(modelConfig.getName()));
 					if (confConfig.getSeverities() != null) {
 						com.vistatec.ocelot.lqi.model.LQISeverity modelSev = null;
 						for (LQISeverity configSev : confConfig.getSeverities()) {
@@ -133,10 +136,16 @@ public class LqiJsonConfigService {
 					}
 					modelRootGrid.addConfiguration(modelConfig);
 				}
-
 			}
 		}
 		return modelRootGrid;
+	}
+	
+	public void setActiveConfiguration(String activeConfigurationName) throws ConfigurationException, TransferException {
+
+		rootConfig.setActiveConfName(activeConfigurationName);
+		checkActiveConfiguration();
+		cfgXservice.save(rootConfig);
 	}
 
 	private void checkConfigurationConsistency() throws ConfigurationException {
@@ -190,3 +199,4 @@ public class LqiJsonConfigService {
 		}
 	}
 }
+

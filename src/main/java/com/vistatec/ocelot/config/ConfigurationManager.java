@@ -22,6 +22,8 @@ public class ConfigurationManager {
 	public static final String OCELOT_CONF_FILE_NAME = "ocelot_cfg.json";
 
 	public static final String LQI_CONF_FILE_NAME = "lqi_cfg.json";
+	
+	public static final String RULES_CONF_FILE_NAME = "rules.properties";
 
 	private final Logger log = Logger.getLogger(ConfigurationManager.class);
 
@@ -32,6 +34,8 @@ public class ConfigurationManager {
 	private OcelotJsonConfigService ocelotConfService;
 
 	private LqiJsonConfigService lqiConfService;
+	
+	private DirectoryBasedConfigs rulesConfigs;
 	
 	private File tmFolder;
 
@@ -53,6 +57,7 @@ public class ConfigurationManager {
 		File activeConfFolder = checkProfileFolder();
 		createOcelotConfigService(activeConfFolder);
 		createLqiConfigService(activeConfFolder);
+		rulesConfigs = new DirectoryBasedConfigs(activeConfFolder);
 		tmFolder = new File(activeConfFolder, TM_DIR);
 		if (!tmFolder.exists()) {
 			tmFolder.mkdir();
@@ -169,6 +174,7 @@ public class ConfigurationManager {
 		profileFolder.mkdir();
 		createConfigurationFile(profileFolder, OCELOT_CONF_FILE_NAME);
 		createConfigurationFile(profileFolder, LQI_CONF_FILE_NAME);
+		createConfigurationFile(profileFolder, RULES_CONF_FILE_NAME);
 		
 	}
 
@@ -219,5 +225,9 @@ public class ConfigurationManager {
 
 	public File getOcelotMainConfigurationFolder() {
 		return configFolder;
+	}
+	
+	public DirectoryBasedConfigs getRulesConfigs(){
+		return rulesConfigs;
 	}
 }

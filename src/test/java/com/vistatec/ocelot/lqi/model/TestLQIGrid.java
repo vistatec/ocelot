@@ -19,7 +19,7 @@ public class TestLQIGrid {
     @SuppressWarnings("unchecked")
     @Test
     public void testRootIsEmpty() {
-    	LQIGrid grid = new LQIGrid();
+    	LQIGridConfigurations grid = new LQIGridConfigurations();
         assertTrue(grid.isEmpty());
         LQIGridConfiguration gridConf = new LQIGridConfiguration();
         grid.addConfiguration(gridConf);
