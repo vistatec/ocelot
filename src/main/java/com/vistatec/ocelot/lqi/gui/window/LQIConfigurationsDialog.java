@@ -34,15 +34,22 @@ import com.vistatec.ocelot.lqi.gui.panel.LQIConfPreviewPanel;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 
-public class LQIConfigurationsDialog extends JDialog implements ActionListener, Runnable {
+/**
+ * This dialog displays the list of configurations available for the LQI Grid.
+ * It provides buttons for deleting, creating, copying and editing a
+ * configuration.
+ */
+public class LQIConfigurationsDialog extends JDialog implements ActionListener,
+        Runnable {
 
 	private static final long serialVersionUID = -3937847699154946755L;
 
 	private static final int BTN_WIDTH = 70;
 
 	private static final int BTN_HEIGHT = 25;
-	
-	private static final Logger log = Logger.getLogger(LQIConfigurationsDialog.class);
+
+	private static final Logger log = Logger
+	        .getLogger(LQIConfigurationsDialog.class);
 
 	private LQIGridConfigurations lqiGrid;
 
@@ -61,7 +68,6 @@ public class LQIConfigurationsDialog extends JDialog implements ActionListener, 
 	private LQIGridController controller;
 
 	private LQIConfPreviewPanel preview;
-	
 
 	public LQIConfigurationsDialog(Window owner, LQIGridController controller,
 	        LQIGridConfigurations lqiGrid) {
@@ -243,41 +249,44 @@ public class LQIConfigurationsDialog extends JDialog implements ActionListener, 
 	}
 
 	private void editConfiguration() {
-		log.debug("Editing the configuration \"" + configsList.getSelectedValue().toString() + "\"...");
+		log.debug("Editing the configuration \""
+		        + configsList.getSelectedValue().toString() + "\"...");
 		displayEditConfDialog(configsList.getSelectedValue().getConfiguration());
 	}
 
 	private void deleteConfiguration() {
-		
+
 		ConfigurationListItem selItem = configsList.getSelectedValue();
 		if (selItem != null) {
-			log.debug("Deleting the configuration \"" + selItem.toString() + "\"...");
+			log.debug("Deleting the configuration \"" + selItem.toString()
+			        + "\"...");
 			String message = "";
-			boolean delActiveConf = selItem.getConfiguration().equals(lqiGrid.getActiveConfiguration());
-			if(delActiveConf){
+			boolean delActiveConf = selItem.getConfiguration().equals(
+			        lqiGrid.getActiveConfiguration());
+			if (delActiveConf) {
 				message = "You are trying to delete the active configuration. One of the remaining configurations will be set as the active one. Do you want to continue?";
 			} else {
 				message = "Do you want to delete the selected configuration?";
 			}
-			int option = JOptionPane.showConfirmDialog(this,
-			        message,
+			int option = JOptionPane.showConfirmDialog(this, message,
 			        "Delete Configuration", JOptionPane.YES_NO_OPTION);
 			if (option == JOptionPane.YES_OPTION) {
 				try {
 					lqiGrid.getConfigurations().remove(
 					        selItem.getConfiguration());
-					if(delActiveConf){
+					if (delActiveConf) {
 						lqiGrid.getConfigurations().get(0).setActive(true);
-						//TODO RELOAD THE LQI GRID DIALOG!!!!
 					}
 					controller.saveLQIGridConfiguration(lqiGrid, false);
 					((DefaultListModel<ConfigurationListItem>) configsList
 					        .getModel()).removeElement(selItem);
 					preview.clear();
 					repaint();
-					
+
 				} catch (TransferException e) {
-					log.debug("Error while deleting an existing configuration.", e);
+					log.debug(
+					        "Error while deleting an existing configuration.",
+					        e);
 					JOptionPane
 					        .showMessageDialog(
 					                this,
@@ -295,7 +304,8 @@ public class LQIConfigurationsDialog extends JDialog implements ActionListener, 
 			LQIGridConfiguration copyConf = (LQIGridConfiguration) configsList
 			        .getSelectedValue().getConfiguration().clone();
 			copyConf.setName("Copy of " + copyConf.getName());
-			log.debug("Creating a new configuration starting from \"" + copyConf.getName() + "\"...");
+			log.debug("Creating a new configuration starting from \""
+			        + copyConf.getName() + "\"...");
 			displayEditConfDialog(copyConf);
 		} catch (CloneNotSupportedException e) {
 			log.warn("This exception should never be thrown.", e);
@@ -325,39 +335,37 @@ public class LQIConfigurationsDialog extends JDialog implements ActionListener, 
 
 	public void save(LQIGridConfiguration lqiGridConf) {
 
-//		LQIGridConfiguration selConf = configsList.getSelectedValue()
-//		        .getConfiguration();
 		LQIGridConfiguration selConf = null;
-		if(configsList.getSelectedValue() != null){
+		if (configsList.getSelectedValue() != null) {
 			selConf = configsList.getSelectedValue().getConfiguration();
 		}
-		
-		//configuration edited
-		if(selConf != null && selConf.equals(lqiGridConf)){
+
+		// configuration edited
+		if (selConf != null && selConf.equals(lqiGridConf)) {
 			lqiGrid.updateConfiguration(lqiGridConf);
-			((DefaultListModel<ConfigurationListItem>) configsList
-					.getModel()).setElementAt(new ConfigurationListItem(
-							lqiGridConf), configsList.getSelectedIndex());
+			((DefaultListModel<ConfigurationListItem>) configsList.getModel())
+			        .setElementAt(new ConfigurationListItem(lqiGridConf),
+			                configsList.getSelectedIndex());
 			preview.load(lqiGridConf);
-			
-			//new or copy configuration
+
+			// new or copy configuration
 		} else {
 			lqiGrid.addConfiguration(lqiGridConf);
-			((DefaultListModel<ConfigurationListItem>) configsList
-					.getModel()).addElement(new ConfigurationListItem(
-							lqiGridConf));
+			((DefaultListModel<ConfigurationListItem>) configsList.getModel())
+			        .addElement(new ConfigurationListItem(lqiGridConf));
 		}
 		try {
-	        controller.saveLQIGridConfiguration(lqiGrid, lqiGridConf.isActive());
-        } catch (TransferException e) {
-        	log.error("Error while saving the LQI grid configuration", e);
-        	JOptionPane
-	        .showMessageDialog(
-	                this,
-	                "An error has occurred while saving the LQI Grid configuration.",
-	                "Save Configuration Error",
-	                JOptionPane.ERROR_MESSAGE);
-        }
+			controller
+			        .saveLQIGridConfiguration(lqiGrid, lqiGridConf.isActive());
+		} catch (TransferException e) {
+			log.error("Error while saving the LQI grid configuration", e);
+			JOptionPane
+			        .showMessageDialog(
+			                this,
+			                "An error has occurred while saving the LQI Grid configuration.",
+			                "Save Configuration Error",
+			                JOptionPane.ERROR_MESSAGE);
+		}
 
 	}
 
@@ -375,10 +383,10 @@ public class LQIConfigurationsDialog extends JDialog implements ActionListener, 
 	}
 
 	@Override
-    public void run() {
+	public void run() {
 
 		setVisible(true);
-    }
+	}
 
 }
 

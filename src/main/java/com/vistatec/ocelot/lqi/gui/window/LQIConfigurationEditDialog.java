@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -16,32 +15,27 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
+
 import com.vistatec.ocelot.PlatformSupport;
-import com.vistatec.ocelot.config.ConfigurationException;
-import com.vistatec.ocelot.config.ConfigurationManager;
-import com.vistatec.ocelot.config.LqiJsonConfigService;
-import com.vistatec.ocelot.config.TransferException;
-import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.gui.LQIGridTableHelper;
 import com.vistatec.ocelot.lqi.gui.LQIGridTableModel;
 import com.vistatec.ocelot.lqi.gui.panel.LQIGridTableContainer;
 import com.vistatec.ocelot.lqi.gui.panel.LQIInfoPanel;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
+/**
+ * This dialog lets users create a new LQI grid configuration or edit an existing one.
+ */
 public class LQIConfigurationEditDialog extends JDialog implements
         ActionListener {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3246046647198453134L;
 
 	private static final int MIN_WIDTH = 600;
@@ -174,12 +168,8 @@ public class LQIConfigurationEditDialog extends JDialog implements
 
 	private Component getCenterPanel()  {
 
-		// JPanel centerPanel = new JPanel();
 		Action tableAction = new AbstractAction() {
 
-			/**
-			 * 
-			 */
             private static final long serialVersionUID = -6312119744617259752L;
 
 			@Override
@@ -211,8 +201,8 @@ public class LQIConfigurationEditDialog extends JDialog implements
 	        clonedConf = (LQIGridConfiguration) lqiGridConf
 	                .clone();
         } catch (CloneNotSupportedException e1) {
-	        // TODO Auto-generated catch block
-	        e1.printStackTrace();
+        	//it shouldn't happen as the clone method is implemented for the LQIGridConfiguration class
+        	Logger.getLogger(LQIConfigurationEditDialog.class).warn("Error while cloning the LQI grid configuration", e1);
         }
 		LQIGridTableContainer tableContainer = new LQIGridTableContainer(
 		        clonedConf, tableHelper, tableAction,
@@ -224,88 +214,9 @@ public class LQIConfigurationEditDialog extends JDialog implements
 
 		infoPanel = new LQIInfoPanel();
 		infoPanel.load(lqiGridConf);
-//		JPanel topPanel = new JPanel();
-//
-//		txtName = new JTextField();
-//		txtName.setPreferredSize(new Dimension(TXT_WIDTH, TXT_HEIGHT));
-//		txtSupplier = new JTextField();
-//		txtSupplier.setPreferredSize(new Dimension(TXT_WIDTH, TXT_HEIGHT));
-//		txtThreshold = new JTextField();
-//		txtThreshold.setPreferredSize(new Dimension(50, TXT_HEIGHT));
-//		txtThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
-//		txtThreshold.setDocument(new FloatDocument());
-//		loadTextFields();
-//		topPanel.setLayout(new GridBagLayout());
-//		GridBagConstraints c = new GridBagConstraints();
-//
-//		c.weightx = 0.5;
-//		c.gridx = 0;
-//		c.gridy = 0;
-//		c.insets = new Insets(10, 10, 10, 0);
-//		c.anchor = GridBagConstraints.LINE_END;
-//		topPanel.add(new JLabel("Name"), c);
-//
-//		c.gridx = 1;
-//		c.gridy = 0;
-//		c.anchor = GridBagConstraints.LINE_START;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.insets = new Insets(10, 5, 10, 10);
-//		topPanel.add(txtName, c);
-//
-//		c.gridx = 2;
-//		c.gridy = 0;
-//		c.anchor = GridBagConstraints.LINE_END;
-//		c.insets = new Insets(10, 10, 10, 0);
-//		c.fill = GridBagConstraints.NONE;
-//		topPanel.add(new JLabel("Threshold"), c);
-//
-//		c.gridx = 3;
-//		c.gridy = 0;
-//		c.insets = new Insets(10, 5, 10, 0);
-//		c.anchor = GridBagConstraints.LINE_START;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		topPanel.add(txtThreshold, c);
-//
-//		c.gridx = 4;
-//		c.gridy = 0;
-//		c.anchor = GridBagConstraints.LINE_START;
-//		c.fill = GridBagConstraints.NONE;
-//		c.insets = new Insets(10, 2, 10, 10);
-//		topPanel.add(new JLabel("%"), c);
-//
-//		c.gridx = 0;
-//		c.gridy = 1;
-//		c.anchor = GridBagConstraints.LINE_END;
-//		c.insets = new Insets(0, 10, 10, 0);
-//		c.fill = GridBagConstraints.NONE;
-//		topPanel.add(new JLabel("Supplier"), c);
-//
-//		c.gridx = 1;
-//		c.anchor = GridBagConstraints.LINE_START;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.insets = new Insets(0, 5, 10, 10);
-//		topPanel.add(txtSupplier, c);
-
 		return infoPanel;
 	}
 
-	public static void main(String[] args) throws TransferException,
-	        ConfigurationException {
-		ConfigurationManager confManager = new ConfigurationManager();
-		confManager.readAndCheckConfiguration(new File(System
-		        .getProperty("user.home"), ".ocelot"));
-		LqiJsonConfigService lqiConfService = confManager.getLqiConfigService();
-		LQIGridConfigurations lqiGrid = lqiConfService.readLQIConfig();
-		JFrame frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		LQIConfigurationsDialog confdialog = new LQIConfigurationsDialog(frame,
-		        new LQIGridController(lqiConfService, null, null), lqiGrid);
-		LQIConfigurationEditDialog dialog = new LQIConfigurationEditDialog(
-		        confdialog, null, lqiGrid.getActiveConfiguration());
-		dialog.setVisible(true);
-	}
 
 	/**
 	 * Saves the new LQI grid configuration.
@@ -349,27 +260,6 @@ public class LQIConfigurationEditDialog extends JDialog implements
 			        "LQI Configuration Save", JOptionPane.WARNING_MESSAGE);
 		}
 
-		// TODO SAVE
-		// try {
-		// if (tableHelper.getLqiTableModel().isChanged()) {
-		// lqiGridConf.updateConfiguration((LQIGridConfiguration)tableHelper
-		// .getLqiTableModel().getLQIGrid().clone());
-		// controller.saveLQIGridConfiguration(lqiGridConf);
-		// // lqiGrid = (LQIGrid) tableHelper.getLqiTableModel().getLQIGrid()
-		// // .clone();
-		// tableHelper.getLqiTableModel().setChanged(false);
-		// }
-		// switchToIssuesAnnotsMode();
-		// } catch (TransferException e) {
-		// logger.error("Error while saving the LQI grid configuration.", e);
-		// JOptionPane
-		// .showMessageDialog(
-		// this,
-		// "An error has occurred while saving the LQI grid configuration",
-		// "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
-		// } catch (CloneNotSupportedException e) {
-		// // never happens
-		// }
 	}
 
 	private boolean checkLQITable() {

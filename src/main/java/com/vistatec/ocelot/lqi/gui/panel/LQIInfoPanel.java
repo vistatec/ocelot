@@ -16,11 +16,11 @@ import javax.swing.border.LineBorder;
 import com.vistatec.ocelot.lqi.gui.FloatDocument;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 
+/**
+ * This panel displays info about an existing configuration for the LQI Grid.
+ */
 public class LQIInfoPanel extends JPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7253091256238873534L;
 
 	private static final int TXT_WIDTH = 150;

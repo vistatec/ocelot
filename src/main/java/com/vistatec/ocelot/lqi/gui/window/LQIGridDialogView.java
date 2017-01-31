@@ -28,11 +28,11 @@ import com.vistatec.ocelot.lqi.gui.panel.LQIGridTableContainer;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 
+/**
+ * This dialog displays the LQI Grid. It lets users create new Language Quality Issues for the selected segment.
+ */
 public class LQIGridDialogView extends JDialog implements Runnable, ActionListener {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -8122056085897056836L;
 
 	/** Dialog title. */

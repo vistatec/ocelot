@@ -16,11 +16,11 @@ import javax.swing.event.TableColumnModelListener;
 import com.vistatec.ocelot.lqi.gui.LQIGridTableHelper;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 
+/**
+ * This class defines a scroll panel containing the table displayed in the LQI Grid.
+ */
 public class LQIGridTableContainer extends JScrollPane {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -492576764036972394L;
 
 	private static final int TABLE_PADDING = 50;

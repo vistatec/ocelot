@@ -76,11 +76,6 @@ public class OcelotLQIConfTool extends JPanel implements ItemListener {
 
 	}
 	
-	//TODO DELETE WHEN TESTS ARE DONE
-//	public JComboBox<ConfigurationItem> getComboBox(){
-//		return cmbConfigs;
-//	}
-
 	private void setComboSize(){
 		final int comboWidth = getComboWidth();
 		cmbConfigs.setPreferredSize(new Dimension(comboWidth, COMBO_HEIGHT));
@@ -135,9 +130,7 @@ public class OcelotLQIConfTool extends JPanel implements ItemListener {
 
 	public void setLQIConfigurations(LQIGridConfigurations configurations) {
 
-		// cmbConfigs
 		LQIGridConfiguration currSelConf = null;
-//		ConfigurationItem currSelItem = (ConfigurationItem) cmbConfigs.getSelectedItem();
 		if(cmbConfigs.getSelectedItem() != null){
 			currSelConf = ((ConfigurationItem)cmbConfigs.getSelectedItem()).getConfiguration();
 		}
@@ -169,20 +162,4 @@ public class OcelotLQIConfTool extends JPanel implements ItemListener {
 		return ((ConfigurationItem)cmbConfigs.getSelectedItem()).getConfiguration();
 	}
 	
-//	public static void main(String[] args) throws ConfigurationException, TransferException {
-//	    
-//		ConfigurationManager manager = new ConfigurationManager();
-//		manager.readAndCheckConfiguration(new File(System.getProperty("user.home"), ".ocelot"));
-//		LQIGrid gridConfigs = manager.getLqiConfigService().readLQIConfig();
-//		OcelotLQIConfTool tool = new OcelotLQIConfTool(gridConfigs, null);
-//		LQIGridConfiguration confC = null;
-//		for(LQIGridConfiguration conf: gridConfigs.getConfigurations()){
-//			if(conf.getName().equals("Configuration C")){
-//				confC = conf;
-//				break;
-//			}
-//		}
-//		tool.getComboBox().setSelectedItem(new ConfigurationItem(confC));
-//		
-//    }
 }
