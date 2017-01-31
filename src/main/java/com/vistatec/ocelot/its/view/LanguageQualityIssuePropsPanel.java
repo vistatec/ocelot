@@ -46,8 +46,6 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 
 	private OcelotEventQueue eventQueue;
 
-	// private List<LQIErrorCategory> errorCategories;
-
 	private LQIGridConfigurations lqiGrid;
 
 	private boolean enabled = true;

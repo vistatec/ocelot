@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -27,8 +26,8 @@ import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
 import com.vistatec.ocelot.lqi.gui.window.LQIConfigurationsDialog;
 import com.vistatec.ocelot.lqi.gui.window.LQIGridDialogView;
-import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 /**

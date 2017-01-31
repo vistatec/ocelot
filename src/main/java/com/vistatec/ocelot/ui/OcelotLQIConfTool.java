@@ -137,7 +137,7 @@ public class OcelotLQIConfTool extends JPanel implements ItemListener {
 		DefaultComboBoxModel<ConfigurationItem> comboModel = buildComboModel(configurations);
 		cmbConfigs.setModel(comboModel);
 		cmbConfigs.setSelectedItem(new ConfigurationItem(configurations.getActiveConfiguration()));
-		if(!((ConfigurationItem)cmbConfigs.getSelectedItem()).getConfiguration().equals(currSelConf)){
+		if(currSelConf == null || !((ConfigurationItem)cmbConfigs.getSelectedItem()).getConfiguration().equals(currSelConf)){
 			eventQueue.post(new LQIConfigurationSelectionChangedEvent(
 			        ((ConfigurationItem) cmbConfigs.getSelectedItem())
 			                .getConfiguration(), currSelConf));

@@ -65,6 +65,7 @@ import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
 import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
@@ -317,7 +318,7 @@ public class PluginManager implements OcelotEventQueueListener {
 			ReportPlugin reportPlugin = reportPlugins.keySet().iterator().next();
 			reportPlugin.onOpenFile(filename, segments);
 		}
-		qualityPluginManager.initOpenedFileSettings(segments);
+		qualityPluginManager.initOpenedFileSettings(segments, filename);
 	}
 
 	public void notifySaveFile(String filename) {
@@ -739,6 +740,12 @@ private JMenu getFremeMenu() {
 	public void handleLqiEdited(LQIEditEvent event) {
 		qualityPluginManager.editedQualityIssue(event.getOldLQI(),
 		        event.getLQI());
+	}
+	
+	@Subscribe
+	public void handleLQIConfigSelected(LQIConfigurationSelectionChangedEvent e){
+		
+		qualityPluginManager.loadConfiguration(e.getNewSelectedConfiguration());
 	}
 
 	public List<JMenuItem> getSegmentContextMenuItems(
