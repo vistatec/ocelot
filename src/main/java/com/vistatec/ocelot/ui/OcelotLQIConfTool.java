@@ -68,7 +68,7 @@ public class OcelotLQIConfTool extends JPanel implements ItemListener {
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = new Insets(5, 5, 5, 5);
-		add(new JLabel("LQI Configuration"), c);
+		add(new JLabel("LQI Grid Configuration"), c);
 
 		c.gridx = 1;
 		c.insets = new Insets(5, 0, 5, 5);

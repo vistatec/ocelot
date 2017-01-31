@@ -13,11 +13,11 @@ import com.vistatec.ocelot.config.json.ProfileConfig;
 
 public class ConfigurationManager {
 
-	public static final String CONF_DIR = "conf";
+	public static final String CONF_DIR = "config";
 
 	public static final String TM_DIR = "tm";
 
-	public static final String PROFILE_CONF_FILE_NAME = "profile.json";
+	public static final String LAST_SESSION_FILE_NAME = "last-session.json";
 
 	public static final String OCELOT_CONF_FILE_NAME = "ocelot_cfg.json";
 
@@ -52,7 +52,7 @@ public class ConfigurationManager {
 
 		// check profile configuration file
 		File profileConfFile = createConfigurationFile(configFolder,
-		        PROFILE_CONF_FILE_NAME);
+		        LAST_SESSION_FILE_NAME);
 		createProfileConfigService(profileConfFile);
 		File activeConfFolder = checkProfileFolder();
 		createOcelotConfigService(activeConfFolder);

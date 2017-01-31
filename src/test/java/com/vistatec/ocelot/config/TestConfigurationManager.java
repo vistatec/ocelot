@@ -39,7 +39,7 @@ public class TestConfigurationManager {
 		confManager.readAndCheckConfiguration(testOcelotDir);
 		File confFolder = new File(testOcelotDir, ConfigurationManager.CONF_DIR);
 		Assert.assertTrue(confFolder.exists());
-		File profileConfFile = new File(confFolder, ConfigurationManager.PROFILE_CONF_FILE_NAME);
+		File profileConfFile = new File(confFolder, ConfigurationManager.LAST_SESSION_FILE_NAME);
 		Assert.assertTrue(profileConfFile.exists());
 		File defProfFolder = new File(confFolder, ProfileConfig.DEFAULT_PROF_NAME);
 		Assert.assertTrue(defProfFolder.exists());
@@ -121,7 +121,7 @@ public class TestConfigurationManager {
 		
 		File confFolder = new File(testOcelotDir, ConfigurationManager.CONF_DIR);
 		confFolder.mkdir();
-		File profileConfFile = new File(confFolder, ConfigurationManager.PROFILE_CONF_FILE_NAME);
+		File profileConfFile = new File(confFolder, ConfigurationManager.LAST_SESSION_FILE_NAME);
 		profileConfFile.createNewFile();
 		InputStream testProfFileStream = getClass().getResourceAsStream("testProfileFile.json");
 		FileUtils.copyInputStreamToFile(testProfFileStream, profileConfFile);

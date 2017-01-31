@@ -8,6 +8,7 @@
     "showTranslations" : true,
     "showAttrsView" : true,
     "showDetailsView" : true,
+    "showManageConfs" : true,
     "segmentsGrid" : {
       "showSegNum" : true,
       "showSource" : true,
