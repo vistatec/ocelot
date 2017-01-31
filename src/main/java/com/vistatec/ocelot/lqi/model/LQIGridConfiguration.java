@@ -122,8 +122,9 @@ public class LQIGridConfiguration {
 		clonedGrid.setSupplier(supplier);
 		clonedGrid.setThreshold(threshold);
 		clonedGrid.setActive(active);
+		List<LQISeverity> clonedSeverities = null;
 		if (severities != null) {
-			List<LQISeverity> clonedSeverities = new ArrayList<LQISeverity>();
+			clonedSeverities = new ArrayList<LQISeverity>();
 			for (LQISeverity severity : severities) {
 				clonedSeverities.add((LQISeverity) severity.clone());
 			}
@@ -132,7 +133,7 @@ public class LQIGridConfiguration {
 		if (errorCategories != null) {
 			List<LQIErrorCategory> clonedCategories = new ArrayList<LQIErrorCategory>();
 			for (LQIErrorCategory currCat : errorCategories) {
-				clonedCategories.add(currCat.clone(severities));
+				clonedCategories.add(currCat.clone(clonedSeverities));
 			}
 			clonedGrid.setErrorCategories(clonedCategories);
 		}

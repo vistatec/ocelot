@@ -173,13 +173,13 @@ public class SeverityColumnPropsDialog extends JDialog implements
 				
 				if (severity == null) {
 					severity = new LQISeverity();
-					severity.setName(txtSeverityName.getText());
+					severity.setName(newName);
 					severity.setScore(Double.parseDouble(txtSeverityScore
 					        .getText()));
 					lqiGridDialog.createSeverityColumn(severity);
 				} else {
 					LQISeverity newSeverity = new LQISeverity(
-					        txtSeverityName.getText(),
+							newName,
 					        Double.parseDouble(txtSeverityScore.getText()));
 					lqiGridDialog.severityChanged(severity, newSeverity);
 				}
