@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +16,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -23,6 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -178,13 +181,13 @@ public class LQIConfigurationsDialog extends JDialog implements ActionListener,
 	}
 
 	private void enableDisableComponents() {
+		
+		ConfigurationListItem selItem = configsList.getSelectedValue();
 
-		boolean enableButtons = configsList.getSelectedIndex() != -1;
-
-		btnCopy.setEnabled(enableButtons);
-		btnEdit.setEnabled(enableButtons);
-		btnDelete.setEnabled(enableButtons
-		        && configsList.getModel().getSize() > 1);
+		btnCopy.setEnabled(selItem != null);
+		btnEdit.setEnabled(selItem != null && !selItem.getConfiguration().isActive());
+		btnDelete.setEnabled(selItem != null
+		        && !selItem.getConfiguration().isActive());
 
 	}
 
@@ -411,11 +414,22 @@ class ConfigurationListItem {
 }
 
 class ConfigurationListRenderer extends DefaultListCellRenderer {
-
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8333874222032631030L;
+	
+	private static final String activeConfIconName = "ok.png";
+	
+	private final ImageIcon activeIcon;
+	
+	public ConfigurationListRenderer() {
+		
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		activeIcon = new ImageIcon(kit.createImage(getClass().getResource(
+		        activeConfIconName)));
+    }
 
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value,
@@ -423,6 +437,10 @@ class ConfigurationListRenderer extends DefaultListCellRenderer {
 		JLabel label = (JLabel) super.getListCellRendererComponent(list, value,
 		        index, isSelected, cellHasFocus);
 		label.setText("\u2022 " + label.getText());
+		if(((ConfigurationListItem)value).getConfiguration().isActive()){
+			label.setIcon(activeIcon);
+			label.setHorizontalTextPosition(SwingConstants.LEADING);
+		}
 		return label;
 	}
 
