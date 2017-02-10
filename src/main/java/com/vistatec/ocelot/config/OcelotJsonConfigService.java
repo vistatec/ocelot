@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.config.json.LingoTekConfig;
 import com.vistatec.ocelot.config.json.OcelotRootConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.ProvenanceConfig;
@@ -85,7 +86,8 @@ public class OcelotJsonConfigService implements JsonConfigService {
 			prov = new UserProvenance(
 			        config.getUserProvenance().getRevPerson(), config
 			                .getUserProvenance().getRevOrg(), config
-			                .getUserProvenance().getExtRef());
+			                .getUserProvenance().getExtRef(), config
+			                .getUserProvenance().getLangCode());
 		}
 		return prov;
 	}
@@ -98,10 +100,13 @@ public class OcelotJsonConfigService implements JsonConfigService {
 		provConf.setRevPerson(prov.getRevPerson());
 		provConf.setRevOrg(prov.getRevOrg());
 		provConf.setExtRef(prov.getProvRef());
+		provConf.setLangCode(prov.getLangCode());
 		config.setUserProvenance(provConf);
 		cfgXservice.save(config);
 
 	}
+	
+
 
 	@Override
 	public double getFuzzyThreshold() {
@@ -305,6 +310,16 @@ public boolean isColumnEnabled(SegmentViewColumn column){
 		config.getLayout().getSegmentsGrid().setShowFlags(flagColsEnabled);
 		cfgXservice.save(config);
 		
+	}
+
+	@Override
+	public LingoTekConfig getLingoTekConfigurationParams() {
+		return config.getLingoTek();
+	}
+
+	@Override
+	public boolean isLingoTekConfigured() {
+		return config.getLingoTek() != null && config.getLingoTek().isComplete();
 	}
 
 }

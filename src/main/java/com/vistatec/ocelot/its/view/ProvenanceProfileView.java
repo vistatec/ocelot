@@ -59,7 +59,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
-    private final JTextField inputRevPerson, inputRevOrg, inputExtRef;
+    private final JTextField inputRevPerson, inputRevOrg, inputExtRef, inputLangCode;
     private final JButton save;
 
     private OcelotEventQueue eventQueue;
@@ -107,6 +107,16 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         gridBag.gridx = 1;
         gridBag.gridy = 2;
         add(inputExtRef, gridBag);
+        
+        gridBag.gridx = 0;
+        gridBag.gridy = 3;
+        add(new JLabel("Language Code: "), gridBag);
+        
+        inputLangCode = new JTextField(15);
+        inputLangCode.setText(profile.getLangCode());
+        gridBag.gridx = 1;
+        add(inputLangCode, gridBag);
+        
 
         save = new JButton("Save");
         save.addActionListener(this);
@@ -118,7 +128,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         actionPanel.add(save);
         actionPanel.add(cancel);
         gridBag.gridx = 1;
-        gridBag.gridy = 3;
+        gridBag.gridy = 4;
         add(actionPanel, gridBag);
 
     }
@@ -133,7 +143,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         if (e.getSource() == save) {
             UserProvenance userProvData = new UserProvenance(
                     inputRevPerson.getText(), inputRevOrg.getText(),
-                    inputExtRef.getText());
+                    inputExtRef.getText(), inputLangCode.getText());
             eventQueue.post(new UserProfileSaveEvent(userProvData));
         }
     }
@@ -150,4 +160,5 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         JOptionPane.showMessageDialog(null, failure.failureMsg,
                 "Failed to save user provenance!", JOptionPane.ERROR_MESSAGE);
     }
+    
 }

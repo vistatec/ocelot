@@ -16,7 +16,6 @@ import com.vistatec.ocelot.PlatformSupport;
 import com.vistatec.ocelot.config.Configs;
 import com.vistatec.ocelot.config.ConfigurationException;
 import com.vistatec.ocelot.config.ConfigurationManager;
-import com.vistatec.ocelot.config.DirectoryBasedConfigs;
 import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.ProfileConfigService;
@@ -25,6 +24,7 @@ import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.stats.model.ITSDocStats;
+import com.vistatec.ocelot.lgk.LingoTekManager;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.profile.ProfileManager;
@@ -64,7 +64,7 @@ public class OcelotModule extends AbstractModule {
 
         bind(PlatformSupport.class).toInstance(platformSupport);
 
-        JsonConfigService jsonCfgService = null;
+        JsonConfigService ocelotCfgService = null;
 		LqiJsonConfigService lqiCfgService = null;
 		ProfileConfigService profileCfgService = null;
         RuleConfiguration ruleConfig = null;
@@ -79,29 +79,17 @@ public class OcelotModule extends AbstractModule {
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
             ocelotDir.mkdirs();
-            //TODO
             ConfigurationManager confManager = new ConfigurationManager();
             confManager.readAndCheckConfiguration(ocelotDir);
             profileCfgService = confManager.getProfileConnfigService();
             File confFolder = confManager.getOcelotMainConfigurationFolder();
             profileManager = new ProfileManager(confFolder, profileCfgService, eventQueue);
-            jsonCfgService = confManager.getOcelotConfigService();
+            ocelotCfgService = confManager.getOcelotConfigService();
             lqiCfgService = confManager.getLqiConfigService();
-            //
-            
-            
-//            File confFolder = DirectoryConfigurationUtils.getConfigurationFolder(ocelotDir);
-//            profileCfgService = DirectoryConfigurationUtils.setupProfileConfService(confFolder);
-//            profileManager = new ProfileManager(confFolder, profileCfgService, eventQueue);
-//            File profileFolder = DirectoryConfigurationUtils.getActiveProfileFolder(confFolder, profileCfgService.getProfileName());
-            
-//            Configs configs = new DirectoryBasedConfigs(ocelotDir);
             Configs configs = confManager.getRulesConfigs();
-//            jsonCfgService = DirectoryConfigurationUtils.setupOcelotConfService(profileFolder);
-//			lqiCfgService = DirectoryConfigurationUtils.setupLqiConfService(profileFolder);
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
-            pluginManager = new PluginManager(jsonCfgService, new File(ocelotDir, "plugins"), eventQueue);
+            pluginManager = new PluginManager(ocelotCfgService, new File(ocelotDir, "plugins"), eventQueue);
             pluginManager.discover();
             eventQueue.registerListener(pluginManager);
 
@@ -110,15 +98,14 @@ public class OcelotModule extends AbstractModule {
             eventQueue.registerListener(segmentService);
 
             File tm = confManager.getTmConfigDir();
-//            File tm = DirectoryConfigurationUtils.getTmFolder(profileFolder);
             OkapiTmxWriter tmxWriter = new OkapiTmxWriter(segmentService);
             eventQueue.registerListener(tmxWriter);
-            tmManager = new OkapiTmManager(tm, jsonCfgService, tmxWriter);
+            tmManager = new OkapiTmManager(tm, ocelotCfgService, tmxWriter);
             
             bind(OkapiTmManager.class).toInstance((OkapiTmManager) tmManager);
             penalizer = new SimpleTmPenalizer(tmManager);
-            tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, jsonCfgService);
-            tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, jsonCfgService);
+            tmService = new OkapiTmService((OkapiTmManager)tmManager, penalizer, ocelotCfgService);
+            tmGuiManager = new TmGuiManager(tmManager, tmService, eventQueue, ocelotCfgService);
             
             lqiGridController = new LQIGridController(lqiCfgService, eventQueue,
                                                       platformSupport, confManager.getOcelotConfigService().canShowManageConfsButton());
@@ -127,6 +114,8 @@ public class OcelotModule extends AbstractModule {
             
             frController = new FindAndReplaceController(eventQueue);
             eventQueue.registerListener(frController);
+            LingoTekManager lgkManager = new LingoTekManager(ocelotCfgService.getLingoTekConfigurationParams());
+            bind(LingoTekManager.class).toInstance(lgkManager);
         } catch (IOException | TransferException | ConfigurationException ex) {
             LOG.error("Failed to initialize configuration", ex);
             System.exit(1);
@@ -141,7 +130,7 @@ public class OcelotModule extends AbstractModule {
         bind(FindAndReplaceController.class).toInstance(frController);
         bind(ProfileManager.class).toInstance(profileManager);
 
-		bindServices(eventQueue, profileCfgService, jsonCfgService, lqiCfgService, docStats);
+		bindServices(eventQueue, profileCfgService, ocelotCfgService, lqiCfgService, docStats);
     }
     
 

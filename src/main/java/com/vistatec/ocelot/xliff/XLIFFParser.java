@@ -12,4 +12,6 @@ public interface XLIFFParser {
     public String getSourceLang();
 
     public String getTargetLang();
+    
+    public String getOriginalFileName();
 }

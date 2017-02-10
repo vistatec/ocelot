@@ -9,6 +9,7 @@ public class OcelotRootConfig implements RootConfig {
 	private ProvenanceConfig userProvenance;
 	private TmManagement tmManagement;
 	private LayoutConfig layout;
+	private LingoTekConfig lingoTek;
 
 	public OcelotRootConfig() {
 		
@@ -56,6 +57,14 @@ public class OcelotRootConfig implements RootConfig {
 	public LayoutConfig getLayout(){
 		return layout;
 	}
+	
+	public void setLingoTek(LingoTekConfig lingoTek){
+		this.lingoTek = lingoTek;
+	}
+	
+	public LingoTekConfig getLingoTek(){
+		return lingoTek;
+	}
 
 	@Override
 	public String toString() {
@@ -82,5 +91,4 @@ public class OcelotRootConfig implements RootConfig {
 		}
 		return strBuilder.toString();
 	}
-
 }

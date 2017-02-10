@@ -14,6 +14,8 @@ public class ProvenanceConfig {
 	
 	private String revPerson;
 	
+	private String langCode;
+	
 	public void setExtRef(String extRef ){
 		this.extRef = extRef;
 	}
@@ -38,11 +40,19 @@ public class ProvenanceConfig {
 		return revPerson;
 	}
 	
+	public void setLangCode(String langCode){
+		this.langCode = langCode;
+	}
+	
+	public String getLangCode(){
+		return langCode;
+	}
+	
 	@Override
 	public String toString() {
-		
-		
-	    return "Reviewer: " + revPerson + ", organization: " + revOrg + ", external ref: " + extRef;
+
+		return "Reviewer: " + revPerson + ", organization: " + revOrg
+				+ ", external ref: " + extRef + ", language code: " + langCode;
 	}
 	
 }

@@ -92,6 +92,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 	private XLIFFFilter filter;
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
+	private String originalFileName;
 	private EnrichmentConverterXLIFF12 enrichmentConverter;
 
 	@Override
@@ -110,6 +111,14 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 
 	public void setTargetLang(String targetLang) {
 		this.targetLang = targetLang;
+	}
+	
+	public void setOriginalFileName(String originalFileName){
+		this.originalFileName = originalFileName;
+	}
+	
+	public String getOriginalFileName(){
+		return originalFileName;
 	}
 
 	public Event getSegmentEvent(int segEventNumber) {
@@ -151,6 +160,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 			if (event.isStartSubDocument()) {
 				StartSubDocument fileElement = (StartSubDocument) event
 				        .getResource();
+				setOriginalFileName(fileElement.getName());
 				XLIFFToolAnnotation toolAnn = fileElement
 				        .getAnnotation(XLIFFToolAnnotation.class);
 				if (toolAnn == null) {

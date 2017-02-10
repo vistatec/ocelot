@@ -52,6 +52,7 @@ import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Note;
 import net.sf.okapi.lib.xliff2.core.Part;
+import net.sf.okapi.lib.xliff2.core.StartFileData;
 import net.sf.okapi.lib.xliff2.core.StartXliffData;
 import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.TagType;
@@ -92,6 +93,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	private Map<Integer, Integer> segmentEventMapping;
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
+	private String originalFileName;
     private EnrichmentConverterXLIFF20 enrichmentConverter;
     
 	public List<Event> getEvents() {
@@ -137,6 +139,9 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				}
                 enrichmentConverter = new EnrichmentConverterXLIFF20(sourceLang, targetLang);
 
+			} else if(event.isStartFile()) {
+				StartFileData fileData = event.getStartFileData();
+				this.originalFileName = fileData.getOriginal();
 			} else if (event.isUnit()) {
 				Unit unit = event.getUnit();
 				for (Part unitPart : unit) {
@@ -160,7 +165,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 						this.segmentUnitParts.add(okapiSegment);
 					}
 				}
-			}
+			} 
 
 		}
         reader.close();
@@ -465,6 +470,12 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		return this.targetLang;
 	}
 	
+	@Override
+	public String getOriginalFileName() {
+		return originalFileName;
+	}
+
+	
 	public void updateTargetVersions(){
 		
 		for(TargetVersion tVersion: targetVersions){
@@ -528,6 +539,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		
 		return plainText.toString();
 	}
+
 }
 
 

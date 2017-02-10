@@ -92,16 +92,18 @@ import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
+import com.vistatec.ocelot.lgk.LingoTekManager;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
-import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
@@ -125,7 +127,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
-	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
+	private JMenuItem menuOpenXLIFF, menuDownloadLGK, menuExit, menuAbout, menuRules, menuProv,
 	        menuSave, menuSaveAs, menuFindReplace, menuWorkspace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
@@ -154,6 +156,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private final OcelotEventQueue eventQueue;
 	private final OcelotApp ocelotApp;
 	private final LQIGridController lqiGridController;
+	private final LingoTekManager lgkManager;
 
 	private PlatformSupport platformSupport;
 
@@ -172,6 +175,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
 		this.configService = (OcelotJsonConfigService) ocelotScope.getInstance(JsonConfigService.class);
 		this.profileManager = ocelotScope.getInstance(ProfileManager.class);
+		lgkManager = ocelotScope.getInstance(LingoTekManager.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
 		platformSupport.init(this);
 
@@ -248,6 +252,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 		} else if (e.getSource() == this.menuOpenXLIFF) {
 			promptOpenXLIFFFile();
+		} else if (e.getSource().equals(menuDownloadLGK)) {
+			File file = lgkManager.downloadFile(mainframe, configService.getUserProvenance().getLangCode());
+			openFile(file, true);
 		} else if (e.getSource() == this.menuRules) {
 			showModelessDialog(ocelotScope.getInstance(FilterView.class),
 			        "Filters");
@@ -267,16 +274,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		} else if (e.getSource() == this.menuExit) {
 			handleApplicationExit();
 		} else if (e.getSource() == this.menuSaveAs) {
-			if (ocelotApp.hasOpenFile()) {
-				File saveFile = promptSaveAs();
-				if (saveFile != null && save(saveFile)) {
-					setMainTitle(saveFile.getName());
-				}
-			}
+			saveAs();
 		} else if (e.getSource().equals(menuSaveAsTmx)) {
 			tmGuiManager.saveAsTmx(mainframe);
 		} else if (e.getSource() == this.menuSave) {
-			save(ocelotApp.getOpenFile());
+			saveFile();
 		} else if (e.getSource() == this.menuTgtDiff) {
 			this.segmentView
 			        .setEnabledTargetDiff(this.menuTgtDiff.isSelected());
@@ -292,40 +294,58 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		}
 	}
 
+
 	private void promptOpenXLIFFFile() {
 		FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
 		fd.setFilenameFilter(new XliffFileFilter());
 		fd.setVisible(true);
 		File sourceFile = getSelectedFile(fd);
 		fd.dispose();
-
-		if (sourceFile != null) {
+		openFile(sourceFile, false);
+	}
+	
+	private void openFile(File file, boolean temporary){
+		if (file != null) {
 			try {
-				ocelotApp.openFile(sourceFile);
-				this.setMainTitle(sourceFile.getName());
-				segmentView.reloadTable();
-
-				this.menuSave.setEnabled(true);
-				this.menuSaveAs.setEnabled(true);
-				this.menuSaveAsTmx.setEnabled(true);
-				this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
-                this.toolBar.setSourceFont(segmentView.getSourceFont());
-                this.toolBar.setTargetFont(segmentView.getTargetFont());
+				ocelotApp.openFile(file, temporary);
 			} catch (FileNotFoundException ex) {
 				LOG.error(
-				        "Failed to parse file '" + sourceFile.getName() + "'",
+				        "Failed to parse file '" + file.getName() + "'",
 				        ex);
 			} catch (Exception e) {
-				String errorMsg = "Could not open " + sourceFile.getName();
+				String errorMsg = "Could not open " + file.getName();
 				LOG.error(errorMsg, e);
 				alertUser("XLIFF Parsing Error",
 				        errorMsg + ": " + e.getMessage());
 			}
 		}
 	}
+	
 
-	private File promptSaveAs() {
+	@Subscribe
+	public void handleFileOpenedEvent(final OpenFileEvent event){
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				setMainTitle(event.getFilename());
+				segmentView.reloadTable();
+				
+				menuSave.setEnabled(true);
+				menuSaveAs.setEnabled(true);
+				menuSaveAsTmx.setEnabled(true);
+				toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
+				toolBar.setSourceFont(segmentView.getSourceFont());
+				toolBar.setTargetFont(segmentView.getTargetFont());
+				
+			}
+		});
+	}
+	
+	private File promptSaveAs(String defFileName) {
 		FileDialog fd = new FileDialog(mainframe, "Save As...", FileDialog.SAVE);
+		fd.setFile(defFileName);
 		fd.setVisible(true);
 		File f = getSelectedFile(fd);
 		fd.dispose();
@@ -335,6 +355,30 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private File getSelectedFile(FileDialog fd) {
 		return (fd.getFile() == null) ? null : new File(fd.getDirectory(),
 		        fd.getFile());
+	}
+	
+	private void saveAs() {
+		if (ocelotApp.hasOpenFile()) {
+			saveAs(ocelotApp.getDefaultFileName());
+		}
+	}
+	
+	private void saveAs(String defFileName){
+		
+		File saveFile = promptSaveAs(defFileName);
+		if (saveFile != null && save(saveFile)) {
+			setMainTitle(saveFile.getName());
+		}
+	}
+	
+	private void saveFile(){
+		if(ocelotApp.hasOpenFile()){
+			if(ocelotApp.isTemporaryFile()){
+				saveAs();
+			} else {
+				save(ocelotApp.getOpenFile());
+			}
+		}
 	}
 
 	private boolean save(File saveFile) {
@@ -408,6 +452,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuOpenXLIFF.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
 		        getPlatformKeyMask()));
 		menuFile.add(menuOpenXLIFF);
+		
+		menuDownloadLGK = new JMenuItem("Download from LGK");
+		menuDownloadLGK.addActionListener(this);
+		menuDownloadLGK.setEnabled(lgkManager.isEnabled());
+		menuFile.add(menuDownloadLGK);
+		
 
 		menuSave = new JMenuItem("Save");
 		menuSave.setEnabled(false);

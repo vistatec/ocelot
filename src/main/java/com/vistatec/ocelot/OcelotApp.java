@@ -78,6 +78,7 @@ public class OcelotApp implements OcelotEventQueueListener {
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
+    private boolean temporaryFile;
 
     @Inject
     public OcelotApp(OcelotEventQueue eventQueue, PluginManager pluginManager,
@@ -110,7 +111,25 @@ public class OcelotApp implements OcelotEventQueueListener {
         return fileDirty;
     }
 
-    public void openFile(File openFile) throws IOException, FileNotFoundException, XMLStreamException {
+    public boolean isTemporaryFile(){
+    	
+    	return temporaryFile;
+    }
+    
+    public String getDefaultFileName(){
+    	String defFileName = null;
+    	if(hasOpenFile){
+    		if(temporaryFile){
+    			defFileName = getFileNameFromOriginal(openXliffFile.getOriginal());
+    		} else {
+    			defFileName = openFile.getName();
+    		}
+    	}
+    	
+    	return defFileName; 
+    }
+    
+    public void openFile(File openFile, boolean temporaryFile) throws IOException, FileNotFoundException, XMLStreamException {
         openXliffFile = xliffService.parse(openFile);
         segmentService.clearAllSegments();
         segmentService.setSegments(openXliffFile);
@@ -121,7 +140,18 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.openFile = openFile;
         hasOpenFile = true;
         fileDirty = false;
-        eventQueue.post(new OpenFileEvent(openFile.getName(), openXliffFile));
+        this.temporaryFile = temporaryFile;
+        String fileName = null;
+        if(temporaryFile && openXliffFile.getOriginal() != null){
+        	fileName = getFileNameFromOriginal(openXliffFile.getOriginal());
+        } else {
+        	fileName = openFile.getName();
+        }
+        eventQueue.post(new OpenFileEvent(fileName, openXliffFile));
+    }
+    
+    private String getFileNameFromOriginal(String originalName){
+    	return originalName + ".xlf";
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {

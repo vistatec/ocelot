@@ -2,6 +2,7 @@
 	"userProvenance" : {
 		"revPerson" : "A",
 		"revOrganization" : "B",
-		"externalReference" : "C"
+		"externalReference" : "C",
+		"langCode": "D"
 	}
 }

@@ -38,6 +38,7 @@ public class TestProvenanceConfig {
         assertEquals("A", prov.getRevPerson());
         assertEquals("B", prov.getRevOrg());
         assertEquals("C", prov.getProvRef());
+        assertEquals("D", prov.getLangCode());
     }
 
     @Test
@@ -48,9 +49,10 @@ public class TestProvenanceConfig {
         OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new TestOcelotJsonConfigTransferService(file, writer));
 
         UserProvenance prov = cfgService.getUserProvenance();
-        prov.setProvRef("D");
-        prov.setRevPerson("E");
-        prov.setRevOrg("F");
+        prov.setProvRef("E");
+        prov.setRevPerson("F");
+        prov.setRevOrg("G");
+        prov.setLangCode("H");
         cfgService.saveUserProvenance(prov);
         
         File savedFile = File.createTempFile("OcelotTest", "provTest");
@@ -61,9 +63,10 @@ public class TestProvenanceConfig {
         OcelotJsonConfigService testCfgService = new OcelotJsonConfigService(new TestOcelotJsonConfigTransferService(savedFile, writer));
 
         UserProvenance roundtrip = testCfgService.getUserProvenance();
-        assertEquals("D", roundtrip.getProvRef());
-        assertEquals("E", roundtrip.getRevPerson());
-        assertEquals("F", roundtrip.getRevOrg());
+        assertEquals("E", roundtrip.getProvRef());
+        assertEquals("F", roundtrip.getRevPerson());
+        assertEquals("G", roundtrip.getRevOrg());
+        assertEquals("H", roundtrip.getLangCode());
     }
 
     public class TestCharSink extends CharSink {

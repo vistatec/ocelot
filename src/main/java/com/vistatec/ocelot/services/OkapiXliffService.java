@@ -92,7 +92,7 @@ public class OkapiXliffService implements XliffService {
         XLIFFWriter segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
                 cfgService.getUserProvenance(), eventQueue);
         return new OkapiXLIFFDocument(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
-                                  LocaleId.fromString(xliffParser.getTargetLang()), xliffSegments,
+                                  LocaleId.fromString(xliffParser.getTargetLang()), xliffParser.getOriginalFileName(), xliffSegments,
                                   xliffParser, segmentWriter);
     }
 
