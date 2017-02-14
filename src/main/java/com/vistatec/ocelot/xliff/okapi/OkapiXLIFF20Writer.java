@@ -410,4 +410,16 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
 
 	}
 
+	@Override
+	public void updateTiming(Double time) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateLqiConfiguration(String lqiConfName) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

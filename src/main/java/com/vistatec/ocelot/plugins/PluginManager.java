@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -94,12 +95,14 @@ public class PluginManager implements OcelotEventQueueListener {
 	private List<String> itsPluginClassNames = new ArrayList<String>();
 	private List<String> segPluginClassNames = new ArrayList<String>();
 	private List<String> reportPluginClassNames = new ArrayList<String>();
-        private List<String> fremePluginClassNames = new ArrayList<String>();
-        private List<String> qualityPluginClassNames = new ArrayList<String>();
+	private List<String> fremePluginClassNames = new ArrayList<String>();
+	private List<String> qualityPluginClassNames = new ArrayList<String>();
+	private List<String> timerPluginClassNames = new ArrayList<String>();
 	private HashMap<ITSPlugin, Boolean> itsPlugins;
 	private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private HashMap<ReportPlugin, Boolean> reportPlugins;
-        private HashMap<FremePlugin, Boolean> fremePlugins;
+	private HashMap<FremePlugin, Boolean> fremePlugins;
+	private HashMap<TimerPlugin, Boolean> timerPlugins;
 	private FremePluginManager fremeManager;
 	private ClassLoader classLoader;
 	private File pluginDir;
@@ -111,7 +114,8 @@ public class PluginManager implements OcelotEventQueueListener {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
 		this.reportPlugins = new HashMap<ReportPlugin, Boolean>();
-                this.fremePlugins = new HashMap<FremePlugin, Boolean>();
+		this.timerPlugins = new HashMap<TimerPlugin, Boolean>();
+        this.fremePlugins = new HashMap<FremePlugin, Boolean>();
 		this.fremeManager = new FremePluginManager(eventQueue);
 		this.cfgService = cfgService;
 		this.pluginDir = pluginDir;
@@ -131,13 +135,15 @@ public class PluginManager implements OcelotEventQueueListener {
 		Set<? extends Plugin> itsPlugins = getITSPlugins();
 		Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
 		Set<? extends Plugin> reportPlugins = getReportPlugins();
-                Set<? extends Plugin> fremePlugins = getFremePlugins();
-                Set<? extends Plugin> qualityPlugins = getQualityPlugins();
+        Set<? extends Plugin> fremePlugins = getFremePlugins();
+        Set<? extends Plugin> qualityPlugins = getQualityPlugins();
+        Set<? extends Plugin> timerPlugins = getTimerPlugins();
 		plugins.addAll(itsPlugins);
 		plugins.addAll(segmentPlugins);
 		plugins.addAll(reportPlugins);
-                plugins.addAll(fremePlugins);
-                plugins.addAll(qualityPlugins);
+        plugins.addAll(fremePlugins);
+        plugins.addAll(qualityPlugins);
+        plugins.addAll(timerPlugins);
 		return plugins;
 	}
 
@@ -163,6 +169,10 @@ public class PluginManager implements OcelotEventQueueListener {
         public Set<QualityPlugin> getQualityPlugins() {
 		return qualityPluginManager.getPlugins().keySet();
 	}
+        
+    public Set<TimerPlugin> getTimerPlugins() {
+    	return this.timerPlugins.keySet();
+    }
 
 	/**
 	 * Return if the plugin should receive data from the workbench.
@@ -184,6 +194,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof QualityPlugin) {
 			QualityPlugin qualityPlugin = (QualityPlugin) plugin;
 			enabled = qualityPluginManager.getPlugins().get(qualityPlugin);
+		} else if (plugin instanceof TimerPlugin) {
+			TimerPlugin timerPlugin = (TimerPlugin) plugin;
+			enabled = timerPlugins.get(timerPlugin);
 		}
 		return enabled;
 	}
@@ -208,6 +221,10 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof QualityPlugin) {
 			QualityPlugin qualityPlugin = (QualityPlugin) plugin;
 			qualityPluginManager.enablePlugin(qualityPlugin, enabled);
+		} else if (plugin instanceof TimerPlugin) {
+			TimerPlugin timerPlugin = (TimerPlugin) plugin;
+			timerPlugins.put(timerPlugin, enabled);
+			timerPlugin.getTimerWidget().setEnabled(enabled);
 		}
 		cfgService.savePluginEnabled(plugin, enabled);
 	}
@@ -270,6 +287,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				}
 			}
 		}
+		handleTimerOnUserAction();
 	}
 
 	/**
@@ -319,9 +337,15 @@ public class PluginManager implements OcelotEventQueueListener {
 			reportPlugin.onOpenFile(filename, segments);
 		}
 		qualityPluginManager.initOpenedFileSettings(segments, filename);
+		for(TimerPlugin timerPlugin: timerPlugins.keySet()){
+			if(isEnabled(timerPlugin)){
+				timerPlugin.resetTimer();
+				timerPlugin.startTimer();
+			}
+		}
 	}
 
-	public void notifySaveFile(String filename) {
+	public void notifySavedFile(String filename) {
 		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
 			if (isEnabled(segPlugin)) {
 				try {
@@ -330,6 +354,15 @@ public class PluginManager implements OcelotEventQueueListener {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
 					        + "' threw an exception on file save", e);
 				}
+			}
+		}
+		
+	}
+	
+	public void notifyBeforeSaveFile(){
+		for(TimerPlugin timerPlugin: timerPlugins.keySet() ){
+			if(isEnabled(timerPlugin)){
+				timerPlugin.stopTimer();
 			}
 		}
 	}
@@ -447,6 +480,21 @@ public class PluginManager implements OcelotEventQueueListener {
 				e.printStackTrace();
 			}
 		}
+                for (String s : timerPluginClassNames) {
+        			try {
+        				@SuppressWarnings("unchecked")
+        				Class<? extends TimerPlugin> c = (Class<TimerPlugin>) Class
+        				        .forName(s, false, classLoader);
+        				TimerPlugin plugin = c.newInstance();
+        				timerPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+        			} catch (ClassNotFoundException e) {
+        				// XXX Shouldn't happen?
+        				System.out.println("Warning: " + e.getMessage());
+        			} catch (Exception e) {
+        				// TODO Auto-generated catch block
+        				e.printStackTrace();
+        			}
+        		}
 	}
 
 	private void installClassLoader(File[] jarFiles) throws IOException {
@@ -552,7 +600,19 @@ public class PluginManager implements OcelotEventQueueListener {
 							} else {
 								qualityPluginClassNames.add(name);
 							}
-						}
+						} else if (TimerPlugin.class.isAssignableFrom(clazz)) {
+							// It's a plugin! Just store the name for now
+							// since we will need to reinstantiate it later with
+							// the
+							// real classloader (I think)
+							if (timerPluginClassNames.contains(name)) {
+								// TODO: log this
+								System.out
+								        .println("Warning: found multiple implementations of plugin class "
+								                + name);
+							} else {
+								timerPluginClassNames.add(name);
+							} }
 					} catch (ClassNotFoundException ex) {
 						// XXX shouldn't happen?
 						System.out.println("Warning: " + ex.getMessage());
@@ -723,23 +783,33 @@ private JMenu getFremeMenu() {
 
 		
 
+    private void handleTimerOnUserAction(){
+    	for(TimerPlugin timerPlugin: timerPlugins.keySet()){
+			if(isEnabled(timerPlugin)){
+				timerPlugin.recordUserActivity();
+			}
+		}
+    }
 	
 	@Subscribe
 	public void handleLqiDeleted(LQIRemoveEvent event){
 		
 		qualityPluginManager.removedQualityIssue(event.getLQI());
+		handleTimerOnUserAction();
 	}
 
 	@Subscribe
 	public void handleLqiAdded(LQIAdditionEvent event) {
 
 		qualityPluginManager.addQualityIssue(event.getLQI());
+		handleTimerOnUserAction();
 	}
 
 	@Subscribe
 	public void handleLqiEdited(LQIEditEvent event) {
 		qualityPluginManager.editedQualityIssue(event.getOldLQI(),
 		        event.getLQI());
+		handleTimerOnUserAction();
 	}
 	
 	@Subscribe
@@ -761,6 +831,34 @@ private JMenu getFremeMenu() {
 			}
 		}
 		return items;
+	}
+	
+	public List<Component> getToolBarComponents(){
+		
+		List<Component> components = new ArrayList<Component>();
+		if(timerPlugins != null && !timerPlugins.isEmpty()){
+			TimerPlugin timerPlugin = timerPlugins.keySet().iterator().next();
+			Component timerWidget = timerPlugin.getTimerWidget();
+			if(isEnabled(timerPlugin) ){
+				timerWidget.setEnabled(true);
+			} else {
+				timerWidget.setEnabled(false );
+			}
+			components.add(timerWidget);
+		}
+		
+		return components;
+	}
+
+	public Double getTimerSeconds() {
+		Double time = null;
+		if(timerPlugins != null && !timerPlugins.isEmpty()){
+			TimerPlugin timerPlugin = timerPlugins.keySet().iterator().next();
+			if(isEnabled(timerPlugin)){
+				time = timerPlugin.getSeconds();
+			}
+		}
+		return time;
 	}
 
 }

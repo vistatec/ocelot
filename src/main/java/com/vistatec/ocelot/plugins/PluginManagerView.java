@@ -223,6 +223,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
                 try {
                     pluginManager.discover(fc.getSelectedFile());
                     initPlugins(pluginManager.getPlugins());
+                    ocelotApp.handleNewPluginInstalled();
                     revalidate();
                 } catch (IOException ex) {
                     LOG.warn("Plugin directory IOException", ex);

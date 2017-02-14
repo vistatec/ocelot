@@ -28,6 +28,7 @@
  */
 package com.vistatec.ocelot;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
@@ -56,10 +58,12 @@ import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.EditDistanceReportService;
+import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
 import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
+import com.vistatec.ocelot.xliff.okapi.OkapiXLIFF12Writer;
 
 /**
  * Main Ocelot application context.
@@ -164,11 +168,15 @@ public class OcelotApp implements OcelotEventQueueListener {
             throw new ErrorAlertException("Unable to save!",
                     "The file " + filename + " can not be saved, because the file is not writeable.");
         }
+        pluginManager.notifyBeforeSaveFile();
         // Save to temp file, then move over actual target. This lets us ensure
         // the output is well-formed, as we save and then parse again to save
         // the annotations.
         Path tmpPath = Files.createTempFile("ocelot", "save");
         File tmpFile = tmpPath.toFile();
+        if(xliffService instanceof OkapiXliffService){
+        	((OkapiXliffService)xliffService).saveTime(pluginManager.getTimerSeconds());
+        }
         xliffService.save(openXliffFile, tmpFile);
         try {
 			XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
@@ -185,10 +193,16 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
         this.fileDirty = false;
         editDistService.createEditDistanceReport(filename);
-        pluginManager.notifySaveFile(filename);
+        pluginManager.notifySavedFile(filename);
         Files.move(tmpPath, saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
+    public void saveLqiConfiguration(String lqiConfName) {
+		if(xliffService instanceof OkapiXliffService){
+			((OkapiXliffService)xliffService).saveLqiConfiguration(lqiConfName);
+		}
+	}
+    
     public String getFileSourceLang() {
         return openXliffFile.getSrcLocale().toString();
     }
@@ -231,6 +245,16 @@ public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
 
 		return pluginManager.getSegmentContextMenuItems(segment, variant,
 				target);
+	}
+
+	public List<Component> getPluginToolBarWidgets(){
+		return pluginManager.getToolBarComponents();
+	}
+
+
+	public void handleNewPluginInstalled() {
+		
+		eventQueue.post(new NewPluginsInstalled());
 	}
 
 }

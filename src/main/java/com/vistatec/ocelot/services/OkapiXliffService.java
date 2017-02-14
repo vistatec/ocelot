@@ -58,6 +58,8 @@ public class OkapiXliffService implements XliffService {
 
     private final JsonConfigService cfgService;
     private final OcelotEventQueue eventQueue;
+    private Double time;
+    private String lqiConfiguration;
 
     public OkapiXliffService(JsonConfigService cfgService, OcelotEventQueue eventQueue) {
         this.cfgService = cfgService;
@@ -73,6 +75,14 @@ public class OkapiXliffService implements XliffService {
     @Subscribe
     public void updateNotes(SegmentNoteEditEvent e ) {
         getDoc(e.getDocument()).getWriter().updateNotes(e.getSegment());
+    }
+    
+    public void saveTime(double time){
+    	this.time = time;
+    }
+    
+    public void saveLqiConfiguration(String lqiConfigurationName){
+    	this.lqiConfiguration = lqiConfigurationName;
     }
 
     private OkapiXLIFFDocument getDoc(XLIFFDocument xliff) {
@@ -98,8 +108,12 @@ public class OkapiXliffService implements XliffService {
 
     @Override
     public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException {
+    	
         OkapiXLIFFDocument okapiFile = getDoc(xliffFile);
+        okapiFile.getWriter().updateTiming(time);
+        okapiFile.getWriter().updateLqiConfiguration(lqiConfiguration);
         okapiFile.getWriter().save(dest);
+        time = null;
     }
 
 }

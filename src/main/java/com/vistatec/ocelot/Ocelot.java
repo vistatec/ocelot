@@ -91,6 +91,7 @@ import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
+import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
@@ -338,6 +339,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 				toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
 				toolBar.setSourceFont(segmentView.getSourceFont());
 				toolBar.setTargetFont(segmentView.getTargetFont());
+//				ocelotApp.updateLqiConfInFile(toolBar.getl)
 				
 			}
 		});
@@ -584,6 +586,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		initializeMenuBar();
 		try {
 	        toolBar = new OcelotToolBar(this, lqiGridController.getConfigService().readLQIConfig(), eventQueue);
+	        toolBar.addPluginWidgets(ocelotApp.getPluginToolBarWidgets());
         } catch (TransferException e1) {
 	        // TODO Auto-generated catch block
 	        e1.printStackTrace();
@@ -659,7 +662,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
     @Subscribe
     public void handleNewLqiConfigSelected(LQIConfigurationSelectionChangedEvent event){
     	//TODO
+    	try{
     	loadLQIKeyListener(event.getOldSelectedConfiguration(), event.getNewSelectedConfiguration());
+    	ocelotApp.saveLqiConfiguration(event.getNewSelectedConfiguration().getName());
+    	} catch (Exception e){
+    		e.printStackTrace();
+    	}
+    	
     }
     
     private void loadLQIKeyListener(LQIGridConfiguration oldGridConfiguration, LQIGridConfiguration newLqiGridConfiguration){
@@ -892,6 +901,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
             segmentView.setSourceFont(sourceFont);
         }
 
+    }
+    
+    @Subscribe
+    public void handlePluginInstalled(NewPluginsInstalled event){
+    	
+    	toolBar.addPluginWidgets(ocelotApp.getPluginToolBarWidgets());
     }
 
 }

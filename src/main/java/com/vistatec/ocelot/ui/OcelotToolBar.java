@@ -1,12 +1,16 @@
 package com.vistatec.ocelot.ui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
@@ -73,10 +77,17 @@ public class OcelotToolBar extends JToolBar {
 		// builds the LQI configuration tool.
 		lqiConfTool = new OcelotLQIConfTool(lqiGridConfigurations, eventQueue);
 
+		insertComponents(null);
+
+	}
+	
+	private void insertComponents(List<Component> widgets ){
+		
 		GridBagConstraints gridBag = new GridBagConstraints();
 
 		gridBag.gridx = 0;
 		gridBag.gridy = 0;
+		gridBag.weighty = 0.5;
 		gridBag.anchor = GridBagConstraints.WEST;
 		add(lqiConfTool, gridBag);
 
@@ -85,17 +96,35 @@ public class OcelotToolBar extends JToolBar {
 		gridBag.insets = new Insets(5, 5, 5, 5);
 		gridBag.gridx = 1;
 		add(separator, gridBag);
-
-		gridBag.gridx = 2;
+		
+		if(widgets != null){
+			JPanel widgetPanel = new JPanel();
+			widgetPanel.setLayout(new BoxLayout(widgetPanel, BoxLayout.X_AXIS));
+			widgetPanel.setOpaque(false);
+			for(Component comp: widgets){
+				widgetPanel.add(comp);
+				widgetPanel.add(Box.createHorizontalStrut(5));
+			}
+			gridBag.gridx = GridBagConstraints.RELATIVE;
+			gridBag.insets = new Insets(0, 0, 0, 0);
+			add(widgetPanel, gridBag);
+			separator = new JSeparator(JSeparator.VERTICAL);
+			separator.setPreferredSize(new Dimension(5, 20));
+			gridBag.insets = new Insets(5, 0, 5, 5);
+			gridBag.gridx = GridBagConstraints.RELATIVE;
+			add(separator, gridBag);
+		}
+		
+		gridBag.gridx = GridBagConstraints.RELATIVE;
 		gridBag.weightx = 0.5;
 		gridBag.insets = new Insets(0, 0, 0, 0);
 		gridBag.fill = GridBagConstraints.HORIZONTAL;
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
 		add(panel, gridBag);
-
+		
 		// Inserting Source Font Label
-		gridBag.gridx = 3;
+		gridBag.gridx = GridBagConstraints.RELATIVE;
 		gridBag.weightx = 0;
 		gridBag.anchor = GridBagConstraints.CENTER;
 		gridBag.fill = GridBagConstraints.NONE;
@@ -104,20 +133,19 @@ public class OcelotToolBar extends JToolBar {
 		separator = new JSeparator(JSeparator.VERTICAL);
 		separator.setPreferredSize(new Dimension(5, 20));
 		gridBag.insets = new Insets(5, 5, 5, 5);
-		gridBag.gridx = 4;
+		gridBag.gridx = GridBagConstraints.RELATIVE;
 		add(separator, gridBag);
 		// Inserting Target Font LAbel
-		gridBag.gridx = 5;
+		gridBag.gridx = GridBagConstraints.RELATIVE;
 		gridBag.insets = new Insets(0, 0, 0, 0);
 		add(targetFontTool, gridBag);
 
-		gridBag.gridx = 6;
+		gridBag.gridx = GridBagConstraints.RELATIVE;
 		gridBag.weightx = 0.5;
 		gridBag.fill = GridBagConstraints.HORIZONTAL;
 		panel = new JPanel();
 		panel.setOpaque(false);
 		add(panel, gridBag);
-
 	}
 
 	/**
@@ -198,5 +226,13 @@ public class OcelotToolBar extends JToolBar {
 	public LQIGridConfiguration getSelectedLQIConfiguration() {
 		
 		return lqiConfTool.getSelectedConfiguration();
+	}
+	
+	
+	public void addPluginWidgets(List<Component> widgets){
+		
+		removeAll();
+		insertComponents(widgets);
+		revalidate();
 	}
 }
