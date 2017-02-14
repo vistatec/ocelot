@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
@@ -40,7 +40,7 @@ public class SegmentMenu implements OcelotEventQueueListener {
 
     private LanguageQualityIssuePropsPanel addLQIView = null;
 
-    public SegmentMenu(final OcelotEventQueue eventQueue, int platformKeyMask, final LqiConfigService lqiService) {
+    public SegmentMenu(final OcelotEventQueue eventQueue, int platformKeyMask, final LqiJsonConfigService lqiService) {
         menu = new JMenu("Segment");
         menuAddIssue = new JMenuItem("Add Issue");
         menuAddIssue.setAccelerator(

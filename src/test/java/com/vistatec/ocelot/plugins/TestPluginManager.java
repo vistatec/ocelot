@@ -28,19 +28,19 @@
  */
 package com.vistatec.ocelot.plugins;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import com.google.common.eventbus.EventBus;
-import com.vistatec.ocelot.config.OcelotConfigService;
 import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.OcelotRootConfig;
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
@@ -55,8 +55,9 @@ public class TestPluginManager {
 
         File pluginDir = new File(url.toURI());
         OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
-        PluginManager pluginManager = new PluginManager(
-                new OcelotConfigService(new TestConfigTransferService()), pluginDir, eventQueue);
+        PluginManager pluginManager = new PluginManager(new OcelotJsonConfigService(new TestJsonConfigTransferService()), pluginDir, eventQueue);
+//        PluginManager pluginManager = new PluginManager(
+//                new OcelotConfigService(new TestConfigTransferService()), pluginDir, eventQueue);
         pluginManager.discover();
 
         Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
@@ -72,17 +73,22 @@ public class TestPluginManager {
         assertEquals("1.0", segPlugin.getPluginVersion());
     }
 
-    public class TestConfigTransferService implements ConfigTransferService {
+    
+    public class TestJsonConfigTransferService implements ConfigTransferService{
 
-        @Override
-        public OcelotRootConfig parse() throws ConfigTransferService.TransferException {
-            return new OcelotRootConfig();
+		@Override
+        public com.vistatec.ocelot.config.json.RootConfig read()
+                throws TransferException {
+			
+			return new com.vistatec.ocelot.config.json.OcelotRootConfig();
         }
 
-        @Override
-        public void save(RootConfig cfg) throws ConfigTransferService.TransferException {
-            throw new UnsupportedOperationException("Not supported yet.");
+		@Override
+        public void save(com.vistatec.ocelot.config.json.RootConfig config)
+                throws TransferException {
+			throw new UnsupportedOperationException("Not supported yet.");
+	        
         }
-
+    	
     }
 }

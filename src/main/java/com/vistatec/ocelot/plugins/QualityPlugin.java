@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.List;
 
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.plugins.exception.AuditProfileException;
 import com.vistatec.ocelot.plugins.exception.NoAuditProfileLoadedException;
 import com.vistatec.ocelot.plugins.exception.QualityEvaluationException;
@@ -14,6 +15,9 @@ public interface QualityPlugin extends Plugin {
 
 	public void loadAuditProfile(File file) throws AuditProfileException,
 	        QualityEvaluationException;
+
+	public void loadLQIGridConfiguration(LQIGridConfiguration configuration)
+	        throws QualityEvaluationException;
 
 	public File createNewAuditProfile(Window ownerWindow)
 	        throws AuditProfileException;;
@@ -28,7 +32,7 @@ public interface QualityPlugin extends Plugin {
 	        throws NoAuditProfileLoadedException, QualityEvaluationException;
 
 	public void documentOpened(int sampleSize,
-	        List<LanguageQualityIssue> lqiList, List<OcelotSegment> segments)
+	        List<LanguageQualityIssue> lqiList, List<OcelotSegment> segments, String fileName)
 	        throws QualityEvaluationException;
 
 	public void enableEvaluationOnTheFly(boolean enable)
@@ -39,7 +43,7 @@ public interface QualityPlugin extends Plugin {
 
 	public void lqiEdited(LanguageQualityIssue oldLqi,
 	        LanguageQualityIssue newLqi) throws QualityEvaluationException;
-	
+
 	public void lqiRemoved(LanguageQualityIssue lqi)
 	        throws QualityEvaluationException;
 
@@ -59,6 +63,6 @@ public interface QualityPlugin extends Plugin {
 	// public boolean lqiEdited(LanguageQualityIssue oldLqi,
 	// LanguageQualityIssue newLqi);
 	//
-	 public void displayOnTheFlyResult(Window owner);
+	public void displayOnTheFlyResult(Window owner);
 
 }

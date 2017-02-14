@@ -1,0 +1,16 @@
+{
+"layout" : {
+    "showTranslations" : false,
+    "showAttrsView" : false,
+    "showDetailsView" : false,
+    "segmentsGrid" : {
+      "showSegNum" : true,
+      "showSource" : true,
+      "showTarget" : true,
+      "showOriginalTarget" : true,
+      "showNotes" : false,
+      "showEditDist" : false,
+      "showFlags" : [ true, true, true, true, true ]
+    }
+  }
+}

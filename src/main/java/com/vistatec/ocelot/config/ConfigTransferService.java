@@ -1,20 +1,11 @@
 package com.vistatec.ocelot.config;
 
-import com.vistatec.ocelot.config.xml.RootConfig;
+import com.vistatec.ocelot.config.json.RootConfig;
 
-/**
- * Data transfer service for reading and persisting Ocelot's configuration.
- */
 public interface ConfigTransferService {
-    public RootConfig parse() throws TransferException;
-    public void save(RootConfig cfg) throws TransferException;
+	
+	public RootConfig read() throws TransferException;
+	
+	public void save(RootConfig config) throws TransferException;
 
-    public class TransferException extends Exception {
-        private static final long serialVersionUID = 1L;
-
-        public TransferException(Throwable cause) {
-            super(cause);
-        }
-
-    }
 }

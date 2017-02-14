@@ -1,0 +1,45 @@
+{
+	"activeConfName": "Test", 
+	"lqiConfigurations": [
+		{
+			"name": "Test",
+			"threshold": 80.0,
+			"supplier": "Google",
+			"severities": [
+				
+				{
+					"name": "Minor",
+					"score": 1.0
+				},
+				{
+					"name": "Major",
+					"score": 2.0
+				},
+				{
+					"name": "Critical",
+					"score": 4.0
+				}
+			
+			],
+			"errorCategories": [
+			
+				{
+					"name": "terminology",
+					"position": 1,
+					"weight": 20.0,
+					"shortcuts": [
+						{
+							"severity": "Minor",
+							"keyCode": 127,
+							"modifiers": ""
+						}
+					
+					]
+						
+				}
+			
+			]
+		}
+			
+	]
+}

@@ -39,6 +39,7 @@
 		</repository>
 	</repositories>
 
+
 	<dependencies>
 
 		<!-- Testing Dependencies -->
@@ -47,6 +48,12 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+    		<groupId>org.netbeans</groupId>
+    		<artifactId>jemmy</artifactId>
+    		<version>2.2.7.5</version>
+    		<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jmock</groupId>

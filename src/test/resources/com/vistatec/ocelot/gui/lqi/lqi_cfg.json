@@ -1,0 +1,139 @@
+{
+  "activeConfName" : "Configuration B",
+  "lqiConfigurations" : [ {
+    "name" : "Configuration A",
+    "threshold" : 85.0,
+    "supplier" : "Vistatec",
+    "errorCategories" : [ {
+      "name" : "terminology",
+      "position" : 1,
+      "weight" : 0.0,
+      "shortcuts" : [ {
+        "severity" : "Minor",
+        "keyCode" : 51,
+        "modifiers" : "Ctrl"
+      }, {
+        "severity" : "Major",
+        "keyCode" : 52,
+        "modifiers" : "Ctrl"
+      } ]
+    }, {
+      "name" : "whitespace",
+      "position" : 2,
+      "weight" : 1.2,
+      "shortcuts" : [ {
+        "severity" : "Critical",
+        "keyCode" : 52,
+        "modifiers" : "Ctrl+Shift"
+      } ]
+    }, {
+      "name" : "omission",
+      "position" : 3,
+      "weight" : 0.0,
+      "shortcuts" : [ {
+        "severity" : "Major",
+        "keyCode" : 51,
+        "modifiers" : "Alt"
+      } ]
+    }, {
+      "name" : "mistranslation",
+      "position" : 4,
+      "weight" : 0.0,
+      "shortcuts" : [ {
+        "severity" : "Minor",
+        "keyCode" : 77,
+        "modifiers" : "Ctrl"
+      } ]
+    } ],
+    "severities" : [ {
+      "name" : "Minor",
+      "score" : 1.0
+    }, {
+      "name" : "Major",
+      "score" : 2.0
+    }, {
+      "name" : "Critical",
+      "score" : 4.0
+    } ]
+  }, {
+    "name" : "Configuration B",
+    "threshold" : 87.0,
+    "supplier" : "Google",
+    "errorCategories" : [ {
+      "name" : "terminology",
+      "position" : 1,
+      "weight" : 0.0,
+      "shortcuts" : [ {
+        "severity" : "Sev 1",
+        "keyCode" : 65,
+        "modifiers" : "Shift"
+      } ]
+    }, {
+      "name" : "mistranslation",
+      "position" : 2,
+      "weight" : 0.0,
+      "shortcuts" : [ {
+        "severity" : "Sev 2",
+        "keyCode" : 77,
+        "modifiers" : "Ctrl"
+      } ]
+    }, {
+      "position" : 3,
+      "weight" : 0.0,
+      "shortcuts" : [ {
+        "severity" : "Sev 1",
+        "keyCode" : 76,
+        "modifiers" : "Alt+Shift"
+      } ]
+    } ],
+    "severities" : [ {
+      "name" : "Sev 1",
+      "score" : 1.0
+    }, {
+      "name" : "Sev 2",
+      "score" : 2.0
+    }, {
+      "name" : "Sev 3",
+      "score" : 3.0
+    }, {
+      "name" : "Sev 4",
+      "score" : 4.0
+    } ]
+  }, {
+    "name" : "Configuration C",
+    "threshold" : 82.0,
+    "errorCategories" : [ {
+      "name" : "terminology",
+      "position" : 1,
+      "weight" : 0.0
+    }, {
+      "name" : "mistranslation",
+      "position" : 2,
+      "weight" : 0.0
+    }, {
+      "name" : "omission",
+      "position" : 3,
+      "weight" : 0.0
+    }, {
+      "name" : "untranslated",
+      "position" : 4,
+      "weight" : 0.0
+    }, {
+      "name" : "addition",
+      "position" : 5,
+      "weight" : 0.0
+    }, {
+      "name" : "duplication",
+      "position" : 6,
+      "weight" : 0.0
+    }, {
+      "name" : "inconsistency",
+      "position" : 7,
+      "weight" : 0.0
+    } ],
+    "severities" : [ {
+      "name" : "Cosmetic",
+      "score" : 2.0
+    } ]
+  } ]
+}

@@ -93,6 +93,8 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
+import net.sf.okapi.common.LocaleId;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,8 +104,8 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
@@ -125,7 +127,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
@@ -142,8 +144,6 @@ import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
-
-import net.sf.okapi.common.LocaleId;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -172,7 +172,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
-        private LQIGrid lqiGrid;
+        private LQIGridConfigurations lqiGrid;
 
 
 	private XLIFFDocument xliff;
@@ -284,7 +284,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	@Inject
 	public SegmentView(OcelotEventQueue eventQueue,
 	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig,
-	        OcelotApp ocelotApp, LqiConfigService lqiService) throws IOException, InstantiationException,
+	        OcelotApp ocelotApp, LqiJsonConfigService lqiService) throws IOException, InstantiationException,
 	        InstantiationException, IllegalAccessException, TransferException {
 		this.eventQueue = eventQueue;
 		this.segmentTableModel = segmentTableModel;

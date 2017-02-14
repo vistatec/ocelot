@@ -28,8 +28,6 @@
  */
 package com.vistatec.ocelot.its.view;
 
-import com.google.common.eventbus.Subscribe;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -37,6 +35,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -44,16 +43,14 @@ import javax.swing.border.EmptyBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
+import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.UserProfileSaveEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.ui.ODialogPanel;
-
-import javax.swing.JOptionPane;
-
-import com.google.inject.Inject;
-import com.vistatec.ocelot.config.ConfigService;
 
 /**
  * Provenance configuration view.
@@ -68,7 +65,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
     private OcelotEventQueue eventQueue;
 
     @Inject
-    public ProvenanceProfileView(OcelotEventQueue eventQueue, ConfigService cfgService) {
+    public ProvenanceProfileView(OcelotEventQueue eventQueue, JsonConfigService cfgService) {
         super(new GridBagLayout());
         setBorder(new EmptyBorder(10,10,10,10));
         this.eventQueue = eventQueue;

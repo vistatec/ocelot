@@ -26,8 +26,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableColumn;
 
 import com.vistatec.ocelot.Ocelot;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.xml.TmManagement.TmConfig;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 import com.vistatec.ocelot.tm.gui.constants.TmIconsConst;
 import com.vistatec.ocelot.ui.TooltipCellRenderer;
 

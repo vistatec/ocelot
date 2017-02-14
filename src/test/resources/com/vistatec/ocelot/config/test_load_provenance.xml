@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rootConfig>
-    <userProvenance>
-        <revPerson>A</revPerson>
-        <revOrganization>B</revOrganization>
-        <externalReference>C</externalReference>
-    </userProvenance>
-</rootConfig>

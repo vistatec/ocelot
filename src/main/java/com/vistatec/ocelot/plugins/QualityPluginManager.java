@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.plugins.exception.AuditProfileException;
 import com.vistatec.ocelot.plugins.exception.EvaluationOnTheFlyFailedException;
 import com.vistatec.ocelot.plugins.exception.NoAuditProfileLoadedException;
@@ -67,7 +68,8 @@ public class QualityPluginManager implements ActionListener {
 		        QualityMenuItem.VIEW_AUDIT_PROF);
 		mnuItem.addActionListener(this);
 		auditProfMenu.add(mnuItem);
-		qualityPluginMenu.add(auditProfMenu);
+		//TODO check if this feature should be still available
+//		qualityPluginMenu.add(auditProfMenu);
 		mnuItem = new QualityMenuItem("Evaluate Score",
 		        QualityMenuItem.EVALUATE_SCORE);
 		mnuItem.addActionListener(this);
@@ -138,33 +140,6 @@ public class QualityPluginManager implements ActionListener {
 			        "Error while initialing evaluation on the fly functionality",
 			        e);
 		}
-		// try {
-		// qualityPlugins.keySet().iterator().next()
-		// .setEvalOnTheFlyEnabled(enable);
-		// } catch (NoAuditProfileLoadedException e) {
-		// logger.warn(
-		// "Request to enable evaluation on the fly and no loaded audit profile.",
-		// e);
-		// JOptionPane
-		// .showMessageDialog(
-		// ocelotMainFrame,
-		// "No audit profile loaded. Please, load an audit profile and try again.",
-		// "Evaluation on the fly",
-		// JOptionPane.WARNING_MESSAGE);
-		// }
-		// if (enable && sampleSize > 0) {
-		// boolean passed = qualityPlugins.keySet().iterator().next()
-		// .initEvaluationOnTheFly(sampleSize, lqiList);
-		// // boolean passed = qualityPlugins.keySet().iterator().next()
-		// // .enableEvaluationOnTheFly(sampleSize, lqiList);
-		//
-		// if (!passed) {
-		// promptFailMessage();
-		// }
-		// // } else {
-		// // qualityPlugins.keySet().iterator().next()
-		// // .disableEvaluationOnTheFly();
-		// }
 	}
 
 	private void promptFailMessage() {
@@ -300,12 +275,6 @@ public class QualityPluginManager implements ActionListener {
 			logger.error("Error while initializing the evaluation on the fly",
 			        e);
 			promptEvaluationOnTheFlyErrorMessage();
-			// JOptionPane
-			// .showMessageDialog(
-			// ocelotMainFrame,
-			// "An error occurred while evaluating the score on the fly for the loaded audit profile.\nThe \"Evaluation on the fly\" has been disabled.",
-			// "Evaluation on the fly error",
-			// JOptionPane.ERROR_MESSAGE);
 		}
 
 	}
@@ -366,25 +335,6 @@ public class QualityPluginManager implements ActionListener {
 				        "Error while evaluating on the fly the created lqi", e);
 			}
 		}
-		// if (lqiList == null) {
-		// lqiList = new ArrayList<LanguageQualityIssue>();
-		// }
-		// lqiList.add(lqi);
-		// QualityPlugin enabledPlugin = null;
-		// for (Entry<QualityPlugin, Boolean> entry : qualityPlugins.entrySet())
-		// {
-		// if (entry.getValue()) {
-		// enabledPlugin = entry.getKey();
-		// break;
-		// }
-		// }
-		// if (enabledPlugin != null) {
-		// boolean passed = enabledPlugin.lqiAdded(lqi);
-		// if (!passed) {
-		// promptFailMessage();
-		// }
-		//
-		// }
 	}
 
 	public void editedQualityIssue(LanguageQualityIssue oldLqi,
@@ -426,21 +376,6 @@ public class QualityPluginManager implements ActionListener {
 
 	}
 
-	// private QualityPlugin getEnabledPlugin() {
-	//
-	// QualityPlugin plugin = null;
-	// if (!qualityPlugins.isEmpty()) {
-	// for (Entry<QualityPlugin, Boolean> entry : qualityPlugins
-	// .entrySet()) {
-	// if (entry.getValue()) {
-	// plugin = entry.getKey();
-	// break;
-	// }
-	// }
-	// }
-	// return plugin;
-	// }
-
 	private QualityPlugin getPlugin() {
 
 		QualityPlugin plugin = null;
@@ -450,7 +385,7 @@ public class QualityPluginManager implements ActionListener {
 		return plugin;
 	}
 
-	public void initOpenedFileSettings(List<OcelotSegment> segments) {
+	public void initOpenedFileSettings(List<OcelotSegment> segments, String fileName) {
 
 		if (!qualityPlugins.isEmpty()) {
 			QualityPlugin plugin = qualityPlugins.keySet().iterator().next();
@@ -466,27 +401,13 @@ public class QualityPluginManager implements ActionListener {
 				}
 				int sampleSize = countWords(sourceText.toString());
 				try {
-					plugin.documentOpened(sampleSize, lqiList, segments);
+					plugin.documentOpened(sampleSize, lqiList, segments, fileName);
 				} catch (QualityEvaluationException e) {
 
 					promptEvaluationOnTheFlyErrorMessage();
-					// JOptionPane
-					// .showMessageDialog(
-					// ocelotMainFrame,
-					// "An error occurred while evaluating the score on the fly for the opened document.\nThe \"Evaluation on the fly\" has been disabled.",
-					// "Evaluation on the fly error",
-					// JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		}
-		// if(plugin != null)
-		// this.sampleSize = sampleSize;
-		// if (this.lqiList == null) {
-		// this.lqiList = new ArrayList<LanguageQualityIssue>();
-		// }
-		// this.lqiList.addAll(lqiList);
-		// qualityPlugins.keySet().iterator().next().initEvaluationOnTheFly(sampleSize,
-		// lqiList);
 	}
 
 	private void promptEvaluationOnTheFlyErrorMessage() {
@@ -526,19 +447,25 @@ public class QualityPluginManager implements ActionListener {
 		return wordCount;
 	}
 
-	// public void setSampleSize(int sampleSize) {
-	// this.sampleSize = sampleSize;
-	// qualityPlugins.keySet().iterator().next().initEvaluationOnTheFly(sampleSize,
-	// lqiList);
-	// }
-	//
-	// public void addAllQualityIssues(List<LanguageQualityIssue> lqiList) {
-	//
-	// if (this.lqiList == null) {
-	// this.lqiList = new ArrayList<LanguageQualityIssue>();
-	// }
-	// this.lqiList.addAll(lqiList);
-	// }
+	public void loadConfiguration(LQIGridConfiguration newSelectedConfiguration) {
+		
+		if(!qualityPlugins.isEmpty() ) {
+			QualityPlugin plugin = qualityPlugins.keySet().iterator().next();
+			if(isPluginEnabled(plugin)){
+				try {
+	                plugin.loadLQIGridConfiguration(newSelectedConfiguration);
+                } catch (QualityEvaluationException e) {
+	                logger.error("Error while loading the LQI grid configuration.", e);
+                }
+			}
+		}
+	    
+    }
+	
+	private boolean isPluginEnabled(QualityPlugin plugin){
+		return qualityPlugins.get(plugin);
+	}
+
 }
 
 class QualityMenuItem extends JMenuItem {

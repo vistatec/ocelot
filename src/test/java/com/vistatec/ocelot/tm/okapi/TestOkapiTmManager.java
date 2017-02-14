@@ -17,10 +17,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.OcelotRootConfig;
-import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.OcelotRootConfig;
+import com.vistatec.ocelot.config.json.TmManagement;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SimpleSegmentVariant;
 import com.vistatec.ocelot.tm.TmPenalizer;
@@ -28,7 +29,7 @@ import com.vistatec.ocelot.tm.TmTmxWriter;
 
 public class TestOkapiTmManager {
     private Mockery mockery;
-    private ConfigService cfgService;
+    private JsonConfigService cfgService;
 
     private OkapiTmManager manager;
     private OkapiTmService tmService;
@@ -39,7 +40,7 @@ public class TestOkapiTmManager {
     public ExpectedException thrown = ExpectedException.none();
 
     @Before
-    public void before() throws URISyntaxException, IOException, ConfigTransferService.TransferException {
+    public void before() throws URISyntaxException, IOException, TransferException {
         File testTmIndices = OkapiTmTestHelpers.getTestOkapiTmDir();
         OkapiTmTestHelpers.deleteDirectory(testTmIndices);
         testTmIndices.mkdirs();
@@ -48,10 +49,10 @@ public class TestOkapiTmManager {
     }
 
     @Test
-    public void testInitializeNewTm() throws IOException, ConfigTransferService.TransferException, URISyntaxException {
+    public void testInitializeNewTm() throws IOException, TransferException, URISyntaxException {
         tmxWriter = mockery.mock(TmTmxWriter.class);
         penalizer = mockery.mock(TmPenalizer.class);
-        cfgService = mockery.mock(ConfigService.class);
+        cfgService = mockery.mock(JsonConfigService.class);
 
         final OcelotRootConfig rootConfig = setupNewForeignDataDir();
         final TmManagement.TmConfig tmConfig = rootConfig.getTmManagement().getTms().get(0);
@@ -106,21 +107,21 @@ public class TestOkapiTmManager {
     }
 
     @Test
-    public void testChangingTmDataDir() throws IOException, ConfigTransferService.TransferException, URISyntaxException {
+    public void testChangingTmDataDir() throws IOException, TransferException, URISyntaxException {
         tmxWriter = mockery.mock(TmTmxWriter.class);
         penalizer = mockery.mock(TmPenalizer.class);
 
         final OcelotRootConfig oldRootConfig = setupOldForeignDataDir();
-        final TmManagement.TmConfig oldTmConfig = oldRootConfig.getTmManagement().getTms().get(0);
+        final TmConfig oldTmConfig = oldRootConfig.getTmManagement().getTms().get(0);
         final File oldDataDir = new File(oldTmConfig.getTmDataDir());
         assertTrue(oldDataDir.exists());
 
         final OcelotRootConfig newRootConfig = setupNewForeignDataDir();
-        final TmManagement.TmConfig newTmConfig = newRootConfig.getTmManagement().getTms().get(0);
+        final TmConfig newTmConfig = newRootConfig.getTmManagement().getTms().get(0);
         final File newDataDir = new File(newTmConfig.getTmDataDir());
         assertTrue(newDataDir.exists());
 
-        cfgService = mockery.mock(ConfigService.class);
+        cfgService = mockery.mock(JsonConfigService.class);
         mockery.checking(new Expectations() {
                 {
                     allowing(cfgService).getTms();

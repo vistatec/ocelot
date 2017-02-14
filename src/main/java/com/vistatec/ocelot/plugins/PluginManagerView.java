@@ -28,10 +28,6 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import com.vistatec.ocelot.OcelotApp;
-import com.vistatec.ocelot.services.SegmentService;
-import com.vistatec.ocelot.ui.ODialogPanel;
-
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -55,7 +51,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.OcelotApp;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.ui.ODialogPanel;
 
 /**
  * View for managing active plugins.
@@ -201,7 +200,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
             try {
                 pluginManager.setEnabled(checkboxToPlugin.get(checkbox),
                         e.getStateChange() == ItemEvent.SELECTED);
-            } catch (ConfigTransferService.TransferException ex) {
+            } catch (TransferException ex) {
                 LOG.error("Failed to save enabling plugin", ex);
                 JOptionPane.showMessageDialog(getDialog(), "Could not save plugin enabled.");
             }

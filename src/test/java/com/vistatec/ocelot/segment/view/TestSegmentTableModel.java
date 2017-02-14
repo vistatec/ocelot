@@ -28,34 +28,47 @@
  */
 package com.vistatec.ocelot.segment.view;
 
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
+import static com.vistatec.ocelot.SegmentViewColumn.Flag1;
+import static com.vistatec.ocelot.SegmentViewColumn.Flag2;
+import static com.vistatec.ocelot.SegmentViewColumn.Flag3;
+import static com.vistatec.ocelot.SegmentViewColumn.Flag4;
+import static com.vistatec.ocelot.SegmentViewColumn.Flag5;
+import static com.vistatec.ocelot.SegmentViewColumn.Original;
+import static com.vistatec.ocelot.SegmentViewColumn.SegNum;
+import static com.vistatec.ocelot.SegmentViewColumn.Source;
+import static com.vistatec.ocelot.SegmentViewColumn.Target;
+import static org.junit.Assert.assertEquals;
 
-import static org.junit.Assert.*;
+import java.io.File;
 
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vistatec.ocelot.SegmentViewColumn;
-import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.rules.RuleConfiguration;
-
-import static com.vistatec.ocelot.SegmentViewColumn.*;
-
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.SegmentTargetUpdateEvent;
+import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.rules.RuleConfiguration;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 public class TestSegmentTableModel {
     private SegmentTableModel model;
+    private OcelotJsonConfigService confService;
 
     @Before
     public void setup() throws Exception {
-        model = new SegmentTableModel(new TestSegmentService(), new RuleConfiguration());
+    	File confFile = new File(getClass().getResource("col_config.json").toURI());
+    	confService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(confFile));
+        model = new SegmentTableModel(new TestSegmentService(), new RuleConfiguration(), confService);
     }
 
     @Test
@@ -95,7 +108,7 @@ public class TestSegmentTableModel {
     @Test
     public void testIsColumnEnabled() {
         for (SegmentViewColumn col : SegmentViewColumn.values()) {
-            assertEquals(col.isVisibleByDefaut(), model.isColumnEnabled(col));
+        	assertEquals(confService.isColumnEnabled(col), model.isColumnEnabled(col));
         }
     }
 

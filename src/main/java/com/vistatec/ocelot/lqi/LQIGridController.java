@@ -1,6 +1,10 @@
 package com.vistatec.ocelot.lqi;
 
-import javax.swing.JFrame;
+import java.awt.Window;
+import java.util.Collections;
+import java.util.Comparator;
+
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -9,17 +13,21 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.PlatformSupport;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
+import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
+import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.constants.LQIConstants;
-import com.vistatec.ocelot.lqi.gui.LQIGridDialog;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.gui.window.LQIConfigurationsDialog;
+import com.vistatec.ocelot.lqi.gui.window.LQIGridDialogView;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
 /**
@@ -28,28 +36,32 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 public class LQIGridController implements OcelotEventQueueListener {
 
 	/** The logger for this class. */
-	private final Logger logger = LoggerFactory.getLogger(LQIGridController.class);
+	private final Logger logger = LoggerFactory
+	        .getLogger(LQIGridController.class);
 
 	/** The LQI configuration service. */
-	private LqiConfigService configService;
+	private LqiJsonConfigService configService;
 
 	/** The event queue. */
 	private OcelotEventQueue eventQueue;
-
-	/** The Ocelot main frame. */
-	private JFrame ocelotMainFrame;
 
 	/** The selected segment. */
 	private OcelotSegment selectedSegment;
 
 	/** States if some Ocelot text field is being edited. */
 	private boolean ocelotEditing;
-        
-        /** The LQI grid dialog. */
-	private LQIGridDialog gridDialog;
+
+	/** The LQI grid dialog. */
+	private LQIGridDialogView gridDialog;
+	
+	private LQIConfigurationsDialog configsDialog;
 	
 	private PlatformSupport platformSupport;
 
+	private LQIGridConfigurations lqiGridConfigurations;
+	
+	private boolean canManageConf;
+	
 	/**
 	 * Controller.
 	 * 
@@ -58,49 +70,29 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 * @param eventQueue
 	 *            the event queue.
 	 */
-	public LQIGridController(final LqiConfigService configService,
-	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport) {
-
-		this(configService, eventQueue, platformSupport, null);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param configService
-	 *            the LQI configuration service.
-	 * @param eventQueue
-	 *            the event queue.
-	 * @param ocelotMainFrame
-	 *            the Ocelot main frame.
-	 */
-	public LQIGridController(final LqiConfigService configService,
-	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport, final JFrame ocelotMainFrame) {
+	public LQIGridController(final LqiJsonConfigService configService,
+	        final OcelotEventQueue eventQueue, PlatformSupport platformSupport, boolean canManageConf) {
 
 		this.configService = configService;
 		this.eventQueue = eventQueue;
-		this.ocelotMainFrame = ocelotMainFrame;
 		this.platformSupport = platformSupport;
+		this.canManageConf = canManageConf;
 	}
 
-	/**
-	 * Sets the Ocelot main frame.
-	 * 
-	 * @param ocelotMainFrame
-	 *            the Ocelot main frame.
-	 */
-	public void setOcelotMainFrame(JFrame ocelotMainFrame) {
-		this.ocelotMainFrame = ocelotMainFrame;
-	}
 
 	/**
 	 * Displays the LQI grid.
 	 */
-	public void displayLQIGrid() {
+	public void displayLQIGrid(Window owner) {
 		logger.debug("Displaying the LQI Grid.");
-		gridDialog = new LQIGridDialog(ocelotMainFrame, this,
-		        readLQIGridConfiguration(), platformSupport);
-		SwingUtilities.invokeLater(gridDialog);
+		if (!isDialogOpened(gridDialog)) {
+			gridDialog = new LQIGridDialogView(owner, this,
+			        readLQIGridConfiguration(owner), canManageConf);
+			SwingUtilities.invokeLater(gridDialog);
+		} else {
+			// if the LQI grid is already opened, just give it the focus
+			gridDialog.requestFocus();
+		}
 	}
 
 	/**
@@ -111,44 +103,48 @@ public class LQIGridController implements OcelotEventQueueListener {
 	 * @throws TransferException
 	 *             the transfer exception.
 	 */
-	public void saveLQIGridConfiguration(LQIGrid lqiGrid)
+	public void saveLQIGridConfiguration(LQIGridConfigurations lqiGrid, boolean activeConfChanged)
 	        throws TransferException {
 
 		logger.debug("Saving the LQI grid configuration...");
-		try {
-			configService.saveLQIConfig(lqiGrid);
-		} catch (TransferException e) {
-			logger.error("Error while saving the LQI grid configuration.", e);
-			JOptionPane
-			        .showMessageDialog(
-			                ocelotMainFrame,
-			                "An error has occurred while saving the LQI grid configuration",
-			                "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
+		configService.saveLQIConfig(lqiGrid);
+		LQIGridConfiguration oldActiveConf = null;
+		if(activeConfChanged){
+			oldActiveConf = lqiGridConfigurations.getActiveConfiguration();
+		}
+		lqiGridConfigurations = lqiGrid;
+		Collections.sort(lqiGridConfigurations.getConfigurations(), new LqiConfigComparator());
+		eventQueue.post(new LQIConfigurationsChangedEvent(lqiGridConfigurations, oldActiveConf));
+		if(activeConfChanged && gridDialog != null){
+				gridDialog.refresh();
 		}
 	}
-	
 
 	/**
 	 * Reads the LQI grid from the configuration file.
 	 * 
 	 * @return the LQI grid.
 	 */
-	public LQIGrid readLQIGridConfiguration() {
-		LQIGrid lqiGrid = null;
-		try {
-			lqiGrid = configService.readLQIConfig();
-			if (lqiGrid.isEmpty()) {
-				lqiGrid = LQIConstants.getDefaultLQIGrid();
+	public LQIGridConfigurations readLQIGridConfiguration(Window activeWindow) {
+		
+		if (lqiGridConfigurations == null) {
+			try {
+				lqiGridConfigurations = configService.readLQIConfig();
+				if (lqiGridConfigurations.isEmpty()) {
+					lqiGridConfigurations = LQIConstants.getDefaultLQIGrid();
+					Collections.sort(lqiGridConfigurations.getConfigurations(), new LqiConfigComparator());
+				}
+			} catch (TransferException e) {
+				logger.error("Error while reading the LQI grid configuration",
+				        e);
+				JOptionPane
+				        .showMessageDialog(
+				                activeWindow,
+				                "An error has occurred while reading the LQI grid configuration",
+				                "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
 			}
-		} catch (TransferException e) {
-			logger.error("Error while reading the LQI grid configuration", e);
-			JOptionPane
-			        .showMessageDialog(
-			                ocelotMainFrame,
-			                "An error has occurred while reading the LQI grid configuration",
-			                "LQI Grid Error", JOptionPane.ERROR_MESSAGE);
 		}
-		return lqiGrid;
+		return lqiGridConfigurations;
 	}
 
 	/**
@@ -179,6 +175,49 @@ public class LQIGridController implements OcelotEventQueueListener {
 		ocelotEditing = event.getEventType() == OcelotEditingEvent.Type.START_EDITING;
 	}
 
+	@Subscribe
+	public void handleLQIConfigSelected(LQIConfigurationSelectionChangedEvent event) {
+		try{
+		// TODO
+		/*
+		 * - save the new active configuration
+		 * 
+		 * if the LQI GRID is OPENED: - reload the dialog with the new configuration
+		 * 
+		 * NOTE: the Plugin Manager should listen to this event too. When the
+		 * LQI configuration changes, the Quality Score Evaluator plugin must be
+		 * updated.
+		 */
+		//do something only if the active configuration actually changed. 
+		if (lqiGridConfigurations != null && !lqiGridConfigurations.getActiveConfiguration().equals(
+		        event.getNewSelectedConfiguration())) {
+			try {
+				configService.setActiveConfiguration(event.getNewSelectedConfiguration()
+				        .getName());
+				lqiGridConfigurations.setActiveConfiguration(event.getNewSelectedConfiguration());
+			} catch (Exception e) {
+				// just log a warning. It is not an actual issue from the user
+				// point
+				// of view if the active configuration is not saved to the conf
+				// file.
+				logger.warn("Error while saving the active configuration.", e);
+			}
+			if (isDialogOpened(gridDialog)) {
+				gridDialog.replaceActiveConfiguration(event.getNewSelectedConfiguration());
+			}
+		}
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	
+	
+	private boolean isDialogOpened(JDialog dialog){
+		
+		return dialog != null && dialog.isVisible();
+	}
+
 	/**
 	 * Checks if some text field is being edited in Ocelot.
 	 * 
@@ -202,36 +241,69 @@ public class LQIGridController implements OcelotEventQueueListener {
 	public void createNewLqi(String category, double severity,
 	        String severityName) {
 
-		logger.debug("Creating a new Language Quality Issue: {} - {} - {}", category, severityName, severity);
-		if (gridDialog == null || gridDialog.canCreateIssue()) {
-			String comment = null;
-			if(gridDialog != null){
-				comment = gridDialog.getCommentForCategory(category);
+		if(selectedSegment != null) {
+			if (gridDialog == null || gridDialog.canCreateIssue()) {
+				logger.debug("Creating a new Language Quality Issue: {} - {} - {}",
+						category, severityName, severity);
+				String comment = null;
+				if (gridDialog != null) {
+					comment = gridDialog.getCommentForCategory(category);
+				}
+				LanguageQualityIssue lqi = new LanguageQualityIssue();
+				lqi.setSeverity(severity);
+				lqi.setType(category);
+				lqi.setSeverityName(severityName);
+				lqi.setComment(comment);
+				if (selectedSegment != null) {
+					eventQueue.post(new LQIAdditionEvent(lqi, selectedSegment));
+				}
+				if (comment != null) {
+					gridDialog.clearCommentCellForCategory(category);
+				}
 			}
-			LanguageQualityIssue lqi = new LanguageQualityIssue();
-			lqi.setSeverity(severity);
-			lqi.setType(category);
-			lqi.setSeverityName(severityName);
-			lqi.setComment(comment);
-			if (selectedSegment != null) {
-				eventQueue.post(new LQIAdditionEvent(lqi, selectedSegment));
-			}
-			if(comment != null){
-				gridDialog.clearCommentCellForCategory(category);
-			}
-		} 
+		}
 	}
 
-	/**
-	 * Closes the LQI grid.
-	 */
-	public void close() {
+	public void manageConfigurations(){
 		
-		gridDialog.dispose();
-		gridDialog = null;
-    }
+		configsDialog = new LQIConfigurationsDialog(gridDialog, this, readLQIGridConfiguration(gridDialog));
+		SwingUtilities.invokeLater(configsDialog);
+	}
 	
-	public LqiConfigService getConfigService(){
+	/**
+	 * Closes the active dialog.
+	 */
+	public void closeActiveDialog() {
+
+		if (isDialogOpened(configsDialog)) {
+			configsDialog.setVisible(false);
+			configsDialog.dispose();
+			configsDialog = null;
+		} else if (isDialogOpened(gridDialog)) {
+			gridDialog.setVisible(false);
+			gridDialog.dispose();
+			gridDialog = null;
+		}
+	}
+	
+	
+
+	public LqiJsonConfigService getConfigService() {
 		return configService;
 	}
+
+	public PlatformSupport getPlatformSupport() {
+		return platformSupport;
+	}
+
+}
+
+class LqiConfigComparator implements Comparator<LQIGridConfiguration>{
+
+	@Override
+    public int compare(LQIGridConfiguration o1, LQIGridConfiguration o2) {
+		
+	    return o1.getName().compareTo(o2.getName());
+    }
+	
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import javax.swing.KeyStroke;
 
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 
 /**
@@ -83,7 +83,7 @@ public class LQIKeyEventManager {
 	 * @param errorCat
 	 *            the new error category
 	 */
-	public void errorCategoryAdded(LQIGrid lqiGridObj, LQIErrorCategory errorCat) {
+	public void errorCategoryAdded(LQIGridConfiguration lqiGridObj, LQIErrorCategory errorCat) {
 
 		if (keyEventHandlers != null) {
 			for (LQIKeyEventHandler handler : keyEventHandlers) {
@@ -100,7 +100,7 @@ public class LQIKeyEventManager {
 	 * @param errorCat
 	 *            the error category deleted.
 	 */
-	public void errorCategoryDeleted(LQIGrid lqiGridObj,
+	public void errorCategoryDeleted(LQIGridConfiguration lqiGridObj,
 	        LQIErrorCategory errorCat) {
 
 		if (keyEventHandlers != null) {
@@ -168,7 +168,7 @@ public class LQIKeyEventManager {
 	 * @param lqiGridObject
 	 *            the LQI grid.
 	 */
-	public void removeActions(LQIGrid lqiGridObject) {
+	public void removeActions(LQIGridConfiguration lqiGridObject) {
 		if (keyEventHandlers != null) {
 			for (LQIKeyEventHandler handler : keyEventHandlers) {
 				handler.removeActions(lqiGridObject);
@@ -181,7 +181,7 @@ public class LQIKeyEventManager {
 	 * 
 	 * @param lqiGridObj
 	 */
-	public void load(LQIGrid lqiGridObj) {
+	public void load(LQIGridConfiguration lqiGridObj) {
 		if (keyEventHandlers != null) {
 			for (LQIKeyEventHandler handler : keyEventHandlers) {
 				handler.load(lqiGridObj);

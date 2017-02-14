@@ -6,8 +6,6 @@ import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
-import com.vistatec.ocelot.lqi.gui.ColorCellRenderer;
-
 /**
  * Table cell renderer displaying a text area.
  */

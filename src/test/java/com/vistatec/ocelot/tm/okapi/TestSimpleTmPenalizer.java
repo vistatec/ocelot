@@ -1,7 +1,5 @@
 package com.vistatec.ocelot.tm.okapi;
 
-import static org.jmock.Expectations.any;
-import static org.jmock.Expectations.returnValue;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -12,7 +10,7 @@ import org.jmock.Mockery;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.json.TmManagement;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.tm.TmManager;
 import com.vistatec.ocelot.tm.TmMatch;
