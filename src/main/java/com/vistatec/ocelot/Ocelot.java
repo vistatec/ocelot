@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -97,6 +98,10 @@ import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.storage.model.PostUploadRequest;
+import com.vistatec.ocelot.storage.service.AzureStorageService;
+import com.vistatec.ocelot.storage.service.StorageService;
+import com.vistatec.ocelot.storage.service.util.Util;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
@@ -123,6 +128,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private JMenuItem menuConfigTm;
 	private JMenuItem menuSaveAsTmx;
 	private JMenuItem menuLqiGrid;
+	private JMenuItem menuSaveToAzure;
 
     private OcelotToolBar toolBar;
 	private JFrame mainframe;
@@ -144,6 +150,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private final LQIGridController lqiGridController;
 
 	private PlatformSupport platformSupport;
+	
+	private StorageService storageService;
 
 	public Ocelot(Injector ocelotScope) throws IOException,
 	        InstantiationException, IllegalAccessException {
@@ -267,6 +275,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 					setMainTitle(saveFile.getName());
 				}
 			}
+		} else if(e.getSource() == this.menuSaveToAzure){
+			if (ocelotApp.hasOpenFile()) {
+				handleStoring();
+			}
 		} else if (e.getSource().equals(menuSaveAsTmx)) {
 			tmGuiManager.saveAsTmx(mainframe);
 		} else if (e.getSource() == this.menuSave) {
@@ -302,6 +314,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 				this.menuSave.setEnabled(true);
 				this.menuSaveAs.setEnabled(true);
 				this.menuSaveAsTmx.setEnabled(true);
+				this.menuSaveToAzure.setEnabled(true);
 				this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
                 this.toolBar.setSourceFont(segmentView.getSourceFont());
                 this.toolBar.setTargetFont(segmentView.getTargetFont());
@@ -416,6 +429,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
 		        Event.SHIFT_MASK | getPlatformKeyMask()));
 		menuFile.add(menuSaveAs);
+		
+		menuSaveToAzure = new JMenuItem("Save to Azure");
+		menuSaveToAzure.setEnabled(false);
+		menuSaveToAzure.addActionListener(this);
+		// TODO add accelerator
+		menuFile.add(menuSaveToAzure);
 
 		menuSaveAsTmx = new JMenuItem("Save As tmx");
 		menuSaveAsTmx.setEnabled(false);
@@ -750,5 +769,34 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
             segmentView.setSourceFont(sourceFont);
         }
 
+    }
+    
+    /**
+     * Handles the event save to Azure
+     */
+    private void handleStoring(){
+    	
+    	storageService = new AzureStorageService();
+    	
+		String openedFilePath = ocelotApp.getOpenFile().toPath().toString();
+		
+		String fileId =UUID.randomUUID().toString();
+		boolean uploadedFileToBlobStorage = storageService.uploadFileToBlobStorage(openedFilePath, "unprocessed", fileId);
+		if(uploadedFileToBlobStorage){
+			LOG.debug("File with id " + fileId + " was uploaded to blob storage");
+			PostUploadRequest postUploadRequest = Util.getPostUploadRequest(fileId);
+			String json = Util.serializeToJson(postUploadRequest);
+			LOG.debug("Post Upload Request for Storage Queue in json format is " + json);
+			boolean messageSent = storageService.sendMessageToPostUploadQueue(json);
+			if(!messageSent){
+				LOG.error("No message sent to Storage queue.");
+			} else {
+				LOG.info("Sent message to Storage queue.");
+			}
+		} else {
+			LOG.error("File with id " + fileId + " was not uploaded to blob storage");
+		}
+		
+		
     }
 }
