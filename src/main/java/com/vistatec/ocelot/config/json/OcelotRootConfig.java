@@ -9,6 +9,7 @@ public class OcelotRootConfig implements RootConfig {
 	private ProvenanceConfig userProvenance;
 	private TmManagement tmManagement;
 	private LayoutConfig layout;
+	private OcelotAzureConfig azure;
 
 	public OcelotRootConfig() {
 		
@@ -55,6 +56,14 @@ public class OcelotRootConfig implements RootConfig {
 	
 	public LayoutConfig getLayout(){
 		return layout;
+	}
+	
+	public void setAzure(OcelotAzureConfig azure) {
+		this.azure = azure;
+	}
+
+	public OcelotAzureConfig getAzure() {
+		return azure;
 	}
 
 	@Override

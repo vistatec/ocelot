@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.TmManagement;
 import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
@@ -53,4 +54,6 @@ public interface JsonConfigService {
     public boolean isColumnEnabled(SegmentViewColumn column);
     
     public void saveColumnConfiguration(EnumMap<SegmentViewColumn, Boolean> enabledColumns) throws TransferException;
+    
+    public OcelotAzureConfig getOcelotAzureConfiguration();
 }

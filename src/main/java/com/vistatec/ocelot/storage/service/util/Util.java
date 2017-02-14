@@ -1,11 +1,5 @@
 package com.vistatec.ocelot.storage.service.util;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,24 +14,6 @@ import com.vistatec.ocelot.storage.model.PostUploadRequest;
 public class Util {
 	
 	private static Logger logger = LoggerFactory.getLogger(Util.class);
-	
-	private static Properties properties;
-	
-	public static Properties getPropertyFile(String folderName, String fileName){
-		
-		 properties = new Properties();
-		 String dir = System.getProperty("user.home");
-		 try {
-			InputStream is = new FileInputStream(dir + "/.ocelot" + "/" + folderName + "/" + fileName + ".properties");
-			properties.load(is);
-			is.close();
-		} catch (FileNotFoundException e) {
-			logger.error("There was an error:" + e.getMessage());
-		} catch (IOException e) {
-			logger.error("There was an error:" + e.getMessage());
-		}
-		return properties;
-	}
 	
 	/**
 	 * @param fileId the file identifier

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.config.json.OcelotRootConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.ProvenanceConfig;
@@ -305,6 +306,11 @@ public boolean isColumnEnabled(SegmentViewColumn column){
 		config.getLayout().getSegmentsGrid().setShowFlags(flagColsEnabled);
 		cfgXservice.save(config);
 		
+	}
+
+	@Override
+	public OcelotAzureConfig getOcelotAzureConfiguration() {
+		return config.getAzure();
 	}
 
 }
