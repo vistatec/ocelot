@@ -16,6 +16,8 @@ public class ConfigurationManager {
 	public static final String CONF_DIR = "config";
 
 	public static final String TM_DIR = "tm";
+	
+	public static final String PLUGINS_DIR = "plugins";
 
 	public static final String LAST_SESSION_FILE_NAME = "last-session.json";
 
@@ -38,6 +40,8 @@ public class ConfigurationManager {
 	private DirectoryBasedConfigs rulesConfigs;
 	
 	private File tmFolder;
+	
+	private File pluginsFolder;
 
 	public void readAndCheckConfiguration(File ocelotDir)
 	        throws ConfigurationException {
@@ -61,6 +65,10 @@ public class ConfigurationManager {
 		tmFolder = new File(activeConfFolder, TM_DIR);
 		if (!tmFolder.exists()) {
 			tmFolder.mkdir();
+		}
+		pluginsFolder = new File(activeConfFolder, PLUGINS_DIR);
+		if(!pluginsFolder.exists()){
+			pluginsFolder.mkdir();
 		}
 	}
 
@@ -229,5 +237,9 @@ public class ConfigurationManager {
 	
 	public DirectoryBasedConfigs getRulesConfigs(){
 		return rulesConfigs;
+	}
+	
+	public File getPluginsFolder(){
+		return pluginsFolder;
 	}
 }
