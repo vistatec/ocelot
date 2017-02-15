@@ -45,14 +45,26 @@ public class Xliff12HeaderWriter {
 			GenericSkeleton skeleton = (GenericSkeleton) subDocument
 					.getSkeleton();
 			int headerEndPartIndex = -1;
+			GenericSkeletonPart countGroupPart = null;
 			for (GenericSkeletonPart part : skeleton.getParts()) {
-				if (part.getData().toString()
+				if(part.getData().toString().contains(XliffDocumentConstants.COUNT_START)){
+					countGroupPart = part;
+					break;
+				} else 	if (part.getData().toString()
 						.contains(XliffDocumentConstants.HEADER_END)) {
 					headerEndPartIndex = skeleton.getParts().indexOf(part);
 					break;
 				}
 			}
-			if (headerEndPartIndex >= 0) {
+			if(countGroupPart != null){
+				StringBuilder newCountGroupString = new StringBuilder();
+				int startCountIndex = countGroupPart.getData().indexOf(XliffDocumentConstants.COUNT_START);
+				int endCountIndex = countGroupPart.getData().indexOf(XliffDocumentConstants.COUNT_END, startCountIndex);
+				newCountGroupString.append(countGroupPart.getData().substring(0, startCountIndex));
+				newCountGroupString.append(XliffDocumentConstants.COUNT_START + time + XliffDocumentConstants.COUNT_END);
+				newCountGroupString.append(countGroupPart.getData().substring(endCountIndex + XliffDocumentConstants.COUNT_END.length()));
+				countGroupPart.setData(newCountGroupString.toString());
+			} else if (headerEndPartIndex >= 0) {
 				skeleton.getParts().add(
 						headerEndPartIndex,
 						new GenericSkeletonPart(getCountGroupString(time),
@@ -70,6 +82,7 @@ public class Xliff12HeaderWriter {
 		countString.append(XliffDocumentConstants.COUNT_GROUP_END);
 		return countString.toString();
 	}
+	
 
 	private void checkAndInsertPhase(StartSubDocument subDocument,
 			UserProvenance userProvenance, String lqiConfiguration) {
@@ -218,7 +231,7 @@ public class Xliff12HeaderWriter {
 				phasePropValue.append(" ");
 				phasePropValue.append(XliffDocumentConstants.CONTACT_NAME_ATTR);
 				phasePropValue.append("=\"");
-				phasePropValue.append(userProvenance.getRevPerson());
+				phasePropValue.append(userProvenance.getProvRef());
 				phasePropValue.append("\"");
 			}
 			if (userProvenance.getRevOrg() != null) {
