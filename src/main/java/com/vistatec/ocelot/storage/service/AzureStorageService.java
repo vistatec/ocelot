@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 
 import org.slf4j.Logger;
@@ -113,7 +112,7 @@ private final Logger logger = LoggerFactory.getLogger(getClass());
 	 * @return true if the file upload to Blob Storage is successful
 	 */
 	@Override
-	public boolean uploadFileToBlobStorage(String filePath, String prefix, String fileId){
+	public boolean uploadFileToBlobStorage(String filePath, String prefix, String fileId, String fileName){
 		
 		if(canStorage){
 			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
@@ -121,8 +120,6 @@ private final Logger logger = LoggerFactory.getLogger(getClass());
 			try {
 				CloudBlobContainer docsContainer = blobClient.getContainerReference(azureBlobContainer);
 				docsContainer.createIfNotExists();
-				
-				String fileName = Paths.get(filePath).getFileName().toString();
 				
 				// this represents the directory structure in the Azure Blob Storage
 				String structure = prefix + File.separator + fileId + File.separator + fileName;

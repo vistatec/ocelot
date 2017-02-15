@@ -29,6 +29,7 @@ public class AzureStorageServiceTest {
 	
 	String jsonMessage;
 	String xlfFilePath;
+	String fileName;
 	String fileId;
 	String testQueue;
 	
@@ -60,7 +61,8 @@ public class AzureStorageServiceTest {
 			        
 					ClassLoader loader = Thread.currentThread().getContextClassLoader();
 					try {
-						Path path = Paths.get(loader.getResource("azure_test_file.xlf").toURI());
+						fileName = "azure_test_file.xlf";
+						Path path = Paths.get(loader.getResource(fileName).toURI());
 						xlfFilePath = path.toString();
 					} catch (URISyntaxException e) {
 						logger.error("There was an error while getting xlfFilePath.");
@@ -77,7 +79,7 @@ public class AzureStorageServiceTest {
 	@Test
 	public void testUploadFileToBlobStorage() {
 		if(execute){
-			boolean uploadedFileToBlobStorage = storageService.uploadFileToBlobStorage(xlfFilePath, "unit-tests", fileId);
+			boolean uploadedFileToBlobStorage = storageService.uploadFileToBlobStorage(xlfFilePath, "unit-tests", fileId, fileName);
 			assertTrue(uploadedFileToBlobStorage);
 		}
 		

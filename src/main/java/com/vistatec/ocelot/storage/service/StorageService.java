@@ -6,7 +6,7 @@ package com.vistatec.ocelot.storage.service;
  */
 public interface StorageService {
 	
-	public boolean uploadFileToBlobStorage(String filePath, String prefix, String fileId);
+	public boolean uploadFileToBlobStorage(String filePath, String prefix, String fileId, String fileName);
 	public boolean sendMessageToPostUploadQueue(String message);
 	public boolean pickMessageFromPostUploadQueue();
 	public String getPostUploadQueueName();

@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.vistatec.ocelot.OcelotApp.ErrorAlertException;
 import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
@@ -287,20 +288,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		} else if (e.getSource() == this.menuExit) {
 			handleApplicationExit();
 		} else if (e.getSource() == this.menuSaveAs) {
-//<<<<<<< HEAD
 			saveAs();
-//=======
-//			if (ocelotApp.hasOpenFile()) {
-//				File saveFile = promptSaveAs();
-//				if (saveFile != null && save(saveFile)) {
-//					setMainTitle(saveFile.getName());
-//				}
-//			}
 		} else if(e.getSource() == this.menuSaveToAzure){
 			if (ocelotApp.hasOpenFile()) {
 				handleStoring(configService);
 			}
-//>>>>>>> 8e458fc511cc620c753d8cfdfcdced923cb8bf70
 		} else if (e.getSource().equals(menuSaveAsTmx)) {
 			tmGuiManager.saveAsTmx(mainframe);
 		} else if (e.getSource() == this.menuSave) {
@@ -333,21 +325,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private void openFile(File file, boolean temporary){
 		if (file != null) {
 			try {
-//<<<<<<< HEAD
 				ocelotApp.openFile(file, temporary);
-//=======
-//				ocelotApp.openFile(sourceFile);
-//				this.setMainTitle(sourceFile.getName());
-//				segmentView.reloadTable();
-//
-//				this.menuSave.setEnabled(true);
-//				this.menuSaveAs.setEnabled(true);
-//				this.menuSaveAsTmx.setEnabled(true);
-//				this.menuSaveToAzure.setEnabled(enableStorage);
-//				this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
-//                this.toolBar.setSourceFont(segmentView.getSourceFont());
-//                this.toolBar.setTargetFont(segmentView.getTargetFont());
-//>>>>>>> 8e458fc511cc620c753d8cfdfcdced923cb8bf70
 			} catch (FileNotFoundException ex) {
 				LOG.error(
 				        "Failed to parse file '" + file.getName() + "'",
@@ -948,13 +926,11 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
     }
     
-//<<<<<<< HEAD
     @Subscribe
     public void handlePluginInstalled(NewPluginsInstalled event){
     	
     	toolBar.addPluginWidgets(ocelotApp.getPluginToolBarWidgets());
     }
-//=======
     private void setEnableStorage(OcelotJsonConfigService configService){
     	
     	OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
@@ -982,33 +958,55 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
         	String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
         	
         	boolean canStorage = accountName != null && accountKey != null && azureBlobContainer != null;
-        	
-        	if(canStorage){
-        		
-        		storageService = new AzureStorageService(accountName, accountKey, azureBlobContainer);
-            	
-        		String openedFilePath = ocelotApp.getOpenFile().toPath().toString();
-        		
-        		String fileId =UUID.randomUUID().toString();
-        		boolean uploadedFileToBlobStorage = storageService.uploadFileToBlobStorage(openedFilePath, "unprocessed", fileId);
-        		if(uploadedFileToBlobStorage){
-        			LOG.debug("File with id " + fileId + " was uploaded to blob storage");
-        			PostUploadRequest postUploadRequest = Util.getPostUploadRequest(fileId);
-        			String json = Util.serializeToJson(postUploadRequest);
-        			LOG.debug("Post Upload Request for Storage Queue in json format is " + json);
-        			boolean messageSent = storageService.sendMessageToPostUploadQueue(json);
-        			if(!messageSent){
-        				LOG.error("No message sent to Storage queue.");
-        			} else {
-        				LOG.info("Sent message to Storage queue.");
-        			}
-        		} else {
-        			LOG.error("File with id " + fileId + " was not uploaded to blob storage");
-        		}
-        	} 
+        	File tempFile = null;
+			try {
+				if (canStorage) {
+
+					tempFile = File.createTempFile("ocelot", "azure");
+					ocelotApp.saveFile(tempFile);
+					
+
+					storageService = new AzureStorageService(accountName,
+							accountKey, azureBlobContainer);
+
+					String fileId = UUID.randomUUID().toString();
+					boolean uploadedFileToBlobStorage = storageService
+							.uploadFileToBlobStorage(tempFile.getAbsolutePath(),
+									"unprocessed", fileId, ocelotApp.getDefaultFileName());
+					if (uploadedFileToBlobStorage) {
+						LOG.debug("File with id " + fileId
+								+ " was uploaded to blob storage");
+						
+						PostUploadRequest postUploadRequest = Util
+								.getPostUploadRequest(fileId);
+						String json = Util.serializeToJson(postUploadRequest);
+						LOG.debug("Post Upload Request for Storage Queue in json format is "
+								+ json);
+						boolean messageSent = storageService
+								.sendMessageToPostUploadQueue(json);
+						if (!messageSent) {
+							LOG.error("No message sent to Storage queue.");
+						} else {
+							LOG.info("Sent message to Storage queue.");
+						}
+						JOptionPane.showMessageDialog(mainframe, "File successfully saved to Azure.", "Save to Azure", JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						LOG.error("File with id " + fileId
+								+ " was not uploaded to blob storage");
+						JOptionPane.showMessageDialog(mainframe, "An error has occurred while saving the document to Azure. Please, try again.");
+					}
+				}
+			} catch (IOException e) {
+				LOG.error("Error while saving the document.", e);
+				JOptionPane.showMessageDialog(mainframe, "An error has occurred while saving the document.");
+			} catch (ErrorAlertException e) {
+				alertUser(e.title, e.body);
+			}finally {
+				if(tempFile != null){
+					tempFile.delete();
+				}
+			}
     	}
-    	
-//>>>>>>> 8e458fc511cc620c753d8cfdfcdced923cb8bf70
     }
 
 }
