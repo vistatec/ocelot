@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.config.json.LingoTekConfig;
+import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.TmManagement;
 import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
@@ -58,4 +59,6 @@ public interface JsonConfigService {
     public LingoTekConfig getLingoTekConfigurationParams();
     
     public boolean isLingoTekConfigured();
+    
+    public OcelotAzureConfig getOcelotAzureConfiguration();
 }

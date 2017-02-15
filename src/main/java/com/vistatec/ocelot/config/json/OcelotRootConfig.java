@@ -10,6 +10,7 @@ public class OcelotRootConfig implements RootConfig {
 	private TmManagement tmManagement;
 	private LayoutConfig layout;
 	private LingoTekConfig lingoTek;
+	private OcelotAzureConfig azure;
 
 	public OcelotRootConfig() {
 		
@@ -64,6 +65,14 @@ public class OcelotRootConfig implements RootConfig {
 	
 	public LingoTekConfig getLingoTek(){
 		return lingoTek;
+	}
+	
+	public void setAzure(OcelotAzureConfig azure) {
+		this.azure = azure;
+	}
+
+	public OcelotAzureConfig getAzure() {
+		return azure;
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.config.json.LingoTekConfig;
+import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.config.json.OcelotRootConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.ProvenanceConfig;
@@ -320,6 +321,11 @@ public boolean isColumnEnabled(SegmentViewColumn column){
 	@Override
 	public boolean isLingoTekConfigured() {
 		return config.getLingoTek() != null && config.getLingoTek().isComplete();
+	}
+	
+	@Override
+	public OcelotAzureConfig getOcelotAzureConfiguration() {
+		return config.getAzure();
 	}
 
 }

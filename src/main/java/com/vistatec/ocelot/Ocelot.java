@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,6 +88,7 @@ import com.google.inject.Injector;
 import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
@@ -110,6 +112,10 @@ import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.storage.model.PostUploadRequest;
+import com.vistatec.ocelot.storage.service.AzureStorageService;
+import com.vistatec.ocelot.storage.service.StorageService;
+import com.vistatec.ocelot.storage.service.util.Util;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
@@ -136,6 +142,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private JMenuItem menuConfigTm;
 	private JMenuItem menuSaveAsTmx;
 	private JMenuItem menuLqiGrid;
+	private JMenuItem menuSaveToAzure;
 
     private OcelotToolBar toolBar;
 	private JFrame mainframe;
@@ -160,6 +167,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private final LingoTekManager lgkManager;
 
 	private PlatformSupport platformSupport;
+	
+	private StorageService storageService;
+	
+	private boolean enableStorage;
 
 	public Ocelot(Injector ocelotScope) throws IOException,
 	        InstantiationException, IllegalAccessException {
@@ -175,6 +186,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		eventQueue.registerListener(ocelotApp);
 		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
 		this.configService = (OcelotJsonConfigService) ocelotScope.getInstance(JsonConfigService.class);
+		setEnableStorage(configService);
 		this.profileManager = ocelotScope.getInstance(ProfileManager.class);
 		lgkManager = ocelotScope.getInstance(LingoTekManager.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
@@ -275,7 +287,20 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		} else if (e.getSource() == this.menuExit) {
 			handleApplicationExit();
 		} else if (e.getSource() == this.menuSaveAs) {
+//<<<<<<< HEAD
 			saveAs();
+//=======
+//			if (ocelotApp.hasOpenFile()) {
+//				File saveFile = promptSaveAs();
+//				if (saveFile != null && save(saveFile)) {
+//					setMainTitle(saveFile.getName());
+//				}
+//			}
+		} else if(e.getSource() == this.menuSaveToAzure){
+			if (ocelotApp.hasOpenFile()) {
+				handleStoring(configService);
+			}
+//>>>>>>> 8e458fc511cc620c753d8cfdfcdced923cb8bf70
 		} else if (e.getSource().equals(menuSaveAsTmx)) {
 			tmGuiManager.saveAsTmx(mainframe);
 		} else if (e.getSource() == this.menuSave) {
@@ -308,7 +333,21 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private void openFile(File file, boolean temporary){
 		if (file != null) {
 			try {
+//<<<<<<< HEAD
 				ocelotApp.openFile(file, temporary);
+//=======
+//				ocelotApp.openFile(sourceFile);
+//				this.setMainTitle(sourceFile.getName());
+//				segmentView.reloadTable();
+//
+//				this.menuSave.setEnabled(true);
+//				this.menuSaveAs.setEnabled(true);
+//				this.menuSaveAsTmx.setEnabled(true);
+//				this.menuSaveToAzure.setEnabled(enableStorage);
+//				this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
+//                this.toolBar.setSourceFont(segmentView.getSourceFont());
+//                this.toolBar.setTargetFont(segmentView.getTargetFont());
+//>>>>>>> 8e458fc511cc620c753d8cfdfcdced923cb8bf70
 			} catch (FileNotFoundException ex) {
 				LOG.error(
 				        "Failed to parse file '" + file.getName() + "'",
@@ -336,10 +375,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 				menuSave.setEnabled(true);
 				menuSaveAs.setEnabled(true);
 				menuSaveAsTmx.setEnabled(true);
+				menuSaveToAzure.setEnabled(enableStorage);
 				toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
 				toolBar.setSourceFont(segmentView.getSourceFont());
 				toolBar.setTargetFont(segmentView.getTargetFont());
-//				ocelotApp.updateLqiConfInFile(toolBar.getl)
 				
 			}
 		});
@@ -474,6 +513,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
 		        Event.SHIFT_MASK | getPlatformKeyMask()));
 		menuFile.add(menuSaveAs);
+		
+		menuSaveToAzure = new JMenuItem("Save to Azure");
+		menuSaveToAzure.setEnabled(false);
+		menuSaveToAzure.addActionListener(this);
+		// TODO add accelerator
+		menuFile.add(menuSaveToAzure);
 
 		menuSaveAsTmx = new JMenuItem("Save As tmx");
 		menuSaveAsTmx.setEnabled(false);
@@ -903,10 +948,67 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
     }
     
+//<<<<<<< HEAD
     @Subscribe
     public void handlePluginInstalled(NewPluginsInstalled event){
     	
     	toolBar.addPluginWidgets(ocelotApp.getPluginToolBarWidgets());
+    }
+//=======
+    private void setEnableStorage(OcelotJsonConfigService configService){
+    	
+    	OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
+    	if(ocelotAzureConfiguration != null){
+    		String accountName = ocelotAzureConfiguration.getAccountName();
+    		String accountKey = ocelotAzureConfiguration.getAccountKey();
+    		String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
+    		enableStorage = accountName != null && accountKey != null && azureBlobContainer != null;
+    		
+    	}
+    }
+
+    
+    /**
+     * Handles the event save to Azure
+     */
+    private void handleStoring(OcelotJsonConfigService configService){
+    	
+    	OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
+    	
+    	if(ocelotAzureConfiguration != null){
+    		
+    		String accountName = ocelotAzureConfiguration.getAccountName();
+        	String accountKey = ocelotAzureConfiguration.getAccountKey();
+        	String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
+        	
+        	boolean canStorage = accountName != null && accountKey != null && azureBlobContainer != null;
+        	
+        	if(canStorage){
+        		
+        		storageService = new AzureStorageService(accountName, accountKey, azureBlobContainer);
+            	
+        		String openedFilePath = ocelotApp.getOpenFile().toPath().toString();
+        		
+        		String fileId =UUID.randomUUID().toString();
+        		boolean uploadedFileToBlobStorage = storageService.uploadFileToBlobStorage(openedFilePath, "unprocessed", fileId);
+        		if(uploadedFileToBlobStorage){
+        			LOG.debug("File with id " + fileId + " was uploaded to blob storage");
+        			PostUploadRequest postUploadRequest = Util.getPostUploadRequest(fileId);
+        			String json = Util.serializeToJson(postUploadRequest);
+        			LOG.debug("Post Upload Request for Storage Queue in json format is " + json);
+        			boolean messageSent = storageService.sendMessageToPostUploadQueue(json);
+        			if(!messageSent){
+        				LOG.error("No message sent to Storage queue.");
+        			} else {
+        				LOG.info("Sent message to Storage queue.");
+        			}
+        		} else {
+        			LOG.error("File with id " + fileId + " was not uploaded to blob storage");
+        		}
+        	} 
+    	}
+    	
+//>>>>>>> 8e458fc511cc620c753d8cfdfcdced923cb8bf70
     }
 
 }
