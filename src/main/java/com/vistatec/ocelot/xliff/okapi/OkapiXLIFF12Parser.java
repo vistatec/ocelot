@@ -443,7 +443,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 				AltTranslation altTran = iterAltTrans.next();
 				// Check if alt-trans is Ocelot generated.
 				XLIFFTool altTool = altTran.getTool();
-				if ( altTran.getALttransType().equals("previous-version") || (altTool != null && altTool.getName().equals("Ocelot"))) {
+				if ( /*altTran.getALttransType().equals("previous-version") ||*/ (altTool != null && altTool.getName().equals("Ocelot"))) {
 					// We should be able to replace this with |return
 					// altTrans.getTarget;|
 					// once an issue with the XLIFF reader is fixed (Okapi 412).
