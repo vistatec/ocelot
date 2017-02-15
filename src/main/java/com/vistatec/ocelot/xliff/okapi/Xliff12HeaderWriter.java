@@ -11,16 +11,15 @@ import com.vistatec.ocelot.config.UserProvenance;
 public class Xliff12HeaderWriter {
 
 	private static final String PHASE_NAME = "ocelot_1";
-	
+
 	private static final String PROCESS_NAME = "ocelot_review";
 
 	private static final String LQI_TOOL_ID = "lqi";
 
-
 	public void writeHeader(StartSubDocument subDocument, Double time,
 			UserProvenance userProvenance, String lqiConfiguration) {
 
-		if (subDocument.getSkeleton() != null) {
+		if (subDocument.getSkeleton() != null && insertHeader(time, userProvenance)) {
 			GenericSkeleton skeleton = (GenericSkeleton) subDocument
 					.getSkeleton();
 			if (!skeleton.toString().contains(
@@ -31,6 +30,13 @@ public class Xliff12HeaderWriter {
 			checkAndInsertTime(subDocument, time);
 
 		}
+	}
+
+	private boolean insertHeader(Double time, UserProvenance userProvenance) {
+
+		return time != null
+				|| (userProvenance != null && (userProvenance.getRevPerson() != null || userProvenance
+						.getRevOrg() != null));
 	}
 
 	private void checkAndInsertTime(StartSubDocument subDocument, Double time) {
@@ -68,38 +74,43 @@ public class Xliff12HeaderWriter {
 	private void checkAndInsertPhase(StartSubDocument subDocument,
 			UserProvenance userProvenance, String lqiConfiguration) {
 
-		Property phaseProperty = subDocument.getProperty(Property.XLIFF_PHASE);
-		if (phaseProperty != null) {
-			if (phaseProperty.getValue().contains(
-					XliffDocumentConstants.PHASE_NAME_ATTR + "\"" + PHASE_NAME
-							+ "\"")) {
-				replacePhaseReviewerData(phaseProperty, userProvenance,
-						lqiConfiguration);
+		if (userProvenance != null
+				&& (userProvenance.getRevPerson() != null || userProvenance
+						.getRevOrg() != null)) {
+			Property phaseProperty = subDocument
+					.getProperty(Property.XLIFF_PHASE);
+			if (phaseProperty != null) {
+				if (phaseProperty.getValue().contains(
+						XliffDocumentConstants.PHASE_NAME_ATTR + "=\""
+								+ PHASE_NAME + "\"")) {
+					replacePhaseReviewerData(phaseProperty, userProvenance,
+							lqiConfiguration);
+				} else {
+					int endPhaseGroupIndex = phaseProperty.getValue().indexOf(
+							XliffDocumentConstants.PHASE_GROUP_END);
+					StringBuilder newPropValue = new StringBuilder();
+					newPropValue.append(phaseProperty.getValue().substring(0,
+							endPhaseGroupIndex));
+					newPropValue.append(getPhasePropertyValue(userProvenance,
+							lqiConfiguration));
+					newPropValue.append(phaseProperty.getValue().substring(
+							endPhaseGroupIndex));
+					subDocument.setProperty(new Property(Property.XLIFF_PHASE,
+							newPropValue.toString()));
+				}
 			} else {
-				int endPhaseGroupIndex = phaseProperty.getValue().indexOf(
-						XliffDocumentConstants.PHASE_GROUP_END);
-				StringBuilder newPropValue = new StringBuilder();
-				newPropValue.append(phaseProperty.getValue().substring(0,
-						endPhaseGroupIndex));
-				newPropValue.append(getPhasePropertyValue(userProvenance,
+				StringBuilder phasePropValue = new StringBuilder();
+				phasePropValue.append(XliffDocumentConstants.PHASE_GROUP_START);
+				phasePropValue.append(getPhasePropertyValue(userProvenance,
 						lqiConfiguration));
-				newPropValue.append(phaseProperty.getValue().substring(
-						endPhaseGroupIndex));
+				phasePropValue.append(XliffDocumentConstants.PHASE_GROUP_END);
 				subDocument.setProperty(new Property(Property.XLIFF_PHASE,
-						newPropValue.toString()));
+						phasePropValue.toString()));
+				insertPhaseSelfPropertyPlaceholder(subDocument);
 			}
-		} else {
-			StringBuilder phasePropValue = new StringBuilder();
-			phasePropValue.append(XliffDocumentConstants.PHASE_GROUP_START);
-			phasePropValue.append(getPhasePropertyValue(userProvenance,
-					lqiConfiguration));
-			phasePropValue.append(XliffDocumentConstants.PHASE_GROUP_END);
-			subDocument.setProperty(new Property(Property.XLIFF_PHASE,
-					phasePropValue.toString()));
-			insertPhaseSelfPropertyPlaceholder(subDocument);
-		}
-		if (lqiConfiguration != null) {
-			checkAndInsertTool(subDocument, lqiConfiguration);
+			if (lqiConfiguration != null) {
+				checkAndInsertTool(subDocument, lqiConfiguration);
+			}
 		}
 
 	}
@@ -186,8 +197,6 @@ public class Xliff12HeaderWriter {
 		return "[" + XliffDocumentConstants.SELF_PROP_PLACEHOLDER + property
 				+ "]";
 	}
-
-
 
 	private String getPhasePropertyValue(UserProvenance userProvenance,
 			String lqiConfName) {
