@@ -1,5 +1,6 @@
 package com.vistatec.ocelot.profile;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.SystemColor;
@@ -10,6 +11,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
 
 public class DefaultProfileWarningDialog {
 
@@ -29,12 +31,12 @@ public class DefaultProfileWarningDialog {
 	}
 
 	private Component getMainComponent() {
-
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.setPreferredSize(new Dimension(300, 100));
 		JTextArea message = new JTextArea();
-		message.setBackground(SystemColor.control);
+		Color bg = (Color)UIManager.get("OptionPane.background");
+		message.setBackground(bg);
 		message.setWrapStyleWord(true);
 		message.setLineWrap(true);
 		message.setText("The default configuration has been loaded.\n You can customize your own configuration by setting a profile in the \"Profile\" window (File -> Profile menu)");
