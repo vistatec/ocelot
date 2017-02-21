@@ -2,6 +2,8 @@ Ocelot
 ======
 Ocelot is an open source workbench for working with XLIFF files in a post-editing and language review environment. It implements the localization quality issue and provenance data categories from the proposed ITS 2.0 standard and utilizes the Okapi Framework for parsing XLIFF files.
 
+**Build Status:** ![build status](https://api.travis-ci.org/vistatec/ocelot.svg?branch=dev)
+
 ##Downloading and Running##
 A pre-compiled version of Ocelot is available from the [Okapi downloads
 page](https://bintray.com/okapi/Distribution/Ocelot).  Ocelot is distributed
@@ -10,7 +12,7 @@ installed. There are also native executables for the Windows and Mac platforms.
 
 These files are also available on the [Releases page](https://github.com/vistatec/ocelot/releases).
 
-##Dcoumentation##
+##Documentation##
 Additional documentation is available on the 
 [Ocelot wiki](http://open.vistatec.com/ocelot).
 
