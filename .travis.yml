@@ -2,7 +2,6 @@ language: java
 
 # Workaround for launch4j problem, see 
 # https://github.com/travis-ci/travis-ci/issues/5176
-sudo: required
-before_script:
+before_install:
   - sudo apt-get update
   - sudo apt-get install lib32z1 lib32ncurses5
