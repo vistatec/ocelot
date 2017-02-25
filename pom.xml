@@ -14,6 +14,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<okapi.version>0.30</okapi.version>
 		<okapi.xliff2.version>1.1</okapi.xliff2.version>
+		<dmg.title>${project.artifactId} ${project.version}</dmg.title>
+		<final.name>${project.artifactId}-${project.version}</final.name>
 	</properties>
 
 	<repositories>
@@ -168,7 +170,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>${project.artifactId}-${project.version}</finalName>
+		<finalName>${final.name}</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -306,12 +308,14 @@
 				<version>1.7</version>
 				<executions>
 					<execution>
+            <id>package</id>
 						<phase>package</phase>
 						<goals>
 							<goal>run</goal>
 						</goals>
 						<configuration>
 							<target>
+                <echo>Building Ocelot.app</echo>
 								<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask"
 									classpath="src/main/resources/build/appbundler-1.0ea.jar" />
 								<bundleapp outputdirectory="target" name="Ocelot"
@@ -321,6 +325,32 @@
 									<classpath
 										file="target/${project.artifactId}-${project.version}.jar" />
 								</bundleapp>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>install</id>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo>Signing binary as '${codesignId}'</echo>
+                <exec executable="codesign" failifexecutionfails="false"
+                       failonerror="false">
+									<arg value="-s" />
+									<arg value="${codesignId}" />
+									<arg value="--verbose=4" />
+									<arg line="${project.build.directory}/Ocelot.app" />
+								</exec>
+								<echo>Building DMG</echo>
+								<exec executable="dmgbuild" failifexecutionfails="false">
+									<arg value="-s" />
+									<arg value="src/assembly/dmgbuild-settings.py" />
+									<arg value="${dmg.title}" />
+									<arg value="${project.build.directory}/${final.name}.dmg" />
+								</exec>
 							</target>
 						</configuration>
 					</execution>
@@ -358,43 +388,6 @@
 		</pluginManagement>
 	</build>
 	<profiles>
-		<profile>
-			<activation>
-				<os>
-					<name>mac os x</name>
-				</os>
-				<property>
-					<name>codesignId</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.2.1</version>
-						<executions>
-							<execution>
-								<id>exec</id>
-								<phase>package</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<executable>codesign</executable>
-							<arguments>
-								<argument>-s</argument>
-								<argument>${codesignId}</argument>
-								<argument>-vvv</argument>
-								<argument>${project.build.directory}/Ocelot.app</argument>
-							</arguments>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 		<profile>
 			<id>release</id>
 			<build>

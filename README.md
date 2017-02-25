@@ -27,11 +27,14 @@ in the [Ocelot JIRA](https://ocelot.atlassian.net/browse/OC) and track all issue
 ##Build##
 Ocelot uses Maven, so all dependencies should be resolved upon build (mvn package). The output jar file will located in the created target folder.
 
-### Building signed builds on the Mac ###
-When run on OS X, the build will sign the `Ocelot.app` artifact if the `codesignId`
-property is set in Maven.  For example,
+### Mac Builds ###
+The `install` phase will also create a disk image (DMG) file if the
+[dmgbuild](https://dmgbuild.readthedocs.io/en/latest/) tool is installed.
 
-    mvn clean install -DcodeSignId="Developer ID Application: Foo Bar"
+When run on OS X, the `install` phase of the build will sign the `Ocelot.app`
+artifact if the `codesignId` property is set in Maven.  For example,
+
+    mvn clean install -DcodesignId="Developer ID Application: Foo Bar"
 
 This will run the `codesign` tool with the specified id.  You must have XCode tools
 installed and a valid certificate for the specified ID installed in your local keychain
@@ -42,8 +45,9 @@ Use
 
     mvn clean install -P release
 
-This will also generate javadoc, etc, as well as do additional zip packaging of the Mac
-build.  This can be run in conjunction with codesigning on the Mac:
+This will generate javadoc for the application and do other necessary build prep.  
+
+This can be run in conjunction with codesigning on the Mac:
 
     mvn clean install -P release -DcodeSignId="Developer ID Application: Foo Bar"
 
