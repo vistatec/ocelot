@@ -27,6 +27,8 @@ public class LayoutConfig {
 		private boolean showEditDist;
 		
 		private boolean[] showFlags;
+		
+		private boolean showNotTranslatableRows;
 
 		public boolean isShowSegNum() {
 			return showSegNum;
@@ -84,6 +86,14 @@ public class LayoutConfig {
 			this.showFlags = showFlags;
 		}
 		
+		public boolean isShowNotTranslatableRows() {
+			return showNotTranslatableRows;
+		}
+
+		public void setShowNotTranslatableRows(boolean showNotTranslatableRows) {
+			this.showNotTranslatableRows = showNotTranslatableRows;
+		}
+
 		@Override
 		public String toString() {
 		

@@ -39,7 +39,7 @@ public class SimpleSegment extends BaseSegment {
     public SimpleSegment(int segNum, SegmentVariant source,
             SegmentVariant target, SegmentVariant originalTarget,
             StateQualifier stateQualifier) {
-        super(segNum, source, target, originalTarget);
+        super(segNum, source, target, originalTarget, true);
         this.stateQualifier = stateQualifier;
     }
 

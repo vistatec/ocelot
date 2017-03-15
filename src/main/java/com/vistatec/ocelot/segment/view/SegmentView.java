@@ -169,6 +169,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	private OcelotApp ocelotApp;
 
 	protected RuleConfiguration ruleConfig;
+	private boolean showNotTransSegments;
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
@@ -317,9 +318,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			for (int i = 0; i < highlightResults.size(); i++) {
 				hr = highlightResults.get(i);
 				if (hr.getSegmentIndex() < segmentTableModel.getRowCount()) {
-
-					OcelotSegment segment = segmentTableModel.getSegment(hr
+					int modelRow = sort.convertRowIndexToModel(hr
 							.getSegmentIndex());
+					OcelotSegment segment = segmentTableModel.getSegment(modelRow);
 					BaseSegmentVariant variant = null;
 					if (hr.isTargetScope()) {
 						variant = (BaseSegmentVariant) segment.getTarget();
@@ -339,7 +340,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 							currSegmentIdx = hr.getSegmentIndex();
 						}
 						highlightedSegments.add(hr.getSegmentIndex());
-						updateTableRow(hr.getSegmentIndex());
+						updateTableRow(hr
+								.getSegmentIndex());
 					}
 				}
 			}
@@ -714,8 +716,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		sort = new TableRowSorter<SegmentTableModel>(segmentTableModel);
 		sourceTargetTable.setRowSorter(sort);
 		sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
-			private SegmentSelector selector = new SegmentSelector(ruleConfig);
-
+			private SegmentSelector selector = new SegmentSelector(ruleConfig, showNotTransSegments);
+			
 			@Override
 			public boolean include(
 			        RowFilter.Entry<? extends SegmentTableModel, ? extends Integer> entry) {
@@ -843,6 +845,11 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	public void setEnabledTargetDiff(boolean enabled) {
 		this.enabledTargetDiff = enabled;
+		reloadTable();
+	}
+	
+	public void toggleNotTranslatableSegments(boolean showNotTransSegs){
+		this.showNotTransSegments = showNotTransSegs;
 		reloadTable();
 	}
 
@@ -987,7 +994,20 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			eventQueue.post(new SegmentSelectionEvent(xliff, seg));
 		}
 	}
+	
+	private static Color getBackground(OcelotSegment seg, boolean isSelected, JTable table){
+		return isSelected ? table
+		        .getSelectionBackground() : (seg.isEditable() && seg.isTranslatable()) ?  table
+		        .getBackground() : Color.LIGHT_GRAY;
+	}
+	
+	private static Color getForeground(OcelotSegment seg, boolean isSelected, JTable table, boolean coloredBackground){
+		return (seg.isEditable()  && seg.isTranslatable()) ? isSelected ? table
+		        .getSelectionForeground() : table.getForeground()
+		        : coloredBackground ? Color.darkGray : Color.GRAY;
+	}
 
+	
 	/**
 	 * TableCellRenderer for source/target text in the SegmentTableView.
 	 */
@@ -998,6 +1018,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		        boolean isSelected, boolean hasFocus, int row, int col) {
 			SegmentTextCell renderTextPane = SegmentTextCell.createCell();
 			if (segmentTableModel.getRowCount() > row) {
+				
 				OcelotSegment seg = segmentTableModel.getSegment(sort
 				        .convertRowIndexToModel(row));
 				SegmentVariant v = null;
@@ -1019,13 +1040,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				} else {
 					renderTextPane.setTargetDiff(seg.getTargetDiff());
 				}
-				Color background = isSelected ? seg.isEditable() ? jtable
-				        .getSelectionBackground() : Color.LIGHT_GRAY : jtable
-				        .getBackground();
-
-				Color foreground = seg.isEditable() ? isSelected ? jtable
-				        .getSelectionForeground() : jtable.getForeground()
-				        : Color.GRAY;
+				Color background = getBackground(seg, isSelected, jtable);
+				Color foreground = getForeground(seg, isSelected, jtable, false);
 
 				renderTextPane.setBackground(background);
 				renderTextPane.setForeground(foreground);
@@ -1118,15 +1134,14 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			Integer segNum = (Integer) obj;
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
-
+			
+			
 			Color background = getSegmentColor(seg);
-			background = background != null ? background : isSelected ? seg
-			        .isEditable() ? jtable.getSelectionBackground()
-			        : Color.LIGHT_GRAY : jtable.getBackground();
-
-			Color foreground = seg.isEditable() ? isSelected ? jtable
-			        .getSelectionForeground() : jtable.getForeground()
-			        : Color.GRAY;
+			boolean stateQualifierBackground = background != null;
+			background = background != null ? background : SegmentView.getBackground(seg, isSelected, jtable);
+			//TODO check what color the segment number should be. If grey, it is not visible on the state qualifier background 
+//			Color foreground = isSelected ? jtable.getSelectionForeground() : jtable.getForeground();
+			Color foreground = SegmentView.getForeground(seg, isSelected, jtable, stateQualifierBackground);
 
 			if (seg.getSource() instanceof BaseSegmentVariant
 			        && ((BaseSegmentVariant) seg.getSource()).isEnriched()
@@ -1169,6 +1184,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		@Override
 		public Component getTableCellEditorComponent(JTable table,
 		        Object value, boolean isSelected, int row, int column) {
+			
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
             editorComponent = SegmentTextCell.createCell(row, seg.getSource()
@@ -1190,8 +1206,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 			});
             ToolTipManager.sharedInstance().registerComponent(editorComponent);
-
 			return editorComponent;
+			
 		}
 
 		@Override
@@ -1220,6 +1236,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		private static final long serialVersionUID = 1L;
 
 		protected SegmentTextCell editorComponent;
+		protected JTextArea textArea;
 		protected SegmentCellEditorListener editListener;
 		private Font font;
 
@@ -1232,6 +1249,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		@Override
 		public Component getTableCellEditorComponent(JTable jtable,
 		        Object value, boolean isSelected, int row, int col) {
+			
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
 			if (col == segmentTableModel.getSegmentSourceColumnIndex()) {
@@ -1244,6 +1262,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				        .setBeginEdit(seg, seg.getTarget().getDisplayText());
                 editorComponent = SegmentTextCell.createCell(row, seg.getTarget()
 				        .createCopy(), false, isTargetBidi);
+                System.out.println("Color: " + editorComponent.getForeground());
 				editorComponent.getInputMap().put(
 				        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
 				editorComponent.getActionMap().put("finish",
@@ -1263,8 +1282,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
                 editorComponent.prepareEditingUI();
                 ToolTipManager.sharedInstance().registerComponent(editorComponent);
 			}
-			eventQueue.post(new OcelotEditingEvent(
-			        OcelotEditingEvent.Type.START_EDITING));
 			return new JScrollPane(editorComponent);
 		}
 
@@ -1279,6 +1296,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 		@Override
 		public boolean isCellEditable(EventObject anEvent) {
+			
 			if (anEvent instanceof MouseEvent) {
 				// Override normal behavior and only allow double-click to edit
 				// the
@@ -1586,7 +1604,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			int r = sourceTargetTable.rowAtPoint(e.getPoint());
 			if (r >= 0 && r < sourceTargetTable.getRowCount()) {
 				sourceTargetTable.setRowSelectionInterval(r, r);
-				seg = segmentTableModel.getSegment(r);
+				//TODO 
+//				seg = segmentTableModel.getSegment(r);
+				seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(r));
 			}
 			int c = sourceTargetTable.columnAtPoint(e.getPoint());
 			boolean target = false;

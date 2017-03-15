@@ -139,6 +139,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	        menuSave, menuSaveAs, menuFindReplace, menuWorkspace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
+	private JCheckBoxMenuItem menuShowNotTrans;
 	private JMenuItem menuColumns;
 	private JMenuItem menuConfigTm;
 	private JMenuItem menuSaveAsTmx;
@@ -216,6 +217,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	        throws IOException, InstantiationException, IllegalAccessException {
 
 		segmentView = segView;
+		segmentView.toggleNotTranslatableSegments(configService.isShowNotTranslatableRows());
 
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 		        setupSegAttrDetailPanes(segAttrView, detailView),
@@ -309,6 +311,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			lqiGridController.displayLQIGrid(mainframe);
 		} else if (e.getSource() == this.menuFindReplace) {
 			frController.displayDialog(mainframe);
+		} else if (e.getSource().equals(menuShowNotTrans)) {
+			try {
+				segmentView.toggleNotTranslatableSegments(menuShowNotTrans.isSelected());
+				configService.saveNotTransRowConfig(menuShowNotTrans
+						.isSelected());
+			} catch (TransferException e1) {
+				LOG.warn(
+						"Impossible to save the \"Show not traslatable segments\" configuration",
+						e1);
+			}
 		}
 	}
 
@@ -535,6 +547,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuTgtDiff.addActionListener(this);
 		menuTgtDiff.setSelected(segmentView.getEnabledTargetDiff());
 		menuView.add(menuTgtDiff);
+		
+		menuShowNotTrans = new JCheckBoxMenuItem("Show Not Translatable Segments");
+		menuShowNotTrans.addActionListener(this);
+		menuShowNotTrans.setSelected(configService.isShowNotTranslatableRows());
+		menuView.add(menuShowNotTrans);
+		
 		menuColumns = new JMenuItem("Configure Columns");
 		menuColumns.addActionListener(this);
 		menuView.add(menuColumns);

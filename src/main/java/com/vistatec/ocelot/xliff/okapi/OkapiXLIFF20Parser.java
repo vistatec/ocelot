@@ -155,7 +155,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 						net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
                                 (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
 						OcelotSegment ocelotSegment = convertPartToSegment(
-						        okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId());
+						        okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId(), unit.getTranslate());
 						if (ocelotSegment.getTarget() != null) {
 							setTargetRevisions(unit, okapiSegment,
 							        ocelotSegment);
@@ -318,7 +318,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	 * @return Segment - Ocelot Segment
 	 * @throws MalformedURLException
 	 */
-    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments, String unitId) throws MalformedURLException {
+    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments, String unitId, boolean translatable) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
         //TODO: load original target from file
 		OkapiSegment seg = new OkapiSegment.Builder()
@@ -327,6 +327,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		        .source(new FragmentVariant(unitPart, false))
 				.target(new FragmentVariant(unitPart, true))
 				.tuId(unitId)
+				.translatable(translatable)
 				.build();
 		seg.addAllLQI(parseLqiData(unitPart));
 		seg.addAllProvenance(parseProvData(unitPart));

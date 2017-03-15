@@ -39,14 +39,25 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 public class SegmentSelector {
     private RuleConfiguration ruleConfig;
     
-    public SegmentSelector(RuleConfiguration ruleConfig) {
+    private boolean showNotTransSegments;
+    
+    public SegmentSelector(RuleConfiguration ruleConfig, boolean showNotTransSegments) {
         this.ruleConfig = ruleConfig;
+        this.showNotTransSegments = showNotTransSegments;
     }
+    
+//    public void setShowNotTranslatableSegments(boolean show){
+//    	this.showNotTransSegments = show;
+//    }
     
     public boolean matches(OcelotSegment s) {
         if (ruleConfig.getFilterMode() == FilterMode.ALL &&
-            ruleConfig.getStateQualifierMode() == StateQualifierMode.ALL) { 
+            ruleConfig.getStateQualifierMode() == StateQualifierMode.ALL && showNotTransSegments) { 
             return true; 
+        }
+        
+        if(!showNotTransSegments && !s.isTranslatable()){
+        	return false;
         }
 
         if (ruleConfig.getStateQualifierMode() == StateQualifierMode.SELECTED_STATES &&

@@ -328,4 +328,15 @@ public boolean isColumnEnabled(SegmentViewColumn column){
 		return config.getAzure();
 	}
 
+	@Override
+	public boolean isShowNotTranslatableRows() {
+		return config.getLayout().getSegmentsGrid().isShowNotTranslatableRows();
+	}
+
+	@Override
+	public void saveNotTransRowConfig(boolean showNotTransRows) throws TransferException {
+		config.getLayout().getSegmentsGrid().setShowNotTranslatableRows(showNotTransRows);
+		cfgXservice.save(config);
+	}
+
 }

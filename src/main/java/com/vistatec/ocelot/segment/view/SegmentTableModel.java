@@ -213,7 +213,7 @@ public class SegmentTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex() || col == getNotesColumnIndex();
+        return ((col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex()) && segmentService.getSegment(row).isTranslatable() )  || col == getNotesColumnIndex();
     }
 
     OcelotSegment getSegment(int row) {

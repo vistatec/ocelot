@@ -45,9 +45,9 @@ public class OkapiSegment extends BaseSegment {
     private String tuId;
     
     public OkapiSegment(int segNum, int eventNum, SegmentVariant source,
-            SegmentVariant target, SegmentVariant originalTarget,
+            SegmentVariant target, SegmentVariant originalTarget, boolean translatable,
             StateQualifier stateQualifier, String phaseName, String tuId) {
-        super(segNum, source, target, originalTarget);
+        super(segNum, source, target, originalTarget, translatable);
 
         this.stateQualifier = stateQualifier;
         this.phaseName = phaseName;
@@ -60,7 +60,7 @@ public class OkapiSegment extends BaseSegment {
     @Override
     public boolean isEditable() {
         return !"Rebuttal".equalsIgnoreCase(this.phaseName) &&
-                !"Translator approval".equalsIgnoreCase(this.phaseName);
+                !"Translator approval".equalsIgnoreCase(this.phaseName) ;
     }
 
     @Override
@@ -76,6 +76,7 @@ public class OkapiSegment extends BaseSegment {
     public static class Builder {
         private int segmentNumber, eventNum;
         private SegmentVariant source, target, originalTarget;
+        private boolean translatable;
         private StateQualifier stateQualifier;
         private String phaseName;
         private String tuId;
@@ -119,11 +120,17 @@ public class OkapiSegment extends BaseSegment {
         	this.tuId = tuId;
         	return this;
         }
+        
+        public Builder translatable(boolean translatable){
+        	this.translatable = translatable;
+        	return this;
+        }
 
         public OkapiSegment build() {
             return new OkapiSegment(segmentNumber, eventNum,
-                    source, target, originalTarget, stateQualifier, phaseName, tuId);
+                    source, target, originalTarget, translatable, stateQualifier, phaseName, tuId);
         }
 
     }
+
 }

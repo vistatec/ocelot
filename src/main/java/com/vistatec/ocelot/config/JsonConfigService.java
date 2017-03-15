@@ -56,6 +56,10 @@ public interface JsonConfigService {
     
     public void saveColumnConfiguration(EnumMap<SegmentViewColumn, Boolean> enabledColumns) throws TransferException;
     
+    public boolean isShowNotTranslatableRows();
+    
+    public void saveNotTransRowConfig(boolean showNotTransRows) throws TransferException;
+    
     public LingoTekConfig getLingoTekConfigurationParams();
     
     public boolean isLingoTekConfigured();
