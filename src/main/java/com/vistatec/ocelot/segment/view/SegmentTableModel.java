@@ -216,9 +216,22 @@ public class SegmentTableModel extends AbstractTableModel {
         return ((col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex()) && segmentService.getSegment(row).isTranslatable() )  || col == getNotesColumnIndex();
     }
 
-    OcelotSegment getSegment(int row) {
+    public OcelotSegment getSegment(int row) {
         return segmentService.getSegment(row);
     }
+    
+    public int getModelIndexForSegment(OcelotSegment segment){
+    	
+    	int index = -1;
+    	for(int i = 0; i<segmentService.getNumSegments(); i++){
+    		if(segmentService.getSegment(i).getSegmentNumber() == segment.getSegmentNumber()){
+    			index = i;
+    			break;
+    		}
+    	}
+    	return index;
+    }
+    
     
     public void saveColumnConfiguration() throws TransferException {
 		

@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.vistatec.ocelot.segment.model.TextAtom.HighlightBoundaries;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TranslationEnrichment;
 import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
@@ -414,24 +415,70 @@ protected List<HighlightData> highlightDataList;
 		return enriched;
 	}
 
- public void clearHighlightedText(){
-    	highlightDataList = null;
-    	currentHighlightedIndex = -1;
-    }
+	public void clearHighlightedText() {
+		highlightDataList = null;
+		currentHighlightedIndex = -1;
+		clearHighlightedTextInAtoms();
+	}
 
- public void setHighlightDataList(List<HighlightData> highlightDataList) {
-    	this.highlightDataList = highlightDataList;
-    }
+	private void clearHighlightedTextInAtoms() {
+		
+		if(getAtoms() != null ){
+			for(SegmentAtom atom: getAtoms()){
+				if(atom instanceof TextAtom){
+					((TextAtom)atom).clearHighlights();
+				}
+			}
+		}
+	}
+
+	public void setHighlightDataList(List<HighlightData> highlightDataList) {
+		this.highlightDataList = highlightDataList;
+		clearHighlightedTextInAtoms();
+		setAtomsHighlightedText();
+	}
+	
+	public void setAtomsHighlightedText() {
+		
+		final List<SegmentAtom> segmentAtoms = getAtoms();
+		if (segmentAtoms != null && highlightDataList != null) {
+			HighlightData hd = null;
+			TextAtom txtAtom = null;
+			for(int i = 0; i<highlightDataList.size(); i++){
+				hd = highlightDataList.get(i);
+				if (hd.getAtomIndex() < segmentAtoms.size()
+						&& segmentAtoms.get(hd.getAtomIndex()) instanceof TextAtom) {
+					txtAtom = (TextAtom) segmentAtoms.get(hd.getAtomIndex());
+					HighlightBoundaries hb  = new HighlightBoundaries(hd
+							.getHighlightIndices()[0], hd
+							.getHighlightIndices()[1]);
+					txtAtom.addHighlightBoundary(hb);
+					if(currentHighlightedIndex == i){
+						txtAtom.setCurrentHLBoundaryIdx(txtAtom.getHighlightBoundaries().indexOf(hb));
+					}
+				}
+			}
+		}
+	}
     
     public List<HighlightData> getHighlightDataList(){
     	return highlightDataList;
     }
     
     public void addHighlightData(HighlightData highlightData){
+    	//TODO TRY TO REMOVE
     	if(highlightDataList == null){
     		highlightDataList = new ArrayList<HighlightData>(); 
     	}
     	highlightDataList.add(highlightData);
+    	// END 
+    	
+    	TextAtom hAtom = findHighlightedAtom(highlightData.getAtomIndex());
+    	if(hAtom != null){
+    		hAtom.addHighlightBoundary(new HighlightBoundaries(
+					highlightData.getHighlightIndices()[0],
+					highlightData.getHighlightIndices()[1]));
+    	}
     }
     
     public void removeHighlightData(int atomIndex, int startIndex, int endIndex){
@@ -446,12 +493,62 @@ protected List<HighlightData> highlightDataList;
     		}
     		highlightDataList.remove(hdToDelete);
     	}
+    	TextAtom hAtom = findHighlightedAtom(atomIndex);
+    	if(hAtom != null){
+    		hAtom.removeHighlighBoundary(startIndex, endIndex);
+    	}
+    	
     }
     
- public void setCurrentHighlightedIndex(int currentHighlightedIndex){
-    	this.currentHighlightedIndex = currentHighlightedIndex;
+    public TextAtom findHighlightedAtom(int atomIndex){
+    	
+    	TextAtom hAtom = null;
+    	if(getAtoms() != null && atomIndex < getAtoms().size()){
+    		SegmentAtom atom = getAtoms().get(atomIndex);
+    		if(atom instanceof TextAtom){
+    			hAtom = (TextAtom) atom;
+    		}
+    	}
+    	return hAtom;
     }
-    
+
+	public void setCurrentHighlightedIndex(int currentHighlightedIndex) {
+		this.currentHighlightedIndex = currentHighlightedIndex;
+
+		if (getAtoms() != null) {
+			if (currentHighlightedIndex > -1) {
+				HighlightData hd = highlightDataList
+						.get(currentHighlightedIndex);
+				if (hd.getAtomIndex() < getAtoms().size()
+						&& getAtoms().get(hd.getAtomIndex()) instanceof TextAtom) {
+					TextAtom hAtom = (TextAtom) getAtoms().get(
+							hd.getAtomIndex());
+					if (hAtom.getHighlightBoundaries() != null) {
+						HighlightBoundaries hb = null;
+						for (int i = 0; i < hAtom.getHighlightBoundaries()
+								.size(); i++) {
+							hb = hAtom.getHighlightBoundaries().get(i);
+							if (hd.getHighlightIndices()[0] == hb
+									.getFirstIndex()
+									&& hd.getHighlightIndices()[1] == hb
+											.getLastIndex()) {
+								hAtom.setCurrentHLBoundaryIdx(i);
+								break;
+							}
+						}
+					}
+
+				}
+			} else {
+				for(SegmentAtom atom: getAtoms()){
+					if(atom instanceof TextAtom) {
+						((TextAtom)atom).setCurrentHLBoundaryIdx(-1);
+					}
+				}
+			}
+		}
+	}
+
     public int getCurrentHighlightedIndex(){
     	return currentHighlightedIndex;
     }
@@ -471,30 +568,71 @@ protected List<HighlightData> highlightDataList;
 	
     public void replaced(String newString){
     	
-		if (highlightDataList != null) {
-			HighlightData replacedHd = highlightDataList
-					.get(currentHighlightedIndex);
-			if (currentHighlightedIndex < highlightDataList.size() - 1) {
-				HighlightData nextHd = null;
-				int hdIndex = currentHighlightedIndex + 1;
-				int delta = newString.length()
-						- (replacedHd.getHighlightIndices()[1] - replacedHd
-								.getHighlightIndices()[0]);
-				while (hdIndex < highlightDataList.size()) {
-					nextHd = highlightDataList.get(hdIndex++);
-					if (replacedHd.getAtomIndex() == nextHd.getAtomIndex()) {
-						
-						int[] newHLIndices = {
-								nextHd.getHighlightIndices()[0] + delta,
-								nextHd.getHighlightIndices()[1] + delta };
-						nextHd.setHighlightIndices(newHLIndices);
+    	if(highlightDataList != null){
+    		replaceTextInAtoms(newString);
+    		updateHlDataInCurrentAtomAfterReplace(newString);
+    	}
+    }
+    
+    private void replaceTextInAtoms(String newString){
+    	
+    	HighlightData hd = highlightDataList.get(currentHighlightedIndex);
+    	final List<SegmentAtom> segmentAtoms = getAtoms();
+		if (segmentAtoms != null && hd.getAtomIndex() < segmentAtoms.size()
+				&& segmentAtoms.get(hd.getAtomIndex()) instanceof TextAtom) {
+			TextAtom currAtom = (TextAtom) segmentAtoms.get(hd
+					.getAtomIndex());
+			if (currAtom.getHighlightBoundaries() != null) {
+				HighlightBoundaries currHb = currAtom
+						.getHighlightBoundaries().get(
+								currAtom.getCurrentHLBoundaryIdx());
+				if (currAtom.getCurrentHLBoundaryIdx() < currAtom
+						.getHighlightBoundaries().size() - 1) {
+					int currHbIndex = currAtom.getCurrentHLBoundaryIdx() + 1;
+					int delta = newString.length()
+							- (currHb.getLastIndex() - currHb
+									.getFirstIndex());
+					HighlightBoundaries nextHb = null;
+					while (currHbIndex < currAtom.getHighlightBoundaries()
+							.size()) {
+						nextHb = currAtom.getHighlightBoundaries().get(
+								currHbIndex++);
+						nextHb.setFirstIndex(nextHb.getFirstIndex() + delta);
+						nextHb.setLastIndex(nextHb.getLastIndex() + delta);
 					}
 				}
+				currAtom.getHighlightBoundaries().remove(currHb);
+				currAtom.setCurrentHLBoundaryIdx(-1);
 			}
-			highlightDataList.remove(currentHighlightedIndex);
-			currentHighlightedIndex = -1;
 		}
     }
+    
+    private void updateHlDataInCurrentAtomAfterReplace(String newString){
+    	
+    	HighlightData replacedHd = highlightDataList
+				.get(currentHighlightedIndex);
+		if (currentHighlightedIndex < highlightDataList.size() - 1) {
+			HighlightData nextHd = null;
+			int hdIndex = currentHighlightedIndex + 1;
+			int delta = newString.length()
+					- (replacedHd.getHighlightIndices()[1] - replacedHd
+							.getHighlightIndices()[0]);
+			while (hdIndex < highlightDataList.size()) {
+				nextHd = highlightDataList.get(hdIndex++);
+				if (replacedHd.getAtomIndex() == nextHd.getAtomIndex()) {
+					
+					int[] newHLIndices = {
+							nextHd.getHighlightIndices()[0] + delta,
+							nextHd.getHighlightIndices()[1] + delta };
+					nextHd.setHighlightIndices(newHLIndices);
+				}
+			}
+		}
+		highlightDataList.remove(currentHighlightedIndex);
+		currentHighlightedIndex = -1;
+    }
+    
+    
 	public Set<Enrichment> getEnirchments() {
 		return enrichments;
 	}

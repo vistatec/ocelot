@@ -117,6 +117,7 @@ import com.vistatec.ocelot.events.ReplaceDoneEvent;
 import com.vistatec.ocelot.events.ReplaceEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
+import com.vistatec.ocelot.events.SegmentRowsSortedEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
@@ -164,7 +165,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	protected SegmentTableModel segmentTableModel;
 	protected SegmentViewTable sourceTargetTable;
 	private TableColumnModel tableColumnModel;
-	protected TableRowSorter<SegmentTableModel> sort;
+	protected SegmentTableSorter sort;
 	private boolean enabledTargetDiff = true;
 	private OcelotApp ocelotApp;
 
@@ -318,9 +319,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			for (int i = 0; i < highlightResults.size(); i++) {
 				hr = highlightResults.get(i);
 				if (hr.getSegmentIndex() < segmentTableModel.getRowCount()) {
-					int modelRow = sort.convertRowIndexToModel(hr
-							.getSegmentIndex());
-					OcelotSegment segment = segmentTableModel.getSegment(modelRow);
+					OcelotSegment segment = segmentTableModel.getSegment(sort.convertRowIndexToModel(hr.getSegmentIndex()));
 					BaseSegmentVariant variant = null;
 					if (hr.isTargetScope()) {
 						variant = (BaseSegmentVariant) segment.getTarget();
@@ -340,13 +339,12 @@ public class SegmentView extends JScrollPane implements RuleListener,
 							currSegmentIdx = hr.getSegmentIndex();
 						}
 						highlightedSegments.add(hr.getSegmentIndex());
-						updateTableRow(hr
-								.getSegmentIndex());
+						updateTableRow(hr.getSegmentIndex());
 					}
 				}
 			}
 			sourceTargetTable.scrollRectToVisible(sourceTargetTable
-					.getCellRect(currSegmentIdx, 0, false));
+					.getCellRect(sort.convertRowIndexToView(currSegmentIdx), 0, false));
 		}
 
 	}
@@ -358,7 +356,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			OcelotSegment hlSegment = null;
 			for (int segIndex : highlightedSegments) {
 				if (segIndex < segmentTableModel.getRowCount()) {
-					hlSegment = segmentTableModel.getSegment(segIndex);
+					hlSegment = segmentTableModel.getSegment(sort.convertRowIndexToModel(segIndex));
 					((BaseSegmentVariant) hlSegment.getSource())
 							.clearHighlightedText();
 					if (hlSegment.getTarget() != null) {
@@ -384,9 +382,11 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			for (int segIdx = 0; segIdx < segmentTableModel.getRowCount(); segIdx++) {
 
 				segment = segmentTableModel.getSegment(segIdx);
-				replacedOccNum += replaceAllTarget(
-						(BaseSegmentVariant) segment.getTarget(),
-						e.getNewString(), segIdx);
+				if(segment.isTranslatable() && segment.isEditable()){
+					replacedOccNum += replaceAllTarget(
+							(BaseSegmentVariant) segment.getTarget(),
+							e.getNewString(), segIdx);
+				}
 			}
 			eventQueue.post(new ReplaceDoneEvent(replacedOccNum));
 		}
@@ -422,22 +422,25 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	private void replaceTarget(String newString, int segmentIndex) {
 		
-		SegmentVariant updatedTarget = currHLVariant.createCopy();
-		if (currHLVariant.getHighlightDataList() != null
-				&& currHLVariant.getCurrentHighlightedIndex() > -1
-				&& currHLVariant.getCurrentHighlightedIndex() < currHLVariant
-						.getHighlightDataList().size()) {
-
-			if(updatedTarget instanceof FragmentVariant){
-				replaceTargetTextXliff20((FragmentVariant)updatedTarget, newString);
-			} else {
-				replaceTargetTextXliff12((BaseSegmentVariant)updatedTarget, newString);
+		OcelotSegment segment = segmentTableModel.getSegment(sort.convertRowIndexToModel(segmentIndex));
+		if(segment.isTranslatable() && segment.isEditable()){
+			SegmentVariant updatedTarget = currHLVariant.createCopy();
+			if (currHLVariant.getHighlightDataList() != null
+					&& currHLVariant.getCurrentHighlightedIndex() > -1
+					&& currHLVariant.getCurrentHighlightedIndex() < currHLVariant
+							.getHighlightDataList().size()) {
+	
+				if(updatedTarget instanceof FragmentVariant){
+					replaceTargetTextXliff20((FragmentVariant)updatedTarget, newString);
+				} else {
+					replaceTargetTextXliff12((BaseSegmentVariant)updatedTarget, newString);
+				}
+				eventQueue.post(new SegmentTargetUpdateEvent(xliff,
+						segment,
+						updatedTarget));
+				updateTableRow(segmentIndex);
+				
 			}
-			eventQueue.post(new SegmentTargetUpdateEvent(xliff,
-					segmentTableModel.getSegment(segmentIndex),
-					updatedTarget));
-			updateTableRow(segmentIndex);
-			
 		}
 	}
 
@@ -713,7 +716,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	}
 
 	public void addFilters() {
-		sort = new TableRowSorter<SegmentTableModel>(segmentTableModel);
+		sort = new SegmentTableSorter(segmentTableModel);
 		sourceTargetTable.setRowSorter(sort);
 		sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
 			private SegmentSelector selector = new SegmentSelector(ruleConfig, showNotTransSegments);
@@ -969,9 +972,15 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	@Subscribe
 	public void notifySegmentEdit(SegmentEditEvent event) {
-		int selRow = sourceTargetTable.getSelectedRow();
-		updateTableRow(selRow);
+		try{
+		int segmentIndex = segmentTableModel.getModelIndexForSegment(event.getSegment());
+		
+//		int selRow = sourceTargetTable.getSelectedRow();
+		updateTableRow(sort.convertRowIndexToView(segmentIndex));
 		sourceTargetTable.requestFocusInWindow();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -1629,6 +1638,26 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 				menu.show(e.getComponent(), e.getX(), e.getY());
 			}
+		}
+	}
+	
+	class SegmentTableSorter extends TableRowSorter<SegmentTableModel>{
+		
+		
+		public SegmentTableSorter(SegmentTableModel model) {
+			super(model);
+		}
+
+		@Override
+		public void toggleSortOrder(int column) {
+			clearHighlightedSegments();
+			super.toggleSortOrder(column);
+			int[] sortIndexMap = new int[segmentTableModel.getRowCount()];
+			for(int i=0; i<segmentTableModel.getRowCount(); i++){
+				sortIndexMap[i] = sort.convertRowIndexToView(i);
+			}
+			eventQueue.post(new SegmentRowsSortedEvent(sortIndexMap));
+			
 		}
 	}
 
