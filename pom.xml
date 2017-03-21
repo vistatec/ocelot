@@ -4,7 +4,7 @@
 
 	<groupId>com.vistatec</groupId>
 	<artifactId>Ocelot</artifactId>
-	<version>3.0-rc1</version>
+	<version>3.0-rc2</version>
 	<packaging>jar</packaging>
 
 	<name>Ocelot</name>
