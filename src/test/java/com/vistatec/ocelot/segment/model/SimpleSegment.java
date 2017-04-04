@@ -111,4 +111,9 @@ public class SimpleSegment extends BaseSegment {
 		return null;
 	}
 
+	@Override
+    public String getSegmentId() {
+	    return null;
+    }
+
 }

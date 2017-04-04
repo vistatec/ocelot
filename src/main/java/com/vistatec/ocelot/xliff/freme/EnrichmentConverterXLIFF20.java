@@ -9,6 +9,7 @@ import net.sf.okapi.lib.xliff2.core.ExtElement;
 import net.sf.okapi.lib.xliff2.core.ExtElements;
 import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
+import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.Unit;
 import net.sf.okapi.lib.xliff2.its.DataCategory;
 import net.sf.okapi.lib.xliff2.its.TermTag;
@@ -16,9 +17,12 @@ import net.sf.okapi.lib.xliff2.its.TextAnalysis;
 
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.EntityEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.TaggedCodeAtom;
 
 /**
  * This class provides methods for converting XLIFF 2.0 tags to enrichments.
@@ -48,14 +52,16 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 *            the current involved fragment
 	 * @return the list of enrichments for this unit.
 	 */
-	public List<Enrichment> retrieveEnrichments(Unit unit, Fragment fragment, String language) {
+	public List<Enrichment> retrieveEnrichments(Unit unit, Fragment fragment, String language, String segmentId) {
 
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (fragment != null) {
+			FragmentVariant fragVar = new FragmentVariant(fragment, false);
 			StringBuilder wholeText = new StringBuilder();
 			List<EnrichmentWrapper> currEnrichments = new ArrayList<EnrichmentWrapper>();
 			List<Integer> codePositionToRemove = new ArrayList<Integer>();
 			List<DataCategory> dataCategoryToDelete = new ArrayList<DataCategory>();
+			List<Tag> tagsToRemove = new ArrayList<Tag>();
 			String termAnnotator = null;
 			if (unit.getAnnotatorsRef() != null) {
 				termAnnotator = unit.getAnnotatorsRef().get("terminology");
@@ -70,10 +76,19 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 						        dataCategoryToDelete, wholeText.toString(),
 						        termAnnotator);
 						if (!tag.hasITSItem()) {
-							int tagKey = fragment.getTags().getKey(tag);
-							fragment.getTags().remove(tagKey);
+							tagsToRemove.add(tag);
 							codePositionToRemove.add(textIdx++);
 							codePositionToRemove.add(textIdx);
+						} else {
+							TaggedCodeAtom atom = findCodeAtom(fragVar, tag);
+							if(atom != null){
+								wholeText.append(atom.getData());
+								textIdx++;
+							}
+						}
+					}  else {
+						if(manageCode(tag, fragVar, wholeText)){
+							textIdx++;
 						}
 					}
 					break;
@@ -96,16 +111,30 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 							}
 						}
 						if (!tag.hasITSItem()) {
-							fragment.remove(tag);
+							tagsToRemove.add(tag);
 							codePositionToRemove.add(textIdx++);
 							codePositionToRemove.add(textIdx);
 						}
+					} else {
+						if(manageCode(tag, fragVar, wholeText)){
+							textIdx++;
+						}
 					}
+					break;
+				case Fragment.CODE_OPENING:
+				case Fragment.CODE_CLOSING:
+				case Fragment.CODE_STANDALONE:
+					manageCode(fragment.getCTag(codedText, textIdx++), fragVar, wholeText);
+					break;
+				case Fragment.PCONT_STANDALONE:
 					break;
 				default:
 					wholeText.append(codedText.charAt(textIdx));
 					break;
 				}
+			}
+			for(Tag tag: tagsToRemove){
+				fragment.remove(tag);
 			}
 			StringBuilder newCodedText = new StringBuilder();
 			int lastIndex = 0;
@@ -116,11 +145,33 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 			newCodedText.append(codedText.substring(lastIndex));
 			fragment.setCodedText(newCodedText.toString());
 			enrichments.addAll(retrieveTriplesEnrichments(
-			        unit.getExtElements(), enrichments, language));
+			        unit.getExtElements(), enrichments, language, segmentId));
 		}
 		return enrichments;
 	}
 
+	private boolean manageCode(Tag code, FragmentVariant variant, StringBuilder text){
+		boolean managed = false;
+		TaggedCodeAtom atom = findCodeAtom(variant, code);
+		if(atom != null){
+			text.append(atom.getData());
+			managed = true;
+		}
+		return managed;
+	}
+	
+	private TaggedCodeAtom findCodeAtom(FragmentVariant variant, Tag code){
+		
+		TaggedCodeAtom atom = null;
+		for(SegmentAtom currAtom: variant.getAtoms()){
+			if(currAtom instanceof TaggedCodeAtom && ((TaggedCodeAtom)currAtom).getTag().equals(code)){
+				atom = (TaggedCodeAtom) currAtom;
+			}
+		}
+		return atom;
+	}
+	
+	
 	/**
 	 * Manages an opening marker for XLIFF 2.0: depending on the type of the
 	 * tag, the proper enrichment is created.
@@ -225,30 +276,54 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 	 * @return the complete list of enrichments.
 	 */
 	private List<Enrichment> retrieveTriplesEnrichments(
-	        final ExtElements elements, final List<Enrichment> enrichments, String language) {
+	        final ExtElements elements, final List<Enrichment> enrichments, String language, String segmentId) {
 
 		List<Enrichment> triplesEnrichments = new ArrayList<Enrichment>();
 		if (elements != null) {
-			Iterator<ExtElement> elemsIt = elements.iterator();
-			ExtElement elem = null;
-			while (elemsIt.hasNext()) {
-				elem = elemsIt.next();
-				if (elem.getQName().getPrefix().equals("ex")
-				        && elem.getQName().getLocalPart().equals("json-ld")
-				        && !elem.getChildren().isEmpty()) {
-					if (elem.getChildren().get(0) instanceof ExtContent) {
-						String jsonString = ((ExtContent) elem.getChildren()
-						        .get(0)).getText();
-						triplesEnrichments.addAll(retrieveTriplesEnrichments(
-						        jsonString, enrichments, language));
-					}
-
+//			Iterator<ExtElement> elemsIt = elements.iterator();
+			ExtElement elem = getExtElementForSegment(elements, segmentId);
+			if(elem != null && !elem.getChildren().isEmpty()){
+				if (elem.getChildren().get(0) instanceof ExtContent) {
+					String jsonString = ((ExtContent) elem.getChildren()
+					        .get(0)).getText();
+					triplesEnrichments.addAll(retrieveTriplesEnrichments(
+					        jsonString, enrichments, language));
 				}
 			}
 		}
 
 		return triplesEnrichments;
 	}
+	
+	private ExtElement getExtElementForSegment(ExtElements elements, String segmentId){
+		
+		ExtElement element = null;
+		Iterator<ExtElement> elemsIt = elements.iterator();
+		ExtElement currElem = null;
+		while(elemsIt.hasNext() && element == null){
+			currElem = elemsIt.next();
+			if(isExtElemForSegment(currElem, segmentId)){
+				element = currElem;
+			}
+		}
+		return element;
+	}
+	
+	
+	private boolean isExtElemForSegment(ExtElement elem, String segmentId){
+		
+		boolean isJsonLDNode = elem.getQName().getPrefix()
+		        .equals(EnrichmentAnnotationsConstants.JSON_TAG_PREFIX)
+		        && elem.getQName()
+		                .getLocalPart()
+		                .equals(EnrichmentAnnotationsConstants.JSON_TAG_LOCAL_NAME);
+
+		boolean isRelatedToSegment = segmentId == null
+		        || segmentId.equals(elem.getAttributes().getAttributeValue("",
+		                EnrichmentAnnotationsConstants.JSON_TAG_SEG_ATTR));
+		return isJsonLDNode && isRelatedToSegment;
+	}
+	
 }
 
 /**

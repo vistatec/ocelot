@@ -14,11 +14,20 @@ public interface EnrichmentAnnotationsConstants {
 	/** The JSON marker name. */
 	public String JSON_TAG_NAME = "ex:json-ld";
 	
+	/** The JSON marker prefix. */
+	public String JSON_TAG_PREFIX = "ex";
+	
+	/** The JSON marker local name. */
+	public String JSON_TAG_LOCAL_NAME = "json-ld";
+	
 	/** JSON tag domain. */
 	public String JSON_TAG_DOMAIN = "http://example.com";
 	
 	/** JSON tag domain attribute name. */
 	public String JSON_TAG_DOMAIN_ATTR = "xmlns:ex";
+	
+	/** JSON tag segment attribute name. */
+	public String JSON_TAG_SEG_ATTR = "segment";
 	
 	/** JSON-LD format constant. */
 	public String JSON_LD_FORMAT = "JSON-LD";

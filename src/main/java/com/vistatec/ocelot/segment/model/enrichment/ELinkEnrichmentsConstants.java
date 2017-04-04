@@ -103,7 +103,7 @@ public abstract class ELinkEnrichmentsConstants {
 		        .add(new LinkInfoData(HOMETOWN_PROP, "Hometown", String.class));
 		properties.add(new LinkInfoData(BIRTH_PLACE_PROP, "Birth Place",
 		        String.class));
-		properties.add(new LinkInfoData(BIRTH_PLACE_PROP, "Death Place",
+		properties.add(new LinkInfoData(DEATH_PLACE_PROP, "Death Place",
 		        String.class));
 		properties.add(new LinkInfoData(AREA_TOTAL_PROP, "Area Total",
 		        String.class, "Km2"));
@@ -315,17 +315,18 @@ public abstract class ELinkEnrichmentsConstants {
 		        .getInfoProperties()) {
 			infoNodeIt = linkModel.listObjectsOfProperty(entityRes,
 			        linkModel.createProperty(infoProp.getPropName()));
-			if (infoNodeIt.hasNext()) {
+			while (infoNodeIt.hasNext() && infoProp.getValue() == null) {
 				RDFNode node = infoNodeIt.next();
 				System.out.println("Property name: " + infoProp.getPropName());
 				if (node.isLiteral()) {
 					if(checkLanguage(node, linkEnrichment.getLanguage())){
 						infoProp.setValue(node.asLiteral().getString());
+						enrichmentInfo.add(infoProp);
 					}
 				} else {
 					infoProp.setValue(node.asResource().getURI());
+					enrichmentInfo.add(infoProp);
 				}
-				enrichmentInfo.add(infoProp);
 			}
 		}
 		linkEnrichment.setInfoList(enrichmentInfo);

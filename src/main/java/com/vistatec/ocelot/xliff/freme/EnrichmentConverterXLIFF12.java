@@ -19,6 +19,7 @@ import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.EntityEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.LinkEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 /**
  * This class provides methods for converting XLIFF 1.2 tags to enrichments.
@@ -59,6 +60,7 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 
 		List<Enrichment> enrichments = new ArrayList<Enrichment>();
 		if (textContainer != null) {
+			TextContainerVariant variant = new TextContainerVariant(textContainer);
 			StringBuilder wholeText = new StringBuilder();
 			List<Code> codesToRemove = new ArrayList<Code>();
 			List<Enrichment> currEnrichments = new ArrayList<Enrichment>();
@@ -82,6 +84,8 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 							if (!hasAnnotations(openingCode)) {
 								codesToRemove.add(openingCode);
 							}
+						} else {
+							wholeText.append(variant.getCodeText(openingCode, false));
 						}
 						break;
 					case TextFragment.MARKER_CLOSING:
@@ -93,6 +97,8 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 							if (code.getGenericAnnotations() == null || code.getGenericAnnotations().size() == 0) {
 								codesToRemove.add(code);
 							}
+						} else {
+							wholeText.append(variant.getCodeText(code, false));
 						}
 						// update end index for all current enrichments.
 						for (Enrichment enrich : currEnrichments) {
@@ -101,7 +107,11 @@ public class EnrichmentConverterXLIFF12 extends EnrichmentConverter {
 						enrichments.addAll(currEnrichments);
 						currEnrichments.clear();
 						break;
-
+					case TextFragment.MARKER_ISOLATED:
+						index = TextFragment.toIndex(codedText.charAt(++i));
+						Code placeHolderCode = part.getContent().getCodes().get(index);
+						wholeText.append(variant.getCodeText(placeHolderCode, false));
+						break;
 					default:
 						wholeText.append(text.charAt(i));
 						break;

@@ -34,7 +34,7 @@ public class FremeXliff1_2Helper extends FremeXliffHelper {
 //	}
 
 	@Override
-	public Element getSourceElement(Element unitElement) {
+	public Element getSourceElement(Element unitElement, String segmentId) {
 		NodeList nodes = unitElement.getChildNodes();
 		Element source = null;
 		int i = 0;
@@ -50,7 +50,7 @@ public class FremeXliff1_2Helper extends FremeXliffHelper {
 	}
 
 	@Override
-	public Element getTargetElement(Element unitElement) {
+	public Element getTargetElement(Element unitElement, String segmentId) {
 		Element targetElement = null;
 		NodeList nodes = unitElement.getChildNodes();
 		int i = 0;

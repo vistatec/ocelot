@@ -140,13 +140,17 @@ public abstract class EnrichmentConverter {
 			tripleStmts = new ArrayList<Statement>();
 			tripleStmts.add(mainStmt);
 			String sense = findSense(tripleModel, mainStmt, tripleStmts);
-			String[] sourceTarget = findSourceAndTarget(tripleModel, mainStmt,
-			        tripleStmts);
-			if (sourceTarget[0] != null) {
+			String definition = findDefinition(tripleModel, mainStmt, tripleStmts);
+			List<String> sourceList = new ArrayList<String>();
+			List<String> targetList = new ArrayList<String>();
+			findSourceAndTarget(tripleModel, mainStmt,
+			        tripleStmts, sourceList, targetList);
+			if (!sourceList.isEmpty()) {
 				termEnrich = new TerminologyEnrichment();
-				termEnrich.setSourceTerm(sourceTarget[0]);
-				termEnrich.setTargetTerm(sourceTarget[1]);
+				termEnrich.setSourceTermList(sourceList);
+				termEnrich.setTargetTermList(targetList);
 				termEnrich.setSense(sense);
+				termEnrich.setDefinition(definition);
 				termEnrich.setTermTriples(tripleStmts);
 				termEnrich.setOffsetStartIdx(offsetStartIdx);
 				termEnrich.setOffsetEndIdx(offsetEndIdx);
@@ -156,6 +160,23 @@ public abstract class EnrichmentConverter {
 		}
 		return termEnrichments;
 	}
+
+	private String findDefinition(Model tripleModel, Statement mainTermStmt,
+            List<Statement> tripleStmts) {
+		
+		String definition = null;
+		StmtIterator definitionStmtIt = tripleModel.listStatements(mainTermStmt
+		        .getObject().asResource(), tripleModel.createProperty(
+		        		"http://tbx2rdf.lider-project.eu/tbx#", "definition"),
+		        (RDFNode) null);
+		Statement definitionStmt = null;
+		if (definitionStmtIt != null && definitionStmtIt.hasNext()) {
+			definitionStmt = definitionStmtIt.next();
+			definition = definitionStmt.getObject().asLiteral().getString();
+			tripleStmts.add(definitionStmt);
+		}
+		return definition;
+    }
 
 	/**
 	 * Finds the enrichment related to the URI passed as parameter. It could be
@@ -236,10 +257,9 @@ public abstract class EnrichmentConverter {
 	 * @return an array of strings containing the source at the first index and
 	 *         the target at the second index.
 	 */
-	protected String[] findSourceAndTarget(Model tripleModel,
-	        Statement mainTermStmt, List<Statement> tripleStmts) {
+	protected void  findSourceAndTarget(Model tripleModel,
+	        Statement mainTermStmt, List<Statement> tripleStmts, List<String> sourceList, List<String> targetList) {
 
-		String[] sourceTarget = new String[2];
 		String sourceLanguage = sourceLang;
 		if (sourceLang.contains("-")) {
 			sourceLanguage = sourceLang.substring(0, sourceLang.indexOf("-"));
@@ -268,17 +288,16 @@ public abstract class EnrichmentConverter {
 					tripleStmts.add(sourcTgtStmt);
 					if (sourceLanguage.equals(sourcTgtStmt.getObject()
 					        .asLiteral().getLanguage())) {
-						sourceTarget[0] = sourcTgtStmt.getObject().asLiteral()
-						        .getString();
+						sourceList.add(sourcTgtStmt.getObject().asLiteral()
+						        .getString());
 					} else if (targetLanguage.equals(sourcTgtStmt.getObject()
 					        .asLiteral().getLanguage())) {
-						sourceTarget[1] = sourcTgtStmt.getObject().asLiteral()
-						        .getString();
+						targetList.add(sourcTgtStmt.getObject().asLiteral()
+						        .getString());
 					}
 				}
 			}
 		}
-		return sourceTarget;
 	}
 
 	/**

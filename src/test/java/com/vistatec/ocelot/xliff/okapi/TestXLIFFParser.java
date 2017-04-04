@@ -31,16 +31,20 @@ package com.vistatec.ocelot.xliff.okapi;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 import static com.vistatec.ocelot.rules.StateQualifier.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
-
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.resource.ITextUnit;
@@ -48,6 +52,7 @@ import net.sf.okapi.common.resource.TextContainer;
 
 import org.junit.Test;
 
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
@@ -90,6 +95,23 @@ public class TestXLIFFParser {
         testReadUnhandledPhaseName(segments.get(11));
         testReadMissingPhaseRef(segments.get(12));
         testReadMTConfidence(segments.get(13));
+    }
+    
+    @Test
+    public void testEnrichedFile() throws Exception {
+    	
+		OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
+		List<OcelotSegment> segments = parser.parse(new File(getClass()
+		        .getResource("xliff1.2.enriched.xlf").toURI()));
+		Map<Integer, List<Enrichment>> expectedEnrichMap = EnrichmentBuilder
+		        .getExpectedEnrichmentsXliff12();
+		for (OcelotSegment segment : segments) {
+			EnrichmentAssertor.assertEnrichments(
+			        expectedEnrichMap.get(segment.getSegmentNumber()),
+			        new ArrayList<Enrichment>(((BaseSegmentVariant) segment
+			                .getSource()).getEnirchments()));
+		}
+        
     }
 
     public void testReadProvenance(OcelotSegment seg) {
