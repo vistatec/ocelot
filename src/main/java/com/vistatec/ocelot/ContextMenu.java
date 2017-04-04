@@ -30,6 +30,7 @@ package com.vistatec.ocelot;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -45,77 +46,102 @@ import com.vistatec.ocelot.lqi.model.LQIGrid;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
 
 /**
  * ITS Metadata context menu.
  */
 public class ContextMenu extends JPopupMenu implements ActionListener {
-    /**
-     * Default serial ID
-     */
-    private static final long serialVersionUID = 2L;
-	private JMenuItem addLQI, removeLQI, resetTarget, viewEnrichments;
-    private OcelotSegment selectedSeg;
+	/**
+	 * Default serial ID
+	 */
+	private static final long serialVersionUID = 2L;
+	private JMenuItem addLQI, removeLQI, resetTarget, viewEnrichments,
+	        viewEnrichGraph;
+	private OcelotSegment selectedSeg;
 	private SegmentVariant variant;
-    private LanguageQualityIssue selectedLQI;
-    private LQIGrid lqiGrid;
-    private XLIFFDocument xliff;
-    private OcelotEventQueue eventQueue;
+	private LanguageQualityIssue selectedLQI;
+	private LQIGrid lqiGrid;
+	private XLIFFDocument xliff;
+	private OcelotEventQueue eventQueue;
 
-    public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
-        this.xliff = xliff;
-        this.selectedSeg = selectedSeg;
-        this.eventQueue = eventQueue;
-        this.lqiGrid = lqiGrid;
+	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg,
+	        OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+		this.xliff = xliff;
+		this.selectedSeg = selectedSeg;
+		this.eventQueue = eventQueue;
+		this.lqiGrid = lqiGrid;
 
-        addLQI = new JMenuItem("Add Issue");
-        addLQI.addActionListener(this);
-        addLQI.setEnabled(selectedSeg.isEditable());
-        add(addLQI);
+		addLQI = new JMenuItem("Add Issue");
+		addLQI.addActionListener(this);
+		addLQI.setEnabled(selectedSeg.isEditable());
+		add(addLQI);
 
-        resetTarget = new JMenuItem("Reset Target");
-        resetTarget.addActionListener(this);
-        resetTarget.setEnabled(selectedSeg.hasOriginalTarget());
-        add(resetTarget);
-    }
+		resetTarget = new JMenuItem("Reset Target");
+		resetTarget.addActionListener(this);
+		resetTarget.setEnabled(selectedSeg.hasOriginalTarget());
+		add(resetTarget);
+	}
 
-    public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, LanguageQualityIssue selectedLQI,
-                       OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
-        this(xliff, selectedSeg, eventQueue, lqiGrid);
-        this.selectedLQI = selectedLQI;
+	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg,
+	        LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue,
+	        LQIGrid lqiGrid) {
+		this(xliff, selectedSeg, eventQueue, lqiGrid);
+		this.selectedLQI = selectedLQI;
 
-        removeLQI = new JMenuItem("Remove Issue");
-        removeLQI.addActionListener(this);
-        add(removeLQI);
-    }
+		removeLQI = new JMenuItem("Remove Issue");
+		removeLQI.addActionListener(this);
+		add(removeLQI);
+	}
 
-	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,
-			OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg,
+	        SegmentVariant variant, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
 
 		this(xliff, selectedSeg, eventQueue, lqiGrid);
 		this.variant = variant;
 		createEnrichmentMenuItem();
 	}
 
-	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,
-			LanguageQualityIssue selectedLQI, OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
+	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg,
+	        SegmentVariant variant, LanguageQualityIssue selectedLQI,
+	        OcelotEventQueue eventQueue, LQIGrid lqiGrid) {
 		this(xliff, selectedSeg, selectedLQI, eventQueue, lqiGrid);
 		this.variant = variant;
 		createEnrichmentMenuItem();
 	}
-	
-	private void createEnrichmentMenuItem(){
-		
+
+	private void createEnrichmentMenuItem() {
+
 		if (variant != null && variant instanceof BaseSegmentVariant
 		        && ((BaseSegmentVariant) variant).isEnriched()) {
 			viewEnrichments = new JMenuItem("View Enrichments");
 			viewEnrichments.addActionListener(this);
 			add(viewEnrichments);
+
+			viewEnrichGraph = new JMenuItem("View Enrichments Graph");
+			viewEnrichGraph.addActionListener(this);
+			viewEnrichGraph
+			        .setEnabled(enableGraphMenu((BaseSegmentVariant) variant));
+			add(viewEnrichGraph);
 		}
 	}
 
-    @Override
+	private boolean enableGraphMenu(BaseSegmentVariant segVariant) {
+
+		boolean enable = false;
+		if (segVariant.getEnirchments() != null) {
+			Iterator<Enrichment> enrichIt = segVariant.getEnirchments()
+			        .iterator();
+			while (enrichIt.hasNext() && !enable) {
+				enable = enrichIt.next().getType()
+				        .equals(Enrichment.ENTITY_TYPE);
+			}
+		}
+		return enable;
+	}
+
+	@Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addLQI) {
 			LanguageQualityIssuePropsPanel addLQIView = new LanguageQualityIssuePropsPanel(
@@ -127,7 +153,16 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
 		} else if (e.getSource().equals(resetTarget)) {
             eventQueue.post(new SegmentTargetResetEvent(xliff, selectedSeg));
 		} else if(e.getSource().equals(viewEnrichments) ){
-			eventQueue.post(new EnrichmentViewEvent((BaseSegmentVariant)variant));
+			eventQueue.post(new EnrichmentViewEvent(
+			        (BaseSegmentVariant) variant, selectedSeg
+			                .getSegmentNumber(), EnrichmentViewEvent.STD_VIEW,
+			        variant.equals(selectedSeg.getTarget())));
+        } else if (e.getSource().equals(viewEnrichGraph) ){
+			eventQueue.post(new EnrichmentViewEvent(
+			        (BaseSegmentVariant) variant, selectedSeg
+			                .getSegmentNumber(),
+			        EnrichmentViewEvent.GRAPH_VIEW, variant.equals(selectedSeg
+			                .getTarget())));
         }
     }
 }

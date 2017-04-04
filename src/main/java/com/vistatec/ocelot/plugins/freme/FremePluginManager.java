@@ -1,4 +1,4 @@
-package com.vistatec.ocelot.plugins;
+package com.vistatec.ocelot.plugins.freme;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -23,6 +23,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Model;
 import com.vistatec.ocelot.events.DisplayLeftComponentEvent;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
 import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
@@ -299,21 +300,23 @@ public class FremePluginManager {
 	public boolean existEnrichments() {
 
 		boolean exist = false;
-		Iterator<OcelotSegment> segIterator = segments.iterator();
-		OcelotSegment segment = null;
-		BaseSegmentVariant source = null;
-		BaseSegmentVariant target = null;
-		while (segIterator.hasNext() && !exist) {
-			segment = segIterator.next();
-			if (segment.getSource() instanceof BaseSegmentVariant) {
-				source = (BaseSegmentVariant) segment.getSource();
+		if(segments != null ){
+			Iterator<OcelotSegment> segIterator = segments.iterator();
+			OcelotSegment segment = null;
+			BaseSegmentVariant source = null;
+			BaseSegmentVariant target = null;
+			while (segIterator.hasNext() && !exist) {
+				segment = segIterator.next();
+				if (segment.getSource() instanceof BaseSegmentVariant) {
+					source = (BaseSegmentVariant) segment.getSource();
+				}
+				if (segment.getTarget() != null
+				        && segment.getTarget() instanceof BaseSegmentVariant) {
+					target = (BaseSegmentVariant) segment.getTarget();
+				}
+				exist = (source != null && source.isEnriched())
+				        || (target != null && target.isEnriched());
 			}
-			if (segment.getTarget() != null
-					&& segment.getTarget() instanceof BaseSegmentVariant) {
-				target = (BaseSegmentVariant) segment.getTarget();
-			}
-			exist = (source != null && source.isEnriched())
-					|| (target != null && target.isEnriched());
 		}
 		return exist;
 	}
@@ -664,12 +667,16 @@ class FremeEnricher implements Runnable {
 					String sourceTarget = null;
 					frag.getVariant().setSentToFreme(true);
 					if (frag.isTarget()) {
-						enrichments = fremePlugin.enrichTargetContent(frag
+						Model model = fremePlugin.enrichTargetContent(frag
 								.getText());
+						frag.getVariant().setTripleModel(model);
+						enrichments = fremePlugin.getEnrichmentFromModel(model, true);
 						sourceTarget = EnrichmentMetaData.TARGET;
 					} else {
-						enrichments = fremePlugin.enrichSourceContent(frag
+						Model model = fremePlugin.enrichSourceContent(frag
 								.getText());
+						frag.getVariant().setTripleModel(model);
+						enrichments = fremePlugin.getEnrichmentFromModel(model, false);
 						sourceTarget = EnrichmentMetaData.SOURCE;
 					}
 					frag.getVariant().setEnrichments(
