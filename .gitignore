@@ -16,4 +16,8 @@ manifest.mf
 target
 ocelot.log*
 *.csv
+<<<<<<< HEAD
 *.log
+=======
+*.log
+>>>>>>> ldManual

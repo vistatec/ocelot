@@ -84,6 +84,10 @@ public abstract class ELinkEnrichmentsConstants {
 
 	/** The entity name property. */
 	public static final String ENTITY_NAME_PROP = "http://www.w3.org/2000/01/rdf-schema#label";
+	
+	/** The see Also property */
+	public static final String SEE_ALSO_PROP = "http://dbpedia.org/ontology/wikiPageExternalLink";
+	
 
 	/**
 	 * Gets the info properties.
@@ -116,6 +120,7 @@ public abstract class ELinkEnrichmentsConstants {
 		properties.add(new LinkInfoData(TYPE_PROP, "Type", String.class));
 		properties
 		        .add(new LinkInfoData(LOCATION_PROP, "Location", String.class));
+		
 
 		return properties;
 
@@ -151,7 +156,7 @@ public abstract class ELinkEnrichmentsConstants {
 	 *            the entity URL.
 	 */
 	public static void fillLinkEnrichment(LinkEnrichment linkEnrichment,
-	        Model linkModel, String entityURL) {
+	        Model linkModel, String entityURL ) {
 
 		Resource entityRes = linkModel.createResource(entityURL);
 		NodeIterator nameNodeIt = linkModel
@@ -174,16 +179,6 @@ public abstract class ELinkEnrichmentsConstants {
 			        ELinkEnrichmentsConstants.ENTITY_NAME_PROP);
 		}
 		
-//		if (nameNodeIt.hasNext()) {
-//			linkEnrichment.setEntityName(nameNodeIt.next().asLiteral()
-//			        .getString(), ELinkEnrichmentsConstants.ENTITY_NAME_PROP);
-//		} else {
-//			// String entityUri = entityStmt.getObject().asResource().getURI();
-//			int index = entityURL.lastIndexOf("/");
-//			linkEnrichment.setEntityName(entityURL.substring(index + 1)
-//			        .replaceAll("_", " "),
-//			        ELinkEnrichmentsConstants.ENTITY_NAME_PROP);
-//		}
 		NodeIterator shortDescrNodeIt = linkModel
 		        .listObjectsOfProperty(
 		                entityRes,
@@ -197,11 +192,6 @@ public abstract class ELinkEnrichmentsConstants {
 			}
 		}
 		
-//		if (shortDescrNodeIt.hasNext()) {
-//			linkEnrichment.setShortDescription(shortDescrNodeIt.next()
-//			        .asLiteral().getString(),
-//			        ELinkEnrichmentsConstants.SHORT_DESCR_PROP);
-//		}
 		NodeIterator longDescrNodeIt = linkModel
 		        .listObjectsOfProperty(
 		                entityRes,
@@ -214,11 +204,6 @@ public abstract class ELinkEnrichmentsConstants {
 				linkEnrichment.setLongDescription(currNode.asLiteral().getString(), LONG_DESCR_PROP);
 			}
 		}
-//		if (longDescrNodeIt.hasNext()) {
-//			linkEnrichment.setLongDescription(longDescrNodeIt.next()
-//			        .asLiteral().getString(),
-//			        ELinkEnrichmentsConstants.LONG_DESCR_PROP);
-//		}
 
 		NodeIterator imageNodeIt = linkModel
 		        .listObjectsOfProperty(
@@ -274,16 +259,6 @@ public abstract class ELinkEnrichmentsConstants {
 				linkEnrichment.setWikiPage(wikiNode.asLiteral().getString(), WIKI_LINK_PROP);
 			}
 		}
-//		if (wikiNodeIt.hasNext()) {
-//			RDFNode wikiNode = wikiNodeIt.next();
-//			if (wikiNode.isResource()) {
-//				linkEnrichment.setWikiPage(wikiNode.asResource().getURI(),
-//				        ELinkEnrichmentsConstants.WIKI_LINK_PROP);
-//			} else {
-//				linkEnrichment.setWikiPage(wikiNode.asLiteral().getString(),
-//				        ELinkEnrichmentsConstants.WIKI_LINK_PROP);
-//			}
-//		}
 		NodeIterator homePageNodeIt = linkModel
 		        .listObjectsOfProperty(
 		                entityRes,
@@ -298,17 +273,21 @@ public abstract class ELinkEnrichmentsConstants {
 				linkEnrichment.setHomePage(homePageNode.asLiteral().getString(), HOMEPAGE_LINK_PROP);
 			}
 		}
-//		if (homePageNodeIt.hasNext()) {
-//			RDFNode homePageNode = homePageNodeIt.next();
-//			if (homePageNode.isResource()) {
-//				linkEnrichment.setHomePage(homePageNode.asResource().getURI(),
-//				        ELinkEnrichmentsConstants.HOMEPAGE_LINK_PROP);
-//			} else {
-//				linkEnrichment.setHomePage(
-//				        homePageNode.asLiteral().getString(),
-//				        ELinkEnrichmentsConstants.HOMEPAGE_LINK_PROP);
-//			}
-//		}
+		
+		NodeIterator seeAlsoNodeIt = linkModel.listObjectsOfProperty(linkModel
+				.createProperty(SEE_ALSO_PROP));
+		
+		List<String> seeAlsoLinks = new ArrayList<String>();
+		List<String> existingLinks = linkEnrichment.getLinks();
+		while(seeAlsoNodeIt.hasNext()){
+			
+			String link = seeAlsoNodeIt.next().asResource().getURI();
+			if(!existingLinks.contains(link)){
+				seeAlsoLinks.add(link);
+			}
+		}
+		linkEnrichment.setSeeAlsoLinks(seeAlsoLinks, SEE_ALSO_PROP);
+		
 		NodeIterator infoNodeIt = null;
 		List<LinkInfoData> enrichmentInfo = new ArrayList<LinkInfoData>();
 		for (LinkInfoData infoProp : ELinkEnrichmentsConstants

@@ -3,7 +3,9 @@ package com.vistatec.ocelot.segment.model.enrichment;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * This class represent the data displayed in the Info page of the link
@@ -16,6 +18,8 @@ public class LinkInfoData {
 
 	/** The output date pattern. */
 	private static final String OUTPUT_DATE_PATTERN = "dd-MM-yyyy";
+	
+	private static final String VALUE_SEPARATOR = "###";
 
 	/** The property name. */
 	private String propName;
@@ -31,6 +35,9 @@ public class LinkInfoData {
 
 	/** The type of the value. */
 	private Class<?> type;
+	
+	/** States if this info data is a list of value or a single value. */
+	private boolean listOfValue;
 
 	/**
 	 * Default constructor.
@@ -102,6 +109,16 @@ public class LinkInfoData {
 	public String getValue() {
 		return value;
 	}
+	
+	public List<String> getListOfValues(){
+		
+		List<String> values = null;
+		if(this.value != null){
+			String[] valuesArray = this.value.split(VALUE_SEPARATOR);
+			values = Arrays.asList(valuesArray);	
+		}
+		return values;
+	}
 
 	/**
 	 * Sets the value.
@@ -110,14 +127,22 @@ public class LinkInfoData {
 	 *            the value.
 	 */
 	public void setValue(String value) {
+			
+		this.value = getFormattedValue(value);
+		this.listOfValue = false;
+	}
+	
+	private String getFormattedValue(String value){
+		
+		String formattedValue = null;
 		if (value != null) {
 			if (type.equals(Date.class)) {
 				try {
 					SimpleDateFormat dateFormatter = new SimpleDateFormat(
-					        INPUT_DATE_PATTERN);
+							INPUT_DATE_PATTERN);
 					Date date = dateFormatter.parse(value);
 					dateFormatter = new SimpleDateFormat(OUTPUT_DATE_PATTERN);
-					this.value = dateFormatter.format(date);
+					formattedValue = dateFormatter.format(date);
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -125,10 +150,29 @@ public class LinkInfoData {
 			} else if (type.equals(Float.class)) {
 				NumberFormat numberFormatter = NumberFormat.getInstance();
 				numberFormatter.setMaximumFractionDigits(3);
-				this.value = numberFormatter.format(Float.valueOf(value));
+				formattedValue = numberFormatter.format(Float.valueOf(value));
+			} else {
+				formattedValue = value;
 			}
 		}
-		this.value = value;
+		return formattedValue;
+	}
+	
+	public void setValueList(List<String> values){
+		
+		StringBuilder strBuilder = new StringBuilder();
+		if(values != null){
+			for(String value: values){
+				strBuilder.append(getFormattedValue(value));
+				strBuilder.append(VALUE_SEPARATOR);
+			}
+		}
+	    this.value = strBuilder.length() > 0 ? strBuilder.toString() : null;
+	    this.listOfValue = true;
+	}
+	
+	public boolean isListOfValue(){
+		return listOfValue;
 	}
 
 	/**

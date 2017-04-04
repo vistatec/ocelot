@@ -22,13 +22,21 @@ public class TextContextMenu extends JPopupMenu implements ActionListener {
 	
 	private String selectedText;
 	
-	public TextContextMenu(final OcelotEventQueue eventQueue, final String selectedText) {
+	public TextContextMenu(final OcelotEventQueue eventQueue, final String selectedText, final boolean target) {
 		
 		this.eventQueue = eventQueue;
 		this.selectedText = selectedText;
-		mnuConcordance = new JMenuItem("Concordance Search");
-		mnuConcordance.addActionListener(this);
-		add(mnuConcordance);
+		buildMenu(target);
+	}
+	
+	private void buildMenu(boolean target){		
+		
+		if(!target){		
+			mnuConcordance = new JMenuItem("Concordance Search");		
+			mnuConcordance.addActionListener(this);		
+			add(mnuConcordance);		
+		}		
+				
 	}
 
 	@Override

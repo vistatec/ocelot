@@ -77,6 +77,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.ToolTipManager;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -860,7 +861,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	public void updateSegmentView(RefreshSegmentView event) {
 		try {
 			synchronized (segmentTableModel) {
-				if (segmentTableModel.getRowCount() > 0) {
+				if (segmentTableModel.getRowCount() > 0 && event.getSegmentNumber() > -1) {
 					segmentTableModel.fireTableRowsUpdated(
 					        event.getSegmentNumber() - 1,
 					        event.getSegmentNumber() - 1);
@@ -1153,8 +1154,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			Color foreground = SegmentView.getForeground(seg, isSelected, jtable, stateQualifierBackground);
 
 			if (seg.getSource() instanceof BaseSegmentVariant
-			        && ((BaseSegmentVariant) seg.getSource()).isEnriched()
-			        && (((BaseSegmentVariant) seg.getTarget()).isEnriched()
+			        && ((BaseSegmentVariant) seg.getSource()).isFremeSuccess()
+			        && (((BaseSegmentVariant) seg.getTarget()).isFremeSuccess()
 			                || seg.getTarget().getDisplayText() == null || seg
 			                .getTarget().getDisplayText().isEmpty())) {
 				foreground = enrichedColor;
@@ -1203,7 +1204,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			editorComponent.setSelectedTextColor(Color.WHITE);
 			editorComponent.setEditable(false);
 			editorComponent.getCaret().setVisible(true);
-			editorComponent.addMouseListener(new TextPopupMenuListener());
+			editorComponent.addMouseListener(new TextPopupMenuListener(false));
 			editorComponent.getInputMap().put(
 			        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
 			editorComponent.getActionMap().put("finish", new AbstractAction() {
@@ -1271,7 +1272,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				        .setBeginEdit(seg, seg.getTarget().getDisplayText());
                 editorComponent = SegmentTextCell.createCell(row, seg.getTarget()
 				        .createCopy(), false, isTargetBidi);
-                System.out.println("Color: " + editorComponent.getForeground());
+				editorComponent.addMouseListener(new TextPopupMenuListener(true));
 				editorComponent.getInputMap().put(
 				        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
 				editorComponent.getActionMap().put("finish",
@@ -1546,6 +1547,13 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	public class TextPopupMenuListener extends MouseAdapter {
 
+		/** States if the event source cell is the target one. */		
+		private boolean target;		
+				
+		public TextPopupMenuListener(boolean target) {		
+			this.target = target;		
+        }
+		
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if (e.isPopupTrigger()) {
@@ -1571,22 +1579,47 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 			SegmentTextCell sourceCell = (SegmentTextCell) e.getSource();
 			if (sourceCell.getSelectedText() != null) {
-				try {
-					Rectangle markRect = sourceCell.modelToView(sourceCell
-					        .getCaret().getMark());
-					Rectangle dotRect = sourceCell.modelToView(sourceCell
-					        .getCaret().getDot());
-					Rectangle rect = markRect.union(dotRect);
-					if (rect.contains(e.getPoint())) {
-						TextContextMenu ctxMenu = new TextContextMenu(
-						        eventQueue, sourceCell.getSelectedText());
-						ctxMenu.show(e.getComponent(), e.getX(), e.getY());
+				if (isPointInlcudedInSelection(e.getPoint(), sourceCell)) {
+					TextContextMenu ctxMenu = new TextContextMenu(eventQueue,
+					        sourceCell.getSelectedText(), target);
+					int selectedRow = sourceTargetTable.getSelectedRow();
+					OcelotSegment selSegment = segmentTableModel
+					        .getSegment(selectedRow);
+					List<JMenuItem> items = ocelotApp
+					        .getSegmentTextContexPluginMenues(selSegment,
+					                sourceCell.getSelectedText(), sourceCell.getCaret().getMark(), target,
+					                SwingUtilities
+					                        .getWindowAncestor(sourceCell));
+					if (items != null) {
+						for (JMenuItem item : items) {
+							ctxMenu.add(item);
+						}
 					}
-				} catch (BadLocationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					ctxMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
+		}
+		
+		private boolean isPointInlcudedInSelection(Point point,
+		        SegmentTextCell cell) {
+
+			boolean included = false;
+			int pointPosInModel = cell.viewToModel(point);
+			if (pointPosInModel < cell.getText().length()) {
+				included = pointPosInModel < cell.getCaret().getDot()
+				        && pointPosInModel >= cell.getCaret().getMark();
+			} else {
+				Rectangle dotRect;
+				try {
+					dotRect = cell.modelToView(cell.getCaret().getDot());
+					included = point.x <= dotRect.x;
+				} catch (BadLocationException e) {
+					LOG.warn(
+					        "Wrong model to view conversion, when checking if the clicked point falls ",
+					        e);
+				}
+			}
+			return included;
 		}
 
 	}

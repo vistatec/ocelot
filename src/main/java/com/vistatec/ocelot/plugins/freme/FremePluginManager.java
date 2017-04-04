@@ -35,8 +35,12 @@ import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.xliff.freme.EnrichmentConverter;
+
+import net.sf.okapi.common.resource.TextContainer;
 
 /**
  * Class managing calls to the FREME Plugin. It provides a pool of threads
@@ -179,6 +183,31 @@ public class FremePluginManager {
 		EnrichmentConverter.removeEnrichmentMetaData(segment, variant, target);
 		variant.clearEnrichments();
 	}
+	
+	private void replaceAllTargets() {
+		
+		if(segments != null){
+			
+			for(OcelotSegment segment: segments){
+				if (segment.getSource() instanceof BaseSegmentVariant ) {
+					
+					BaseSegmentVariant source = (BaseSegmentVariant) segment.getSource();
+					SegmentVariant textContainerVariant = null;
+					if(source.getTranslationEnrichment() != null){
+						textContainerVariant = new TextContainerVariant(
+						        new TextContainer(source.getTranslationEnrichment().getTranslation()));
+					} else {
+						textContainerVariant = new TextContainerVariant(
+						        new TextContainer());
+					}
+					segment.getTarget().setContent(textContainerVariant);
+
+				}
+			}
+			eventQueue.post(new RefreshSegmentView(-1));
+			
+		}
+	}
 
 	/**
 	 * Enriches a variant of an existing segment.
@@ -196,7 +225,8 @@ public class FremePluginManager {
 		if (action == OVERRIDE_ENRICHMENTS) {
 			resetVariant(getSegmentBySegNum(segNumber), variant, target);
 		} else {
-			variant.setEnriched(false);
+			variant.setFremeSuccess(false);
+			variant.setSentToFreme(false);
 		}
 		eventQueue.post(new RefreshSegmentView(segNumber));
 		logger.info("Enriching variant for segment {}...", segNumber);
@@ -376,6 +406,8 @@ public class FremePluginManager {
 								enrich(fremePlugin,
 										FremePluginManager.OVERRIDE_ENRICHMENTS);
 							}
+						} else if (menuItem.getMenuType() == FremeMenu.SAVE_TRANS_MENU){
+							replaceAllTargets();
 						}
 					}
 				}
@@ -501,6 +533,34 @@ public class FremePluginManager {
 		if (fremeMenuItem != null) {
 			fremeMenuItem.setEnabled(enabled);
 		}
+	}
+	
+	public synchronized List<JMenuItem> getTextContextMenuItems(final OcelotSegment segment, final String text, final int offset, final boolean target, final Window ownerWindow){		
+		
+		List<JMenuItem> items = new ArrayList<JMenuItem>();		
+		ActionListener listener = new ActionListener() {		
+					
+			@Override		
+			public void actionPerformed(ActionEvent e) {		
+						
+				NewLinkedDataDialog dialog = new NewLinkedDataDialog(ownerWindow, text, offset, segment, target, eventQueue);		
+				dialog.open();		
+				//TODO display new Linked data frame		
+//				System.out.println("Add linked data manually");		
+//						
+//				TextAnalysisMetaData ta = new TextAnalysisMetaData();		
+//				ta.setEntity(text);		
+//				ta.setSegPart(target?EnrichmentMetaData.TARGET:EnrichmentMetaData.SOURCE);		
+//				ta.setTaIdentRef("http://blabla.dbpedia.com");		
+//				segment.addTextAnalysis(ta);		
+//				eventQueue.post(new TextAnalysisAddedEvent());		
+//				eventQueue.post(new ItsDocStatsRecalculateEvent(Arrays.asList(new OcelotSegment[]{segment})));		
+			}		
+		};		
+		JMenuItem mnuAddTA = new JMenuItem("Add Linked Data");		
+		mnuAddTA.addActionListener(listener);		
+		items.add(mnuAddTA);		
+		return items;		
 	}
 
 }
@@ -708,7 +768,7 @@ class FremeEnricher implements Runnable {
 					}
 					frag.getVariant().setEnrichments(
 							new HashSet<Enrichment>(enrichments));
-					frag.getVariant().setEnriched(true);
+					frag.getVariant().setFremeSuccess(true);
 					OcelotSegment segment = findSegmentBySegNumber(frag
 							.getSegNumber());
 					if (segment != null) {

@@ -17,7 +17,9 @@ import com.vistatec.ocelot.segment.view.SegmentVariantSelection;
 
 public abstract class BaseSegmentVariant implements SegmentVariant {
 
-	private boolean enriched;
+//	private boolean enriched;
+	
+	private boolean fremeSuccess;
 	
 	private boolean sentToFreme;
 
@@ -424,7 +426,7 @@ protected List<HighlightData> highlightDataList;
 	}
 	
 	public boolean isEnriched() {
-		return enriched;
+		return enrichments != null && !enrichments.isEmpty();
 	}
 
 	public void clearHighlightedText() {
@@ -432,7 +434,14 @@ protected List<HighlightData> highlightDataList;
 		currentHighlightedIndex = -1;
 		clearHighlightedTextInAtoms();
 	}
-
+	public boolean isFremeSuccess(){
+		return fremeSuccess;
+	}
+	
+	public void setFremeSuccess(boolean success){
+		this.fremeSuccess = success;
+	}
+	
 	private void clearHighlightedTextInAtoms() {
 		
 		if(getAtoms() != null ){
@@ -566,9 +575,9 @@ protected List<HighlightData> highlightDataList;
     }
 
 
-	public void setEnriched(final boolean enriched) {
-		this.enriched = enriched;
-	}
+//	public void setEnriched(final boolean enriched) {
+//		this.enriched = enriched;
+//	}
 
 	public void setSentToFreme(boolean sentToFreme){
 		this.sentToFreme = sentToFreme;
@@ -735,7 +744,8 @@ protected List<HighlightData> highlightDataList;
     public void clearEnrichments(){
     	
     	sentToFreme = false;
-    	enriched = false;
+    	fremeSuccess = false;
+//    	enriched = false;
     	enrichments = null;
     	transEnrichment = null;
     }

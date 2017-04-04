@@ -234,6 +234,10 @@ class EnrichmentComparator implements Comparator<Enrichment> {
 			comparison = -1;
 		} else if (o1.getOffsetNoTagsStartIdx() > o2.getOffsetNoTagsStartIdx()) {
 			comparison = 1;
+		} else if(o1.getOffsetEndIdx() > o2.getOffsetEndIdx()){		
+			comparison = -1;		
+		} else if(o1.getOffsetEndIdx() < o2.getOffsetEndIdx()){		
+			comparison = 1;	
 		}
 		return comparison;
 	}

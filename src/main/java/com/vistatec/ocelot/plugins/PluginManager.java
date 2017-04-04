@@ -29,6 +29,7 @@
 package com.vistatec.ocelot.plugins;
 
 import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -70,6 +71,7 @@ import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
+import com.vistatec.ocelot.events.PluginAddedEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
@@ -109,6 +111,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	private HashMap<FremePlugin, Boolean> fremePlugins;
 	private HashMap<TimerPlugin, Boolean> timerPlugins;
 	private FremePluginManager fremeManager;
+	private OcelotEventQueue eventQueue;
 	private ClassLoader classLoader;
 	private File pluginDir;
 	private final JsonConfigService cfgService;
@@ -122,6 +125,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		this.timerPlugins = new HashMap<TimerPlugin, Boolean>();
         this.fremePlugins = new HashMap<FremePlugin, Boolean>();
 		this.fremeManager = new FremePluginManager(eventQueue);
+		this.eventQueue = eventQueue;
 		this.cfgService = cfgService;
 		this.pluginDir = pluginDir;
 		qualityPluginManager = new QualityPluginManager();
@@ -882,5 +886,19 @@ public class PluginManager implements OcelotEventQueueListener {
 		}
 		return time;
 	}
+	public List<JMenuItem> getSegmentTextContextMenuItems(final OcelotSegment segment, final String text, final int offset, final boolean target, final Window ownerWindow){		
+		
+		List<JMenuItem> items = new ArrayList<JMenuItem>();		
+		if(fremePlugins != null && !fremePlugins.isEmpty()){		
+			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();		
+			if (fremePlugins.get(fremePlugin)) {		
+				items = fremeManager.getTextContextMenuItems(segment, text, offset, target, ownerWindow);		
+			}		
+		}		
+		return items;		
+	}		
+	public void pluginsAdded() {		
+		eventQueue.post(new PluginAddedEvent());		
+    }
 
 }

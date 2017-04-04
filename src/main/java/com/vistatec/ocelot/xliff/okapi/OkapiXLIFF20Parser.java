@@ -347,11 +347,11 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		seg.addAllProvenance(parseProvData(unitPart));
         if(sourceEnrichments != null && !sourceEnrichments.isEmpty() && seg.getSource() != null && seg.getSource() instanceof BaseSegmentVariant){
         	((BaseSegmentVariant)seg.getSource()).setEnrichments(new HashSet<Enrichment>(sourceEnrichments));
-        	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
+//        	((BaseSegmentVariant)seg.getSource()).setEnriched(true);
         }
         if(targetEnrichments != null && !targetEnrichments.isEmpty() && seg.getTarget() != null && seg.getTarget() instanceof BaseSegmentVariant){
         	((BaseSegmentVariant)seg.getTarget()).setEnrichments(new HashSet<Enrichment>(targetEnrichments));
-        	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
+//        	((BaseSegmentVariant)seg.getTarget()).setEnriched(true);
         }
         enrichmentConverter.convertEnrichments2ITSMetadata(seg);
 		return seg;

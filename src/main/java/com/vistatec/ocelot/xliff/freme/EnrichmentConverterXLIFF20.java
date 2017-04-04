@@ -288,6 +288,26 @@ public class EnrichmentConverterXLIFF20 extends EnrichmentConverter {
 					        .get(0)).getText();
 					triplesEnrichments.addAll(retrieveTriplesEnrichments(
 					        jsonString, enrichments, language));
+//=======
+//	        final ExtElements elements, final List<Enrichment> enrichments, String language) {
+//
+//		List<Enrichment> triplesEnrichments = new ArrayList<Enrichment>();
+//		if (elements != null) {
+//			Iterator<ExtElement> elemsIt = elements.iterator();
+//			ExtElement elem = null;
+//			while (elemsIt.hasNext()) {
+//				elem = elemsIt.next();
+//				if (elem.getQName().getPrefix().equals("ex")
+//				        && elem.getQName().getLocalPart().equals("json-ld")
+//				        && !elem.getChildren().isEmpty()) {
+//					if (elem.getChildren().get(0) instanceof ExtContent) {
+//						String jsonString = ((ExtContent) elem.getChildren()
+//						        .get(0)).getText();
+//						triplesEnrichments.addAll(retrieveTriplesEnrichments(
+//						        jsonString, enrichments, language));
+//					}
+//
+//>>>>>>> ldManual
 				}
 			}
 		}

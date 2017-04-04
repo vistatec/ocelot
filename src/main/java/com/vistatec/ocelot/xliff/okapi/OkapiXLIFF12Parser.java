@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import net.sf.okapi.common.Event;
@@ -201,6 +202,12 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		is.close();
 		return segments;
 	}
+	
+	public static void main(String[] args) {
+		
+		Locale locale = new Locale("en-us");
+		System.out.println(locale.getLanguage());
+	}
 
 	public OkapiSegment convertTextUnitToSegment(ITextUnit tu, int fileEventNum) {
 		TextContainer srcTu = tu.getSource();
@@ -221,7 +228,6 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		}
 
 		TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
-
 		List<Enrichment> sourceEnrichments = enrichmentConverter
 		        .retrieveEnrichments(srcTu, tu, LocaleId.fromString(getSourceLang()).getLanguage());
 		List<Enrichment> targetEnrichments = enrichmentConverter
@@ -261,12 +267,13 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		        && !sourceEnrichments.isEmpty()) {
 			((BaseSegmentVariant) segment.getSource())
 			        .addEnrichmentList(sourceEnrichments);
-			((BaseSegmentVariant) segment.getSource()).setEnriched(true);
+//			((BaseSegmentVariant) segment.getSource()).setEnriched(true);
 		}
 		if (segment.getTarget() instanceof BaseSegmentVariant
 		        && !targetEnrichments.isEmpty()) {
 			((BaseSegmentVariant) segment.getTarget())
 			        .addEnrichmentList(targetEnrichments);
+//			((BaseSegmentVariant) segment.getTarget()).setEnriched(true);
 		}
 		if (segment.getOriginalTarget() instanceof BaseSegmentVariant
 		        && !originalTargetEnrichments.isEmpty()) {

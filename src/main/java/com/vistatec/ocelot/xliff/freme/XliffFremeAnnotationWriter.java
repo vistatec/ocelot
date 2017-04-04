@@ -2,6 +2,7 @@ package com.vistatec.ocelot.xliff.freme;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -25,8 +26,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sf.okapi.lib.xliff2.core.CTag;
-
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.xerces.dom.AttrImpl;
 import org.slf4j.Logger;
@@ -41,6 +40,8 @@ import org.xml.sax.SAXException;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -57,6 +58,8 @@ import com.vistatec.ocelot.xliff.freme.helper.DocumentTreeHelper.NodeWrapper;
 import com.vistatec.ocelot.xliff.freme.helper.FremeXliffHelper;
 import com.vistatec.ocelot.xliff.freme.helper.FremeXliffHelperFactory;
 import com.vistatec.ocelot.xliff.freme.helper.FremeXliffHelperFactory.UnsupportedVersionException;
+
+import net.sf.okapi.lib.xliff2.core.CTag;
 
 public class XliffFremeAnnotationWriter {
 
@@ -120,7 +123,7 @@ public class XliffFremeAnnotationWriter {
 					        segService);
 				}
 			}
-
+//			printDocument();
 			saveFile(xliffFile.getAbsolutePath());
 		} catch (ParserConfigurationException | SAXException e) {
 			logger.error("Error while parsing the file", e);
@@ -134,6 +137,46 @@ public class XliffFremeAnnotationWriter {
 		}
 
 	}
+	
+//	private void printDocument(){
+//		
+//		StringBuilder strBuilder = new StringBuilder();
+//		printDocument(document.getFirstChild(), strBuilder);
+//		System.out.println(strBuilder.toString());
+//	}
+//	
+//	private void printDocument(Node node, StringBuilder strBuilder){
+//		
+//		if(node.getNodeType() == Node.TEXT_NODE){
+//			strBuilder.append(node.getTextContent());
+//			strBuilder.append("\n");
+//		} else {
+//		strBuilder.append("<");
+//		strBuilder.append(node.getNodeName());
+//		if(node.getAttributes() != null){
+//			NamedNodeMap attrMap = node.getAttributes();
+//			for(int i = 0; i<attrMap.getLength(); i++){
+//				strBuilder.append(" ");
+//				strBuilder.append(attrMap.item(i).getNodeName());
+//				strBuilder.append("=\"");
+//				strBuilder.append(attrMap.item(i).getNodeValue());
+//				strBuilder.append("\"");
+//			}
+//		}
+//		strBuilder.append(">\n");
+//		
+//		if(node.getChildNodes() != null ){
+//			for(int i = 0; i<node.getChildNodes().getLength(); i++){
+//				printDocument(node.getChildNodes().item(i), strBuilder);
+//			}
+//		}
+//		
+//		strBuilder.append("</");
+//		strBuilder.append(node.getNodeName());
+//		strBuilder.append(">\n");
+//		}
+//		
+//	}
 
 	/**
 	 * Saves the DOM document into the file.
@@ -752,6 +795,22 @@ public class XliffFremeAnnotationWriter {
 			}
 		}
 	}
+	
+	public static void main(String[] args) {
+		
+		Model model = ModelFactory.createDefaultModel();
+		model.setNsPrefix("xsd", "http://www.w3.org/2001/XMLSchema#");
+		model.setNsPrefix("itsrdf", "http://www.w3.org/2005/11/its/rdf#");
+		model.setNsPrefix("nif", "http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#");
+		Resource res = model.createResource("http://freme-project.eu/#char=0,42");
+		Property prop = model.createProperty("http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#", "isString");
+		model.add(res, prop, "Welcome to Berlin, the capital of Germany!", "en");
+		model.add(res, prop, "Benvenuti a Berlino, la capitale della Germania!", "it");
+		
+		model.write(new OutputStreamWriter(System.out), "JSON-LD", "");
+		
+		
+	}
 }
 
 class TermEnrichmentWrapper {
@@ -791,6 +850,8 @@ class TermEnrichmentWrapper {
 	public int hashCode() {
 		return offsetString.hashCode();
 	}
+	
+	
 }
 
 class EnrichmentComparator implements Comparator<Enrichment> {

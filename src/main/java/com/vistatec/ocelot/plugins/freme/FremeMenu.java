@@ -22,6 +22,8 @@ public class FremeMenu extends JMenu {
 	
 	public static final int ENRICH_MENU = 2;
 	
+	public static final int SAVE_TRANS_MENU = 3;
+	
 	/** The entity service menu item. */
 	private FremeEServiceMenuItem mnuEEntityService;
 
@@ -43,6 +45,8 @@ public class FremeMenu extends JMenu {
 	/** The Enrich menu item. */
 	private FremeMenuItem mnuEnrich;
 
+	private FremeMenuItem mnuSaveTrans;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -105,6 +109,10 @@ public class FremeMenu extends JMenu {
 		mnuConfigPipeline = new FremeMenuItem("Freme Pipeline Configuration", CONFIG_MENU);
 		mnuConfigPipeline.addActionListener(actionListener);
 		add(mnuConfigPipeline);
+		
+		mnuSaveTrans = new FremeMenuItem("Replace Targets", SAVE_TRANS_MENU);
+		mnuSaveTrans.addActionListener(actionListener);
+		add(mnuSaveTrans);
 	}
 	
 	public void setEnrichMenuEnabled(boolean enabled){

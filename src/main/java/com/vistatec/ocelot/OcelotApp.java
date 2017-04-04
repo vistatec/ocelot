@@ -29,6 +29,7 @@
 package com.vistatec.ocelot;
 
 import java.awt.Component;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -63,7 +64,6 @@ import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
 import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
-import com.vistatec.ocelot.xliff.okapi.OkapiXLIFF12Writer;
 
 /**
  * Main Ocelot application context.
@@ -236,11 +236,11 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
     }
 
-    public List<JMenu> getPluginMenuList(JFrame mainframe) {
-        return pluginManager.getPluginMenuList(mainframe);
-    }
+	public List<JMenu> getPluginMenuList(JFrame mainframe) {
+		return pluginManager.getPluginMenuList(mainframe);
+	}
 
-public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
+	public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
 			BaseSegmentVariant variant, boolean target) {
 
 		return pluginManager.getSegmentContextMenuItems(segment, variant,
@@ -255,6 +255,12 @@ public List<JMenuItem> getSegmentContexPluginMenues(OcelotSegment segment,
 	public void handleNewPluginInstalled() {
 		
 		eventQueue.post(new NewPluginsInstalled());
+	}
+	public List<JMenuItem> getSegmentTextContexPluginMenues(
+			final OcelotSegment segment, final String text, final int offset,
+			final boolean target, Window ownerWindow) {
+		return pluginManager.getSegmentTextContextMenuItems(segment, text,
+				offset, target, ownerWindow);
 	}
 
 }

@@ -98,6 +98,7 @@ import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
+import com.vistatec.ocelot.events.PluginAddedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
@@ -577,16 +578,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		this.eventQueue.registerListener(segmentMenu);
 
 		menuExtensions = new JMenu("Extensions");
+		buildExtensionsMenu();
 		menuBar.add(menuExtensions);
 
-		menuPlugins = new JMenuItem("Plugins");
-		menuPlugins.addActionListener(this);
-		menuExtensions.add(menuPlugins);
-
-		List<JMenu> pluginMenuList = ocelotApp.getPluginMenuList(mainframe);
-		for (JMenu menu : pluginMenuList) {
-			menuExtensions.add(menu);
-		}
 
 		menuHelp = new JMenu("Help");
 		menuBar.add(menuHelp);
@@ -597,6 +591,31 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 		platformSupport.setMenuMnemonics(menuFile, menuView, menuExtensions, menuHelp);
 		mainframe.setJMenuBar(menuBar);
+	}
+	
+	private void buildExtensionsMenu(){		
+		
+		menuPlugins = new JMenuItem("Plugins");		
+		menuPlugins.addActionListener(this);		
+		menuExtensions.add(menuPlugins);		
+		List<JMenu> pluginMenuList = ocelotApp.getPluginMenuList(mainframe);		
+		for (JMenu menu : pluginMenuList) {		
+			menuExtensions.add(menu);		
+		}		
+	}		
+			
+	@Subscribe		
+	public void notifyPluginAdded(PluginAddedEvent event){		
+				
+		SwingUtilities.invokeLater(new Runnable() {		
+					
+			@Override		
+			public void run() {		
+				menuExtensions.removeAll();		
+				buildExtensionsMenu();		
+				repaint();		
+			}		
+		});		
 	}
 
 	public static int getPlatformKeyMask() {
