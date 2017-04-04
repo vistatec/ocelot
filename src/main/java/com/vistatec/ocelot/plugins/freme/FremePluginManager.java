@@ -300,21 +300,23 @@ public class FremePluginManager {
 	public boolean existEnrichments() {
 
 		boolean exist = false;
-		Iterator<OcelotSegment> segIterator = segments.iterator();
-		OcelotSegment segment = null;
-		BaseSegmentVariant source = null;
-		BaseSegmentVariant target = null;
-		while (segIterator.hasNext() && !exist) {
-			segment = segIterator.next();
-			if (segment.getSource() instanceof BaseSegmentVariant) {
-				source = (BaseSegmentVariant) segment.getSource();
+		if(segments != null ){
+			Iterator<OcelotSegment> segIterator = segments.iterator();
+			OcelotSegment segment = null;
+			BaseSegmentVariant source = null;
+			BaseSegmentVariant target = null;
+			while (segIterator.hasNext() && !exist) {
+				segment = segIterator.next();
+				if (segment.getSource() instanceof BaseSegmentVariant) {
+					source = (BaseSegmentVariant) segment.getSource();
+				}
+				if (segment.getTarget() != null
+				        && segment.getTarget() instanceof BaseSegmentVariant) {
+					target = (BaseSegmentVariant) segment.getTarget();
+				}
+				exist = (source != null && source.isEnriched())
+				        || (target != null && target.isEnriched());
 			}
-			if (segment.getTarget() != null
-					&& segment.getTarget() instanceof BaseSegmentVariant) {
-				target = (BaseSegmentVariant) segment.getTarget();
-			}
-			exist = (source != null && source.isEnriched())
-					|| (target != null && target.isEnriched());
 		}
 		return exist;
 	}
