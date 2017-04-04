@@ -30,8 +30,6 @@ package com.vistatec.ocelot.segment.model;
 
 import java.util.List;
 
-import net.sf.okapi.lib.xliff2.its.TextAnalysis;
-
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
@@ -39,7 +37,6 @@ import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.TerminologyMetaData;
 import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
 import com.vistatec.ocelot.rules.StateQualifier;
-import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 
 /**
@@ -61,6 +58,7 @@ public interface OcelotSegment {
     public SegmentVariant getOriginalTarget();
     
     public String getTuId();
+    public String getSegmentId();
 
     /**
      * Should only set the original target if one does not exist already,
@@ -147,6 +145,8 @@ public interface OcelotSegment {
     public List<ITSMetadata> getITSMetadata();
 
     public boolean isEditable();
+    
+    public boolean isTranslatable();
 
     // TODO: Examine alternatives as this is XLIFF 1.2 specific
     public StateQualifier getStateQualifier();

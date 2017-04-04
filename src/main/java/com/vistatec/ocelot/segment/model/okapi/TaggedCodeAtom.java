@@ -43,7 +43,7 @@ public class TaggedCodeAtom extends CodeAtom {
         this.tag = tag;
     }
 
-    protected Tag getTag() {
+    public Tag getTag() {
         return this.tag;
     }
 }

@@ -1,0 +1,21 @@
+{
+  "userProvenance" : { },
+  "tmManagement" : {
+    "fuzzyThreshold" : 0.75,
+    "maxResults" : 5
+  },
+  "layout" : {
+    "showTranslations" : true,
+    "showAttrsView" : true,
+    "showDetailsView" : true,
+    "segmentsGrid" : {
+      "showSegNum" : true,
+      "showSource" : true,
+      "showTarget" : true,
+      "showOriginalTarget" : true,
+      "showNotes" : false,
+      "showEditDist" : false,
+      "showFlags" : [ true, true, true, true, true ]
+    }
+  }
+}

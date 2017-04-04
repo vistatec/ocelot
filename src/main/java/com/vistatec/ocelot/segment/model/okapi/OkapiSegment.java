@@ -43,24 +43,25 @@ public class OkapiSegment extends BaseSegment {
     public final String phaseName;
     private final StateQualifier stateQualifier;
     private String tuId;
+    private String segmentId;
     
     public OkapiSegment(int segNum, int eventNum, SegmentVariant source,
-            SegmentVariant target, SegmentVariant originalTarget,
-            StateQualifier stateQualifier, String phaseName, String tuId) {
-        super(segNum, source, target, originalTarget);
+            SegmentVariant target, SegmentVariant originalTarget, boolean translatable,
+            StateQualifier stateQualifier, String phaseName, String tuId, String segId) {
+        super(segNum, source, target, originalTarget, translatable);
 
         this.stateQualifier = stateQualifier;
         this.phaseName = phaseName;
-
         this.eventNum = eventNum;
         this.tuId = tuId;
+        this.segmentId = segId;
         
     }
 
     @Override
     public boolean isEditable() {
         return !"Rebuttal".equalsIgnoreCase(this.phaseName) &&
-                !"Translator approval".equalsIgnoreCase(this.phaseName);
+                !"Translator approval".equalsIgnoreCase(this.phaseName) ;
     }
 
     @Override
@@ -76,9 +77,11 @@ public class OkapiSegment extends BaseSegment {
     public static class Builder {
         private int segmentNumber, eventNum;
         private SegmentVariant source, target, originalTarget;
+        private boolean translatable;
         private StateQualifier stateQualifier;
         private String phaseName;
         private String tuId;
+        private String segId;
 
         public Builder segmentNumber(int segNum) {
             this.segmentNumber = segNum;
@@ -119,11 +122,26 @@ public class OkapiSegment extends BaseSegment {
         	this.tuId = tuId;
         	return this;
         }
+        
+        public Builder translatable(boolean translatable){
+        	this.translatable = translatable;
+        	return this;
+        }
+        
+        public Builder segId(String segId){
+        	this.segId = segId;
+        	return this;
+        }
 
         public OkapiSegment build() {
             return new OkapiSegment(segmentNumber, eventNum,
-                    source, target, originalTarget, stateQualifier, phaseName, tuId);
+                    source, target, originalTarget, translatable, stateQualifier, phaseName, tuId, segId);
         }
 
+    }
+
+	@Override
+    public String getSegmentId() {
+	    return segmentId;
     }
 }

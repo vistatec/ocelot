@@ -1,0 +1,50 @@
+{
+  "activeConfName" : "Default Configuration",
+  "lqiConfigurations" : [ {
+    "name" : "Default Configuration",
+    "threshold" : 0.0,
+    "errorCategories" : [ {
+      "name" : "terminology",
+      "position" : 1,
+      "weight" : 0.0
+    }, {
+      "name" : "style",
+      "position" : 2,
+      "weight" : 0.0
+    }, {
+      "name" : "inconsistent-entities",
+      "position" : 3,
+      "weight" : 0.0
+    }, {
+      "name" : "duplication",
+      "position" : 4,
+      "weight" : 0.0
+    }, {
+      "name" : "internationalization",
+      "position" : 5,
+      "weight" : 0.0
+    }, {
+      "name" : "whitespace",
+      "position" : 6,
+      "weight" : 0.0
+    }, {
+      "name" : "omission",
+      "position" : 7,
+      "weight" : 0.0
+    }, {
+      "name" : "mistranslation",
+      "position" : 8,
+      "weight" : 0.0
+    } ],
+    "severities" : [ {
+      "name" : "Minor",
+      "score" : 1.0
+    }, {
+      "name" : "Major",
+      "score" : 2.0
+    }, {
+      "name" : "Critical",
+      "score" : 4.0
+    } ]
+  } ]
+}

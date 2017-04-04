@@ -27,7 +27,8 @@ public class ShortCutConstants {
 	 * <li>Ctrl + O - Open XLIFF menu item shortcut</li>
 	 * <li>Ctrl + S - Save menu item shortcut</li>
 	 * <li>Ctrl + Shift + S - Save as menu item shortcut</li>
-	 * <li>Ctrl + P - Profile menu item shortcut</li>
+	 * <li>Ctrl + P - Provenance menu item shortcut</li>
+	 * <li>Ctrl + W - Workspace menu item shortcut</li>
 	 * <li>Ctrl + Equals - Add Issue menu item shortcut</li>
 	 * <li>Alt + F - Opens the File menu</li>
 	 * <li>Alt + V - Opens the View menu</li>
@@ -52,6 +53,7 @@ public class ShortCutConstants {
 	        KeyStroke.getKeyStroke(KeyEvent.VK_S, platformMask
 	                + KeyEvent.SHIFT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_P, platformMask),
+	        KeyStroke.getKeyStroke(KeyEvent.VK_W, platformMask),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, platformMask),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_MASK),
 	        KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.ALT_MASK),

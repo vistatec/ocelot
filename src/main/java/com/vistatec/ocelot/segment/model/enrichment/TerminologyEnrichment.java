@@ -1,7 +1,12 @@
 package com.vistatec.ocelot.segment.model.enrichment;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.hp.hpl.jena.rdf.model.Statement;
 
 /**
@@ -34,10 +39,10 @@ public class TerminologyEnrichment extends Enrichment {
 	private String definition;
 
 	/** The source term. */
-	private String sourceTerm;
+	private List<String> sourceTermList;
 
 	/** The target term. */
-	private String targetTerm;
+	private List<String> targetTermList;
 
 	/** The annotator value. */
 	private String annotator;
@@ -71,14 +76,34 @@ public class TerminologyEnrichment extends Enrichment {
 	 * @param sense
 	 *            the sense.
 	 * @param definition
-	 *            the definition           
+	 *            the definition
 	 */
-	public TerminologyEnrichment(String nifOffsetString, String sourceTerm,
-			String targetTerm, String sense, String definition) {
+	public TerminologyEnrichment(String nifOffsetString, List<String> sourceTerm,
+	        String targetTerm, String sense, String definition) {
+
+		this(nifOffsetString, sourceTerm, Arrays.asList(new String[]{targetTerm}), sense, definition);
+	}
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param nifOffsetString
+	 *            the NIF offset string.
+	 * @param sourceTerm
+	 *            the source term.
+	 * @param targetTerm
+	 *            the target term.
+	 * @param sense
+	 *            the sense.
+	 * @param definition
+	 *            the definition
+	 */
+	public TerminologyEnrichment(String nifOffsetString, List<String> sourceTerm,
+	        List<String> targetTerm, String sense, String definition) {
 
 		super(Enrichment.TERMINOLOGY_TYPE, nifOffsetString);
-		this.sourceTerm = sourceTerm;
-		this.targetTerm = targetTerm;
+		setSourceTermList(sourceTerm);
+		setTargetTermList(targetTerm);
 		this.sense = sense;
 		this.definition = definition;
 	}
@@ -101,13 +126,13 @@ public class TerminologyEnrichment extends Enrichment {
 	 * @param termInfoRef
 	 *            the term info ref
 	 */
-	public TerminologyEnrichment(String nifOffsetString, String sourceTerm,
-			String targetTerm, String sense, String defintion,
-			List<Statement> termTriples, String termInfoRef) {
+	public TerminologyEnrichment(String nifOffsetString, List<String> sourceTerm,
+	        List<String> targetTerm, String sense, String defintion,
+	        List<Statement> termTriples, String termInfoRef) {
 
 		super(Enrichment.TERMINOLOGY_TYPE, nifOffsetString);
-		this.sourceTerm = sourceTerm;
-		this.targetTerm = targetTerm;
+		setSourceTermList(sourceTerm);
+		setTargetTermList(targetTerm);
 		this.sense = sense;
 		this.definition = defintion;
 		this.termTriples = termTriples;
@@ -178,17 +203,42 @@ public class TerminologyEnrichment extends Enrichment {
 	 * @return the source term.
 	 */
 	public String getSourceTerm() {
-		return sourceTerm;
+		StringBuilder sourceTerm = new StringBuilder();
+		if (sourceTermList != null) {
+			for (String source : sourceTermList) {
+				if(sourceTerm.length() > 0){
+					sourceTerm.append(", ");
+				}
+				sourceTerm.append(source);
+			}
+		}
+		return sourceTerm.toString();
 	}
 
+	
+	
 	/**
 	 * Sets the source term.
 	 * 
-	 * @param sourceTerm
+	 * @param sourceTermList
 	 *            the source term.
 	 */
-	public void setSourceTerm(String sourceTerm) {
-		this.sourceTerm = sourceTerm;
+	public final void setSourceTermList(List<String> sourceTermList) {
+		this.sourceTermList = sourceTermList;
+		if(this.sourceTermList != null){
+			Collections.sort(this.sourceTermList);
+		}
+	}
+	
+	public void addSourceTerm(String sourceTerm){
+		if(sourceTerm != null){
+			if(sourceTermList == null){
+				sourceTermList = new ArrayList<String>();
+			}
+			sourceTermList.add(sourceTerm);
+			Collections.sort(this.sourceTermList);
+		}
+		
 	}
 
 	/**
@@ -197,17 +247,45 @@ public class TerminologyEnrichment extends Enrichment {
 	 * @return the target term.
 	 */
 	public String getTargetTerm() {
-		return targetTerm;
+		StringBuilder targetTerm = new StringBuilder();
+		if (targetTermList != null) {
+			for (String target : targetTermList) {
+				if(targetTerm.length() > 0){
+					targetTerm.append(", ");
+				}
+				targetTerm.append(target);
+			}
+		}
+		return targetTerm.toString();
 	}
 
 	/**
-	 * Sets the target term.
+	 * Sets the target term list.
 	 * 
-	 * @param targetTerm
-	 *            the target term.
+	 * @param targetTermList
+	 *            the target term list.
 	 */
-	public void setTargetTerm(String targetTerm) {
-		this.targetTerm = targetTerm;
+	public final void setTargetTermList(List<String> targetTermList) {
+		this.targetTermList = targetTermList;
+		if(this.targetTermList != null){
+			Collections.sort(this.targetTermList);
+		}
+	}
+	
+	public List<String> getTargetTermList(){
+		return targetTermList;
+	}
+
+	public void addTargetTerm(String targetTerm) {
+
+		if (targetTerm != null) {
+			if (targetTermList == null) {
+				targetTermList = new ArrayList<String>();
+			}
+
+			targetTermList.add(targetTerm);
+			Collections.sort(this.targetTermList);
+		}
 	}
 
 	/**
@@ -290,15 +368,15 @@ public class TerminologyEnrichment extends Enrichment {
 
 		StringBuilder descrString = new StringBuilder();
 		descrString.append("Source: ");
-		descrString.append(sourceTerm);
-		if (targetTerm != null) {
+		descrString.append(getSourceTerm());
+		if (targetTermList != null) {
 			descrString.append(" - Target: ");
-			descrString.append(targetTerm);
+			descrString.append(getTargetTerm());
 		}
-//		if (sense != null) {
-//			descrString.append(" - Sense: ");
-//			descrString.append(sense);
-//		}
+		// if (sense != null) {
+		// descrString.append(" - Sense: ");
+		// descrString.append(sense);
+		// }
 		return descrString.toString();
 	}
 
@@ -313,13 +391,13 @@ public class TerminologyEnrichment extends Enrichment {
 		boolean retValue = false;
 		if (obj instanceof TerminologyEnrichment) {
 			TerminologyEnrichment enrich = (TerminologyEnrichment) obj;
-			if (sourceTerm != null) {
-				retValue = sourceTerm.equals(enrich.getSourceTerm())
-						&& (targetTerm == null
-								&& enrich.getTargetTerm() == null || (targetTerm
-									.equals(enrich.getTargetTerm())))
-						&& (sense == null && enrich.getSense() == null || (sense
-								.equals(enrich.getSense())));
+			if (sourceTermList != null) {
+				retValue = getSourceTerm().equals(enrich.getSourceTerm())
+				        && (targetTermList == null
+				                && enrich.getTargetTermList() == null || (getTargetTerm()
+				                    .equals(enrich.getTargetTerm())))
+				        && (sense == null && enrich.getSense() == null || (sense
+				                .equals(enrich.getSense())));
 			} else {
 				retValue = super.equals(obj);
 			}
@@ -336,9 +414,10 @@ public class TerminologyEnrichment extends Enrichment {
 	 */
 	@Override
 	public int hashCode() {
-		StringBuilder totString = new StringBuilder(sourceTerm);
-		if (targetTerm != null) {
-			totString.append(targetTerm);
+		StringBuilder totString = new StringBuilder();
+		totString.append(getSourceTerm());
+		if (targetTermList != null) {
+			totString.append(getTargetTerm());
 		}
 		if (sense != null) {
 			totString.append(sense);

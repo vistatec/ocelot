@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" xmlns:okp="okapi-framework:xliff-extensions" its:version="2.0" version="1.2">
+<file datatype="x-text/plain" original="Content_en-US_fr-fr.txt" source-language="en-us" target-language="fr-fr">
+<body>
+<trans-unit id="1" its:annotatorsRef="text-analysis|http://spotlight.dbpedia.org/" xml:space="preserve">
+<source xml:lang="en-us">19 <mrk id="freme-1" mtype="term" ref="http://freme-project.eu/#char=3,8">miles</mrk> (31 <mrk id="freme-2" mtype="term" ref="http://freme-project.eu/#char=13,23">kilometers</mrk>) to the northeast of <mrk id="freme-3" its:taIdentRef="http://dbpedia.org/resource/Wicklow" mtype="its:any">Wicklow</mrk>, is <mrk id="freme-4" its:taIdentRef="http://dbpedia.org/resource/Bray" mtype="its:any">Bray</mrk>, a <mrk id="freme-5" mtype="term" ref="http://freme-project.eu/#char=65,72">popular</mrk> <mrk id="freme-6" mtype="term" ref="http://freme-project.eu/#char=73,77">spot</mrk> for <mrk id="freme-7" mtype="term" ref="http://freme-project.eu/#char=82,90">visitors</mrk> <mrk id="freme-8" mtype="term" ref="http://freme-project.eu/#char=91,101">wishing to</mrk> <mrk id="freme-9" mtype="term" ref="http://freme-project.eu/#char=102,110">discover</mrk> more of the <mrk id="freme-10" mtype="term" ref="http://freme-project.eu/#char=123,129">region</mrk>.</source>
+<target xml:lang="fr-fr">19 miles (31 kilometers) to the northeast of Wicklow, is Bray, a popular spot for visitors wishing to discover more of the region.</target>
+</trans-unit>
+<trans-unit id="2" translate="yes">
+<source>A <mrk id="freme-11" mtype="term" ref="http://freme-project.eu/#char=2,8">single</mrk> <mrk id="freme-12" mtype="term" ref="http://freme-project.eu/#char=9,13">line</mrk> of <mrk id="freme-13" mtype="term" ref="http://freme-project.eu/#char=17,21">text</mrk> <mrk id="freme-14" mtype="term" ref="http://freme-project.eu/#char=22,32">containing</mrk> both <ph ctype="x-label-tag" id="2bc">&lt;&lt;placeholder&gt;&gt;</ph> and <bpt id="1">&lt;h2&gt;</bpt><mrk id="freme-15" mtype="term" ref="http://freme-project.eu/#char=59,65">paired</mrk><ept id="1">&lt;/h2&gt;</ept> <mrk id="freme-16" mtype="term" ref="http://freme-project.eu/#char=73,77">tags</mrk>.</source>
+<target>A single line of text containing both <ph ctype="x-label-tag" id="2bc">&lt;&lt;placeholder&gt;&gt;</ph> and <bpt id="1">&lt;h2&gt;</bpt>paired<ept id="1">&lt;/h2&gt;</ept> tags.</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

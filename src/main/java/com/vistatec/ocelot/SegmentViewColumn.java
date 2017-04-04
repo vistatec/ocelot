@@ -1,7 +1,5 @@
 package com.vistatec.ocelot;
 
-import javax.swing.ImageIcon;
-
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 

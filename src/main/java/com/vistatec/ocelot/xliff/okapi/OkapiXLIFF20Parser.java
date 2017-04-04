@@ -52,6 +52,7 @@ import net.sf.okapi.lib.xliff2.core.Fragment;
 import net.sf.okapi.lib.xliff2.core.MTag;
 import net.sf.okapi.lib.xliff2.core.Note;
 import net.sf.okapi.lib.xliff2.core.Part;
+import net.sf.okapi.lib.xliff2.core.StartFileData;
 import net.sf.okapi.lib.xliff2.core.StartXliffData;
 import net.sf.okapi.lib.xliff2.core.Tag;
 import net.sf.okapi.lib.xliff2.core.TagType;
@@ -88,10 +89,12 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	        DATETIME_PATTERN);
 	private List<Event> events;
 	private List<net.sf.okapi.lib.xliff2.core.Segment> segmentUnitParts;
-	private List<TargetVersion> targetVersions;
+//	private List<TargetVersion> targetVersions;
+	private Map<String, TargetVersion> targetVersions;
 	private Map<Integer, Integer> segmentEventMapping;
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
+	private String originalFileName;
     private EnrichmentConverterXLIFF20 enrichmentConverter;
     
 	public List<Event> getEvents() {
@@ -107,9 +110,12 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		return this.segmentUnitParts.get(segmentUnitPartIndex);
 	}
 	
-	public TargetVersion getTargetVersion(int segmentUnitPartIndex){
-		return this.targetVersions.get(segmentUnitPartIndex);
+	public TargetVersion getTargetVersion(String segmentRef){
+		return this.targetVersions.get(segmentRef);
 	}
+//	public TargetVersion getTargetVersion(int segmentUnitPartIndex){
+//		return this.targetVersions.get(segmentUnitPartIndex);
+//	}
 
 	@Override
 	public List<OcelotSegment> parse(File xliffFile) throws IOException {
@@ -117,7 +123,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		segmentEventMapping = new HashMap<Integer, Integer>();
 		events = new LinkedList<Event>();
 		segmentUnitParts = new LinkedList<>();
-		targetVersions = new ArrayList<TargetVersion>();
+//		targetVersions = new ArrayList<TargetVersion>();
+		targetVersions = new HashMap<String, TargetVersion>();
 		this.documentSegmentNum = 1;
 		int segmentUnitPartIndex = 0;
 
@@ -137,20 +144,23 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				}
                 enrichmentConverter = new EnrichmentConverterXLIFF20(sourceLang, targetLang);
 
+			} else if(event.isStartFile()) {
+				StartFileData fileData = event.getStartFileData();
+				this.originalFileName = fileData.getOriginal();
 			} else if (event.isUnit()) {
 				Unit unit = event.getUnit();
 				for (Part unitPart : unit) {
 					if (unitPart.isSegment()) {
 						List<Enrichment> sourceEnrichments = enrichmentConverter
 						        .retrieveEnrichments(unit,
-						                unitPart.getSource(), sourceLang);
+						                unitPart.getSource(), sourceLang, unitPart.getId());
 						List<Enrichment> targetEnrichments = enrichmentConverter
 						        .retrieveEnrichments(unit,
-						                unitPart.getTarget(), targetLang);
+						                unitPart.getTarget(), targetLang, unitPart.getId());
 						net.sf.okapi.lib.xliff2.core.Segment okapiSegment =
                                 (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
 						OcelotSegment ocelotSegment = convertPartToSegment(
-						        okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId());
+						        okapiSegment, segmentUnitPartIndex++, sourceEnrichments, targetEnrichments, unit.getId(), unitPart.getId(true), unit.getTranslate());
 						if (ocelotSegment.getTarget() != null) {
 							setTargetRevisions(unit, okapiSegment,
 							        ocelotSegment);
@@ -160,7 +170,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 						this.segmentUnitParts.add(okapiSegment);
 					}
 				}
-			}
+			} 
 
 		}
         reader.close();
@@ -204,7 +214,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 			Revisions revs = null;
 			while (revsIt.hasNext()) {
 				revs = revsIt.next();
-				if (revs.getAppliesTo().equals(Const.ELEM_TARGET)) {
+				if (isRevisionsForTarget(revs, ocelotSegment.getSegmentId())) {
 					targetRevisions = revs;
 					break;
 				}
@@ -224,7 +234,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				}
 			} else if (!ocelotSegment.getTarget().getDisplayText().isEmpty()) {
 				targetRevisions = createRevisionsForTarget(okapiSegment
-				        .getTarget());
+				        .getTarget(), ocelotSegment.getSegmentId());
 				unit.getChangeTrack().add(targetRevisions);
 				ocelotRevisions.add(new OcelotRevision(targetRevisions.get(0),
 				        targetRevisions.get(0).get(0)));
@@ -268,29 +278,37 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 					targetRevisions.add(revision);
 					targetRevisions.setCurrentVersion(revision.getVersion());
 				}
-				targetVersions.add(new TargetVersion(TargetVersion.VERSION_PREFIX + nextVersion));
+				targetVersions.put(ocelotSegment.getSegmentId(), new TargetVersion(TargetVersion.VERSION_PREFIX + nextVersion));
 			} else {
-				targetVersions.add(new TargetVersion(TargetVersion.VERSION_PREFIX + "1"));
+				targetVersions.put(ocelotSegment.getSegmentId(), new TargetVersion(TargetVersion.VERSION_PREFIX + "1"));
 			}
 
 		} else if (!ocelotSegment.getTarget().getDisplayText().isEmpty()) {
 			ChangeTrack changeTrack = new ChangeTrack();
 			unit.setChangeTrack(changeTrack);
 			changeTrack.add(createRevisionsForTarget(okapiSegment
-			        .getTarget()));
-			targetVersions.add(new TargetVersion(TargetVersion.VERSION_PREFIX + "2"));
+			        .getTarget(), ocelotSegment.getSegmentId()));
+			targetVersions.put(ocelotSegment.getSegmentId(), new TargetVersion(TargetVersion.VERSION_PREFIX + "2"));
 		} else {
-			targetVersions.add(new TargetVersion(TargetVersion.VERSION_PREFIX + "1"));
+			targetVersions.put(ocelotSegment.getSegmentId(), new TargetVersion(TargetVersion.VERSION_PREFIX + "1"));
 		}
 	}
 	
 	
+	private boolean isRevisionsForTarget(Revisions revs, String ref) {
+
+		return revs.getAppliesTo().equals(Const.ELEM_TARGET)
+		        && ((ref != null && ref.equals(revs.getRef())) || (ref == null && revs
+		                .getRef() == null));
+	}
 	
-	private Revisions createRevisionsForTarget(Fragment target){
+	
+	private Revisions createRevisionsForTarget(Fragment target, String ref){
 		
 		Revisions revisions = new Revisions();
 		revisions.setAppliesTo(Const.ELEM_TARGET);
 		revisions.setCurrentVersion(TargetVersion.VERSION_PREFIX + "1");
+		revisions.setRef(ref);
 		Revision revision = new Revision();
 		revision.setDatetime(dateFormatter.format(new Date()));
 		revision.setVersion(TargetVersion.VERSION_PREFIX + "1");
@@ -313,7 +331,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	 * @return Segment - Ocelot Segment
 	 * @throws MalformedURLException
 	 */
-    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments, String unitId) throws MalformedURLException {
+    private OcelotSegment convertPartToSegment(net.sf.okapi.lib.xliff2.core.Segment unitPart, int segmentUnitPartIndex, List<Enrichment> sourceEnrichments, List<Enrichment> targetEnrichments, String unitId, String segId, boolean translatable) throws MalformedURLException {
         segmentEventMapping.put(this.documentSegmentNum, this.events.size()-1);
         //TODO: load original target from file
 		OkapiSegment seg = new OkapiSegment.Builder()
@@ -322,6 +340,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		        .source(new FragmentVariant(unitPart, false))
 				.target(new FragmentVariant(unitPart, true))
 				.tuId(unitId)
+				.translatable(translatable)
+				.segId(segId)
 				.build();
 		seg.addAllLQI(parseLqiData(unitPart));
 		seg.addAllProvenance(parseProvData(unitPart));
@@ -465,11 +485,20 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		return this.targetLang;
 	}
 	
+	@Override
+	public String getOriginalFileName() {
+		return originalFileName;
+	}
+
+	
 	public void updateTargetVersions(){
 		
-		for(TargetVersion tVersion: targetVersions){
+		for(TargetVersion tVersion: targetVersions.values()){
 			tVersion.nextVersion();
 		}
+//		for(TargetVersion tVersion: targetVersions){
+//			tVersion.nextVersion();
+//		}
 	}
 	
 	public SimpleDateFormat getRevisionDateFormatter(){
@@ -528,6 +557,7 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 		
 		return plainText.toString();
 	}
+
 }
 
 

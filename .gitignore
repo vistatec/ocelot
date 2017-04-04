@@ -16,3 +16,4 @@ manifest.mf
 target
 ocelot.log*
 *.csv
+*.log

@@ -35,6 +35,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import com.vistatec.ocelot.SegmentViewColumn;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.rules.NullITSMetadata;
 import com.vistatec.ocelot.rules.RuleConfiguration;
 
@@ -58,14 +60,16 @@ public class SegmentTableModel extends AbstractTableModel {
             new EnumMap<SegmentViewColumn, Boolean>(SegmentViewColumn.class);
 
     private final SegmentService segmentService;
+    private final JsonConfigService configService;
 
     @Inject
     public SegmentTableModel(SegmentService segmentService,
-                             RuleConfiguration ruleConfig) {
+                             RuleConfiguration ruleConfig, JsonConfigService configService) {
         this.segmentService = segmentService;
         this.ruleConfig = ruleConfig;
+        this.configService = configService;
         for (SegmentViewColumn c : SegmentViewColumn.values()) {
-            enabledColumns.put(c, c.isVisibleByDefaut());
+            enabledColumns.put(c, configService.isColumnEnabled(c));
         }
     }
 
@@ -209,10 +213,28 @@ public class SegmentTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex() || col == getNotesColumnIndex();
+        return ((col == getSegmentTargetColumnIndex() || col == getSegmentSourceColumnIndex()) && segmentService.getSegment(row).isTranslatable() )  || col == getNotesColumnIndex();
     }
 
-    OcelotSegment getSegment(int row) {
+    public OcelotSegment getSegment(int row) {
         return segmentService.getSegment(row);
     }
+    
+    public int getModelIndexForSegment(OcelotSegment segment){
+    	
+    	int index = -1;
+    	for(int i = 0; i<segmentService.getNumSegments(); i++){
+    		if(segmentService.getSegment(i).getSegmentNumber() == segment.getSegmentNumber()){
+    			index = i;
+    			break;
+    		}
+    	}
+    	return index;
+    }
+    
+    
+    public void saveColumnConfiguration() throws TransferException {
+		
+		configService.saveColumnConfiguration(enabledColumns);
+	}
 }

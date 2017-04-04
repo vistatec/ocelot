@@ -92,6 +92,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 	private XLIFFFilter filter;
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
+	private String originalFileName;
 	private EnrichmentConverterXLIFF12 enrichmentConverter;
 
 	@Override
@@ -110,6 +111,14 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 
 	public void setTargetLang(String targetLang) {
 		this.targetLang = targetLang;
+	}
+	
+	public void setOriginalFileName(String originalFileName){
+		this.originalFileName = originalFileName;
+	}
+	
+	public String getOriginalFileName(){
+		return originalFileName;
 	}
 
 	public Event getSegmentEvent(int segEventNumber) {
@@ -151,6 +160,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 			if (event.isStartSubDocument()) {
 				StartSubDocument fileElement = (StartSubDocument) event
 				        .getResource();
+				setOriginalFileName(fileElement.getName());
 				XLIFFToolAnnotation toolAnn = fileElement
 				        .getAnnotation(XLIFFToolAnnotation.class);
 				if (toolAnn == null) {
@@ -226,7 +236,9 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		        .target(new TextContainerVariant(tgtTu))
 		        .originalTarget(
 		                oriTgtTu != null ? new TextContainerVariant(oriTgtTu)
-		                        : null).tuId(tu.getId());
+		                        : null)
+		        .tuId(tu.getId())
+		        .translatable(tu.isTranslatable());
 
 		Property stateQualifier = tgtTu.getProperty("state-qualifier");
 		if (stateQualifier != null) {
@@ -433,7 +445,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 				AltTranslation altTran = iterAltTrans.next();
 				// Check if alt-trans is Ocelot generated.
 				XLIFFTool altTool = altTran.getTool();
-				if (altTool != null && altTool.getName().equals("Ocelot")) {
+				if ( /*altTran.getALttransType().equals("previous-version") ||*/ (altTool != null && altTool.getName().equals("Ocelot"))) {
 					// We should be able to replace this with |return
 					// altTrans.getTarget;|
 					// once an issue with the XLIFF reader is fixed (Okapi 412).

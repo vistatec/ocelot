@@ -10,6 +10,10 @@ public interface XLIFFWriter {
     public void updateSegment(OcelotSegment seg);
     
     public void updateNotes(OcelotSegment seg);
+    
+    public void updateTiming(Double time);
+    
+    public void updateLqiConfiguration(String lqiConfName);
 
     public void save(File file) throws IOException, UnsupportedEncodingException;
 }

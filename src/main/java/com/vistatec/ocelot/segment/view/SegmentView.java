@@ -40,6 +40,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
@@ -92,6 +93,8 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
+import net.sf.okapi.common.LocaleId;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +104,8 @@ import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.OcelotApp;
 import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.LqiConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
@@ -114,6 +117,7 @@ import com.vistatec.ocelot.events.ReplaceDoneEvent;
 import com.vistatec.ocelot.events.ReplaceEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
+import com.vistatec.ocelot.events.SegmentRowsSortedEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
@@ -124,7 +128,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.its.model.ITSMetadata;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
 import com.vistatec.ocelot.rules.NullITSMetadata;
@@ -141,8 +145,6 @@ import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
-
-import net.sf.okapi.common.LocaleId;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -163,15 +165,16 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	protected SegmentTableModel segmentTableModel;
 	protected SegmentViewTable sourceTargetTable;
 	private TableColumnModel tableColumnModel;
-	protected TableRowSorter<SegmentTableModel> sort;
+	protected SegmentTableSorter sort;
 	private boolean enabledTargetDiff = true;
 	private OcelotApp ocelotApp;
 
 	protected RuleConfiguration ruleConfig;
+	private boolean showNotTransSegments;
 	private final OcelotEventQueue eventQueue;
 
 	private boolean targetChangedFromMatch;
-        private LQIGrid lqiGrid;
+        private LQIGridConfigurations lqiGrid;
 
 
 	private XLIFFDocument xliff;
@@ -249,12 +252,41 @@ public class SegmentView extends JScrollPane implements RuleListener,
             }
             return super.print(printMode, headerFormat, footerFormat, showPrintDialog, attr, interactive, service);
         }
+        
+		@Override
+		public String getToolTipText(MouseEvent event) {
+			int row = rowAtPoint(event.getPoint());
+			int col = columnAtPoint(event.getPoint());
+			Object o = getValueAt(row, col);
+			if (o instanceof SegmentVariant) {
+				// Table cells don't exist as components so we must materialize
+				// an actual component in order to figure out where in the text
+				// we are pointing.
+				TableCellRenderer renderer = getCellRenderer(row, col);
+				Component comp = renderer.getTableCellRendererComponent(this, o, false, false, row, col);
+				if (comp instanceof SegmentTextCell) {
+					SegmentTextCell cell = (SegmentTextCell) comp;
+					// Set the bounds of the component to match where the table
+					// cell was painted.
+					Rectangle rect = getCellRect(row, col, true);
+					cell.setBounds(rect);
+					Point p = event.getPoint();
+					// Convert from table coordinates to cell coordinates.
+					p.translate(-rect.x, -rect.y);
+					String tip = cell.getToolTipText(p);
+					if (tip != null) {
+						return tip;
+					}
+				}
+			}
+			return super.getToolTipText(event);
+		}
 	}
 
 	@Inject
 	public SegmentView(OcelotEventQueue eventQueue,
 	        SegmentTableModel segmentTableModel, RuleConfiguration ruleConfig,
-	        OcelotApp ocelotApp, LqiConfigService lqiService) throws IOException, InstantiationException,
+	        OcelotApp ocelotApp, LqiJsonConfigService lqiService) throws IOException, InstantiationException,
 	        InstantiationException, IllegalAccessException, TransferException {
 		this.eventQueue = eventQueue;
 		this.segmentTableModel = segmentTableModel;
@@ -287,9 +319,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			for (int i = 0; i < highlightResults.size(); i++) {
 				hr = highlightResults.get(i);
 				if (hr.getSegmentIndex() < segmentTableModel.getRowCount()) {
-
-					OcelotSegment segment = segmentTableModel.getSegment(hr
-							.getSegmentIndex());
+					OcelotSegment segment = segmentTableModel.getSegment(sort.convertRowIndexToModel(hr.getSegmentIndex()));
 					BaseSegmentVariant variant = null;
 					if (hr.isTargetScope()) {
 						variant = (BaseSegmentVariant) segment.getTarget();
@@ -314,7 +344,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 			}
 			sourceTargetTable.scrollRectToVisible(sourceTargetTable
-					.getCellRect(currSegmentIdx, 0, false));
+					.getCellRect(sort.convertRowIndexToView(currSegmentIdx), 0, false));
 		}
 
 	}
@@ -326,7 +356,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			OcelotSegment hlSegment = null;
 			for (int segIndex : highlightedSegments) {
 				if (segIndex < segmentTableModel.getRowCount()) {
-					hlSegment = segmentTableModel.getSegment(segIndex);
+					hlSegment = segmentTableModel.getSegment(sort.convertRowIndexToModel(segIndex));
 					((BaseSegmentVariant) hlSegment.getSource())
 							.clearHighlightedText();
 					if (hlSegment.getTarget() != null) {
@@ -352,9 +382,11 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			for (int segIdx = 0; segIdx < segmentTableModel.getRowCount(); segIdx++) {
 
 				segment = segmentTableModel.getSegment(segIdx);
-				replacedOccNum += replaceAllTarget(
-						(BaseSegmentVariant) segment.getTarget(),
-						e.getNewString(), segIdx);
+				if(segment.isTranslatable() && segment.isEditable()){
+					replacedOccNum += replaceAllTarget(
+							(BaseSegmentVariant) segment.getTarget(),
+							e.getNewString(), segIdx);
+				}
 			}
 			eventQueue.post(new ReplaceDoneEvent(replacedOccNum));
 		}
@@ -390,22 +422,25 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	private void replaceTarget(String newString, int segmentIndex) {
 		
-		SegmentVariant updatedTarget = currHLVariant.createCopy();
-		if (currHLVariant.getHighlightDataList() != null
-				&& currHLVariant.getCurrentHighlightedIndex() > -1
-				&& currHLVariant.getCurrentHighlightedIndex() < currHLVariant
-						.getHighlightDataList().size()) {
-
-			if(updatedTarget instanceof FragmentVariant){
-				replaceTargetTextXliff20((FragmentVariant)updatedTarget, newString);
-			} else {
-				replaceTargetTextXliff12((BaseSegmentVariant)updatedTarget, newString);
+		OcelotSegment segment = segmentTableModel.getSegment(sort.convertRowIndexToModel(segmentIndex));
+		if(segment.isTranslatable() && segment.isEditable()){
+			SegmentVariant updatedTarget = currHLVariant.createCopy();
+			if (currHLVariant.getHighlightDataList() != null
+					&& currHLVariant.getCurrentHighlightedIndex() > -1
+					&& currHLVariant.getCurrentHighlightedIndex() < currHLVariant
+							.getHighlightDataList().size()) {
+	
+				if(updatedTarget instanceof FragmentVariant){
+					replaceTargetTextXliff20((FragmentVariant)updatedTarget, newString);
+				} else {
+					replaceTargetTextXliff12((BaseSegmentVariant)updatedTarget, newString);
+				}
+				eventQueue.post(new SegmentTargetUpdateEvent(xliff,
+						segment,
+						updatedTarget));
+				updateTableRow(segmentIndex);
+				
 			}
-			eventQueue.post(new SegmentTargetUpdateEvent(xliff,
-					segmentTableModel.getSegment(segmentIndex),
-					updatedTarget));
-			updateTableRow(segmentIndex);
-			
 		}
 	}
 
@@ -681,11 +716,11 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	}
 
 	public void addFilters() {
-		sort = new TableRowSorter<SegmentTableModel>(segmentTableModel);
+		sort = new SegmentTableSorter(segmentTableModel);
 		sourceTargetTable.setRowSorter(sort);
 		sort.setRowFilter(new RowFilter<SegmentTableModel, Integer>() {
-			private SegmentSelector selector = new SegmentSelector(ruleConfig);
-
+			private SegmentSelector selector = new SegmentSelector(ruleConfig, showNotTransSegments);
+			
 			@Override
 			public boolean include(
 			        RowFilter.Entry<? extends SegmentTableModel, ? extends Integer> entry) {
@@ -815,6 +850,11 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		this.enabledTargetDiff = enabled;
 		reloadTable();
 	}
+	
+	public void toggleNotTranslatableSegments(boolean showNotTransSegs){
+		this.showNotTransSegments = showNotTransSegs;
+		reloadTable();
+	}
 
 	@Subscribe
 	public void updateSegmentView(RefreshSegmentView event) {
@@ -932,9 +972,15 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	@Subscribe
 	public void notifySegmentEdit(SegmentEditEvent event) {
-		int selRow = sourceTargetTable.getSelectedRow();
-		updateTableRow(selRow);
+		try{
+		int segmentIndex = segmentTableModel.getModelIndexForSegment(event.getSegment());
+		
+//		int selRow = sourceTargetTable.getSelectedRow();
+		updateTableRow(sort.convertRowIndexToView(segmentIndex));
 		sourceTargetTable.requestFocusInWindow();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -957,7 +1003,20 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			eventQueue.post(new SegmentSelectionEvent(xliff, seg));
 		}
 	}
+	
+	private static Color getBackground(OcelotSegment seg, boolean isSelected, JTable table){
+		return isSelected ? table
+		        .getSelectionBackground() : (seg.isEditable() && seg.isTranslatable()) ?  table
+		        .getBackground() : Color.LIGHT_GRAY;
+	}
+	
+	private static Color getForeground(OcelotSegment seg, boolean isSelected, JTable table, boolean coloredBackground){
+		return (seg.isEditable()  && seg.isTranslatable()) ? isSelected ? table
+		        .getSelectionForeground() : table.getForeground()
+		        : coloredBackground ? Color.darkGray : Color.GRAY;
+	}
 
+	
 	/**
 	 * TableCellRenderer for source/target text in the SegmentTableView.
 	 */
@@ -968,6 +1027,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		        boolean isSelected, boolean hasFocus, int row, int col) {
 			SegmentTextCell renderTextPane = SegmentTextCell.createCell();
 			if (segmentTableModel.getRowCount() > row) {
+				
 				OcelotSegment seg = segmentTableModel.getSegment(sort
 				        .convertRowIndexToModel(row));
 				SegmentVariant v = null;
@@ -989,13 +1049,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				} else {
 					renderTextPane.setTargetDiff(seg.getTargetDiff());
 				}
-				Color background = isSelected ? seg.isEditable() ? jtable
-				        .getSelectionBackground() : Color.LIGHT_GRAY : jtable
-				        .getBackground();
-
-				Color foreground = seg.isEditable() ? isSelected ? jtable
-				        .getSelectionForeground() : jtable.getForeground()
-				        : Color.GRAY;
+				Color background = getBackground(seg, isSelected, jtable);
+				Color foreground = getForeground(seg, isSelected, jtable, false);
 
 				renderTextPane.setBackground(background);
 				renderTextPane.setForeground(foreground);
@@ -1088,15 +1143,14 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			Integer segNum = (Integer) obj;
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
-
+			
+			
 			Color background = getSegmentColor(seg);
-			background = background != null ? background : isSelected ? seg
-			        .isEditable() ? jtable.getSelectionBackground()
-			        : Color.LIGHT_GRAY : jtable.getBackground();
-
-			Color foreground = seg.isEditable() ? isSelected ? jtable
-			        .getSelectionForeground() : jtable.getForeground()
-			        : Color.GRAY;
+			boolean stateQualifierBackground = background != null;
+			background = background != null ? background : SegmentView.getBackground(seg, isSelected, jtable);
+			//TODO check what color the segment number should be. If grey, it is not visible on the state qualifier background 
+//			Color foreground = isSelected ? jtable.getSelectionForeground() : jtable.getForeground();
+			Color foreground = SegmentView.getForeground(seg, isSelected, jtable, stateQualifierBackground);
 
 			if (seg.getSource() instanceof BaseSegmentVariant
 			        && ((BaseSegmentVariant) seg.getSource()).isEnriched()
@@ -1139,6 +1193,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		@Override
 		public Component getTableCellEditorComponent(JTable table,
 		        Object value, boolean isSelected, int row, int column) {
+			
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
             editorComponent = SegmentTextCell.createCell(row, seg.getSource()
@@ -1160,8 +1215,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 			});
             ToolTipManager.sharedInstance().registerComponent(editorComponent);
-
 			return editorComponent;
+			
 		}
 
 		@Override
@@ -1190,6 +1245,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		private static final long serialVersionUID = 1L;
 
 		protected SegmentTextCell editorComponent;
+		protected JTextArea textArea;
 		protected SegmentCellEditorListener editListener;
 		private Font font;
 
@@ -1202,6 +1258,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		@Override
 		public Component getTableCellEditorComponent(JTable jtable,
 		        Object value, boolean isSelected, int row, int col) {
+			
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
 			if (col == segmentTableModel.getSegmentSourceColumnIndex()) {
@@ -1214,6 +1271,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				        .setBeginEdit(seg, seg.getTarget().getDisplayText());
                 editorComponent = SegmentTextCell.createCell(row, seg.getTarget()
 				        .createCopy(), false, isTargetBidi);
+                System.out.println("Color: " + editorComponent.getForeground());
 				editorComponent.getInputMap().put(
 				        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "finish");
 				editorComponent.getActionMap().put("finish",
@@ -1233,8 +1291,6 @@ public class SegmentView extends JScrollPane implements RuleListener,
                 editorComponent.prepareEditingUI();
                 ToolTipManager.sharedInstance().registerComponent(editorComponent);
 			}
-			eventQueue.post(new OcelotEditingEvent(
-			        OcelotEditingEvent.Type.START_EDITING));
 			return new JScrollPane(editorComponent);
 		}
 
@@ -1249,6 +1305,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 		@Override
 		public boolean isCellEditable(EventObject anEvent) {
+			
 			if (anEvent instanceof MouseEvent) {
 				// Override normal behavior and only allow double-click to edit
 				// the
@@ -1556,7 +1613,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			int r = sourceTargetTable.rowAtPoint(e.getPoint());
 			if (r >= 0 && r < sourceTargetTable.getRowCount()) {
 				sourceTargetTable.setRowSelectionInterval(r, r);
-				seg = segmentTableModel.getSegment(r);
+				//TODO 
+//				seg = segmentTableModel.getSegment(r);
+				seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(r));
 			}
 			int c = sourceTargetTable.columnAtPoint(e.getPoint());
 			boolean target = false;
@@ -1579,6 +1638,26 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 				menu.show(e.getComponent(), e.getX(), e.getY());
 			}
+		}
+	}
+	
+	class SegmentTableSorter extends TableRowSorter<SegmentTableModel>{
+		
+		
+		public SegmentTableSorter(SegmentTableModel model) {
+			super(model);
+		}
+
+		@Override
+		public void toggleSortOrder(int column) {
+			clearHighlightedSegments();
+			super.toggleSortOrder(column);
+			int[] sortIndexMap = new int[segmentTableModel.getRowCount()];
+			for(int i=0; i<segmentTableModel.getRowCount(); i++){
+				sortIndexMap[i] = sort.convertRowIndexToView(i);
+			}
+			eventQueue.post(new SegmentRowsSortedEvent(sortIndexMap));
+			
 		}
 	}
 

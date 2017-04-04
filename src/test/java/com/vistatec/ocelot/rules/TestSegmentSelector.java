@@ -219,7 +219,7 @@ public class TestSegmentSelector {
     }
 
     List<OcelotSegment> select(RuleConfiguration config, List<OcelotSegment> candidates) {
-        SegmentSelector selector = new SegmentSelector(config);
+        SegmentSelector selector = new SegmentSelector(config, true);
         List<OcelotSegment> selected = new ArrayList<>();
         for (OcelotSegment s : candidates) {
             if (selector.matches(s)) {

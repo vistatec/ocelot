@@ -17,16 +17,18 @@ class OkapiXLIFFDocument implements XLIFFDocument {
     private XLIFFVersion version;
     private LocaleId srcLocale;
     private LocaleId tgtLocale;
+    private String original;
     private XLIFFParser parser;
     private XLIFFWriter writer;
     private List<OcelotSegment> segments = new ArrayList<>();
 
-    OkapiXLIFFDocument(File file, XLIFFVersion version, LocaleId srcLocale, LocaleId tgtLocale,
+    OkapiXLIFFDocument(File file, XLIFFVersion version, LocaleId srcLocale, LocaleId tgtLocale, String original,
                    List<OcelotSegment> segments, XLIFFParser parser, XLIFFWriter writer) {
         this.file = file;
         this.version = version;
         this.srcLocale = srcLocale;
         this.tgtLocale = tgtLocale;
+        this.original = original;
         this.parser = parser;
         this.writer = writer;
         this.segments = segments;
@@ -59,4 +61,9 @@ class OkapiXLIFFDocument implements XLIFFDocument {
     XLIFFWriter getWriter() {
         return writer;
     }
+
+	@Override
+	public String getOriginal() {
+		return original;
+	}
 }

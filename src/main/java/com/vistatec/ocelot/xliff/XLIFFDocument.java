@@ -18,4 +18,6 @@ public interface XLIFFDocument {
     public List<OcelotSegment> getSegments();
 
     public XLIFFVersion getVersion();
+    
+    public String getOriginal();
 }

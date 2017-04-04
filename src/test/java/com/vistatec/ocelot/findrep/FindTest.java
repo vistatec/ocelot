@@ -3,7 +3,6 @@ package com.vistatec.ocelot.findrep;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,12 +16,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.ByteSource;
-import com.google.common.io.CharSink;
-import com.google.common.io.Files;
-import com.vistatec.ocelot.config.ConfigTransferService.TransferException;
-import com.vistatec.ocelot.config.OcelotConfigService;
-import com.vistatec.ocelot.config.OcelotXmlConfigTransferService;
+import com.vistatec.ocelot.config.ConfigurationException;
+import com.vistatec.ocelot.config.ConfigurationManager;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -39,19 +34,13 @@ public class FindTest {
 	private static WordFinder frManager;
 
 	@BeforeClass
-	public static void setup() throws TransferException, JAXBException,
-			IOException, XMLStreamException {
+	public static void setup() throws JAXBException,
+			IOException, XMLStreamException, ConfigurationException {
 		OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
 		File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
-		File configFile = new File(ocelotDir, "ocelot_cfg.xml");
-		ByteSource configSource = !configFile.exists() ? ByteSource.empty()
-				: Files.asByteSource(configFile);
-
-		CharSink configSink = Files.asCharSink(configFile,
-				Charset.forName("UTF-8"));
-		OcelotConfigService confService = new OcelotConfigService(
-				new OcelotXmlConfigTransferService(configSource, configSink));
-		xliffService = new OkapiXliffService(confService, eventQueue);
+		ConfigurationManager confManager = new ConfigurationManager();
+		confManager.readAndCheckConfiguration(ocelotDir);
+		xliffService = new OkapiXliffService(confManager.getOcelotConfigService(), eventQueue);
 		frManager = new WordFinder();
 	}
 

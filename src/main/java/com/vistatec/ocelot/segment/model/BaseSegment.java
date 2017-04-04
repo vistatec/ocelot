@@ -50,6 +50,8 @@ public abstract class BaseSegment implements OcelotSegment {
     protected final SegmentVariant source;
     protected SegmentVariant target, originalTarget;
     protected boolean setOriginalTarget = false;
+    
+    protected boolean translatable;
 
     protected boolean dirtyEditDistance = true;
     protected int editDistance;
@@ -66,10 +68,11 @@ public abstract class BaseSegment implements OcelotSegment {
     protected final List<OtherITSMetadata> otherITSList = new ArrayList<>();
 
     public BaseSegment(int segmentNumber, SegmentVariant source,
-            SegmentVariant target, SegmentVariant originalTarget) {
+            SegmentVariant target, SegmentVariant originalTarget, boolean translatable) {
         this.segmentNumber = segmentNumber;
         this.source = source;
         this.target = target;
+        this.translatable = translatable;
         this.notes = new Notes();
         if (originalTarget != null) {
             setOriginalTarget(originalTarget);
@@ -289,5 +292,10 @@ public abstract class BaseSegment implements OcelotSegment {
         its.addAll(termList);
         return its;
     }
+    
+    @Override
+	public boolean isTranslatable() {
+		return translatable;
+	}
 
 }

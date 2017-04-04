@@ -19,12 +19,14 @@ public class LQIErrorCategory {
 	private String comment;
 
 	/** The weight. */
-	private float weight;
+	private double weight;
+	
 
 	/**
 	 * Default constructor.
 	 */
 	public LQIErrorCategory() {
+		
 	}
 
 	/**
@@ -33,9 +35,9 @@ public class LQIErrorCategory {
 	 * @param name
 	 *            the category name.
 	 */
-	public LQIErrorCategory(final String name) {
+	public LQIErrorCategory( final String name) {
 
-		this(name, 0f, null);
+		this(name, 0, null);
 	}
 
 	/**
@@ -50,11 +52,14 @@ public class LQIErrorCategory {
 	 */
 	public LQIErrorCategory(final String name, final float weight,
 	        final List<LQIShortCut> shortcuts) {
+		
 		this.name = name;
 		this.weight = weight;
 		this.shortcuts = shortcuts;
 	}
 
+	
+	
 	/**
 	 * Gets the category name.
 	 * 
@@ -98,7 +103,7 @@ public class LQIErrorCategory {
 	 * 
 	 * @return the weight.
 	 */
-	public float getWeight() {
+	public double getWeight() {
 		return weight;
 	}
 
@@ -108,7 +113,7 @@ public class LQIErrorCategory {
 	 * @param weight
 	 *            the weight.
 	 */
-	public void setWeight(float weight) {
+	public void setWeight(double weight) {
 		this.weight = weight;
 	}
 
@@ -140,7 +145,7 @@ public class LQIErrorCategory {
 	 */
 	public LQIErrorCategory clone(List<LQISeverity> severities) {
 
-		LQIErrorCategory clonedErrCat = new LQIErrorCategory(name);
+		LQIErrorCategory clonedErrCat = new LQIErrorCategory( name);
 		clonedErrCat.setWeight(weight);
 		if (shortcuts != null) {
 			List<LQIShortCut> clonedShortcuts = new ArrayList<LQIShortCut>();

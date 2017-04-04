@@ -256,7 +256,7 @@ public class WordFinder {
 			List<SegmentAtom> atoms = getAtomsFromSegment(segments
 					.get(currSegIndex));
 			String text = null;
-			if (atoms != null) {
+			if (atoms != null && !atoms.isEmpty()) {
 				adjustAtomIndex(atoms);
 				while (((direction == DIRECTION_DOWN && currAtomIndex < atoms
 						.size()) || (direction == DIRECTION_UP && currAtomIndex >= 0))
@@ -355,7 +355,7 @@ public class WordFinder {
 	 * @return <code>true</code> if the word is found; <code>false</code>
 	 *         otherwise
 	 */
-	private boolean findNextWholeWord(String word, List<OcelotSegment> segments) {
+	private boolean findNextWholeWord(String word, List<OcelotSegment> segments ) {
 		boolean found = false;
 		adjustSegIndex(segments);
 		while (((direction == DIRECTION_DOWN && currSegIndex < segments.size()) || (direction == DIRECTION_UP && currSegIndex >= 0))
@@ -691,6 +691,19 @@ public class WordFinder {
 	public int getCurrentResIndex() {
 
 		return currResultIndex;
+	}
+	
+	public int getCurrentResIndexForReplace(){
+		
+		int resIdxForReplace = currResultIndex;
+		if(allResults != null ){
+			if(resIdxForReplace == -1 && direction == DIRECTION_UP){
+				resIdxForReplace = 0;
+			} else if (resIdxForReplace == allResults.size() && direction == DIRECTION_DOWN){
+				resIdxForReplace = allResults.size() - 1;
+			}
+		}
+		return resIdxForReplace;
 	}
 
 	/**

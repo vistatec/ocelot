@@ -12,7 +12,7 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.lqi.model.LQIShortCut;
 
@@ -48,7 +48,7 @@ public class LQIKeyEventHandler {
 	 * @param lqiGrid
 	 *            the LQI grid object.
 	 */
-	public void removeActions(LQIGrid lqiGrid) {
+	public void removeActions(LQIGridConfiguration lqiGrid) {
 
 		if (lqiGrid != null && lqiGrid.getErrorCategories() != null) {
 			for (LQIErrorCategory errCat : lqiGrid.getErrorCategories()) {
@@ -63,7 +63,7 @@ public class LQIKeyEventHandler {
 	 * @param lqiGrid
 	 *            the LQI grid object.
 	 */
-	public void load(LQIGrid lqiGrid) {
+	public void load(LQIGridConfiguration lqiGrid) {
 
 		if (lqiGrid != null && lqiGrid.getErrorCategories() != null) {
 			for (LQIErrorCategory errorCategory : lqiGrid.getErrorCategories()) {
@@ -90,7 +90,7 @@ public class LQIKeyEventHandler {
 	 * @param errCategory
 	 *            the error category
 	 */
-	public void errorCategoryAdded(LQIGrid lqiGrid, LQIErrorCategory errCategory) {
+	public void errorCategoryAdded(LQIGridConfiguration lqiGrid, LQIErrorCategory errCategory) {
 
 		putActionForErrCategory(lqiGrid, errCategory);
 	}
@@ -104,7 +104,7 @@ public class LQIKeyEventHandler {
 	 * @param errorCategory
 	 *            the deleted error category
 	 */
-	public void errorCategoryDeleted(LQIGrid lqiGrid,
+	public void errorCategoryDeleted(LQIGridConfiguration lqiGrid,
 	        LQIErrorCategory errorCategory) {
 
 		ActionMap actionMap = rootPane.getActionMap();
@@ -176,11 +176,12 @@ public class LQIKeyEventHandler {
 	 */
 	public void categoryNameChanged(LQIErrorCategory errorCat, String oldName) {
 
-		for (LQIShortCut shortcut : errorCat.getShortcuts()) {
-			replaceActionNameErrCat(oldName, errorCat.getName(), shortcut
-			        .getSeverity().getName(), shortcut.getKeyStroke());
+		if (errorCat != null && errorCat.getShortcuts() != null) {
+			for (LQIShortCut shortcut : errorCat.getShortcuts()) {
+				replaceActionNameErrCat(oldName, errorCat.getName(), shortcut
+				        .getSeverity().getName(), shortcut.getKeyStroke());
+			}
 		}
-
 	}
 
 	/**
@@ -275,7 +276,7 @@ public class LQIKeyEventHandler {
 	 * @param errorCategory
 	 *            the error category
 	 */
-	private void putActionForErrCategory(LQIGrid lqiGrid,
+	private void putActionForErrCategory(LQIGridConfiguration lqiGrid,
 	        LQIErrorCategory errorCategory) {
 
 		if (lqiGrid.getSeverities() != null) {

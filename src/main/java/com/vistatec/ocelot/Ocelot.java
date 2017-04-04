@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,22 +82,41 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.vistatec.ocelot.OcelotApp.ErrorAlertException;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.OcelotJsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
+import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
+import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
+import com.vistatec.ocelot.events.OpenFileEvent;
+import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
 import com.vistatec.ocelot.its.view.ProvenanceProfileView;
+import com.vistatec.ocelot.lgk.LingoTekManager;
 import com.vistatec.ocelot.lqi.LQIGridController;
 import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.plugins.PluginManagerView;
+import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.storage.model.PostUploadRequest;
+import com.vistatec.ocelot.storage.service.AzureStorageService;
+import com.vistatec.ocelot.storage.service.StorageService;
+import com.vistatec.ocelot.storage.service.util.Util;
 import com.vistatec.ocelot.tm.gui.TmGuiManager;
 import com.vistatec.ocelot.ui.ODialogPanel;
 import com.vistatec.ocelot.ui.OcelotToolBar;
@@ -115,14 +135,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
-	private JMenuItem menuOpenXLIFF, menuExit, menuAbout, menuRules, menuProv,
-	        menuSave, menuSaveAs, menuFindReplace;
+	private JMenuItem menuOpenXLIFF, menuDownloadLGK, menuExit, menuAbout, menuRules, menuProv,
+	        menuSave, menuSaveAs, menuFindReplace, menuWorkspace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
+	private JCheckBoxMenuItem menuShowNotTrans;
 	private JMenuItem menuColumns;
 	private JMenuItem menuConfigTm;
 	private JMenuItem menuSaveAsTmx;
 	private JMenuItem menuLqiGrid;
+	private JMenuItem menuSaveToAzure;
 
     private OcelotToolBar toolBar;
 	private JFrame mainframe;
@@ -134,6 +156,8 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
 	private FindAndReplaceController frController;
+	private OcelotJsonConfigService configService;
+	private ProfileManager profileManager;
 
 	private boolean useNativeUI = false;
 	private final Color optionPaneBackgroundColor;
@@ -142,8 +166,13 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private final OcelotEventQueue eventQueue;
 	private final OcelotApp ocelotApp;
 	private final LQIGridController lqiGridController;
+	private final LingoTekManager lgkManager;
 
 	private PlatformSupport platformSupport;
+	
+	private StorageService storageService;
+	
+	private boolean enableStorage;
 
 	public Ocelot(Injector ocelotScope) throws IOException,
 	        InstantiationException, IllegalAccessException {
@@ -158,6 +187,10 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		        .getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
 		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
+		this.configService = (OcelotJsonConfigService) ocelotScope.getInstance(JsonConfigService.class);
+		setEnableStorage(configService);
+		this.profileManager = ocelotScope.getInstance(ProfileManager.class);
+		lgkManager = ocelotScope.getInstance(LingoTekManager.class);
 		platformSupport = ocelotScope.getInstance(PlatformSupport.class);
 		platformSupport.init(this);
 
@@ -184,6 +217,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	        throws IOException, InstantiationException, IllegalAccessException {
 
 		segmentView = segView;
+		segmentView.toggleNotTranslatableSegments(configService.isShowNotTranslatableRows());
 
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 		        setupSegAttrDetailPanes(segAttrView, detailView),
@@ -215,17 +249,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		tmConcordanceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 		        tmGuiManager.getTmPanel(), segmentView);
 		tmConcordanceSplitPane.setOneTouchExpandable(true);
-		tmConcordanceSplitPane.addContainerListener(new ContainerListener() {
-			@Override
-			public void componentRemoved(ContainerEvent e) {
-
-			}
-
-			@Override
-			public void componentAdded(ContainerEvent e) {
-				tmConcordanceSplitPane.setDividerLocation(0.3);
-			}
-		});
+		
 		return tmConcordanceSplitPane;
 	}
 
@@ -244,6 +268,9 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 
 		} else if (e.getSource() == this.menuOpenXLIFF) {
 			promptOpenXLIFFFile();
+		} else if (e.getSource().equals(menuDownloadLGK)) {
+			File file = lgkManager.downloadFile(mainframe, configService.getUserProvenance().getLangCode());
+			openFile(file, true);
 		} else if (e.getSource() == this.menuRules) {
 			showModelessDialog(ocelotScope.getInstance(FilterView.class),
 			        "Filters");
@@ -256,21 +283,22 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			ProvenanceProfileView userProfileView = ocelotScope
 			        .getInstance(ProvenanceProfileView.class);
 			this.eventQueue.registerListener(userProfileView);
-			showModelessDialog(userProfileView, "Credentials");
+			showModelessDialog(userProfileView, "Provenance");
 
+		} else if (e.getSource().equals(menuWorkspace)) {
+			profileManager.displayProfileDialog(mainframe);
 		} else if (e.getSource() == this.menuExit) {
 			handleApplicationExit();
 		} else if (e.getSource() == this.menuSaveAs) {
+			saveAs();
+		} else if(e.getSource() == this.menuSaveToAzure){
 			if (ocelotApp.hasOpenFile()) {
-				File saveFile = promptSaveAs();
-				if (saveFile != null && save(saveFile)) {
-					setMainTitle(saveFile.getName());
-				}
+				handleStoring(configService);
 			}
 		} else if (e.getSource().equals(menuSaveAsTmx)) {
 			tmGuiManager.saveAsTmx(mainframe);
 		} else if (e.getSource() == this.menuSave) {
-			save(ocelotApp.getOpenFile());
+			saveFile();
 		} else if (e.getSource() == this.menuTgtDiff) {
 			this.segmentView
 			        .setEnabledTargetDiff(this.menuTgtDiff.isSelected());
@@ -280,11 +308,22 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		} else if (e.getSource() == this.menuConfigTm) {
 			eventQueue.post(new ConfigTmRequestEvent(mainframe));
 		} else if (e.getSource() == this.menuLqiGrid) {
-			lqiGridController.displayLQIGrid();
+			lqiGridController.displayLQIGrid(mainframe);
 		} else if (e.getSource() == this.menuFindReplace) {
 			frController.displayDialog(mainframe);
+		} else if (e.getSource().equals(menuShowNotTrans)) {
+			try {
+				segmentView.toggleNotTranslatableSegments(menuShowNotTrans.isSelected());
+				configService.saveNotTransRowConfig(menuShowNotTrans
+						.isSelected());
+			} catch (TransferException e1) {
+				LOG.warn(
+						"Impossible to save the \"Show not traslatable segments\" configuration",
+						e1);
+			}
 		}
 	}
+
 
 	private void promptOpenXLIFFFile() {
 		FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
@@ -292,34 +331,52 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		fd.setVisible(true);
 		File sourceFile = getSelectedFile(fd);
 		fd.dispose();
-
-		if (sourceFile != null) {
+		openFile(sourceFile, false);
+	}
+	
+	private void openFile(File file, boolean temporary){
+		if (file != null) {
 			try {
-				ocelotApp.openFile(sourceFile);
-				this.setMainTitle(sourceFile.getName());
-				segmentView.reloadTable();
-
-				this.menuSave.setEnabled(true);
-				this.menuSaveAs.setEnabled(true);
-				this.menuSaveAsTmx.setEnabled(true);
-				this.toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
-                this.toolBar.setSourceFont(segmentView.getSourceFont());
-                this.toolBar.setTargetFont(segmentView.getTargetFont());
+				ocelotApp.openFile(file, temporary);
 			} catch (FileNotFoundException ex) {
 				LOG.error(
-				        "Failed to parse file '" + sourceFile.getName() + "'",
+				        "Failed to parse file '" + file.getName() + "'",
 				        ex);
 			} catch (Exception e) {
-				String errorMsg = "Could not open " + sourceFile.getName();
+				String errorMsg = "Could not open " + file.getName();
 				LOG.error(errorMsg, e);
 				alertUser("XLIFF Parsing Error",
 				        errorMsg + ": " + e.getMessage());
 			}
 		}
 	}
+	
 
-	private File promptSaveAs() {
+	@Subscribe
+	public void handleFileOpenedEvent(final OpenFileEvent event){
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				setMainTitle(event.getFilename());
+				segmentView.reloadTable();
+				
+				menuSave.setEnabled(true);
+				menuSaveAs.setEnabled(true);
+				menuSaveAsTmx.setEnabled(true);
+				menuSaveToAzure.setEnabled(enableStorage);
+				toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
+				toolBar.setSourceFont(segmentView.getSourceFont());
+				toolBar.setTargetFont(segmentView.getTargetFont());
+				
+			}
+		});
+	}
+	
+	private File promptSaveAs(String defFileName) {
 		FileDialog fd = new FileDialog(mainframe, "Save As...", FileDialog.SAVE);
+		fd.setFile(defFileName);
 		fd.setVisible(true);
 		File f = getSelectedFile(fd);
 		fd.dispose();
@@ -329,6 +386,30 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 	private File getSelectedFile(FileDialog fd) {
 		return (fd.getFile() == null) ? null : new File(fd.getDirectory(),
 		        fd.getFile());
+	}
+	
+	private void saveAs() {
+		if (ocelotApp.hasOpenFile()) {
+			saveAs(ocelotApp.getDefaultFileName());
+		}
+	}
+	
+	private void saveAs(String defFileName){
+		
+		File saveFile = promptSaveAs(defFileName);
+		if (saveFile != null && save(saveFile)) {
+			setMainTitle(saveFile.getName());
+		}
+	}
+	
+	private void saveFile(){
+		if(ocelotApp.hasOpenFile()){
+			if(ocelotApp.isTemporaryFile()){
+				saveAs();
+			} else {
+				save(ocelotApp.getOpenFile());
+			}
+		}
 	}
 
 	private boolean save(File saveFile) {
@@ -402,6 +483,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuOpenXLIFF.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
 		        getPlatformKeyMask()));
 		menuFile.add(menuOpenXLIFF);
+		
+		menuDownloadLGK = new JMenuItem("Download from LGK");
+		menuDownloadLGK.addActionListener(this);
+		menuDownloadLGK.setEnabled(lgkManager.isEnabled());
+		menuFile.add(menuDownloadLGK);
+		
 
 		menuSave = new JMenuItem("Save");
 		menuSave.setEnabled(false);
@@ -416,6 +503,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
 		        Event.SHIFT_MASK | getPlatformKeyMask()));
 		menuFile.add(menuSaveAs);
+		
+		menuSaveToAzure = new JMenuItem("Save to Azure");
+		menuSaveToAzure.setEnabled(false);
+		menuSaveToAzure.addActionListener(this);
+		// TODO add accelerator
+		menuFile.add(menuSaveToAzure);
 
 		menuSaveAsTmx = new JMenuItem("Save As tmx");
 		menuSaveAsTmx.setEnabled(false);
@@ -423,11 +516,18 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		// TODO add accelerator
 		menuFile.add(menuSaveAsTmx);
 
-		menuProv = new JMenuItem("Profile");
+		menuProv = new JMenuItem("Provenance");
 		menuProv.addActionListener(this);
 		menuProv.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
 		        getPlatformKeyMask()));
 		menuFile.add(menuProv);
+		
+		menuWorkspace = new JMenuItem("Workspace");
+		menuWorkspace.addActionListener(this);
+		menuWorkspace.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
+		        getPlatformKeyMask()));
+		menuFile.add(menuWorkspace);
+		
 
 		menuExit = new JMenuItem("Exit");
 		menuExit.addActionListener(this);
@@ -447,6 +547,12 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		menuTgtDiff.addActionListener(this);
 		menuTgtDiff.setSelected(segmentView.getEnabledTargetDiff());
 		menuView.add(menuTgtDiff);
+		
+		menuShowNotTrans = new JCheckBoxMenuItem("Show Not Translatable Segments");
+		menuShowNotTrans.addActionListener(this);
+		menuShowNotTrans.setSelected(configService.isShowNotTranslatableRows());
+		menuView.add(menuShowNotTrans);
+		
 		menuColumns = new JMenuItem("Configure Columns");
 		menuColumns.addActionListener(this);
 		menuView.add(menuColumns);
@@ -519,14 +625,22 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		mainframe.setIconImage(icon);
 
 		initializeMenuBar();
-		toolBar = new OcelotToolBar(this);
+		try {
+	        toolBar = new OcelotToolBar(this, lqiGridController.getConfigService().readLQIConfig(), eventQueue);
+	        toolBar.addPluginWidgets(ocelotApp.getPluginToolBarWidgets());
+        } catch (TransferException e1) {
+	        // TODO Auto-generated catch block
+	        e1.printStackTrace();
+        }
         mainframe.getContentPane().add(toolBar, BorderLayout.NORTH);
         mainframe.getContentPane().add(this, BorderLayout.CENTER);
 		
 		//adding LQI Key listener
-		LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(lqiGridController, mainframe.getRootPane());
+        LQIKeyEventHandler ocelotKeyEventHandler = new LQIKeyEventHandler(lqiGridController, mainframe.getRootPane());
 		LQIKeyEventManager.getInstance().addKeyEventHandler(ocelotKeyEventHandler);
-		LQIKeyEventManager.getInstance().load(lqiGridController.readLQIGridConfiguration());
+		LQIGridConfigurations lqiGrid = lqiGridController.readLQIGridConfiguration(mainframe);
+		loadLQIKeyListener(null, lqiGrid.getActiveConfiguration());
+		
 		// Display the window
 		Dimension userWindowSize = getUserDefinedWindowSize();
 		if (userWindowSize != null) {
@@ -534,9 +648,24 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 		}
 		mainframe.pack();
 		mainframe.setVisible(true);
-		lqiGridController.setOcelotMainFrame(mainframe);
-		tmConcordanceSplitPane.setDividerLocation(0.4);
+		if(configService.isTmPanelVisible()){
+			tmConcordanceSplitPane.setDividerLocation(0.4);
+		} else {
+			tmConcordanceSplitPane.getLeftComponent().setMinimumSize(new Dimension());
+			tmConcordanceSplitPane.setDividerLocation(0.0);
+		}
+		if(!configService.isAttributesViewVisible() && !configService.isDetailsViewVisible() ){
+			mainSplitPane.getLeftComponent().setMinimumSize(new Dimension());
+			mainSplitPane.setDividerLocation(0.0);
+		} else if(!configService.isAttributesViewVisible() && configService.isDetailsViewVisible()) {
+			segAttrSplitPane.getLeftComponent().setMinimumSize(new Dimension());
+			segAttrSplitPane.setDividerLocation(0.0);
+		} else if(configService.isAttributesViewVisible() && !configService.isDetailsViewVisible()) {
+			segAttrSplitPane.getRightComponent().setMinimumSize(new Dimension());
+			segAttrSplitPane.setDividerLocation(1.0);
+		}
 		addEditingListenerToTxtFields();
+		profileManager.checkProfileAndPromptMessage(mainframe);
 	}
 
     private Dimension getUserDefinedWindowSize() {
@@ -553,11 +682,91 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
         LOG.warn("Ignoring unparsable ocelot.windowSize value '{}'", val);
         return null;
     }
+    
+    @Subscribe
+    public void onProfileChanged(ProfileChangedEvent event){
+    	restart();
+    }
+    
+    @Subscribe
+    public void handleLqiConfigSavedEvent(LQIConfigurationsChangedEvent event){
+    	try{
+    	toolBar.setLQIConfigurations(event.getLqiGridSavedConfigurations());
+    	if(event.isActiveConfChanged()){
+    		loadLQIKeyListener(event.getOldActiveConfiguration(), event.getLqiGridSavedConfigurations().getActiveConfiguration());
+    	}
+    	}catch (Exception e){
+    		e.printStackTrace();
+    	}
+    }
+    
+    @Subscribe
+    public void handleNewLqiConfigSelected(LQIConfigurationSelectionChangedEvent event){
+    	//TODO
+    	try{
+    	loadLQIKeyListener(event.getOldSelectedConfiguration(), event.getNewSelectedConfiguration());
+    	ocelotApp.saveLqiConfiguration(event.getNewSelectedConfiguration().getName());
+    	} catch (Exception e){
+    		e.printStackTrace();
+    	}
+    	
+    }
+    
+    private void loadLQIKeyListener(LQIGridConfiguration oldGridConfiguration, LQIGridConfiguration newLqiGridConfiguration){
+		if(oldGridConfiguration != null){
+			LQIKeyEventManager.getInstance().removeActions(oldGridConfiguration);
+		} 
+		if(newLqiGridConfiguration != null){
+			LQIKeyEventManager.getInstance().load(newLqiGridConfiguration);
+		}
+    }
 
+    private void restart() {
+    
+    	try {
+    		close();
+	        startOcelot();
+        } catch (Exception e) {
+        	LOG.error("Error while starting Ocelot.", e);
+	        e.printStackTrace();
+        }
+    }
+    
+    public static void startOcelot() throws IOException, InstantiationException, IllegalAccessException{
+    	Injector ocelotScope = Guice.createInjector(new OcelotModule());
+
+		Ocelot ocelot = new Ocelot(ocelotScope);
+		DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager()
+		        .addKeyEventDispatcher(ocelot);
+
+		try {
+			if (ocelot.useNativeUI) {
+				UIManager.setLookAndFeel(UIManager
+				        .getSystemLookAndFeelClassName());
+			} else {
+				UIManager.setLookAndFeel(UIManager
+				        .getCrossPlatformLookAndFeelClassName());
+			}
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
+		SwingUtilities.invokeLater(ocelot);
+    }
+    
+    public void close(){
+    	LQIKeyEventManager.destroy();
+    	SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				mainframe.dispose();
+				mainframe.setVisible(false);
+			}
+		});
+    }
+    
 	private void quitOcelot() {
-		LQIKeyEventManager.destroy();
-		mainframe.dispose();
-		mainframe.setVisible(false);
+		close();
 		System.exit(0);
 	}
 
@@ -642,24 +851,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
 			        .getProperty("log4j.configuration"));
 		}
 
-		Injector ocelotScope = Guice.createInjector(new OcelotModule());
-
-		Ocelot ocelot = new Ocelot(ocelotScope);
-		DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager()
-		        .addKeyEventDispatcher(ocelot);
-
-		try {
-			if (ocelot.useNativeUI) {
-				UIManager.setLookAndFeel(UIManager
-				        .getSystemLookAndFeelClassName());
-			} else {
-				UIManager.setLookAndFeel(UIManager
-				        .getCrossPlatformLookAndFeelClassName());
-			}
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
-		SwingUtilities.invokeLater(ocelot);
+		startOcelot();
 	}
 
 	// TODO
@@ -751,4 +943,88 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
         }
 
     }
+    
+    @Subscribe
+    public void handlePluginInstalled(NewPluginsInstalled event){
+    	
+    	toolBar.addPluginWidgets(ocelotApp.getPluginToolBarWidgets());
+    }
+    private void setEnableStorage(OcelotJsonConfigService configService){
+    	
+    	OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
+    	if(ocelotAzureConfiguration != null){
+    		String accountName = ocelotAzureConfiguration.getAccountName();
+    		String accountKey = ocelotAzureConfiguration.getAccountKey();
+    		String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
+    		enableStorage = accountName != null && accountKey != null && azureBlobContainer != null;
+    		
+    	}
+    }
+
+    
+    /**
+     * Handles the event save to Azure
+     */
+    private void handleStoring(OcelotJsonConfigService configService){
+    	
+    	OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
+    	
+    	if(ocelotAzureConfiguration != null){
+    		
+    		String accountName = ocelotAzureConfiguration.getAccountName();
+        	String accountKey = ocelotAzureConfiguration.getAccountKey();
+        	String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
+        	
+        	boolean canStorage = accountName != null && accountKey != null && azureBlobContainer != null;
+        	File tempFile = null;
+			try {
+				if (canStorage) {
+
+					tempFile = File.createTempFile("ocelot", "azure");
+					ocelotApp.saveFile(tempFile);
+					
+
+					storageService = new AzureStorageService(accountName,
+							accountKey, azureBlobContainer);
+
+					String fileId = UUID.randomUUID().toString();
+					boolean uploadedFileToBlobStorage = storageService
+							.uploadFileToBlobStorage(tempFile.getAbsolutePath(),
+									"unprocessed", fileId, ocelotApp.getDefaultFileName());
+					if (uploadedFileToBlobStorage) {
+						LOG.debug("File with id " + fileId
+								+ " was uploaded to blob storage");
+						
+						PostUploadRequest postUploadRequest = Util
+								.getPostUploadRequest(fileId);
+						String json = Util.serializeToJson(postUploadRequest);
+						LOG.debug("Post Upload Request for Storage Queue in json format is "
+								+ json);
+						boolean messageSent = storageService
+								.sendMessageToPostUploadQueue(json);
+						if (!messageSent) {
+							LOG.error("No message sent to Storage queue.");
+						} else {
+							LOG.info("Sent message to Storage queue.");
+						}
+						JOptionPane.showMessageDialog(mainframe, "File successfully saved to Azure.", "Save to Azure", JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						LOG.error("File with id " + fileId
+								+ " was not uploaded to blob storage");
+						JOptionPane.showMessageDialog(mainframe, "An error has occurred while saving the document to Azure. Please, try again.");
+					}
+				}
+			} catch (IOException e) {
+				LOG.error("Error while saving the document.", e);
+				JOptionPane.showMessageDialog(mainframe, "An error has occurred while saving the document.");
+			} catch (ErrorAlertException e) {
+				alertUser(e.title, e.body);
+			}finally {
+				if(tempFile != null){
+					tempFile.delete();
+				}
+			}
+    	}
+    }
+
 }

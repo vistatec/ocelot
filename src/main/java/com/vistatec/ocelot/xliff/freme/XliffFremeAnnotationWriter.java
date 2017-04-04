@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +25,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sf.okapi.lib.xliff2.core.CTag;
+
 import org.apache.commons.io.output.FileWriterWithEncoding;
+import org.apache.xerces.dom.AttrImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -38,11 +42,15 @@ import org.xml.sax.SAXException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.EntityEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.LinkEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
+import com.vistatec.ocelot.segment.model.okapi.OkapiCodeAtom;
+import com.vistatec.ocelot.segment.model.okapi.TaggedCodeAtom;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.xliff.freme.helper.DocumentTreeHelper;
 import com.vistatec.ocelot.xliff.freme.helper.DocumentTreeHelper.NodeWrapper;
@@ -55,15 +63,9 @@ public class XliffFremeAnnotationWriter {
 	/** Version attribute in XLIFF files. */
 	private static final String VERSION_ATTRIBUTE = "version";
 
-	private static final String EPT_TAG = "</Xpt>";
-	
-	private static final String IT_TAG_OPEN = "<it>";
-	
-	private static final String IT_TAG_CLOSE = "</it>";
-
 	/** The logger for this class. */
 	private final Logger logger = LoggerFactory
-			.getLogger(XliffFremeAnnotationWriter.class);
+	        .getLogger(XliffFremeAnnotationWriter.class);
 
 	/** The dom document retrieved by parsing the XLIFF file. */
 	private Document document;
@@ -73,17 +75,18 @@ public class XliffFremeAnnotationWriter {
 
 	/** The last id used for FREME mrk tag. */
 	private int lastFremeMrkId;
-	
+
 	private String sourceLang;
-	
+
 	private String targetLang;
 
-	public XliffFremeAnnotationWriter(final String sourceLang, final String targetLang) {
-		
+	public XliffFremeAnnotationWriter(final String sourceLang,
+	        final String targetLang) {
+
 		this.sourceLang = sourceLang;
 		this.targetLang = targetLang;
-    }
-	
+	}
+
 	/**
 	 * For each enrichment in the Ocelot segments, a proper annotation is
 	 * written into the XLIFF file.
@@ -92,34 +95,36 @@ public class XliffFremeAnnotationWriter {
 	 *            the XLIFF file.
 	 * @param segService
 	 *            the segment service.
-     * @throws Exception
-     *             If an error occurs while parsing the file
-     */
-    public void saveAnnotations(final File xliffFile, SegmentService segService) throws Exception {
+	 * @throws Exception
+	 *             If an error occurs while parsing the file
+	 */
+	public void saveAnnotations(final File xliffFile, SegmentService segService)
+	        throws Exception {
 
-		logger.info("Saving enrichment annotations for file {}", xliffFile.getName());
+		logger.info("Saving enrichment annotations for file {}",
+		        xliffFile.getName());
 		try {
 			document = parseFile(xliffFile);
 			// creates the proper helper depending on the file version
 			xliffHelper = FremeXliffHelperFactory
-					.createHelper(detectVersion(document));
+			        .createHelper(detectVersion(document));
 			// initializes the last FREME marker id.
 			findLastFremeMrkId();
 			// find the list of unit nodes ("trans-unit" for version 1.2 and
 			// "unit" for version 2.0)
 			NodeList unitElements = document.getElementsByTagName(xliffHelper
-					.getUnitNodeName());
+			        .getUnitNodeName());
 			if (unitElements != null) {
 				for (int i = 0; i < unitElements.getLength(); i++) {
 					writeAnnotationsForUnit((Element) unitElements.item(i),
-							segService);
+					        segService);
 				}
 			}
 
 			saveFile(xliffFile.getAbsolutePath());
 		} catch (ParserConfigurationException | SAXException e) {
 			logger.error("Error while parsing the file", e);
-            throw e;
+			throw e;
 		} catch (IOException e) {
 			logger.error("Error while reading or writing the file", e);
 		} catch (TransformerException e) {
@@ -141,16 +146,17 @@ public class XliffFremeAnnotationWriter {
 	 *             the transformer exception
 	 */
 	private void saveFile(String filePath) throws IOException,
-			TransformerException {
+	        TransformerException {
 		TransformerFactory transformerFactory = TransformerFactory
-				.newInstance();
+		        .newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
 		DOMSource source = new DOMSource(document);
-        try (Writer writer = new FileWriterWithEncoding(new File(filePath), StandardCharsets.UTF_8)) {
-            StreamResult result = new StreamResult(writer);
-            transformer.transform(source, result);
-            System.out.println("File saved!");
-        }
+		try (Writer writer = new FileWriterWithEncoding(new File(filePath),
+		        StandardCharsets.UTF_8)) {
+			StreamResult result = new StreamResult(writer);
+			transformer.transform(source, result);
+			logger.debug("File saved!");
+		}
 	}
 
 	/**
@@ -167,7 +173,7 @@ public class XliffFremeAnnotationWriter {
 	 *             the IO exception
 	 */
 	private Document parseFile(File xliffFile)
-			throws ParserConfigurationException, SAXException, IOException {
+	        throws ParserConfigurationException, SAXException, IOException {
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -196,18 +202,18 @@ public class XliffFremeAnnotationWriter {
 
 		lastFremeMrkId = 0;
 		NodeList markerNodes = document
-				.getElementsByTagName(EnrichmentAnnotationsConstants.MARKER_TAG_NAME);
+		        .getElementsByTagName(EnrichmentAnnotationsConstants.MARKER_TAG_NAME);
 		for (int i = 0; i < markerNodes.getLength(); i++) {
 			Node currNode = markerNodes.item(i);
 			Node idItem = currNode.getAttributes().getNamedItem(
-					EnrichmentAnnotationsConstants.MARKER_TAG_ID_ATTR);
+			        EnrichmentAnnotationsConstants.MARKER_TAG_ID_ATTR);
 			if (idItem != null) {
 				String id = idItem.getNodeValue();
 				if (id.startsWith(EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX)) {
 					id = id.substring(id
-							.indexOf(EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX)
-							+ EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX
-									.length());
+					        .indexOf(EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX)
+					        + EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX
+					                .length());
 					int idNum = Integer.parseInt(id);
 					if (idNum > lastFremeMrkId) {
 						lastFremeMrkId = idNum;
@@ -226,30 +232,24 @@ public class XliffFremeAnnotationWriter {
 	 *            the Segment Service
 	 */
 	private void writeAnnotationsForUnit(Element unitElement,
-			SegmentService segService) {
+	        SegmentService segService) {
 
 		// Detect the segment associated to this unit
 		String unitId = xliffHelper.getUnitId(unitElement);
-		int segmentNumber = xliffHelper.getSegmentNumber(unitId, segService);
-		logger.debug("Writing annotations for unit {} and segment {}", unitId, segmentNumber);
-		if (segService.getNumSegments() >= segmentNumber) {
-			OcelotSegment segment = segService.getSegment(segmentNumber - 1);
-			if (segmentNumber == 241) {
-				System.out.println(segment.getSource().getDisplayText());
-			}
-			if (segment.getSegmentNumber() == segmentNumber) {
+		List<OcelotSegment> segments = xliffHelper.getSegmentsForUnit(unitId, segService);
+		for(OcelotSegment segment: segments){
+			logger.debug("Writing annotations for unit {} and segment {}", unitId,
+					segment.getSegmentNumber());
 				if (segment.getSource() instanceof BaseSegmentVariant) {
 					writeAnnotations(unitElement,
-							xliffHelper.getSourceElement(unitElement),
-							(BaseSegmentVariant) segment.getSource(), sourceLang);
+					        xliffHelper.getSourceElement(unitElement, segment.getSegmentId()),
+					        (BaseSegmentVariant) segment.getSource(),
+					        sourceLang, segment.getSegmentId());
 					writeAnnotations(unitElement,
-							xliffHelper.getTargetElement(unitElement),
-							(BaseSegmentVariant) segment.getTarget(), targetLang);
+					        xliffHelper.getTargetElement(unitElement, segment.getSegmentId()),
+					        (BaseSegmentVariant) segment.getTarget(),
+					        targetLang, segment.getSegmentId());
 				}
-			} else {
-				logger.error("Error while detecting segment with segment number {}. Obtained segment number is {}",
-				             segmentNumber, segment.getSegmentNumber());
-			}
 		}
 	}
 
@@ -264,52 +264,55 @@ public class XliffFremeAnnotationWriter {
 	 *            the Ocelot variant
 	 */
 	private void writeAnnotations(Element unitElement, Element variantElement,
-			BaseSegmentVariant variant, String language) {
+	        BaseSegmentVariant variant, String language, String segmentId) {
 		if (variant != null && variant.getEnirchments() != null
-				&& !variant.getEnirchments().isEmpty()) {
-			List<Enrichment> varEnrichments = new ArrayList<Enrichment>(variant.getEnirchments());
-			Collections.sort(varEnrichments,
-					new EnrichmentComparator());
+		        && !variant.getEnirchments().isEmpty()) {
+			List<Enrichment> varEnrichments = new ArrayList<Enrichment>(
+			        variant.getEnirchments());
+			Collections.sort(varEnrichments, new EnrichmentComparator());
+
+			LinkedList<CodeWrapper> codes = getCodes(variant);
 			Map<Integer, Integer> termEnrichmentsMap = new HashMap<Integer, Integer>();
 			List<Enrichment> tripleEnrichments = new ArrayList<Enrichment>();
 			for (Enrichment enrichment : varEnrichments) {
 				if (!enrichment.isDisabled()) {
 					if (enrichment.getType().equals(Enrichment.ENTITY_TYPE)) {
 						writeEntityEnrichment(unitElement, variantElement,
-								(EntityEnrichment) enrichment);
+						        (EntityEnrichment) enrichment, codes);
 					} else if (enrichment.getType()
-							.equals(Enrichment.LINK_TYPE)) {
+					        .equals(Enrichment.LINK_TYPE)) {
 						tripleEnrichments.add(enrichment);
 					} else if (enrichment.getType().equals(
-							Enrichment.TERMINOLOGY_TYPE)) {
+					        Enrichment.TERMINOLOGY_TYPE)) {
 						tripleEnrichments.add(enrichment);
 						if (!termEnrichmentsMap.containsKey(enrichment
-								.getOffsetStartIdx())
-								|| termEnrichmentsMap.get(
-										enrichment.getOffsetStartIdx())
-										.intValue() != enrichment
-										.getOffsetEndIdx()) {
+						        .getOffsetNoTagsStartIdx())
+						        || termEnrichmentsMap.get(
+						                enrichment.getOffsetNoTagsStartIdx())
+						                .intValue() != enrichment
+						                .getOffsetNoTagsEndIdx()) {
 
-							writeInlineEnrichment(variantElement, enrichment);
+							writeInlineEnrichment(variantElement, enrichment,
+							        codes);
 							termEnrichmentsMap.put(
-									enrichment.getOffsetStartIdx(),
-									enrichment.getOffsetEndIdx());
+							        enrichment.getOffsetNoTagsStartIdx(),
+							        enrichment.getOffsetNoTagsEndIdx());
 						}
 					}
 				} else {
 					if (enrichment.getType().equals(Enrichment.LINK_TYPE)) {
 						tripleEnrichments.add(enrichment);
 					} else if (enrichment.getType().equals(
-							Enrichment.ENTITY_TYPE)) {
+					        Enrichment.ENTITY_TYPE)) {
 						removeAnnotationNode(variantElement, enrichment);
 					} else if (enrichment.getType().equals(
-							Enrichment.TERMINOLOGY_TYPE)) {
+					        Enrichment.TERMINOLOGY_TYPE)) {
 						tripleEnrichments.add(enrichment);
 					}
 				}
 			}
 			writeTripleEnrichments(unitElement, variantElement,
-					tripleEnrichments, language);
+			        tripleEnrichments, language, segmentId);
 		}
 	}
 
@@ -324,15 +327,16 @@ public class XliffFremeAnnotationWriter {
 	 *            the entity enrichment.
 	 */
 	private void writeEntityEnrichment(Element unitElement,
-			Element variantElement, EntityEnrichment enrichment) {
+	        Element variantElement, EntityEnrichment enrichment,
+	        LinkedList<CodeWrapper> codes) {
 
 		// Annotators ref
 		String annotatorsRefValue = enrichment.getAnnotatorsRefValue();
 		if (annotatorsRefValue != null && !annotatorsRefValue.isEmpty()) {
 			unitElement.setAttribute(enrichment.getAnnotatorsRefAttribute(),
-					annotatorsRefValue);
+			        annotatorsRefValue);
 		}
-		writeInlineEnrichment(variantElement, enrichment);
+		writeInlineEnrichment(variantElement, enrichment, codes);
 	}
 
 	/**
@@ -342,14 +346,16 @@ public class XliffFremeAnnotationWriter {
 	 *            the variant element node
 	 * @param enrichment
 	 *            the enrichment
+	 * @param codes
+	 *            the codes contained in the current variant
 	 */
 	private void writeInlineEnrichment(Element variantElement,
-			Enrichment enrichment) {
+	        Enrichment enrichment, LinkedList<CodeWrapper> codes) {
 
 		List<NodeWrapper> flatTree = DocumentTreeHelper
-				.getFlatTree(variantElement);
+		        .getFlatTree(variantElement);
 		List<NodeWrapper> newFlatNodes = insertAnnotationNode(flatTree,
-				enrichment);
+		        enrichment, codes);
 		DocumentTreeHelper.rebuildTree(variantElement, newFlatNodes);
 	}
 
@@ -360,128 +366,70 @@ public class XliffFremeAnnotationWriter {
 	 *            the flat list of nodes from the DOM document
 	 * @param enrichment
 	 *            the enrichment
+	 * @param codes
+	 *            the codes contained in current variant
 	 * @return the new flat list of DOM nodes
 	 */
 	private List<NodeWrapper> insertAnnotationNode(List<NodeWrapper> flatNodes,
-			Enrichment enrichment) {
+	        Enrichment enrichment, List<CodeWrapper> codes) {
 
+		// at the end of the method this list will contain the new list of nodes
+		// obtained after the insertion of the annotation node.
 		List<NodeWrapper> newNodesList = new ArrayList<NodeWrapper>();
+
+		// this list stores the nodes that will be inserted as
+		// children of the annotation (marker) node
 		List<NodeWrapper> intermediateNodeList = new ArrayList<NodeWrapper>();
+		LinkedList<CodeWrapper> codesQueue = new LinkedList<CodeWrapper>(codes);
 		NodeWrapper firstTextNode = null;
 		Text currText = null;
 		boolean markerInserted = false;
 		int totTextLength = 0;
-		Node eptMarker = null;
 		for (NodeWrapper currNode : flatNodes) {
 			if (currNode.getNode().getNodeType() == Node.TEXT_NODE) {
 				currText = (Text) currNode.getNode();
-				// this text includes the first enrichment index
-				// TODO REPLACED >= WITH >
-				if (getTextLength(currText) + totTextLength > enrichment
-						.getOffsetStartIdx()) {
-					// its the first text node including the first index
-					if (firstTextNode == null) {
-						firstTextNode = currNode;
-						// the marker has been already inserted
-					} else if (markerInserted) {
+				if (!isCode(currText.getData(), codesQueue,
+				        currNode.getParent())) {
+					if (currText.getData().length() + totTextLength > enrichment
+					        .getOffsetNoTagsStartIdx()) {
+						// this text includes the first enrichment index
+						if (firstTextNode == null) {
+							// its the first text node including the first index
+							firstTextNode = currNode;
+						} else if (markerInserted) {
+							// the marker has been already inserted
+							newNodesList.add(currNode);
+							// it's not the first text node including the first
+							// index and the marker hasn't been inserted yet -->
+							// it's an intermediate node.
+						} else {
+							intermediateNodeList.add(currNode);
+						}
+
+					} else {
+						// this text node actually is a tag code existing in the
+						// variant. It must be added to the list of nodes, but
+						// not be considered as actual text.
 						newNodesList.add(currNode);
-						// it's not the first text node including the first
-						// index and the marker hasn't been inserted yet -->
-						// it's an intermediate node.
+					}
+					if (!markerInserted
+					        && currText.getData().length() + totTextLength >= enrichment
+					                .getOffsetNoTagsEndIdx()) {
+
+						insertMarker(currNode, firstTextNode, enrichment,
+						        newNodesList, intermediateNodeList,
+						        totTextLength);
+						markerInserted = true;
+					}
+					totTextLength += currText.getData().length();
+				} else {
+					if (firstTextNode == null || markerInserted) {
+						newNodesList.add(currNode);
 					} else {
 						intermediateNodeList.add(currNode);
 					}
-
-				} else {
-					newNodesList.add(currNode);
 				}
-				if (!markerInserted
-						&& getTextLength(currText) + totTextLength >= enrichment
-								.getOffsetEndIdx()) {
-
-					String firstTextPart = ((Text) firstTextNode.getNode())
-							.getData().substring(
-									0,
-									enrichment.getOffsetStartIdx()
-											- totTextLength);
-					if (!firstTextPart.isEmpty()) {
-						Text firstTextPartNode = document
-								.createTextNode(firstTextPart);
-						newNodesList.add(new NodeWrapper(firstTextPartNode,
-								firstTextNode.getParent()));
-					}
-					Element markerNode = document.createElement(enrichment
-							.getMarkerTag());
-					markerNode
-							.setAttribute(
-									EnrichmentAnnotationsConstants.MARKER_TAG_ID_ATTR,
-									EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX
-											+ (++lastFremeMrkId));
-					markerNode.setAttribute(xliffHelper.getTypeAttribute(),
-							enrichment.getTagType());
-					if (enrichment.getTag() != null
-							&& enrichment.getTagValue() != null) {
-						markerNode.setAttribute(enrichment.getTag(),
-								enrichment.getTagValue());
-					}
-					NodeWrapper markerNodeWRapper = new NodeWrapper(markerNode,
-							firstTextNode.getParent());
-					// if(checkOnlyMarkerNodes(newNodesList)){
-					// for(NodeWrapper nw: newNodesList ){
-					// nw.setParent(markerNode);
-					// }
-					// newNodesList.add(0, markerNodeWRapper);
-					// } else {
-					newNodesList.add(markerNodeWRapper);
-					// }
-					for (NodeWrapper intermNode : intermediateNodeList) {
-						if (intermNode.getParent().equals(
-								firstTextNode.getParent())) {
-							intermNode.setParent(markerNode);
-						}
-					}
-					newNodesList.addAll(intermediateNodeList);
-					if (currNode.equals(firstTextNode)) {
-
-						Text finalAnnotatedText = document
-								.createTextNode(currText.getData().substring(
-										enrichment.getOffsetStartIdx()
-												- totTextLength,
-										enrichment.getOffsetEndIdx()
-												- totTextLength));
-						newNodesList.add(new NodeWrapper(finalAnnotatedText,
-								markerNode));
-					} else {
-						Text finalAnnotatedText = document
-								.createTextNode(currText.getData().substring(
-										0,
-										enrichment.getOffsetEndIdx()
-												- totTextLength));
-						newNodesList.add(new NodeWrapper(finalAnnotatedText,
-								markerNode));
-					}
-
-					String finalText = currText.getData().substring(
-							enrichment.getOffsetEndIdx() - totTextLength);
-					if (!finalText.isEmpty()) {
-						newNodesList.add(new NodeWrapper(document
-								.createTextNode(finalText), currNode
-								.getParent()));
-					}
-					markerInserted = true;
-				}
-//				if (currText.getParentNode().equals(eptMarker)) {
-//					totTextLength += EPT_TAG.length();
-//				} else if (isProtectedMarker(currText.getParentNode())) {
-//					totTextLength += "<mrk/>".length();
-//				} else {
-//					totTextLength += currText.getData().length();
-//				}
-				totTextLength += getTextLength(currText);
 			} else {
-				if (currNode.getNode().getNodeName().equals("ept")) {
-					eptMarker = currNode.getNode();
-				}
 				if (firstTextNode == null || markerInserted) {
 					newNodesList.add(currNode);
 				} else {
@@ -492,33 +440,114 @@ public class XliffFremeAnnotationWriter {
 		return newNodesList;
 	}
 
-	private int getTextLength(Text textNode){
-		
-		int length = 0;
-		if (textNode.getParentNode().getNodeName().equals("ept")) {
-			length = EPT_TAG.length();
-		} else if (isProtectedMarker(textNode.getParentNode())) {
-			length = "<mrk/>".length();
-		} else if (textNode.getParentNode().getNodeName().equals("it") && textNode.getParentNode().getAttributes() != null){
-			String openClose = textNode.getParentNode().getAttributes().getNamedItem("pos").getNodeValue();
-			if(openClose.equals("open")){
-				length = "<it>".length();
-			} else if (openClose.equals("close")){
-				length = "</it>".length();
-			}
-		} else {
-			length = textNode.getData().length();
-		}
-		return length;
-	}
-	
-	private boolean isProtectedMarker(Node node) {
+	private void insertMarker(NodeWrapper currNode, NodeWrapper firstTextNode,
+	        Enrichment enrichment, List<NodeWrapper> newNodesList,
+	        List<NodeWrapper> intermediateNodeList, int totTextLength) {
 
-		return node.getNodeName().equals("mrk")
-				&& node.getAttributes() != null
-				&& node.getAttributes().getNamedItem("mtype") != null
-				&& "protected".equals(node.getAttributes()
-						.getNamedItem("mtype").getNodeValue());
+		Text currText = (Text) currNode.getNode();
+
+		// Take the part of text preceding the enriched part
+		String firstTextPart = ((Text) firstTextNode.getNode()).getData()
+		        .substring(0,
+		                enrichment.getOffsetNoTagsStartIdx() - totTextLength);
+		if (!firstTextPart.isEmpty()) {
+			Text firstTextPartNode = document.createTextNode(firstTextPart);
+			newNodesList.add(new NodeWrapper(firstTextPartNode, firstTextNode
+			        .getParent()));
+		}
+
+		// create a node for the marker
+		Element markerNode = document.createElement(enrichment.getMarkerTag());
+		markerNode.setAttribute(
+		        EnrichmentAnnotationsConstants.MARKER_TAG_ID_ATTR,
+		        EnrichmentAnnotationsConstants.MARKER_FREME_ID_PREFIX
+		                + (++lastFremeMrkId));
+		markerNode.setAttribute(xliffHelper.getTypeAttribute(),
+		        enrichment.getTagType());
+		if (enrichment.getTag() != null && enrichment.getTagValue() != null) {
+			markerNode.setAttribute(enrichment.getTag(),
+			        enrichment.getTagValue());
+		}
+		NodeWrapper markerNodeWRapper = new NodeWrapper(markerNode,
+		        firstTextNode.getParent());
+		newNodesList.add(markerNodeWRapper);
+
+		// insert all the nodes from the intermediateNodeList as children of the
+		// marker node
+		for (NodeWrapper intermNode : intermediateNodeList) {
+			if (intermNode.getParent().equals(firstTextNode.getParent())) {
+				intermNode.setParent(markerNode);
+			}
+		}
+		newNodesList.addAll(intermediateNodeList);
+
+		// create a text node for the annotated text
+		if (currNode.equals(firstTextNode)) {
+
+			Text finalAnnotatedText = document
+			        .createTextNode(currText.getData().substring(
+			                enrichment.getOffsetNoTagsStartIdx()
+			                        - totTextLength,
+			                enrichment.getOffsetNoTagsEndIdx() - totTextLength));
+			newNodesList.add(new NodeWrapper(finalAnnotatedText, markerNode));
+		} else {
+			Text finalAnnotatedText = document
+			        .createTextNode(currText.getData().substring(0,
+			                enrichment.getOffsetNoTagsEndIdx() - totTextLength));
+			newNodesList.add(new NodeWrapper(finalAnnotatedText, markerNode));
+		}
+
+		// create a text node for the final part of the text
+		String finalText = currText.getData().substring(
+		        enrichment.getOffsetNoTagsEndIdx() - totTextLength);
+		if (!finalText.isEmpty()) {
+			newNodesList.add(new NodeWrapper(
+			        document.createTextNode(finalText), currNode.getParent()));
+		}
+	}
+
+	private boolean isCode(String text, LinkedList<CodeWrapper> codes,
+	        Node parentNode) {
+
+		boolean retValue = false;
+		CodeWrapper code = codes.peek();
+		if (code != null && parentNode != null) {
+			if (code.getTagName().equals(parentNode.getNodeName())){
+				codes.poll();
+				if(text.equals(code.getData())){
+					retValue = true;
+				}
+			}
+		}
+		return retValue;
+	}
+
+	private LinkedList<CodeWrapper> getCodes(BaseSegmentVariant variant) {
+
+		LinkedList<CodeWrapper> codes = new LinkedList<CodeWrapper>();
+		CodeWrapper code = null;
+		for (SegmentAtom atom : variant.getAtoms()) {
+			if (atom instanceof OkapiCodeAtom) {
+				code = new CodeWrapper(
+				        findCodeActualTagName((OkapiCodeAtom) atom),
+				        ((OkapiCodeAtom) atom).getCode().getData());
+				codes.add(code);
+			} else if (atom instanceof TaggedCodeAtom && ((TaggedCodeAtom)atom).getTag() instanceof CTag){
+				String tagData = ((CTag)((TaggedCodeAtom)atom).getTag()).getData();
+				code = new CodeWrapper(findCodeActualTagName((TaggedCodeAtom)atom), tagData);
+			}
+		}
+		return codes;
+	}
+
+	private static String findCodeActualTagName(CodeAtom code) {
+
+		String verboseData = code.getVerboseData();
+		int endNameIdx = verboseData.indexOf(" ");
+		if (endNameIdx == -1) {
+			endNameIdx = verboseData.indexOf(">");
+		}
+		return verboseData.substring(1, endNameIdx);
 	}
 
 	/**
@@ -531,11 +560,11 @@ public class XliffFremeAnnotationWriter {
 	 *            the enrichment
 	 */
 	private void removeAnnotationNode(Element variantElement,
-			Enrichment enrichment) {
+	        Enrichment enrichment) {
 
 		if (variantElement != null) {
 			NodeList annotationElements = variantElement
-					.getElementsByTagName(enrichment.getMarkerTag());
+			        .getElementsByTagName(enrichment.getMarkerTag());
 			if (annotationElements != null) {
 				Element currElem = null;
 				Element entityNode = null;
@@ -543,18 +572,18 @@ public class XliffFremeAnnotationWriter {
 					currElem = (Element) annotationElements.item(i);
 					NamedNodeMap attributes = currElem.getAttributes();
 					boolean entityNodeFound = attributes != null
-							&& attributes.getNamedItem(xliffHelper
-									.getTypeAttribute()) != null
-							&& attributes
-									.getNamedItem(
-											xliffHelper.getTypeAttribute())
-									.getNodeValue()
-									.equals(enrichment.getTagType())
-							&& (enrichment.getTag() == null || (attributes
-									.getNamedItem(enrichment.getTag()) != null && attributes
-									.getNamedItem(enrichment.getTag())
-									.getNodeValue()
-									.equals(enrichment.getTagValue())));
+					        && attributes.getNamedItem(xliffHelper
+					                .getTypeAttribute()) != null
+					        && attributes
+					                .getNamedItem(
+					                        xliffHelper.getTypeAttribute())
+					                .getNodeValue()
+					                .equals(enrichment.getTagType())
+					        && (enrichment.getTag() == null || (attributes
+					                .getNamedItem(enrichment.getTag()) != null && attributes
+					                .getNamedItem(enrichment.getTag())
+					                .getNodeValue()
+					                .equals(enrichment.getTagValue())));
 
 					if (entityNodeFound) {
 						entityNode = currElem;
@@ -570,7 +599,7 @@ public class XliffFremeAnnotationWriter {
 					for (int i = 0; i < parent.getChildNodes().getLength(); i++) {
 						if (parent.getChildNodes().item(i).getNodeType() == Node.TEXT_NODE) {
 							parentTextNode = (Text) parent.getChildNodes()
-									.item(i);
+							        .item(i);
 							break;
 						}
 					}
@@ -580,11 +609,11 @@ public class XliffFremeAnnotationWriter {
 						if (childNode.getNodeType() == Node.TEXT_NODE) {
 							if (parentTextNode != null) {
 								parentTextNode.setData(parentTextNode.getData()
-										+ ((Text) childNode).getData());
+								        + ((Text) childNode).getData());
 							} else {
 								if (entityNextSibling != null) {
 									parent.insertBefore(childNode,
-											entityNextSibling);
+									        entityNextSibling);
 								} else {
 									parent.appendChild(childNode);
 								}
@@ -592,7 +621,7 @@ public class XliffFremeAnnotationWriter {
 						} else {
 							if (entityNextSibling != null) {
 								parent.insertBefore(childNode,
-										entityNextSibling);
+								        entityNextSibling);
 							} else {
 								parent.appendChild(childNode);
 							}
@@ -615,7 +644,8 @@ public class XliffFremeAnnotationWriter {
 	 * @param tripleEnrichments
 	 */
 	private void writeTripleEnrichments(Element unitElement,
-			Element variantElement, List<Enrichment> tripleEnrichments, String language) {
+	        Element variantElement, List<Enrichment> tripleEnrichments,
+	        String language, String segmentId) {
 
 		Model tripleModel = ModelFactory.createDefaultModel();
 		Set<TermEnrichmentWrapper> allTermEnrichmentsWrap = new HashSet<TermEnrichmentWrapper>();
@@ -624,7 +654,7 @@ public class XliffFremeAnnotationWriter {
 			for (Enrichment enrich : tripleEnrichments) {
 				if (enrich.getType().equals(Enrichment.LINK_TYPE)) {
 					Model linkModel = ((LinkEnrichment) enrich)
-							.getPropertiesModel();
+					        .getPropertiesModel();
 					if (linkModel != null) {
 						if (!enrich.isDisabled()) {
 							tripleModel.add(linkModel);
@@ -632,52 +662,82 @@ public class XliffFremeAnnotationWriter {
 					}
 				} else if (enrich.getType().equals(Enrichment.TERMINOLOGY_TYPE)) {
 					allTermEnrichmentsWrap.add(new TermEnrichmentWrapper(
-							(TerminologyEnrichment) enrich));
+					        (TerminologyEnrichment) enrich));
 					allTermEnrichments.add((TerminologyEnrichment) enrich);
 					if (((TerminologyEnrichment) enrich).getTermTriples() != null) {
 						if (!enrich.isDisabled()) {
 							tripleModel.add(((TerminologyEnrichment) enrich)
-									.getTermTriples());
+							        .getTermTriples());
 						}
 					}
 				}
 			}
 			deleteTermEnrichments(variantElement, allTermEnrichmentsWrap,
-					allTermEnrichments);
+			        allTermEnrichments);
 			NodeList extraNodeList = unitElement
-					.getElementsByTagName(EnrichmentAnnotationsConstants.JSON_TAG_NAME);
-			if (extraNodeList != null && extraNodeList.getLength() > 0) {
-				Node extraNode = extraNodeList.item(0);
+			        .getElementsByTagName(EnrichmentAnnotationsConstants.JSON_TAG_NAME);
+			Node extraNode = getExtraNodeForSegment(segmentId, extraNodeList);
+//			if (extraNodeList != null && extraNodeList.getLength() > 0) {
+//				Node extraNode = extraNodeList.item(0);
+			if(extraNode != null){
 				Text modelText = (Text) extraNode.getFirstChild();
 				Model existingModel = ModelFactory.createDefaultModel();
 				StringReader reader = new StringReader(modelText.getData());
-				existingModel.read(reader, "", EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
+				existingModel.read(reader, "",
+				        EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
 				tripleModel.add(existingModel);
 				StringWriter writer = new StringWriter();
 				tripleModel.write(writer,
-						EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
+				        EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
 				modelText.setData(writer.toString().replace("\r", " ")
-						.replace("\n", " "));
+				        .replace("\n", " "));
 			} else {
 				StringWriter writer = new StringWriter();
 				tripleModel.write(writer,
-						EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
+				        EnrichmentAnnotationsConstants.JSON_LD_FORMAT);
 				Text propTextNode = document.createTextNode(writer.toString()
-						.replace("\r", " ").replace("\n", " "));
+				        .replace("\r", " ").replace("\n", " "));
 				Element tripleNode = document
-						.createElement(EnrichmentAnnotationsConstants.JSON_TAG_NAME);
+				        .createElement(EnrichmentAnnotationsConstants.JSON_TAG_NAME);
 				tripleNode.setAttribute(
-						EnrichmentAnnotationsConstants.JSON_TAG_DOMAIN_ATTR,
-						EnrichmentAnnotationsConstants.JSON_TAG_DOMAIN);
+				        EnrichmentAnnotationsConstants.JSON_TAG_DOMAIN_ATTR,
+				        EnrichmentAnnotationsConstants.JSON_TAG_DOMAIN);
+				if(segmentId != null){
+					tripleNode.setAttribute(
+					        EnrichmentAnnotationsConstants.JSON_TAG_SEG_ATTR,
+					        segmentId);
+				}
 				tripleNode.appendChild(propTextNode);
 				xliffHelper.insertLinkNode(unitElement, tripleNode);
 			}
 		}
 	}
+	
+	private Node getExtraNodeForSegment(String segmentId,  NodeList extraNodeList){
+		
+		Node extraNode = null;
+		if(extraNodeList != null && extraNodeList.getLength() > 0){
+			if(segmentId == null){
+				extraNode = extraNodeList.item(0);
+			} else {
+				Node currNode = null;
+				for(int i = 0; i<extraNodeList.getLength(); i++){
+					currNode = extraNodeList.item(i);
+					AttrImpl segAttr = (AttrImpl) currNode.getAttributes().getNamedItem(EnrichmentAnnotationsConstants.JSON_TAG_SEG_ATTR);
+					if(segAttr != null && segmentId.equals(segAttr.getValue())){
+						extraNode = currNode;
+						break;
+					}
+				}
+			}
+		}
+		return extraNode;
+		
+	}
 
 	private void deleteTermEnrichments(Element variantElement,
-			Set<TermEnrichmentWrapper> termToDelete,
-			Set<TerminologyEnrichment> termEnrichments) {
+	        Set<TermEnrichmentWrapper> termToDelete,
+	        Set<TerminologyEnrichment> termEnrichments) {
 
 		if (termEnrichments != null) {
 			for (TerminologyEnrichment termEnrich : termEnrichments) {
@@ -704,7 +764,7 @@ class TermEnrichmentWrapper {
 
 		this.enrichment = enrichment;
 		this.offsetString = enrichment.getOffsetStartIdx() + "-"
-				+ enrichment.getOffsetEndIdx();
+		        + enrichment.getOffsetEndIdx();
 	}
 
 	public TerminologyEnrichment getEnrichment() {
@@ -720,7 +780,7 @@ class TermEnrichmentWrapper {
 		boolean retValue = false;
 		if (obj instanceof TermEnrichmentWrapper) {
 			retValue = offsetString.equals(((TermEnrichmentWrapper) obj)
-					.getOffsetString());
+			        .getOffsetString());
 		} else {
 			retValue = super.equals(obj);
 		}
@@ -739,26 +799,13 @@ class EnrichmentComparator implements Comparator<Enrichment> {
 	public int compare(Enrichment o1, Enrichment o2) {
 
 		int retValue = 0;
-//		if (o1.getOffsetEndIdx() <= o2.getOffsetStartIdx()
-//				|| (o1.getOffsetStartIdx() <= o2.getOffsetStartIdx() && o1
-//						.getOffsetEndIdx() >= o2.getOffsetEndIdx())) {
-//			retValue = -1;
-//		} else if (o2.getOffsetEndIdx() <= o1.getOffsetStartIdx()
-//				|| (o2.getOffsetStartIdx() <= o1.getOffsetStartIdx() && o2
-//						.getOffsetEndIdx() >= o1.getOffsetEndIdx())) {
-//			retValue = 1;
-//		} else if (o1.getOffsetStartIdx() <= o2.getOffsetStartIdx()){
-//			retValue = -1;
-//		} else if (o2.getOffsetStartIdx() <= o1.getOffsetStartIdx()){
-//			retValue = 1;
-//		}
-		if(o1.getOffsetStartIdx() < o2.getOffsetStartIdx()){
+		if (o1.getOffsetNoTagsStartIdx() < o2.getOffsetNoTagsStartIdx()) {
 			retValue = -1;
-		} else if (o1.getOffsetStartIdx() > o2.getOffsetStartIdx()) {
+		} else if (o1.getOffsetNoTagsStartIdx() > o2.getOffsetNoTagsStartIdx()) {
 			retValue = 1;
-		} else if(o1.getOffsetEndIdx() > o2.getOffsetEndIdx()){
+		} else if (o1.getOffsetNoTagsEndIdx() > o2.getOffsetNoTagsEndIdx()) {
 			retValue = -1;
-		} else if(o2.getOffsetEndIdx() > o1.getOffsetEndIdx()){
+		} else if (o2.getOffsetNoTagsEndIdx() > o1.getOffsetNoTagsEndIdx()) {
 			retValue = 1;
 		}
 		return retValue;
@@ -766,3 +813,41 @@ class EnrichmentComparator implements Comparator<Enrichment> {
 
 }
 
+class CodeWrapper {
+
+	private String tagName;
+
+	private String data;
+
+	public CodeWrapper() {
+	}
+
+	public CodeWrapper(String tagName, String data) {
+		super();
+		this.tagName = tagName;
+		this.data = data;
+	}
+
+	public String getTagName() {
+		return tagName;
+	}
+
+	public void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	@Override
+	public String toString() {
+
+		return "Tag name = " + tagName + ", data = " + data;
+	}
+
+}

@@ -2,6 +2,8 @@ Ocelot
 ======
 Ocelot is an open source workbench for working with XLIFF files in a post-editing and language review environment. It implements the localization quality issue and provenance data categories from the proposed ITS 2.0 standard and utilizes the Okapi Framework for parsing XLIFF files.
 
+**Build Status:** ![build status](https://api.travis-ci.org/vistatec/ocelot.svg?branch=dev)
+
 ##Downloading and Running##
 A pre-compiled version of Ocelot is available from the [Okapi downloads
 page](https://bintray.com/okapi/Distribution/Ocelot).  Ocelot is distributed
@@ -10,7 +12,7 @@ installed. There are also native executables for the Windows and Mac platforms.
 
 These files are also available on the [Releases page](https://github.com/vistatec/ocelot/releases).
 
-##Dcoumentation##
+##Documentation##
 Additional documentation is available on the 
 [Ocelot wiki](http://open.vistatec.com/ocelot).
 
@@ -24,6 +26,30 @@ in the [Ocelot JIRA](https://ocelot.atlassian.net/browse/OC) and track all issue
 
 ##Build##
 Ocelot uses Maven, so all dependencies should be resolved upon build (mvn package). The output jar file will located in the created target folder.
+
+### Mac Builds ###
+The `install` phase will also create a disk image (DMG) file if the
+[dmgbuild](https://dmgbuild.readthedocs.io/en/latest/) tool is installed.
+
+When run on OS X, the `install` phase of the build will sign the `Ocelot.app`
+artifact if the `codesignId` property is set in Maven.  For example,
+
+    mvn clean install -DcodesignId="Developer ID Application: Foo Bar"
+
+This will run the `codesign` tool with the specified id.  You must have XCode tools
+installed and a valid certificate for the specified ID installed in your local keychain
+for this to work.
+
+### Release packaging
+Use
+
+    mvn clean install -P release
+
+This will generate javadoc for the application and do other necessary build prep.  
+
+This can be run in conjunction with codesigning on the Mac:
+
+    mvn clean install -P release -DcodeSignId="Developer ID Application: Foo Bar"
 
 Features
 ========

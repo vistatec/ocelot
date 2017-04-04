@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" srcLang="en" trgLang="fr" version="2.0">
+<file id="f1">
+<unit id="1">
+<its:locQualityIssues xml:id="lq1">
+ <its:locQualityIssue locQualityIssueComment="comment1"/>
+ <its:locQualityIssue locQualityIssueComment="comment2"/>
+</its:locQualityIssues>
+<its:provenanceRecords xml:id="p1">
+ <its:provenanceRecord person="person"/>
+ <its:provenanceRecord orgRef="orgRef"/>
+</its:provenanceRecords>
+<originalData>
+<data id="d1">\b</data>
+<data id="d2">\i</data>
+<data id="d3">\b0</data>
+<data id="d4">\i0</data>
+</originalData>
+<segment id="s1">
+<source>Sentence 1.<mrk id="1" its:locQualityIssuesRef="#its=lq1" translate="no" type="its:its">LQI</mrk> Sentence 2.</source>
+<target>Sentence 1.<mrk id="2" its:provenanceRecordsRef="#its=p1" translate="no" type="its:any">Prov</mrk> Sentence 2.</target>
+</segment>
+<segment id="s3">
+<source>Ph element <ph id="ph1"/> #1.</source>
+<target>Ph element <ph id="ph1"/> #1.</target>
+</segment>
+<segment id="s4">
+<source>Pc element <pc id="pc1">Important</pc> #1.</source>
+<target>Pc element <pc id="pc1">Important</pc> #1.</target>
+</segment>
+<segment id="s5">
+<source>Text in <sc dataRef="d1" id="sc1"/>bold <sc dataRef="d2" id="sc2"/>
+     and<ec dataRef="d3" startRef="sc1"/> italics<ec dataRef="d4" startRef="sc2"/>.
+     </source>
+<target>Text in <sc dataRef="d1" id="sc1"/>bold <sc dataRef="d2" id="sc2"/>
+     and<ec dataRef="d3" startRef="sc1"/> italics<ec dataRef="d4" startRef="sc2"/>.
+     </target>
+</segment>
+<segment id="s6">
+<source>Mrk element <mrk id="mrk1" translate="yes">Important</mrk> #1.</source>
+<target>Mrk element <mrk id="mrk1" translate="yes">Important</mrk> #1.</target>
+</segment>
+<segment id="s7">
+<source>Sm split element <sm id="sm1" translate="no"/> #1.</source>
+<target>Sm split element <sm id="sm1" translate="no"/> #1.</target>
+</segment>
+<segment id="s8">
+<source>Em split element <em startRef="sm1"/> #1.</source>
+<target>Em split element <em startRef="sm1"/> #1.</target>
+</segment>
+</unit>
+</file>
+</xliff>

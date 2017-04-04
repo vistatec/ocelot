@@ -37,6 +37,7 @@ import com.vistatec.ocelot.segment.model.PositionAtom;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.TextAtom;
+import com.vistatec.ocelot.segment.model.TextAtom.HighlightBoundaries;
 
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
@@ -161,4 +162,17 @@ public class TextContainerVariant extends OkapiSegmentVariant {
         }
         tc.setContent(frag);
     }
+    
+    @Override
+	public void addHighlightData(HighlightData highlightData) {
+		super.addHighlightData(highlightData);
+		if (atoms != null && highlightData.getAtomIndex() < atoms.size()) {
+			SegmentAtom atom = atoms.get(highlightData.getAtomIndex());
+			if (atom instanceof TextAtom) {
+				((TextAtom) atom).addHighlightBoundary(new HighlightBoundaries(
+						highlightData.getHighlightIndices()[0], highlightData
+								.getHighlightIndices()[1]));
+			}
+		}
+	}
 }

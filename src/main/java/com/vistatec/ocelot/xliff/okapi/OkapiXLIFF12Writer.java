@@ -28,13 +28,6 @@
  */
 package com.vistatec.ocelot.xliff.okapi;
 
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.SegmentVariant;
-import com.vistatec.ocelot.xliff.XLIFFWriter;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,6 +36,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -63,10 +57,13 @@ import net.sf.okapi.common.encoder.EncoderManager;
 import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.query.MatchType;
 import net.sf.okapi.common.resource.DocumentPart;
+import net.sf.okapi.common.resource.Ending;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.Property;
+import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.skeleton.GenericSkeleton;
+import net.sf.okapi.common.skeleton.GenericSkeletonPart;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 
 import org.slf4j.Logger;
@@ -75,9 +72,15 @@ import org.slf4j.LoggerFactory;
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.
@@ -89,12 +92,16 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
     private OkapiXLIFF12Parser parser;
     private final UserProvenance userProvenance;
     private final OcelotEventQueue eventQueue;
+    private Double time;
+    private String lqiConfiguration;
+    private Xliff12HeaderWriter headerWriter;
 
     public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser,
             UserProvenance userProvenance, OcelotEventQueue eventQueue) {
         this.parser = xliffParser;
         this.userProvenance = userProvenance;
         this.eventQueue = eventQueue;
+        headerWriter = new Xliff12HeaderWriter();
     }
 
     public OkapiXLIFF12Parser getParser() {
@@ -250,6 +257,11 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
     public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         saveEvents(parser.getFilter(), parser.getSegmentEvents(),
                 source.getAbsolutePath(), LocaleId.fromString(parser.getTargetLang()));
+        resetSavedData();
+    }
+    
+    private void resetSavedData(){
+    	time = null;
     }
 
     // HACK fix for OC-21.  As of M23, the XLIFF Filter doesn't properly manage
@@ -306,9 +318,12 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
                     tmp.append(skelWriter.processEndDocument(event.getEnding()));
                     break;
                 case START_SUBDOCUMENT:
+                	headerWriter.writeHeader(event.getStartSubDocument(), time, userProvenance, lqiConfiguration);
                     tmp.append(skelWriter.processStartSubDocument(event.getStartSubDocument()));
                     break;
                 case END_SUBDOCUMENT:
+//                	addLqiConfInfo(event.getEnding());
+//                	addTimeInfo(event.getEnding());
                     tmp.append(skelWriter.processEndSubDocument(event.getEnding()));
                     break;
                 case TEXT_UNIT:
@@ -341,8 +356,124 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
         outputFile.flush();
         outputFile.close();
     }
+    
+    private void writeHeader(StartSubDocument subDocument){
+    	
+    	if(subDocument.getSkeleton() != null){
+    		String currSkelString = subDocument.getSkeleton().toString();
+    		StringBuilder newSkelString = new StringBuilder();
+    		if(!currSkelString.contains(XliffDocumentConstants.HEADER_START)){
+    			GenericSkeleton skeleton = (GenericSkeleton)subDocument.getSkeleton();
+    			List<GenericSkeletonPart> newSkelParts = new ArrayList<GenericSkeletonPart>();
+    			for(GenericSkeletonPart skelPart: skeleton.getParts()){
+    				int bodyIndex = skelPart.getData().indexOf(XliffDocumentConstants.BODY_START);
+    				if(bodyIndex > 0){
+    					StringBuilder headerSkelPart = new StringBuilder();
+    					headerSkelPart.append(XliffDocumentConstants.HEADER_START);
+    					headerSkelPart.append("\n");
+    					headerSkelPart.append(XliffDocumentConstants.HEADER_END);
+    					headerSkelPart.append("\n");
+    					skelPart.getData().insert(bodyIndex, headerSkelPart);
+    				}
+    			}
+//    			int startBodyIndex = currSkelString.indexOf(XliffDocumentConstants.BODY_START);
+//    			if(startBodyIndex > 0){
+//    				newSkelString.append(currSkelString.substring(0, startBodyIndex));
+//    				newSkelString.append(XliffDocumentConstants.HEADER_START);
+//    				newSkelString.append("\n");
+//    				newSkelString.append(XliffDocumentConstants.HEADER_END);
+//    				newSkelString.append("\n");
+//    				newSkelString.append(currSkelString.substring(startBodyIndex));
+////    				currSkelString = newSkelString.toString();
+////    				newSkelString = new StringBuilder();
+//    				subDocument.setSkeleton(new GenericSkeleton(newSkelString.toString()));
+//    			}
+    		}
+    	}
+    }
 
-    private DocumentPart preprocessDocumentPart(DocumentPart dp) {
+    private void addTimeInfo(StartSubDocument subDocument){
+    	
+    	if(time != null && subDocument.getSkeleton() != null){
+    		StringBuilder newSkelString = new StringBuilder();
+    		String currSkelString = subDocument.getSkeleton().toString();
+    		int headerEndIndex = currSkelString.indexOf(XliffDocumentConstants.HEADER_END);
+    		if(headerEndIndex > 0){
+    			int countIndex = currSkelString.indexOf(XliffDocumentConstants.COUNT_START);
+    			if(countIndex > 0){
+    				newSkelString.append(currSkelString.substring(0, countIndex + XliffDocumentConstants.COUNT_START.length()));
+    				newSkelString.append(time);
+    				newSkelString.append(currSkelString.substring(currSkelString.indexOf(XliffDocumentConstants.COUNT_END)));
+    			} else {
+    				newSkelString.append(currSkelString.substring(0, headerEndIndex));
+    				appendCountGroupInfo(newSkelString);
+    				newSkelString.append(currSkelString.substring(headerEndIndex + XliffDocumentConstants.HEADER_END.length()));
+    			}
+    		} else {
+    			int bodyIndex = currSkelString.indexOf(XliffDocumentConstants.BODY_START);
+    			newSkelString.append(currSkelString.substring(0, bodyIndex));
+    			newSkelString.append(XliffDocumentConstants.HEADER_START);
+    			newSkelString.append("\n");
+    			appendCountGroupInfo(newSkelString);
+    			newSkelString.append("\n");
+    			newSkelString.append(XliffDocumentConstants.HEADER_END);
+    			newSkelString.append("\n");
+    			newSkelString.append(currSkelString.substring(bodyIndex));
+    		}
+    		subDocument.setSkeleton(new GenericSkeleton(newSkelString.toString()));
+    		
+    	}
+    	
+    }
+    
+    
+    private void appendCountGroupInfo(StringBuilder stringBuilder ){
+    	
+    	stringBuilder.append(XliffDocumentConstants.COUNT_GROUP_START);
+    	stringBuilder.append("\n");
+    	stringBuilder.append(XliffDocumentConstants.COUNT_START);
+    	stringBuilder.append(time);
+    	stringBuilder.append(XliffDocumentConstants.COUNT_END);
+    	stringBuilder.append("\n");
+    	stringBuilder.append(XliffDocumentConstants.COUNT_GROUP_END);
+    	stringBuilder.append("\n");
+    }
+    
+    private void addLqiConfInfo(Ending ending) {
+		
+    	
+	}
+
+	private void addTimeInfo(Ending ending) {
+		
+    	if(time != null && ending.getSkeleton() != null){
+    		String currSkelString = ending.getSkeleton().toString();	
+    		int startIndex = currSkelString.indexOf(XliffDocumentConstants.COUNT_START);
+    		if(startIndex > 0){
+    			int endIndex = currSkelString.indexOf(XliffDocumentConstants.COUNT_END);
+    			String newSkelString = currSkelString.substring(0, startIndex + XliffDocumentConstants.COUNT_START.length()) + time + currSkelString.substring(endIndex);
+    			ending.setSkeleton(new GenericSkeleton(newSkelString));
+    		} else {
+    			StringBuilder timeSkeleton = new StringBuilder();
+    			int endFileIndex = currSkelString.indexOf(XliffDocumentConstants.FILE_END);
+    			if(endFileIndex > 0){
+    				timeSkeleton.append(currSkelString.substring(0, endFileIndex));
+    				timeSkeleton.append(XliffDocumentConstants.COUNT_GROUP_START);
+    				timeSkeleton.append("\n");
+    				timeSkeleton.append(XliffDocumentConstants.COUNT_START);
+    				timeSkeleton.append(time);
+    				timeSkeleton.append(XliffDocumentConstants.COUNT_END);
+    				timeSkeleton.append("\n");
+    				timeSkeleton.append(XliffDocumentConstants.COUNT_GROUP_END);
+    				timeSkeleton.append("\n");
+    				timeSkeleton.append(currSkelString.substring(endFileIndex));
+    				ending.setSkeleton(new GenericSkeleton(timeSkeleton.toString()));
+    			}
+    		}
+    	}
+	}
+
+	private DocumentPart preprocessDocumentPart(DocumentPart dp) {
         if (foundXliffElement) return dp;
 
         String origSkel = dp.getSkeleton().toString();
@@ -369,4 +500,14 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
         }
         return dp;
     }
+
+	@Override
+	public void updateTiming(Double time) {
+		this.time = time;
+	}
+
+	@Override
+	public void updateLqiConfiguration(String lqiConfName) {
+		this.lqiConfiguration = lqiConfName;
+	}
 }

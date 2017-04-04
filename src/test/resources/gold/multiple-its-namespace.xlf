@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff xmlns:its="http://www.w3.org/2005/11/its" version="1.2"><file source-language="en-US" target-language="fr-FR" original="none" datatype="plaintext">
-        <header><tool tool-id="Ocelot" tool-name="Ocelot"></tool></header>
+        <header><phase-group><phase phase-name="ocelot_1" process-name="ocelot_review" contact-name="C" company-name="B"></phase></phase-group><tool tool-id="Ocelot" tool-name="Ocelot"></tool></header>
         <body>
 
             <trans-unit xmlns:its="http://www.w3.org/2005/11/its" id="2" its:version="2.0" its:provenanceRecordsRef="#RW1">

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" srcLang="en" trgLang="fr" version="2.0">
+<file id="f1">
+<unit id="1" its:annotatorsRef="text-analysis|http://spotlight.dbpedia.org/">
+<its:locQualityIssues xml:id="lq1">
+ <its:locQualityIssue locQualityIssueComment="comment1"/>
+ <its:locQualityIssue locQualityIssueComment="comment2"/>
+</its:locQualityIssues>
+<its:provenanceRecords xml:id="p1">
+ <its:provenanceRecord person="person"/>
+ <its:provenanceRecord orgRef="orgRef"/>
+</its:provenanceRecords>
+<segment id="s1">
+<source><mrk id="freme-1" ref="http://freme-project.eu/#char=0,8" type="term">Sentence</mrk> 1.<mrk id="1" its:locQualityIssuesRef="#its=lq1" translate="no" type="its:its">LQI</mrk> <mrk id="freme-2" ref="http://freme-project.eu/#char=28,36" type="term">Sentence</mrk> 2.</source>
+<target>Sentence 1.<mrk id="2" its:provenanceRecordsRef="#its=p1" translate="no" type="its:any">Prov</mrk> Sentence 2.</target>
+</segment>
+<segment id="s3">
+<source><mrk id="freme-3" its:taIdentRef="http://dbpedia.org/resource/PH" type="its:any">Ph</mrk> <mrk id="freme-4" ref="http://freme-project.eu/#char=3,10" type="term">element</mrk> <ph id="ph1"/> #1.</source>
+<target>Ph element <ph id="ph1"/> #1.</target>
+</segment>
+<segment id="s4">
+<source>Pc <mrk id="freme-5" ref="http://freme-project.eu/#char=3,10" type="term">element</mrk> <pc id="pc1"><mrk id="freme-6" its:taIdentRef="http://dbpedia.org/resource/House" type="its:any">Important</mrk></pc> #1.</source>
+<target>Pc element <pc id="pc1">Important</pc> #1.</target>
+</segment>
+<segment id="s7">
+<source>Sm <mrk id="freme-7" ref="http://freme-project.eu/#char=3,8" type="term">split</mrk> <mrk id="freme-8" ref="http://freme-project.eu/#char=9,16" type="term">element</mrk> <sm id="sm1" translate="no"/> #1.</source>
+<target>Sm split element <sm id="sm1" translate="no"/> #1.</target>
+</segment>
+</unit>
+</file>
+</xliff>

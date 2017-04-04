@@ -9,8 +9,8 @@ import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.tm.pensieve.common.TmHit;
 
 import com.google.inject.Inject;
-import com.vistatec.ocelot.config.ConfigService;
-import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.tm.TmMatch;
 import com.vistatec.ocelot.tm.TmPenalizer;
@@ -22,10 +22,10 @@ import com.vistatec.ocelot.tm.TmService;
 public class OkapiTmService implements TmService {
     private final OkapiTmManager manager;
     private final TmPenalizer penalizer;
-    private final ConfigService cfgService;
+    private final JsonConfigService cfgService;
 
     @Inject
-    public OkapiTmService(OkapiTmManager manager, TmPenalizer penalizer, ConfigService cfgService) {
+    public OkapiTmService(OkapiTmManager manager, TmPenalizer penalizer, JsonConfigService cfgService) {
         this.manager = manager;
         this.penalizer = penalizer;
         this.cfgService = cfgService;
@@ -88,7 +88,7 @@ public class OkapiTmService implements TmService {
     }
 
     private boolean checkTmEnabled(OkapiTmManager.TmPair tmPair) {
-        TmManagement.TmConfig config = this.manager.fetchTm(tmPair.getTmOrigin());
+        TmConfig config = this.manager.fetchTm(tmPair.getTmOrigin());
         return config != null && config.isEnabled();
     }
 }

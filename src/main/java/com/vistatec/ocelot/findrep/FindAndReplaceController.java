@@ -2,6 +2,7 @@ package com.vistatec.ocelot.findrep;
 
 import java.awt.Window;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -12,6 +13,7 @@ import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ReplaceDoneEvent;
 import com.vistatec.ocelot.events.ReplaceEvent;
+import com.vistatec.ocelot.events.SegmentRowsSortedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -54,6 +56,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 
 	/** List of replaced results. */
 	private List<Integer> replacedResIdxList;
+	
+	private int[] sortedIndexMap;
 
 	/**
 	 * Constructor.
@@ -78,6 +82,7 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	public void fileOpened(OpenFileEvent e) {
 
 		segments = e.getDocument().getSegments();
+		sortedIndexMap = null;
 		sourceLocale = new Locale(e.getDocument().getSrcLocale()
 				.getOriginalLocId());
 		targetLocale = new Locale(e.getDocument().getTgtLocale()
@@ -93,6 +98,13 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 		clear();
 
 	}
+	
+	@Subscribe
+	public void segmentsSorted(SegmentRowsSortedEvent e){
+		
+		this.sortedIndexMap = e.getSortedIndexMap();
+		clear();
+	}
 
 	/**
 	 * Clears the controller.
@@ -102,6 +114,21 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 		replacedResIdxList.clear();
 	}
 
+	private List<OcelotSegment> getSortedSegmentList(){
+		
+		List<OcelotSegment> sortedList = null;
+		if(sortedIndexMap != null){
+			OcelotSegment[] sortedArray = new OcelotSegment[segments.size()];
+			for(int i = 0; i<segments.size(); i++){
+				sortedArray[sortedIndexMap[i]] = segments.get(i);
+			}
+			sortedList = Arrays.asList(sortedArray);
+		} else {
+			sortedList = segments;
+		}
+		return sortedList;
+	}
+	
 	/**
 	 * Finds the next occurrence of the text.
 	 * 
@@ -118,7 +145,7 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 				replacedResIdxList.clear();
 				wordFinder.goToStartOfDocument();
 				wordFinder.clearAllResults();
-				List<FindResult> results = wordFinder.findWord(text, segments);
+				List<FindResult> results = wordFinder.findWord(text, getSortedSegmentList());
 				if (results != null && !results.isEmpty()) {
 					frDialog.displayOccurrenceNum(results.size());
 					sendHighlightEvent(results);
@@ -193,19 +220,22 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 		}
 		if (replace) {
 			frDialog.hideOccNumber();
-			if (replacedResIdxList.contains(wordFinder.getCurrentResIndex())) {
-				findNext(lastSearchedText);
-			} else if (wordFinder.getCurrentResIndex() != -1) {
-				eventQueue.post(new ReplaceEvent(newString,
-						wordFinder.getAllResults()
-								.get(wordFinder.getCurrentResIndex())
-								.getSegmentIndex(), ReplaceEvent.REPLACE));
-				wordFinder.replacedString(newString);
-				replacedResIdxList.add(wordFinder.getCurrentResIndex());
-				if (replacedResIdxList.size() == wordFinder
-						.getAllResults().size()) {
-					wordFinder.clearAllResults();
-					clear();
+			if (wordFinder.getAllResults() != null
+					&& !wordFinder.getAllResults().isEmpty()) {
+				int indexToReplace = wordFinder.getCurrentResIndexForReplace();
+				if (replacedResIdxList.contains(indexToReplace)) {
+					findNext(lastSearchedText);
+				} else if (indexToReplace != -1) {
+					eventQueue.post(new ReplaceEvent(newString, wordFinder
+							.getAllResults().get(indexToReplace)
+							.getSegmentIndex(), ReplaceEvent.REPLACE));
+					wordFinder.replacedString(newString);
+					replacedResIdxList.add(indexToReplace);
+					if (replacedResIdxList.size() == wordFinder.getAllResults()
+							.size()) {
+						wordFinder.clearAllResults();
+						clear();
+					}
 				}
 			}
 		}
@@ -287,6 +317,9 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 		wordFinder.reset();
 		frDialog = null;
 		clear();
+		// The Highlight event with null result, clear the table from the
+		// highlighted values
+		eventQueue.post(new HighlightEvent(null, -1));
 	}
 
 	/**

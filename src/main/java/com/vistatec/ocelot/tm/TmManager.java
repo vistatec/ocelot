@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import com.vistatec.ocelot.config.ConfigTransferService;
-import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 
 /**
  * Manages importing TMs in Ocelot.
@@ -16,21 +16,21 @@ public interface TmManager {
      * Fetch search ordered list of all configured TMs.
      * @return TM configurations
      */
-    public List<TmManagement.TmConfig> fetchTms();
+    public List<TmConfig> fetchTms();
 
     /**
      * Fetch a TM configuration by the TM name.
      * @param tmName - Name of the TM
      * @return
      */
-    public TmManagement.TmConfig fetchTm(String tmName);
+    public TmConfig fetchTm(String tmName);
 
     /**
      * Save the search ordering preference for TMs.
      * @param orderedTms - Ordered list where first element is search first
      * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
      */
-    public void saveTmOrdering(List<TmManagement.TmConfig> orderedTms) throws ConfigTransferService.TransferException;
+    public void saveTmOrdering(List<TmConfig> orderedTms) throws TransferException;
 
     /**
      * Perform all functionality required to setup a new TM for usage by the
@@ -40,7 +40,7 @@ public interface TmManager {
      * @throws IOException
      * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
      */
-    public void initializeNewTm(String tmName, File tmDataDir) throws IOException, ConfigTransferService.TransferException;
+    public void initializeNewTm(String tmName, File tmDataDir) throws IOException, TransferException;
     
     /**
      * Perform all functionality required to setup a new TM for usage by the
@@ -50,9 +50,9 @@ public interface TmManager {
      * @throws IOException
      * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
      */
-    public void initializeNewTm(String tmName, File[] tmFiles) throws IOException, ConfigTransferService.TransferException;
+    public void initializeNewTm(String tmName, File[] tmFiles) throws IOException, TransferException;
 
-    public void deleteTm(String tmName) throws IOException, ConfigTransferService.TransferException;
+    public void deleteTm(String tmName) throws IOException, TransferException;
 
     public void saveOpenFileAsTmx(File tmx) throws IOException;
 
@@ -63,7 +63,7 @@ public interface TmManager {
      * @throws IOException
      * @throws com.vistatec.ocelot.config.ConfigTransferService.TransferException
      */
-    public void changeTmDataDir(String tmName, File tmDataDir) throws IOException, ConfigTransferService.TransferException;
+    public void changeTmDataDir(String tmName, File tmDataDir) throws IOException, TransferException;
 
     /**
      * Parse the TMX file and associate the segments with the given {@code tmName}.

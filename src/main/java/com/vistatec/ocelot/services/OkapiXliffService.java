@@ -28,13 +28,6 @@
  */
 package com.vistatec.ocelot.services;
 
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.xliff.XLIFFFactory;
-import com.vistatec.ocelot.xliff.XLIFFDocument;
-import com.vistatec.ocelot.xliff.XLIFFParser;
-import com.vistatec.ocelot.xliff.XLIFFVersion;
-import com.vistatec.ocelot.xliff.XLIFFWriter;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,14 +35,20 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import net.sf.okapi.common.LocaleId;
+
 import com.google.common.eventbus.Subscribe;
-import com.vistatec.ocelot.config.ConfigService;
+import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFDocument;
+import com.vistatec.ocelot.xliff.XLIFFFactory;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.XLIFFVersion;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
 import com.vistatec.ocelot.xliff.okapi.OkapiXLIFFFactory;
-
-import net.sf.okapi.common.LocaleId;
 
 /**
  * Service for performing Okapi XLIFF operations.
@@ -57,10 +56,12 @@ import net.sf.okapi.common.LocaleId;
 public class OkapiXliffService implements XliffService {
     private XLIFFFactory xliffFactory = new OkapiXLIFFFactory();
 
-    private final ConfigService cfgService;
+    private final JsonConfigService cfgService;
     private final OcelotEventQueue eventQueue;
+    private Double time;
+    private String lqiConfiguration;
 
-    public OkapiXliffService(ConfigService cfgService, OcelotEventQueue eventQueue) {
+    public OkapiXliffService(JsonConfigService cfgService, OcelotEventQueue eventQueue) {
         this.cfgService = cfgService;
         this.eventQueue = eventQueue;
     }
@@ -74,6 +75,14 @@ public class OkapiXliffService implements XliffService {
     @Subscribe
     public void updateNotes(SegmentNoteEditEvent e ) {
         getDoc(e.getDocument()).getWriter().updateNotes(e.getSegment());
+    }
+    
+    public void saveTime(double time){
+    	this.time = time;
+    }
+    
+    public void saveLqiConfiguration(String lqiConfigurationName){
+    	this.lqiConfiguration = lqiConfigurationName;
     }
 
     private OkapiXLIFFDocument getDoc(XLIFFDocument xliff) {
@@ -93,14 +102,18 @@ public class OkapiXliffService implements XliffService {
         XLIFFWriter segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
                 cfgService.getUserProvenance(), eventQueue);
         return new OkapiXLIFFDocument(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
-                                  LocaleId.fromString(xliffParser.getTargetLang()), xliffSegments,
+                                  LocaleId.fromString(xliffParser.getTargetLang()), xliffParser.getOriginalFileName(), xliffSegments,
                                   xliffParser, segmentWriter);
     }
 
     @Override
     public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException {
+    	
         OkapiXLIFFDocument okapiFile = getDoc(xliffFile);
+        okapiFile.getWriter().updateTiming(time);
+        okapiFile.getWriter().updateLqiConfiguration(lqiConfiguration);
         okapiFile.getWriter().save(dest);
+        time = null;
     }
 
 }

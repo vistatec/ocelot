@@ -32,7 +32,8 @@ import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
-import com.vistatec.ocelot.lqi.model.LQIGrid;
+import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
@@ -45,9 +46,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 
 	private OcelotEventQueue eventQueue;
 
-	// private List<LQIErrorCategory> errorCategories;
-
-	private LQIGrid lqiGrid;
+	private LQIGridConfigurations lqiGrid;
 
 	private boolean enabled = true;
 
@@ -97,7 +96,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 	private JScrollPane commentScroll;
 
 	public LanguageQualityIssuePropsPanel(OcelotEventQueue eventQueue,
-	        LQIGrid lqiGrid) {
+	        LQIGridConfigurations lqiGrid) {
 
 		this.eventQueue = eventQueue;
 		this.lqiGrid = lqiGrid;
@@ -143,13 +142,17 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		add(typeLabel, gridBag);
 
 		typeList = new JComboBox<String>();
-		if (lqiGrid != null && lqiGrid.getErrorCategories() != null) {
-			String[] types = new String[lqiGrid.getErrorCategories().size()];
-			int i = 0;
-			for (LQIErrorCategory errCat : lqiGrid.getErrorCategories()) {
-				types[i++] = errCat.getName();
+		if (lqiGrid != null ) {
+			LQIGridConfiguration activeConf = lqiGrid.getActiveConfiguration();
+			if(activeConf != null && activeConf.getErrorCategories() != null){
+				
+				String[] types = new String[activeConf.getErrorCategories().size()];
+				int i = 0;
+				for (LQIErrorCategory errCat : activeConf.getErrorCategories()) {
+					types[i++] = errCat.getName();
+				}
+				typeList.setModel(new DefaultComboBoxModel<>(types));
 			}
-			typeList.setModel(new DefaultComboBoxModel<>(types));
 		}
 		gridBag.gridx = 1;
 		gridBag.gridy = 1;
@@ -178,10 +181,14 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		add(severityLabel, gridBag);
 
 		severityList = new JComboBox<>();
-		if (lqiGrid != null && lqiGrid.getSeverities() != null) {
-			severityList.setModel(new DefaultComboBoxModel<>(lqiGrid
-			        .getSeverities().toArray(
-			                new LQISeverity[lqiGrid.getSeverities().size()])));
+		if (lqiGrid != null ) {
+			LQIGridConfiguration activeConf = lqiGrid.getActiveConfiguration();
+			if(activeConf != null && activeConf.getSeverities() != null){
+				
+				severityList.setModel(new DefaultComboBoxModel<>(activeConf
+						.getSeverities().toArray(
+								new LQISeverity[activeConf.getSeverities().size()])));
+			}
 		}
 		gridBag.gridx = 1;
 		gridBag.gridy = 3;

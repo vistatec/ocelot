@@ -60,6 +60,7 @@ import net.sf.okapi.lib.xliff2.its.LocQualityIssues;
 import net.sf.okapi.lib.xliff2.its.Provenances;
 import net.sf.okapi.lib.xliff2.reader.Event;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +105,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
                 FragmentVariant targetFrag = (FragmentVariant) okapiSeg.getTarget();
                 Fragment updatedOkapiFragment = targetFrag.getUpdatedOkapiFragment(unitPart.getTarget());
                 unitPart.setTarget(updatedOkapiFragment);
-                manageRevision(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()), unitPart, parser.getTargetVersion(okapiSeg.eventNum));
+                manageRevision(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()), unitPart, parser.getTargetVersion(seg.getSegmentId()));
             }
             
             updateITSLQIAnnotations(unitPart, okapiSeg);
@@ -180,7 +181,7 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     		if(!unit.hasChangeTrack()){
     			ChangeTrack changeTrack = new ChangeTrack();
     			unit.setChangeTrack(changeTrack);
-    			Revisions revisions = createTargetRevisions(nextVersion.getVersion());
+    			Revisions revisions = createTargetRevisions(nextVersion.getVersion(), unitPart.getId());
     			changeTrack.add(revisions);
     			Revision revision = createCurrentRevision(nextVersion.getVersion(), parser.getRevisionDateFormatter().format(now));
     			revisions.add(revision);
@@ -193,13 +194,13 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     			Revisions revs = null;
     			while(revsIt.hasNext()) {
     				revs = revsIt.next();
-    				if(revs.getAppliesTo().equals(Const.ELEM_TARGET)){
+    				if(isTargetRevisions(revs, unitPart.getId()) ){
     					targetRevisions = revs;
     					break;
     				}
     			}
     			if(targetRevisions == null){
-    				targetRevisions = createTargetRevisions(nextVersion.getVersion());
+    				targetRevisions = createTargetRevisions(nextVersion.getVersion(), unitPart.getId());
     				unit.getChangeTrack().add(targetRevisions);
     			}
     			Revision currentRevision = null;
@@ -229,16 +230,22 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
     				currentRevision.add(item);
     			}
     		}
-    		item.setText(unitPart.getTarget().toString());
+    		item.setText(StringEscapeUtils.escapeXml11(unitPart.getTarget().toString()));
     		nextVersion.setUpdated(true);
     	}
     }
-    
-    private Revisions createTargetRevisions(String version){
+	
+	private boolean isTargetRevisions(Revisions revs, String ref){
+		
+		return revs.getAppliesTo().equals(Const.ELEM_TARGET) && ((ref != null && ref.equals(revs.getRef())) || (ref == null && revs.getRef() == null));
+	}
+	
+    private Revisions createTargetRevisions(String version, String ref){
     	
     	Revisions targetRevisions = new Revisions();
     	targetRevisions.setAppliesTo(Const.ELEM_TARGET);
     	targetRevisions.setCurrentVersion(version);
+    	targetRevisions.setRef(ref);
     	return targetRevisions;
     }
     
@@ -408,6 +415,18 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
 		updateNotes(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()),
 		        okapiSeg);
 
+	}
+
+	@Override
+	public void updateTiming(Double time) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateLqiConfiguration(String lqiConfName) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

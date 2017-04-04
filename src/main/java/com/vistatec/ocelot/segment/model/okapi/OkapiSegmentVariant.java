@@ -47,7 +47,7 @@ public abstract class OkapiSegmentVariant extends BaseSegmentVariant {
         return atoms;
     }
 
-    private String getCodeText(Code code, boolean verbose) {
+    public String getCodeText(Code code, boolean verbose) {
         if (verbose) {
             return code.hasOuterData() ? code.getOuterData() : code.getData();
         }

@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.vistatec.ocelot.events.DisplayLeftComponentEvent;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
+import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
 import com.vistatec.ocelot.events.RefreshSegmentView;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -73,6 +74,8 @@ public class FremePluginManager {
 
 	/** The FREME menu item to be displayed in segment view context menu. */
 	private JMenuItem fremeMenuItem;
+	
+	private JMenuItem viewGraphMenuItem;
 
 	/**
 	 * Constructor.
@@ -433,40 +436,64 @@ public class FremePluginManager {
 			final BaseSegmentVariant variant, final boolean target) {
 
 		List<JMenuItem> items = new ArrayList<JMenuItem>();
-
+		viewGraphMenuItem = new JMenuItem("View Enrichments Graph");
 		fremeMenuItem = new JMenuItem("Enrich");
 		ActionListener listener = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
-				if (existEnrichments()) {
-					Window containerWindow = SwingUtilities
-							.getWindowAncestor(fremeMenuItem);
-					int option = FremeEnrichmentOptions
-							.showConfirmDialog(containerWindow);
-					if (option == FremeEnrichmentOptions.DELETE_OPTION) {
-						enrich(fremePlugin, variant,
-								segment.getSegmentNumber(), target,
-								FremePluginManager.OVERRIDE_ENRICHMENTS);
-					} else if (option == FremeEnrichmentOptions.MERGE_OPTION) {
-						enrich(fremePlugin, variant,
-								segment.getSegmentNumber(), target,
-								FremePluginManager.MERGE_ENRICHMENTS);
+				if(e.getSource().equals(fremeMenuItem)){
+					if (existEnrichments()) {
+						Window containerWindow = SwingUtilities
+								.getWindowAncestor(fremeMenuItem);
+						int option = FremeEnrichmentOptions
+								.showConfirmDialog(containerWindow);
+						if (option == FremeEnrichmentOptions.DELETE_OPTION) {
+							enrich(fremePlugin, variant,
+									segment.getSegmentNumber(), target,
+									FremePluginManager.OVERRIDE_ENRICHMENTS);
+						} else if (option == FremeEnrichmentOptions.MERGE_OPTION) {
+							enrich(fremePlugin, variant,
+									segment.getSegmentNumber(), target,
+									FremePluginManager.MERGE_ENRICHMENTS);
+						}
+					} else {
+						enrich(fremePlugin, variant, segment.getSegmentNumber(),
+								target, FremePluginManager.OVERRIDE_ENRICHMENTS);
 					}
-				} else {
-					enrich(fremePlugin, variant, segment.getSegmentNumber(),
-							target, FremePluginManager.OVERRIDE_ENRICHMENTS);
+				} else if (e.getSource().equals(viewGraphMenuItem)) {
+					eventQueue.post(new EnrichmentViewEvent(variant,
+					        segment.getSegmentNumber(),
+					        EnrichmentViewEvent.GRAPH_VIEW,
+					        variant.equals(segment.getTarget())));
 				}
 			}
 		};
+		viewGraphMenuItem.addActionListener(listener);
+		viewGraphMenuItem.setEnabled(!enriching && enableGraphMenu(variant));
+		items.add(viewGraphMenuItem);
+
 		fremeMenuItem.addActionListener(listener);
 		if (enriching) {
 			fremeMenuItem.setEnabled(false);
 		}
 		items.add(fremeMenuItem);
-
+		
 		return items;
+	}
+	
+	private boolean enableGraphMenu(BaseSegmentVariant segVariant) {
+
+		boolean enable = false;
+		if (segVariant.getEnirchments() != null) {
+			Iterator<Enrichment> enrichIt = segVariant.getEnirchments()
+			        .iterator();
+			while (enrichIt.hasNext() && !enable) {
+				enable = enrichIt.next().getType()
+				        .equals(Enrichment.ENTITY_TYPE);
+			}
+		}
+		return enable;
 	}
 
 	public synchronized void setContextMenuItemEnabled(boolean enabled) {

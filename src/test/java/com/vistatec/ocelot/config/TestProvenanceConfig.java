@@ -1,37 +1,36 @@
 package com.vistatec.ocelot.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-
-import org.junit.*;
-
-import static org.junit.Assert.*;
-
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.net.URISyntaxException;
 
 import javax.xml.bind.JAXBException;
 
-import com.google.common.io.ByteSource;
+import org.junit.Test;
+
 import com.google.common.io.CharSink;
-import com.google.common.io.Resources;
 
 public class TestProvenanceConfig {
 
     @Test
-    public void testEmptyProvenance() throws ConfigTransferService.TransferException, JAXBException {
-        OcelotConfigService cfgService = new OcelotConfigService(
-                new OcelotXmlConfigTransferService(ByteSource.empty(), null));
+    public void testEmptyProvenance() throws TransferException, URISyntaxException {
+    	File file = new File(getClass().getResource("test_empty_provenance.json").toURI());
+    	OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(file));
         assertTrue(cfgService.getUserProvenance().isEmpty());
     }
 
     @Test
-    public void testLoadProvenance() throws JAXBException, ConfigTransferService.TransferException {
-        ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
-        OcelotConfigService cfgService = new OcelotConfigService(new OcelotXmlConfigTransferService(
-                testLoad, null
-        ));
+    public void testLoadProvenance() throws TransferException, URISyntaxException {
+        File file = new File(getClass().getResource("test_load_provenance.json").toURI());
+        OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new TestOcelotJsonConfigTransferService(file, new StringWriter()));
 
         UserProvenance prov = cfgService.getUserProvenance();
         assertNotNull(prov);
@@ -39,30 +38,35 @@ public class TestProvenanceConfig {
         assertEquals("A", prov.getRevPerson());
         assertEquals("B", prov.getRevOrg());
         assertEquals("C", prov.getProvRef());
+        assertEquals("D", prov.getLangCode());
     }
 
     @Test
-    public void testSaveProvenance() throws IOException, ConfigTransferService.TransferException, JAXBException {
-        ByteSource testLoad = Resources.asByteSource(
-                TestProvenanceConfig.class.getResource("test_load_provenance.xml"));
+    public void testSaveProvenance() throws IOException, TransferException, JAXBException, URISyntaxException {
+        File file = new File(getClass().getResource("test_load_provenance.json").toURI());
 
         StringWriter writer = new StringWriter();
-        OcelotConfigService cfgService = new OcelotConfigService(
-                new OcelotXmlConfigTransferService(testLoad, new TestCharSink(writer)));
+        OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new TestOcelotJsonConfigTransferService(file, writer));
 
         UserProvenance prov = cfgService.getUserProvenance();
-        prov.setProvRef("D");
-        prov.setRevPerson("E");
-        prov.setRevOrg("F");
+        prov.setProvRef("E");
+        prov.setRevPerson("F");
+        prov.setRevOrg("G");
+        prov.setLangCode("H");
         cfgService.saveUserProvenance(prov);
+        
+        File savedFile = File.createTempFile("OcelotTest", "provTest");
+        FileWriter fWriter = new FileWriter(savedFile);
+        fWriter.write(writer.toString());
+        fWriter.close();
 
-        ByteSource savedConfig = ByteSource.wrap(writer.toString().getBytes(Charset.forName("UTF-8")));
-        OcelotConfigService testCfgService = new OcelotConfigService(new OcelotXmlConfigTransferService(savedConfig, null));
+        OcelotJsonConfigService testCfgService = new OcelotJsonConfigService(new TestOcelotJsonConfigTransferService(savedFile, writer));
 
         UserProvenance roundtrip = testCfgService.getUserProvenance();
-        assertEquals("D", roundtrip.getProvRef());
-        assertEquals("E", roundtrip.getRevPerson());
-        assertEquals("F", roundtrip.getRevOrg());
+        assertEquals("E", roundtrip.getProvRef());
+        assertEquals("F", roundtrip.getRevPerson());
+        assertEquals("G", roundtrip.getRevOrg());
+        assertEquals("H", roundtrip.getLangCode());
     }
 
     public class TestCharSink extends CharSink {

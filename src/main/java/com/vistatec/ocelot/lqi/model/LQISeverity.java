@@ -1,5 +1,7 @@
 package com.vistatec.ocelot.lqi.model;
 
+import java.util.Objects;
+
 /**
  * The LQI severity object.
  */
@@ -100,6 +102,6 @@ public class LQISeverity {
 	
 	@Override
 	public int hashCode() {
-	    return 11*name.hashCode()*Double.valueOf(score).hashCode();
+	    return Objects.hash(name, score);
 	}
 }

@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import com.vistatec.ocelot.config.xml.OcelotRootConfig;
-import com.vistatec.ocelot.config.xml.TmManagement;
+import com.vistatec.ocelot.config.json.OcelotRootConfig;
+import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 
 /**
  * Test helper for creating test TMs.
@@ -51,14 +51,14 @@ public class TmConfigBuilder {
 
         TmData tmpTestData = new TmData(tmRootDir, tmName, testTmFileResource);
 
-        TmManagement.TmConfig tmCfg = new TmManagement.TmConfig();
+        TmConfig tmCfg = new TmConfig();
         tmCfg.setTmName(tmpTestData.tmName);
         tmCfg.setTmDataDir(tmpTestData.tmDataDir.getAbsolutePath());
         tmCfg.setEnabled(true);
 
-        List<TmManagement.TmConfig> tmCfgs = new ArrayList<>();
+        List<TmConfig> tmCfgs = new ArrayList<>();
         tmCfgs.add(tmCfg);
-        config.getTmManagement().setTm(tmCfgs);
+        config.getTmManagement().setTms(tmCfgs);
 
         return config;
     }

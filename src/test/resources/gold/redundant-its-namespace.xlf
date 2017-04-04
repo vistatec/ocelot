@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:okp="okapi-framework:xliff-extensions" xmlns:its="http://www.w3.org/2005/11/its" xmlns:itsxlf="http://www.w3.org/ns/its-xliff/" version="1.2" its:version="2.0">
 <file original="test.xml" source-language="en" target-language="fr" datatype="xml" okp:inputEncoding="UTF-8">
+<header>
+<phase-group><phase phase-name="ocelot_1" process-name="ocelot_review" contact-name="C" company-name="B"></phase></phase-group></header>
 <body>
 <group id="tu1_ssf1" resname="sub-filter:generic">
 <trans-unit id="tu1_tu1" resname="generic_2" restype="x-paragraph" its:locQualityIssuesRef="#RW1" its:provenanceRecordsRef="#RW1">

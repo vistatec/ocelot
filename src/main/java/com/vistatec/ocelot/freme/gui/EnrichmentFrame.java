@@ -147,31 +147,31 @@ public class EnrichmentFrame extends JDialog implements Runnable,
 			List<Enrichment> fragEnrichments = new ArrayList<>(fragment.getEnirchments());
 			Collections.sort(fragEnrichments, new EnrichmentComparator());
 			JLabel label = null;
-			String fragDisplayText = fragment.getDisplayText();
+			String fragPlainText = fragment.getPlainText();
 			int startIndex = 0;
 			EnrichedLabel lastEnrichedLabel = null;
 			for (Enrichment e : fragEnrichments) {
 				if (lastEnrichedLabel != null
 				        && lastEnrichedLabel.containsOffset(e
-				                .getOffsetStartIdx())) {
+				                .getOffsetNoTagsStartIdx())) {
 					lastEnrichedLabel.addEnrichment(e);
-					if (startIndex < e.getOffsetEndIdx()) {
-						startIndex = e.getOffsetEndIdx();
+					if (startIndex < e.getOffsetNoTagsEndIdx()) {
+						startIndex = e.getOffsetNoTagsEndIdx();
 					}
 				} else {
-					label = new JLabel(fragDisplayText.substring(startIndex,
-					        e.getOffsetStartIdx()));
+					label = new JLabel(fragPlainText.substring(startIndex,
+					        e.getOffsetNoTagsStartIdx()));
 					labels.add(label);
 					lastEnrichedLabel = new EnrichedLabel(
-					        fragDisplayText.substring(e.getOffsetStartIdx(),
-					                e.getOffsetEndIdx()));
+					        fragPlainText.substring(e.getOffsetNoTagsStartIdx(),
+					                e.getOffsetNoTagsEndIdx()));
 					lastEnrichedLabel.addEnrichment(e);
 					labels.add(lastEnrichedLabel);
-					startIndex = e.getOffsetEndIdx();
+					startIndex = e.getOffsetNoTagsEndIdx();
 				}
 			}
-			if (startIndex < fragDisplayText.length()) {
-				labels.add(new JLabel(fragDisplayText.substring(startIndex)));
+			if (startIndex < fragPlainText.length()) {
+				labels.add(new JLabel(fragPlainText.substring(startIndex)));
 			}
 		}
 	}
@@ -230,9 +230,9 @@ class EnrichmentComparator implements Comparator<Enrichment> {
 	public int compare(Enrichment o1, Enrichment o2) {
 
 		int comparison = 0;
-		if (o1.getOffsetStartIdx() < o2.getOffsetStartIdx()) {
+		if (o1.getOffsetNoTagsStartIdx() < o2.getOffsetNoTagsStartIdx()) {
 			comparison = -1;
-		} else if (o1.getOffsetStartIdx() > o2.getOffsetStartIdx()) {
+		} else if (o1.getOffsetNoTagsStartIdx() > o2.getOffsetNoTagsStartIdx()) {
 			comparison = 1;
 		}
 		return comparison;
@@ -314,12 +314,12 @@ class EnrichedLabel extends JLabel implements ActionListener, MouseListener {
 			enrichments = new ArrayList<Enrichment>();
 		}
 		enrichments.add(enrichment);
-		if (startIndex == -1 || startIndex > enrichment.getOffsetStartIdx()) {
-			startIndex = enrichment.getOffsetStartIdx();
+		if (startIndex == -1 || startIndex > enrichment.getOffsetNoTagsStartIdx()) {
+			startIndex = enrichment.getOffsetNoTagsStartIdx();
 		}
 
-		if (endIndex == -1 || endIndex < enrichment.getOffsetEndIdx()) {
-			endIndex = enrichment.getOffsetEndIdx();
+		if (endIndex == -1 || endIndex < enrichment.getOffsetNoTagsEndIdx()) {
+			endIndex = enrichment.getOffsetNoTagsEndIdx();
 		}
 	}
 
