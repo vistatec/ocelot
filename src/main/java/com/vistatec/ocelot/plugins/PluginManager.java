@@ -116,6 +116,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	private File pluginDir;
 	private final JsonConfigService cfgService;
 	private QualityPluginManager qualityPluginManager;
+	private JMenu reportMenu;
 
 	public PluginManager(JsonConfigService cfgService, File pluginDir,
 			OcelotEventQueue eventQueue) {
@@ -221,6 +222,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof ReportPlugin) {
 			ReportPlugin reportPlugin = (ReportPlugin) plugin;
 			reportPlugins.put(reportPlugin, enabled);
+			reportMenu.setEnabled(enabled);
 		} else if (plugin instanceof FremePlugin) {
 			FremePlugin fremePlugin = (FremePlugin) plugin;
 			fremePlugins.put(fremePlugin, enabled);
@@ -761,7 +763,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
 			fremeMenu = fremeManager.getFremeMenu(fremePlugin);
-			fremeMenu.setEnabled(fremePlugins.get(fremePlugin));
+			fremeMenu.setEnabled(isFremePluginEnabled());
 		}
 		return fremeMenu;
 	}
@@ -769,8 +771,8 @@ public class PluginManager implements OcelotEventQueueListener {
 	public List<JMenu> getPluginMenuList(final JFrame ocelotFrame) {
 
 		List<JMenu> menuList = new ArrayList<JMenu>();
-		if (isReportPluginEnabled()) {
-			JMenu reportMenu = new JMenu("Reports");
+		if (!reportPlugins.isEmpty()) {
+			reportMenu = new JMenu("Reports");
 			JMenuItem generateMenuItem = new JMenuItem("Generate Reports");
 			generateMenuItem.addActionListener(new ActionListener() {
 
@@ -786,9 +788,10 @@ public class PluginManager implements OcelotEventQueueListener {
 				}
 			});
 			reportMenu.add(generateMenuItem);
+			reportMenu.setEnabled(isReportPluginEnabled());
 			menuList.add(reportMenu);
 		}
-		if (isFremePluginEnabled()) {
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			menuList.add(getFremeMenu());
 		}
 		if (qualityPluginManager.isQualityPluginLoaded()) {
