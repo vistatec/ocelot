@@ -84,10 +84,11 @@ public class ContextMenu extends JPopupMenu implements ActionListener {
                        OcelotEventQueue eventQueue, LQIGridConfigurations lqiGrid) {
  		this(xliff, selectedSeg, eventQueue, lqiGrid);
 		this.selectedLQI = selectedLQI;
-
-		removeLQI = new JMenuItem("Remove Issue");
-		removeLQI.addActionListener(this);
-		add(removeLQI);
+		if(selectedLQI != null){
+			removeLQI = new JMenuItem("Remove Issue");
+			removeLQI.addActionListener(this);
+			add(removeLQI);
+		}
 	}
 
 	public ContextMenu(XLIFFDocument xliff, OcelotSegment selectedSeg, SegmentVariant variant,

@@ -129,6 +129,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.its.model.ITSMetadata;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.rules.DataCategoryFlag;
 import com.vistatec.ocelot.rules.DataCategoryFlagRenderer;
@@ -1651,16 +1652,23 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				seg = segmentTableModel.getSegment(sort.convertRowIndexToModel(r));
 			}
 			int c = sourceTargetTable.columnAtPoint(e.getPoint());
+			LanguageQualityIssue selLqi = null;
 			boolean target = false;
 			if (c == segmentTableModel.getIndexForColumn(Source)) {
 				variant = (BaseSegmentVariant) seg.getSource();
 			} else if (c == segmentTableModel.getIndexForColumn(Target)) {
 				variant = (BaseSegmentVariant) seg.getTarget();
 				target = true;
+			} else if ( segmentTableModel.getColumn(c).isFlagColumn()){
+				Object obj = segmentTableModel.getValueAt(r, c);
+				if(obj instanceof LanguageQualityIssue){
+					selLqi = (LanguageQualityIssue) obj;
+				}
 			}
+			
 
 			if (seg != null) {
-				ContextMenu menu = new ContextMenu(xliff, seg, variant, null,
+				ContextMenu menu = new ContextMenu(xliff, seg, variant, selLqi,
 				        eventQueue, lqiGrid);
 				List<JMenuItem> pluginsItems = ocelotApp
 				        .getSegmentContexPluginMenues(seg, variant, target);

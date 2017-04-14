@@ -93,7 +93,7 @@ public class LQISeverity {
 	public boolean equals(Object obj) {
 		if(obj instanceof LQISeverity) {
 			LQISeverity sevObj = (LQISeverity)obj;
-			return name.equals(sevObj.name) && score == sevObj.score;
+			return (name != null ? name.equals(sevObj.name): sevObj == null) && score == sevObj.score;
 			
 		} else {
 			return super.equals(obj);
