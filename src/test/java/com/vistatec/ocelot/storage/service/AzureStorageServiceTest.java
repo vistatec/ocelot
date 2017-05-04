@@ -1,6 +1,5 @@
 package com.vistatec.ocelot.storage.service;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -45,20 +44,17 @@ public class AzureStorageServiceTest {
 			JsonConfigService configService = manager.getOcelotConfigService();
 			OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
 			if(ocelotAzureConfiguration != null){
-				String accountKey = ocelotAzureConfiguration.getAccountKey();
-				String accountName = ocelotAzureConfiguration.getAccountName();
-				String accountBlobContainerName = ocelotAzureConfiguration.getAccountBlobContainerName();
+				String sas = ocelotAzureConfiguration.getSas();
+				String blobEndpoint = ocelotAzureConfiguration.getBlobEndpoint();
+				String queueEndpoint = ocelotAzureConfiguration.getQueueEndpoint();
 				
-				execute = accountName != null && accountKey != null && accountBlobContainerName != null;
+				execute = sas != null && blobEndpoint != null && queueEndpoint != null;
 				
 				if(execute){
-					storageService = new AzureStorageService(accountName,accountKey,accountBlobContainerName);
+					storageService = new AzureStorageService(sas,blobEndpoint,queueEndpoint + "-test");
 					fileId = UUID.randomUUID().toString();
 					jsonMessage = getSerializedMessageForTest(fileId);
 					
-					testQueue = storageService.getPostUploadQueueName() + "-test";
-					storageService.setAzurePostUploadQueue(testQueue);
-			        
 					ClassLoader loader = Thread.currentThread().getContextClassLoader();
 					try {
 						fileName = "azure_test_file.xlf";
@@ -102,25 +98,6 @@ public class AzureStorageServiceTest {
 		
 	}
 
-	@Test
-	public void testGetPostUploadQueueName() {
-		if(execute){
-			String postUploadQueueName = storageService.getPostUploadQueueName();
-			assertEquals(testQueue, postUploadQueueName);
-		}
-		
-	}
-
-	@Test
-	public void testGetBlobContainerName() {
-		if(execute){
-			storageService.setAzureBlobContainer("blob-container-for-test");
-			String blobContainerName = storageService.getBlobContainerName();
-			assertEquals("blob-container-for-test",blobContainerName);
-		}
-		
-	}
-	
 	private String getSerializedMessageForTest(String fileId){
 		
 		PostUploadRequest request = new PostUploadRequest();

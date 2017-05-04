@@ -972,10 +972,7 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
     	
     	OcelotAzureConfig ocelotAzureConfiguration = configService.getOcelotAzureConfiguration();
     	if(ocelotAzureConfiguration != null){
-    		String accountName = ocelotAzureConfiguration.getAccountName();
-    		String accountKey = ocelotAzureConfiguration.getAccountKey();
-    		String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
-    		enableStorage = accountName != null && accountKey != null && azureBlobContainer != null;
+    		enableStorage = ocelotAzureConfiguration.isComplete();
     		
     	}
     }
@@ -990,21 +987,16 @@ public class Ocelot extends JPanel implements Runnable, ActionListener,
     	
     	if(ocelotAzureConfiguration != null){
     		
-    		String accountName = ocelotAzureConfiguration.getAccountName();
-        	String accountKey = ocelotAzureConfiguration.getAccountKey();
-        	String azureBlobContainer = ocelotAzureConfiguration.getAccountBlobContainerName();
-        	
-        	boolean canStorage = accountName != null && accountKey != null && azureBlobContainer != null;
         	File tempFile = null;
 			try {
-				if (canStorage) {
+				if (ocelotAzureConfiguration.isComplete()) {
 
 					tempFile = File.createTempFile("ocelot", "azure");
 					ocelotApp.saveFile(tempFile);
 					
 
-					storageService = new AzureStorageService(accountName,
-							accountKey, azureBlobContainer);
+					storageService = new AzureStorageService(ocelotAzureConfiguration.getSas(),
+							ocelotAzureConfiguration.getBlobEndpoint(), ocelotAzureConfiguration.getQueueEndpoint());
 
 					String fileId = UUID.randomUUID().toString();
 					boolean uploadedFileToBlobStorage = storageService
