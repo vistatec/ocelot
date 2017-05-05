@@ -779,7 +779,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
         Component comp = sourceTargetTable.prepareRenderer(renderer, viewRow, viewCol);
         int colWidth = tableColumnModel.getColumn(viewCol).getWidth();
         comp.setBounds(0, 0, colWidth, Integer.MAX_VALUE);
-        return Math.max(previousHeight, comp.getPreferredSize().height);
+        return Math.max(previousHeight, comp.getPreferredSize().height + 5);
 	}
 
 	public OcelotSegment getSelectedSegment() {
