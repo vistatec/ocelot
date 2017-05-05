@@ -213,7 +213,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			int updatedRowCount = 0;
 			for (int row = 0; row < getRowCount(); row++) {
 				if (requireFullRecalc || editingRow == row) {
-					updateRowHeight(row, getIntercellSpacing().height);
+                    updateRowHeight(row, rowMargin);
 					updatedRowCount++;
 				}
 			}
