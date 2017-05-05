@@ -101,9 +101,8 @@ public class SegmentTextCell extends JTextPane {
     
     private JFrame menuFrame;
 
-    // Shared styles table
-    private static final StyleContext styles = new StyleContext();
-    static {
+    private static StyleContext newStyles() {
+        StyleContext styles = new StyleContext();
         Style style = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         Style regular = styles.addStyle(regularStyle, style);
 
@@ -124,6 +123,7 @@ public class SegmentTextCell extends JTextPane {
         
         Style currHighlight = styles.addStyle(currHighlightStyle, regular);
         StyleConstants.setBackground(currHighlight, Color.green);
+        return styles;
     }
 
     /**
@@ -142,7 +142,7 @@ public class SegmentTextCell extends JTextPane {
      * @return real cell
      */
     public static SegmentTextCell createCell() {
-        return new SegmentTextCell(styles);
+        return new SegmentTextCell(newStyles());
     }
 
     /**
@@ -172,7 +172,7 @@ public class SegmentTextCell extends JTextPane {
     }
 
     private SegmentTextCell(int row, SegmentVariant v, boolean raw, boolean isBidi) {
-        this(styles);
+        this(newStyles());
         setVariant(row, v, raw);
         setBidi(isBidi);
     }
