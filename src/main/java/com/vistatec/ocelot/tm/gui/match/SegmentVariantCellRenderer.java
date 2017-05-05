@@ -13,6 +13,7 @@ import com.vistatec.ocelot.segment.view.SegmentTextCell;
  * Table cell renderer for segment elements. It renders the table with alternate rows color.
  */
 public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
+    private final SegmentTextCell renderTextPane = SegmentTextCell.createCell();
 
     /** The serial version UID. */
     private static final long serialVersionUID = 1L;
@@ -25,7 +26,6 @@ public class SegmentVariantCellRenderer extends AlternateRowsColorRenderer {
     public Component getTableCellRendererComponent(JTable jtable, Object o,
         boolean isSelected, boolean hasFocus, int row, int col) {
         Component comp = super.getTableCellRendererComponent(jtable, o, isSelected, hasFocus, row, col);
-        SegmentTextCell renderTextPane = SegmentTextCell.createCell();
         SegmentVariant segVariant = (SegmentVariant)o;
         if(o != null){
             renderTextPane.setVariant(row, segVariant, false);

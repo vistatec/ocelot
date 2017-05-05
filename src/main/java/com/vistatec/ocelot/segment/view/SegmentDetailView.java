@@ -100,13 +100,14 @@ public class SegmentDetailView extends JScrollPane {
         setViewportView(null);
     }
 
+    private final SegmentTextCell segmentCell = SegmentTextCell.createCell();
+
     protected void updateRowHeights() {
         setViewportView(null);
 
         FontMetrics font = table.getFontMetrics(table.getFont());
         int rowHeight = font.getHeight();
         for (int row = 0; row < DetailTableModel.SEGMENTROWS; row++) {
-            SegmentTextCell segmentCell = SegmentTextCell.createCell();
             segmentCell.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
             if (tableModel.hasSegment()) {
                 rowHeight = getLabelRowHeight(tableModel.getValueAt(row, 0).toString(),
@@ -207,11 +208,11 @@ public class SegmentDetailView extends JScrollPane {
     }
 
     public class TextRenderer implements TableCellRenderer {
+        private final SegmentTextCell renderTextPane = SegmentTextCell.createCell();
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object o,
             boolean isSelected, boolean hasFocus, int row, int col) {
-            SegmentTextCell renderTextPane = SegmentTextCell.createCell();
             if (tableModel.getRowCount() > row) {
                 if (col > 0) {
                     if (row > 2) {

@@ -48,7 +48,7 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.TestFragmentVariant.DummyWithStore;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
-import com.vistatec.ocelot.segment.view.SegmentTextCell.SegmentVariantTransferable;
+import com.vistatec.ocelot.segment.view.SegmentTextEditorCell.SegmentVariantTransferable;
 
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextContainer;
@@ -88,7 +88,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newTextContainerVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
             assertEquals("A<b1>B</b1>", cell.getText());
 
             TransferHandler handler = cell.getTransferHandler();
@@ -100,7 +100,7 @@ public class TestSegmentTextCell {
             handler.exportToClipboard(cell, cb, TransferHandler.COPY);
 
             DataFlavor[] flavors = cb.getAvailableDataFlavors();
-            assertEquals(Arrays.asList(SegmentTextCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
+            assertEquals(Arrays.asList(SegmentTextEditorCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
                     Arrays.asList(flavors));
 
             Transferable transferable = cb.getContents(null);
@@ -109,7 +109,7 @@ public class TestSegmentTextCell {
             SegmentVariantTransferable svt = (SegmentVariantTransferable) transferable;
 
             {
-                Object data = svt.getTransferData(SegmentTextCell.SELECTION_FLAVOR);
+                Object data = svt.getTransferData(SegmentTextEditorCell.SELECTION_FLAVOR);
                 assertTrue(data instanceof SegmentVariantSelection);
                 SegmentVariantSelection sel = (SegmentVariantSelection) data;
                 assertEquals("<b1>B", sel.getDisplayText());
@@ -135,7 +135,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newFragmentVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
             assertEquals("A<pcid1>B</pcid1>", cell.getText());
 
             TransferHandler handler = cell.getTransferHandler();
@@ -147,7 +147,7 @@ public class TestSegmentTextCell {
             handler.exportToClipboard(cell, cb, TransferHandler.COPY);
 
             DataFlavor[] flavors = cb.getAvailableDataFlavors();
-            assertEquals(Arrays.asList(SegmentTextCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
+            assertEquals(Arrays.asList(SegmentTextEditorCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
                     Arrays.asList(flavors));
 
             Transferable transferable = cb.getContents(null);
@@ -156,7 +156,7 @@ public class TestSegmentTextCell {
             SegmentVariantTransferable svt = (SegmentVariantTransferable) transferable;
 
             {
-                Object data = svt.getTransferData(SegmentTextCell.SELECTION_FLAVOR);
+                Object data = svt.getTransferData(SegmentTextEditorCell.SELECTION_FLAVOR);
                 assertTrue(data instanceof SegmentVariantSelection);
                 SegmentVariantSelection sel = (SegmentVariantSelection) data;
                 assertEquals("<pcid1>B", sel.getDisplayText());
@@ -182,7 +182,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newTextContainerVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
             assertEquals("A<b1>B</b1>", cell.getText());
 
             TransferHandler handler = cell.getTransferHandler();
@@ -194,7 +194,7 @@ public class TestSegmentTextCell {
             handler.exportToClipboard(cell, cb, TransferHandler.MOVE);
 
             DataFlavor[] flavors = cb.getAvailableDataFlavors();
-            assertEquals(Arrays.asList(SegmentTextCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
+            assertEquals(Arrays.asList(SegmentTextEditorCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
                     Arrays.asList(flavors));
 
             Transferable transferable = cb.getContents(null);
@@ -203,7 +203,7 @@ public class TestSegmentTextCell {
             SegmentVariantTransferable svt = (SegmentVariantTransferable) transferable;
 
             {
-                Object data = svt.getTransferData(SegmentTextCell.SELECTION_FLAVOR);
+                Object data = svt.getTransferData(SegmentTextEditorCell.SELECTION_FLAVOR);
                 assertTrue(data instanceof SegmentVariantSelection);
                 SegmentVariantSelection sel = (SegmentVariantSelection) data;
                 assertEquals("<b1>B", sel.getDisplayText());
@@ -229,7 +229,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newFragmentVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
             assertEquals("A<pcid1>B</pcid1>", cell.getText());
 
             TransferHandler handler = cell.getTransferHandler();
@@ -241,7 +241,7 @@ public class TestSegmentTextCell {
             handler.exportToClipboard(cell, cb, TransferHandler.MOVE);
 
             DataFlavor[] flavors = cb.getAvailableDataFlavors();
-            assertEquals(Arrays.asList(SegmentTextCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
+            assertEquals(Arrays.asList(SegmentTextEditorCell.SELECTION_FLAVOR, DataFlavor.stringFlavor),
                     Arrays.asList(flavors));
 
             Transferable transferable = cb.getContents(null);
@@ -250,7 +250,7 @@ public class TestSegmentTextCell {
             SegmentVariantTransferable svt = (SegmentVariantTransferable) transferable;
 
             {
-                Object data = svt.getTransferData(SegmentTextCell.SELECTION_FLAVOR);
+                Object data = svt.getTransferData(SegmentTextEditorCell.SELECTION_FLAVOR);
                 assertTrue(data instanceof SegmentVariantSelection);
                 SegmentVariantSelection sel = (SegmentVariantSelection) data;
                 assertEquals("<pcid1>B", sel.getDisplayText());
@@ -276,7 +276,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newTextContainerVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
 
             TransferHandler handler = cell.getTransferHandler();
 
@@ -316,7 +316,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newFragmentVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
 
             TransferHandler handler = cell.getTransferHandler();
 
@@ -356,7 +356,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newTextContainerVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
 
             TransferHandler handler = cell.getTransferHandler();
 
@@ -369,7 +369,7 @@ public class TestSegmentTextCell {
             // Paste target is a different row; tags will be reduced to plain
             // text.
             SegmentVariant v2 = newTextContainerVariant();
-            SegmentTextCell cell2 = SegmentTextCell.createCell(1, v2, false, false);
+            SegmentTextEditorCell cell2 = SegmentTextEditorCell.createCell(1, v2, false, false);
 
             Transferable transferable = cb.getContents(null);
             TransferSupport support = new TransferSupport(cell2, transferable);
@@ -400,7 +400,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newFragmentVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
 
             TransferHandler handler = cell.getTransferHandler();
 
@@ -413,7 +413,7 @@ public class TestSegmentTextCell {
             // Paste target is a different row; tags will be reduced to plain
             // text.
             SegmentVariant v2 = newFragmentVariant();
-            SegmentTextCell cell2 = SegmentTextCell.createCell(1, v2, false, false);
+            SegmentTextEditorCell cell2 = SegmentTextEditorCell.createCell(1, v2, false, false);
 
             Transferable transferable = cb.getContents(null);
             TransferSupport support = new TransferSupport(cell2, transferable);
@@ -444,7 +444,7 @@ public class TestSegmentTextCell {
 
         try {
             SegmentVariant v = newFragmentVariant();
-            SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
+            SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
 
             TransferHandler handler = cell.getTransferHandler();
 
@@ -460,7 +460,7 @@ public class TestSegmentTextCell {
             // works
             // currently, but it's better to be safe than sorry.
             SegmentVariant v2 = newTextContainerVariant();
-            SegmentTextCell cell2 = SegmentTextCell.createCell(0, v2, false, false);
+            SegmentTextEditorCell cell2 = SegmentTextEditorCell.createCell(0, v2, false, false);
 
             Transferable transferable = cb.getContents(null);
             TransferSupport support = new TransferSupport(cell2, transferable);
