@@ -737,21 +737,13 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			adjustEditorInitialSize(row);
 			return;
 		}
-		int modelRow = sort.convertRowIndexToModel(row);
 		FontMetrics font = sourceTargetTable.getFontMetrics(sourceTargetTable
 		        .getFont());
 		int rowHeight = font.getHeight();
-		rowHeight = getColumnHeight(SegNum, row, "1", rowHeight,
-		        sourceTargetTable.getFont());
-		OcelotSegment segment = segmentTableModel.getSegment(modelRow);
-		Font sourceFont = getFontForColumn(Source);
-		rowHeight = getColumnHeight(Source, row, segment.getSource()
-		        .getDisplayText(), rowHeight, sourceFont);
-		Font targetFont = getFontForColumn(Target);
-		rowHeight = getColumnHeight(Target, row, segment.getTarget()
-		        .getDisplayText(), rowHeight, targetFont);
-		rowHeight = getColumnHeight(Original, row,
-		        getOriginalTargetText(modelRow), rowHeight, targetFont);
+        rowHeight = getColumnHeight(SegNum, row, rowHeight);
+        rowHeight = getColumnHeight(Source, row, rowHeight);
+        rowHeight = getColumnHeight(Target, row, rowHeight);
+        rowHeight = getColumnHeight(Original, row, rowHeight);
 		sourceTargetTable.setRowHeight(row, rowHeight + intercellHeight);
 	}
 
@@ -778,45 +770,16 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		sourceTargetTable.setRowHeight(row, height * 10);
 	}
 
-	private Font getFontForColumn(SegmentViewColumn col) {
-		return ((SegmentTextFontRenderer) tableColumnModel.getColumn(
-		        col.ordinal()).getCellRenderer()).getFont();
-	}
-
-	// TODO: move elsewhere
-	private String getOriginalTargetText(int modelRow) {
-		if (enabledTargetDiff) {
-			List<String> textDiff = segmentTableModel.getSegment(modelRow)
-			        .getTargetDiff();
-			StringBuilder displayText = new StringBuilder();
-			for (int i = 0; i < textDiff.size(); i += 2) {
-				displayText.append(textDiff.get(i));
-			}
-			return displayText.toString();
-		} else {
-			return segmentTableModel.getSegment(modelRow).getOriginalTarget()
-			        .getDisplayText();
-		}
-	}
-
-    private final SegmentTextCell dummyCell = SegmentTextCell.createDummyCell();
-
-	private int getColumnHeight(SegmentViewColumn colData, int viewRow,
-	        String text, int previousHeight, Font font) {
-		if (!segmentTableModel.isColumnEnabled(colData)) {
-			return previousHeight;
-		}
-		dummyCell.setBorder(UIManager
-		        .getBorder("Table.focusCellHighlightBorder"));
-		dummyCell.setFont(font);
-		int col = segmentTableModel.getIndexForColumn(colData);
-		int width = sourceTargetTable.getColumnModel().getColumn(col)
-		        .getWidth();
-		dummyCell.setText(text);
-		// Need to set width to force text area to calculate a pref height
-		dummyCell.setSize(new Dimension(width, sourceTargetTable
-		        .getRowHeight(viewRow)));
-		return Math.max(previousHeight, dummyCell.getPreferredSize().height);
+    private int getColumnHeight(SegmentViewColumn colData, int viewRow, int previousHeight) {
+        int viewCol = segmentTableModel.getIndexForColumn(colData);
+        if (viewCol == -1) {
+            return previousHeight;
+        }
+        TableCellRenderer renderer = sourceTargetTable.getCellRenderer(viewRow, viewCol);
+        Component comp = sourceTargetTable.prepareRenderer(renderer, viewRow, viewCol);
+        int colWidth = tableColumnModel.getColumn(viewCol).getWidth();
+        comp.setBounds(0, 0, colWidth, Integer.MAX_VALUE);
+        return Math.max(previousHeight, comp.getPreferredSize().height);
 	}
 
 	public OcelotSegment getSelectedSegment() {
