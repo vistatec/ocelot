@@ -1246,7 +1246,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	        TableCellEditor {
 		private static final long serialVersionUID = 1L;
 
-		protected SegmentTextCell editorComponent;
+        protected SegmentTextEditorCell editorComponent;
 		protected JTextArea textArea;
 		protected SegmentCellEditorListener editListener;
 		private Font font;
@@ -1264,14 +1264,14 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
 			if (col == segmentTableModel.getSegmentSourceColumnIndex()) {
-                editorComponent = SegmentTextCell.createCell(row, seg.getSource()
+                editorComponent = SegmentTextEditorCell.createCell(row, seg.getSource()
 				        .createCopy(), false, isSourceBidi);
 				editorComponent.setEditable(false);
 
 			} else if (col == segmentTableModel.getSegmentTargetColumnIndex()) {
 				editListener
 				        .setBeginEdit(seg, seg.getTarget().getDisplayText());
-                editorComponent = SegmentTextCell.createCell(row, seg.getTarget()
+                editorComponent = SegmentTextEditorCell.createCell(row, seg.getTarget()
 				        .createCopy(), false, isTargetBidi);
 				editorComponent.addMouseListener(new TextPopupMenuListener(true));
 				editorComponent.getInputMap().put(
