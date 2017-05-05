@@ -30,7 +30,7 @@ public class ReadOnlyCellEditor extends AbstractCellEditor implements TableCellE
 	 */
 	private static final long serialVersionUID = -591391978033697647L;
 	
-	private SegmentTextCell editorComp;
+    private final SegmentTextCell editorComp = SegmentTextCell.createCell();
 
 	@Override
 	public Object getCellEditorValue() {
@@ -44,7 +44,6 @@ public class ReadOnlyCellEditor extends AbstractCellEditor implements TableCellE
 		
 //		Component comp = super.getTableCellEditorComponent(table, value, isSelected, row, column);
 		SegmentTextCell renderedComp = (SegmentTextCell)table.getCellRenderer(row, column).getTableCellRendererComponent(table, value, isSelected, true, row, column);
-		editorComp = SegmentTextCell.createCell();
         editorComp.setVariant(row, renderedComp.getVariant().createCopy(), false);
 		editorComp.setBackground(table.getSelectionBackground());
 		editorComp.setSelectionColor(Color.BLUE);

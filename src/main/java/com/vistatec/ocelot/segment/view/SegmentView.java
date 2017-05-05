@@ -799,23 +799,24 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		}
 	}
 
+    private final SegmentTextCell dummyCell = SegmentTextCell.createDummyCell();
+
 	private int getColumnHeight(SegmentViewColumn colData, int viewRow,
 	        String text, int previousHeight, Font font) {
 		if (!segmentTableModel.isColumnEnabled(colData)) {
 			return previousHeight;
 		}
-		SegmentTextCell segmentCell = SegmentTextCell.createDummyCell();
-		segmentCell.setBorder(UIManager
+		dummyCell.setBorder(UIManager
 		        .getBorder("Table.focusCellHighlightBorder"));
-		segmentCell.setFont(font);
+		dummyCell.setFont(font);
 		int col = segmentTableModel.getIndexForColumn(colData);
 		int width = sourceTargetTable.getColumnModel().getColumn(col)
 		        .getWidth();
-		segmentCell.setText(text);
+		dummyCell.setText(text);
 		// Need to set width to force text area to calculate a pref height
-		segmentCell.setSize(new Dimension(width, sourceTargetTable
+		dummyCell.setSize(new Dimension(width, sourceTargetTable
 		        .getRowHeight(viewRow)));
-		return Math.max(previousHeight, segmentCell.getPreferredSize().height);
+		return Math.max(previousHeight, dummyCell.getPreferredSize().height);
 	}
 
 	public OcelotSegment getSelectedSegment() {
@@ -1023,11 +1024,11 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	 * TableCellRenderer for source/target text in the SegmentTableView.
 	 */
 	public class SegmentTextRenderer implements TableCellRenderer {
+        private final SegmentTextCell renderTextPane = SegmentTextCell.createCell();
 
 		@Override
 		public Component getTableCellRendererComponent(JTable jtable, Object o,
 		        boolean isSelected, boolean hasFocus, int row, int col) {
-			SegmentTextCell renderTextPane = SegmentTextCell.createCell();
 			if (segmentTableModel.getRowCount() > row) {
 				
 				OcelotSegment seg = segmentTableModel.getSegment(sort
@@ -1184,7 +1185,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	        TableCellEditor {
 		private static final long serialVersionUID = -591391978033697647L;
 
-		private SegmentTextCell editorComponent;
+        private final SegmentTextCell editorComponent = SegmentTextCell.createCell();
 
 		@Override
 		public Object getCellEditorValue() {
@@ -1198,8 +1199,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			
 			OcelotSegment seg = segmentTableModel.getSegment(sort
 			        .convertRowIndexToModel(row));
-            editorComponent = SegmentTextCell.createCell(row, seg.getSource()
-			        .createCopy(), false, isSourceBidi);
+            editorComponent.setVariant(row, seg.getSource().createCopy(), false);
+            editorComponent.setBidi(isSourceBidi);
 			editorComponent.setBackground(table.getSelectionBackground());
 			editorComponent.setSelectionColor(Color.BLUE);
 			editorComponent.setSelectedTextColor(Color.WHITE);
