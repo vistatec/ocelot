@@ -195,6 +195,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         editDistService.createEditDistanceReport(filename);
         pluginManager.notifySavedFile(filename);
         Files.move(tmpPath, saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        openFile = saveFile;
     }
 
     public void saveLqiConfiguration(String lqiConfName) {
