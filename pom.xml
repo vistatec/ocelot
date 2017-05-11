@@ -29,16 +29,6 @@
 			<name>Okapi Snapshot</name>
 			<url>http://repository-okapi.forge.cloudbees.com/snapshot/</url>
 		</repository>
-		<repository>
-			<id>okapi-xliff</id>
-			<name>okapi-xliff-repository</name>
-			<url>http://repository-okapi-xliff.forge.cloudbees.com/release/</url>
-		</repository>
-		<repository>
-			<id>okapi-xliff-release</id>
-			<name>okapi-xliff-repository release</name>
-			<url>http://repository-okapi-xliff.forge.cloudbees.com/release/</url>
-		</repository>
 	</repositories>
 
 
