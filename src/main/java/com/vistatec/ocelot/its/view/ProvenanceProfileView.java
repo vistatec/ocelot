@@ -30,6 +30,7 @@ package com.vistatec.ocelot.its.view;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -59,7 +60,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(ProvenanceProfileView.class);
 
-    private final JTextField inputRevPerson, inputRevOrg, inputExtRef, inputLangCode;
+    private final JTextField inputRevPerson, inputRevOrg, inputExtRef, inputLangCode, inputEmail;
     private final JButton save;
 
     private OcelotEventQueue eventQueue;
@@ -75,46 +76,79 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         gridBag.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBag.gridwidth = 1;
 
-        JLabel revPersonLabel = new JLabel("Reviewer: ");
+        JLabel revPersonLabel = new JLabel("Username: ");
         gridBag.gridx = 0;
         gridBag.gridy = 0;
+        gridBag.insets = new Insets(10, 20, 5, 5);
+        gridBag.anchor = GridBagConstraints.EAST;
         add(revPersonLabel, gridBag);
 
         inputRevPerson = new JTextField(15);
         inputRevPerson.setText(profile.getRevPerson());
+        gridBag.anchor = GridBagConstraints.WEST;
+        gridBag.insets = new Insets(10, 0, 5, 20);
         gridBag.gridx = 1;
         gridBag.gridy = 0;
         add(inputRevPerson, gridBag);
+        
+
+        JLabel revEmailLabel = new JLabel("Email: ");
+        gridBag.gridx = 0;
+        gridBag.gridy = 1;
+        gridBag.anchor = GridBagConstraints.EAST;
+        gridBag.insets = new Insets(0, 20, 5, 5);
+        add(revEmailLabel, gridBag);
+
+        inputEmail = new JTextField(15);
+        inputEmail.setText(profile.getEmail()); 
+        gridBag.anchor = GridBagConstraints.WEST;
+        gridBag.insets = new Insets(0, 0, 5, 20);
+        gridBag.gridx = 1;
+        gridBag.gridy = 1;
+        add(inputEmail, gridBag);
+
 
         JLabel revOrgLabel = new JLabel("Organization: ");
         gridBag.gridx = 0;
-        gridBag.gridy = 1;
+        gridBag.gridy = 2;
+        gridBag.anchor = GridBagConstraints.EAST;
+        gridBag.insets = new Insets(0, 20, 5, 5);
         add(revOrgLabel, gridBag);
 
         inputRevOrg = new JTextField(15);
         inputRevOrg.setText(profile.getRevOrg());
         gridBag.gridx = 1;
-        gridBag.gridy = 1;
+        gridBag.gridy = 2;
+        gridBag.anchor = GridBagConstraints.WEST;
+        gridBag.insets = new Insets(0, 0, 5, 20);
         add(inputRevOrg, gridBag);
 
         JLabel extRefLabel = new JLabel("External Reference: ");
         gridBag.gridx = 0;
-        gridBag.gridy = 2;
+        gridBag.gridy = 3;
+        gridBag.anchor = GridBagConstraints.EAST;
+        gridBag.insets = new Insets(0, 20, 5, 5);
         add(extRefLabel, gridBag);
 
         inputExtRef = new JTextField(15);
         inputExtRef.setText(profile.getProvRef());
         gridBag.gridx = 1;
-        gridBag.gridy = 2;
+        gridBag.gridy = 3;
+        gridBag.anchor = GridBagConstraints.WEST;
+        gridBag.insets = new Insets(0, 0, 5, 20);
         add(inputExtRef, gridBag);
         
         gridBag.gridx = 0;
-        gridBag.gridy = 3;
+        gridBag.gridy = 4;
+        gridBag.anchor = GridBagConstraints.EAST;
+        gridBag.insets = new Insets(0, 20, 10, 5);
         add(new JLabel("Language Code: "), gridBag);
         
         inputLangCode = new JTextField(15);
         inputLangCode.setText(profile.getLangCode());
         gridBag.gridx = 1;
+        gridBag.anchor = GridBagConstraints.WEST;
+        gridBag.insets = new Insets(0, 0, 10, 20);
         add(inputLangCode, gridBag);
         
 
@@ -128,7 +162,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         actionPanel.add(save);
         actionPanel.add(cancel);
         gridBag.gridx = 1;
-        gridBag.gridy = 4;
+        gridBag.gridy = 5;
         add(actionPanel, gridBag);
 
     }
@@ -143,7 +177,7 @@ public class ProvenanceProfileView extends ODialogPanel implements ActionListene
         if (e.getSource() == save) {
             UserProvenance userProvData = new UserProvenance(
                     inputRevPerson.getText(), inputRevOrg.getText(),
-                    inputExtRef.getText(), inputLangCode.getText());
+                    inputExtRef.getText(), inputEmail.getText(), inputLangCode.getText());
             eventQueue.post(new UserProfileSaveEvent(userProvData));
         }
     }
