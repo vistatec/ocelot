@@ -54,7 +54,7 @@ public class TestItsDocStatsService {
             oneOf(mockEventQueue).post(with(any(ItsDocStatsChangedEvent.class)));
         }});
 
-        Provenance prov = new UserProvenance("a", "b", "c");
+        Provenance prov = new UserProvenance("a", "b", "c", "d");
         docStatsService.addProvenanceStats(new ItsDocStatsAddedProvEvent(prov));
 
         List<ITSStats> expectedStats = new ArrayList<>();

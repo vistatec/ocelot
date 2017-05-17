@@ -55,7 +55,7 @@ public class TestPluginManager {
 
         File pluginDir = new File(url.toURI());
         OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
-        PluginManager pluginManager = new PluginManager(new OcelotJsonConfigService(new TestJsonConfigTransferService()), pluginDir, eventQueue);
+        PluginManager pluginManager = new PluginManager(new OcelotJsonConfigService(new TestJsonConfigTransferService()), pluginDir, pluginDir, eventQueue);
 //        PluginManager pluginManager = new PluginManager(
 //                new OcelotConfigService(new TestConfigTransferService()), pluginDir, eventQueue);
         pluginManager.discover();

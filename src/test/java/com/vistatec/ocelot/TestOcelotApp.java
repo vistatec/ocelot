@@ -22,7 +22,7 @@ public class TestOcelotApp {
     }
 
     public void testOpenSimpleXliff() throws IOException, URISyntaxException, XMLStreamException {
-        ocelotApp.openFile(loadResource("/test.xlf"), false);
+        ocelotApp.openFile(loadResource("/test.xlf"), false, null);
         assertEquals("en", ocelotApp.getFileSourceLang());
         assertEquals("fr", ocelotApp.getFileTargetLang());
         assertTrue(ocelotApp.hasOpenFile());
