@@ -28,11 +28,11 @@
  */
 package com.vistatec.ocelot.plugins;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -198,7 +199,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         add(pluginLabel, gridBag);
         
         JLabel licenseLabel = new JLabel();
-        setLicenseLabel(plugin, licenseLabel, pluginManager.getLicenseStatus(plugin));
+        LicenseUtils.setLicenseLabel(plugin, licenseLabel, pluginManager.getLicenseStatus(plugin));
         gridBag.gridx = 4;
         gridBag.gridwidth = 2;
         licenseLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -209,35 +210,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         
     }
     
-    private void setLicenseLabel(Plugin plugin, JLabel licenseLabel, Integer licenseStatus){
-    	
-    	String text = "-";
-    	Color foreground = licenseLabel.getForeground();
-    	if(licenseStatus != null){
-    		switch (licenseStatus) {
-			case Licensable.AUTHORIZED:
-				text = "Verified";
-				foreground = new Color(8, 175, 36);
-				break;
-			case Licensable.CANNOT_VERIFY_LICENSE:
-				text = "Impossible to verify";
-				foreground = Color.RED;
-				break;
-			case Licensable.NOT_AUTHORIZED:
-				text = "Not Authorized";
-				foreground = Color.RED;
-				break;
-			case Licensable.NOT_REGISTERED:
-				text = "Not Registered";
-				foreground = Color.RED;
-				break;
-			default:
-				break;
-			}
-    	}
-    	licenseLabel.setText(text);
-    	licenseLabel.setForeground(foreground);
-    }
+   
     
     
     private String getPluginType(Plugin plugin) {
@@ -251,18 +224,19 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         Object source = e.getItemSelectable();
         if (source.getClass().equals(JCheckBox.class)) {
             JCheckBox checkbox = (JCheckBox) source;
+            Plugin plugin = checkboxToPlugin.get(checkbox);
             try {
-            	Plugin plugin = checkboxToPlugin.get(checkbox);
-                pluginManager.setEnabled(plugin,
-                        e.getStateChange() == ItemEvent.SELECTED);
-                Integer licenseStatus = pluginManager.getLicenseStatus(plugin);
-                setLicenseLabel(plugin, plugin2LicenseLabel.get(plugin), licenseStatus);
-                if(licenseStatus != null && licenseStatus != Licensable.AUTHORIZED){
-                	checkbox.setSelected(false);
-                }
-                repaint();
-                
-                
+            	if(plugin instanceof Licensable && e.getStateChange() == ItemEvent.SELECTED){
+            		Toolkit kit = Toolkit.getDefaultToolkit();
+            		ImageIcon icon = new ImageIcon(kit.createImage(getClass().getResource(
+            		        "loader.gif")));
+            		JLabel licenseLabel = plugin2LicenseLabel.get(plugin);
+            		licenseLabel.setIcon(icon);
+            		licenseLabel.setText("");
+            		pluginManager.checkPluginLicenseFromSwing(checkbox, licenseLabel, plugin);
+            	} else {
+            		pluginManager.setEnabled(plugin, e.getStateChange() == ItemEvent.SELECTED);
+            	}
             } catch (TransferException ex) {
                 LOG.error("Failed to save enabling plugin", ex);
                 JOptionPane.showMessageDialog(getDialog(), "Could not save plugin enabled.");
