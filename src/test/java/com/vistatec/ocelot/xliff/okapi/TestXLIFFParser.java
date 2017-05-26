@@ -65,7 +65,7 @@ public class TestXLIFFParser {
     public void testTargetLocales() throws Exception {
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
 
-        LocaleId frFr = new LocaleId("fr-fr");
+        LocaleId frFr = LocaleId.fromBCP47("fr-FR");
         for (OcelotSegment seg : parser.parse(new File(getClass().getResource("xliff_test.xlf").toURI()))) {
             assertTrue(seg instanceof OkapiSegment);
             OkapiSegment okapiSeg = (OkapiSegment) seg;
