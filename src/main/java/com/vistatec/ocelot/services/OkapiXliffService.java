@@ -77,10 +77,12 @@ public class OkapiXliffService implements XliffService {
         getDoc(e.getDocument()).getWriter().updateNotes(e.getSegment());
     }
     
-    public void saveTime(double time){
+    @Override
+    public void saveTime(Double time){
     	this.time = time;
     }
-    
+
+    @Override
     public void saveLqiConfiguration(String lqiConfigurationName){
     	this.lqiConfiguration = lqiConfigurationName;
     }

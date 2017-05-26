@@ -59,7 +59,6 @@ import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.EditDistanceReportService;
-import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
@@ -174,9 +173,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         // the annotations.
         Path tmpPath = Files.createTempFile("ocelot", "save");
         File tmpFile = tmpPath.toFile();
-        if(xliffService instanceof OkapiXliffService){
-        	((OkapiXliffService)xliffService).saveTime(pluginManager.getTimerSeconds());
-        }
+        xliffService.saveTime(pluginManager.getTimerSeconds());
         xliffService.save(openXliffFile, tmpFile);
         try {
 			XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
@@ -199,9 +196,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     }
 
     public void saveLqiConfiguration(String lqiConfName) {
-		if(xliffService instanceof OkapiXliffService){
-			((OkapiXliffService)xliffService).saveLqiConfiguration(lqiConfName);
-		}
+		xliffService.saveLqiConfiguration(lqiConfName);
 	}
     
     public String getFileSourceLang() {

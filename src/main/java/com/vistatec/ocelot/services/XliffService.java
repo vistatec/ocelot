@@ -18,4 +18,7 @@ public interface XliffService extends OcelotEventQueueListener {
 
     public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException;
 
+    public void saveTime(Double time);
+
+    public void saveLqiConfiguration(String lqiConfigurationName);
 }
