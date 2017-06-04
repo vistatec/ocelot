@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -358,12 +359,28 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
         if (e.getSource().equals(btnLearn)) {
             // learn();
+        } else if (e.getSource().equals(btnIgnore)) {
+            ignoreOne();
+        } else if (e.getSource().equals(btnIgnoreAll)) {
+            ignoreAll();
 		} else if (e.getSource().equals(btnReplace)) {
 			replace();
 		} else if (e.getSource().equals(btnReplaceAll)) {
 			replaceAll();
 		}
 	}
+
+    private void ignoreOne() {
+        resultIdx++;
+        updateResult();
+    }
+
+    private void ignoreAll() {
+        List<CheckResult> newResults = new ArrayList<>(results);
+        String ignored = results.get(resultIdx).getWord();
+        newResults.removeIf(r -> r.getWord().equals(ignored));
+        setResults(newResults);
+    }
 
 	/**
 	 * Replaces all instances.
@@ -413,17 +430,29 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         }
     }
 
-    private void updateResult() {
-        boolean enabled = results != null && !results.isEmpty();
-        setAllEnabled(enabled);
-        if (!enabled) {
-            return;
+    private CheckResult getCurrentResult() {
+        if (results != null && !results.isEmpty() && resultIdx >= 0 && resultIdx < results.size()) {
+            return results.get(resultIdx);
+        } else {
+            return null;
         }
-        CheckResult result = results.get(resultIdx);
-        txtUnknownWord.setText(result.getWord());
-        List<String> suggestions = result.getSuggestions();
-        lstSuggestions.setListData(suggestions.toArray(new String[suggestions.size()]));
-        setTitle("Spellcheck (" + (resultIdx + 1) + " of " + results.size() + ")");
+    }
+
+    private void updateResult() {
+        CheckResult result = getCurrentResult();
+        if (result != null) {
+            setAllEnabled(true);
+            txtUnknownWord.setText(result.getWord());
+            List<String> suggestions = result.getSuggestions();
+            lstSuggestions.setListData(suggestions.toArray(new String[suggestions.size()]));
+            setTitle("Spellcheck (" + (results.size() - resultIdx) + " remaining)");
+        } else {
+            setAllEnabled(false);
+            txtUnknownWord.setText(null);
+            txtReplaceWord.setText(null);
+            lstSuggestions.setListData(new String[0]);
+            setTitle("Spellcheck");
+        }
     }
 
     @Override
