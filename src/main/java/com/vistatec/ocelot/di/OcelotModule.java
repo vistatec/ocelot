@@ -36,6 +36,7 @@ import com.vistatec.ocelot.services.ProvenanceService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
+import com.vistatec.ocelot.spellcheck.SpellcheckController;
 import com.vistatec.ocelot.tm.TmManager;
 import com.vistatec.ocelot.tm.TmPenalizer;
 import com.vistatec.ocelot.tm.TmService;
@@ -75,6 +76,7 @@ public class OcelotModule extends AbstractModule {
         TmGuiManager tmGuiManager = null;
         LQIGridController lqiGridController = null;
         FindAndReplaceController frController = null;
+        SpellcheckController scController = null;
         ProfileManager profileManager = null;
         try {
             File ocelotDir = new File(System.getProperty("user.home"), ".ocelot");
@@ -114,6 +116,8 @@ public class OcelotModule extends AbstractModule {
             
             frController = new FindAndReplaceController(eventQueue);
             eventQueue.registerListener(frController);
+            scController = new SpellcheckController(eventQueue);
+            eventQueue.registerListener(scController);
             LingoTekManager lgkManager = new LingoTekManager(ocelotCfgService.getLingoTekConfigurationParams());
             bind(LingoTekManager.class).toInstance(lgkManager);
         } catch (IOException | TransferException | ConfigurationException ex) {
@@ -128,6 +132,7 @@ public class OcelotModule extends AbstractModule {
         bind(TmService.class).toInstance(tmService);
         bind(TmGuiManager.class).toInstance(tmGuiManager);
         bind(FindAndReplaceController.class).toInstance(frController);
+        bind(SpellcheckController.class).toInstance(scController);
         bind(ProfileManager.class).toInstance(profileManager);
 
 		bindServices(eventQueue, profileCfgService, ocelotCfgService, lqiCfgService, docStats);
