@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -22,11 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Dialog providing graphical tools for checking and correcting spelling.
  */
-public class SpellcheckDialog extends JDialog implements ActionListener {
+public class SpellcheckDialog extends JDialog implements ActionListener, ListSelectionListener {
 
 	/** The serial version UID. */
 	private static final long serialVersionUID = 1L;
@@ -88,6 +91,10 @@ public class SpellcheckDialog extends JDialog implements ActionListener {
 	/** The controller. */
 	private SpellcheckController controller;
 
+    private int resultIdx;
+
+    private List<CheckResult> results;
+
 	/**
 	 * Constructor.
 	 * 
@@ -115,6 +122,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener {
         setTitle("Spellcheck");
 		add(getMainComponent(), BorderLayout.CENTER);
 		add(getBottomComponent(), BorderLayout.SOUTH);
+        setAllEnabled(false);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -284,6 +292,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener {
         }
         {
             lstSuggestions = new JList<>();
+            lstSuggestions.addListSelectionListener(this);
             JScrollPane spSuggestions = new JScrollPane(lstSuggestions);
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 1;
@@ -367,5 +376,47 @@ public class SpellcheckDialog extends JDialog implements ActionListener {
 		controller.closeDialog();
 		setVisible(false);
 	}
+
+    public void setResults(List<CheckResult> results) {
+        this.resultIdx = 0;
+        this.results = results;
+        updateResult();
+    }
+
+    private void setAllEnabled(boolean enabled) {
+        setAllEnabledImpl(this, enabled);
+    }
+
+    private static void setAllEnabledImpl(Container container, boolean enabled) {
+        for (Component c : container.getComponents()) {
+            c.setEnabled(enabled);
+            if (c instanceof Container) {
+                setAllEnabledImpl((Container) c, enabled);
+            }
+        }
+    }
+
+    private void updateResult() {
+        boolean enabled = results != null && !results.isEmpty();
+        setAllEnabled(enabled);
+        if (!enabled) {
+            return;
+        }
+        CheckResult result = results.get(resultIdx);
+        txtUnknownWord.setText(result.getWord());
+        List<String> suggestions = result.getSuggestions();
+        lstSuggestions.setListData(suggestions.toArray(new String[suggestions.size()]));
+        setTitle("Spellcheck (" + (resultIdx + 1) + " of " + results.size() + ")");
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
+        if (e.getSource() == lstSuggestions) {
+            txtReplaceWord.setText(lstSuggestions.getSelectedValue());
+        }
+    }
 
 }
