@@ -88,16 +88,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
 				.getOriginalLocId());
         targetLocale = Locale.forLanguageTag(e.getDocument().getTgtLocale()
 				.getOriginalLocId());
-		if (scDialog != null) {
-			int selectedScope = scDialog.getSelectedScope();
-			if (selectedScope == Spellchecker.SCOPE_SOURCE) {
-				setSourceScope();
-			} else {
-				setTargetScope();
-			}
-		}
+        setTargetScope();
 		clear();
-
 	}
 	
 	@Subscribe
@@ -148,10 +140,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
 				spellchecker.clearAllResults();
 				List<FindResult> results = spellchecker.findWord(text, getSortedSegmentList());
 				if (results != null && !results.isEmpty()) {
-					scDialog.displayOccurrenceNum(results.size());
 					sendHighlightEvent(results);
 				} else {
-					scDialog.setResult(RESULT_NOT_FOUND);
 					eventQueue.post(new HighlightEvent(null, -1));
 				}
 				// if a list of results already exists, then go to the next
@@ -166,9 +156,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 						&& spellchecker.getCurrentResIndex() != spellchecker
 								.getAllResults().size()) {
 					sendHighlightEvent(spellchecker.getAllResults());
-					scDialog.setResult(RESULT_FOUND);
 				} else {
-					scDialog.setResult(RESULT_END_OF_DOC_REACHED);
 				}
 			}
 		}
@@ -220,7 +208,6 @@ public class SpellcheckController implements OcelotEventQueueListener {
 			replace = option == JOptionPane.YES_OPTION;
 		}
 		if (replace) {
-			scDialog.hideOccNumber();
 			if (spellchecker.getAllResults() != null
 					&& !spellchecker.getAllResults().isEmpty()) {
 				int indexToReplace = spellchecker.getCurrentResIndexForReplace();

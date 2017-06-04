@@ -1,47 +1,44 @@
 package com.vistatec.ocelot.spellcheck;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /**
  * Dialog providing graphical tools for checking and correcting spelling.
  */
-public class SpellcheckDialog extends JDialog implements ActionListener,
-		ItemListener {
+public class SpellcheckDialog extends JDialog implements ActionListener {
 
 	/** The serial version UID. */
 	private static final long serialVersionUID = 1L;
 
 	/** The dialog width. */
-	private static final int WIDTH = 450;
+    private static final int WIDTH = 550;
 
 	/** The dialog height. */
 	private static final int HEIGHT = 300;
 
 	/** The buttons width. */
-	private static final int BTN_WIDTH = 100;
+    private static final int BTN_WIDTH = 150;
 
 	/** The buttons height. */
 	private static final int BTN_HEIGHT = 25;
@@ -58,20 +55,14 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 	/** The text fields height. */
 	private static final int TXT_HEIGHT = 25;
 
-	/** The Settings panel width. */
-	private static final int SETTING_PANELS_WIDTH = 135;
+    /** The learn button. */
+    private JButton btnLearn;
 
-	/** The settings panel height. */
-	private static final int SETTING_PANELS_HEIGHT = 100;
+    /** The ignore button. */
+    private JButton btnIgnore;
 
-	/** The text displaying the number of found occurrences. */
-	private static final String OCCUR_NUM_LBL_TEXT = "Found $$$ occurrences. ";
-
-	/** The string to be replaced with the actual number of occurrences. */
-	private static final String OCCUR_NUM_REPLACE_STRING = "$$$";
-
-	/** The find next button. */
-	private JButton btnFindNext;
+    /** The ignore all button. */
+    private JButton btnIgnoreAll;
 
 	/** The replace button. */
 	private JButton btnReplace;
@@ -79,53 +70,20 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 	/** The replace all button. */
 	private JButton btnReplaceAll;
 
-	/** The find all button. */
-	private JButton btnFindAll;
+    /** The add ITS button. */
+    private JButton btnAddIts;
 
-	/** The close button. */
-	private JButton btnClose;
+    /** The add ITS all button. */
+    private JButton btnAddItsAll;
 
-	/** The find text field. */
-	private JTextField txtFind;
+    /** The unknown word text field. */
+    private JTextField txtUnknownWord;
 
-	/** The replace text field. */
-	private JTextField txtReplace;
+    /** The replacement word text field. */
+    private JTextField txtReplaceWord;
 
-	/** The case sensitive check box. */
-	private JCheckBox ckCaseSensitive;
-
-	/** The whole word check box. */
-	private JCheckBox ckWholeWord;
-
-	/** The wrap search check box. */
-	private JCheckBox ckWrapSearch;
-
-	/** The source radio button. */
-	private JRadioButton rbtnSource;
-
-	/** The target radio button. */
-	private JRadioButton rbtnTarget;
-
-	/** The up radio button. */
-	private JRadioButton rbtnUp;
-
-	/** The down radio button. */
-	private JRadioButton rbtnDown;
-
-	/** The string not found label. */
-	private JLabel lblStrNotFound;
-
-	/** The end of document reached label. */
-	private JLabel lblEndOfDoc;
-
-	/** The beginning of document reached label. */
-	private JLabel lblBeginOfDoc;
-
-	/** The label displaying the number of found occurrences. */
-	private JLabel lblOccNum;
-
-	/** The replace label. */
-	private JLabel lblReplace;
+    /** The suggested replacements. */
+    private JList<String> lstSuggestions;
 
 	/** The controller. */
 	private SpellcheckController controller;
@@ -154,7 +112,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 		setResizable(false);
 		setSize(new Dimension(WIDTH, HEIGHT));
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
-		setTitle("Find/Replace");
+        setTitle("Spellcheck");
 		add(getMainComponent(), BorderLayout.CENTER);
 		add(getBottomComponent(), BorderLayout.SOUTH);
 		setLocationRelativeTo(null);
@@ -165,8 +123,6 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 				controller.closeDialog();
 			}
 		});
-		rbtnSource.setSelected(true);
-
 	}
 
 	/**
@@ -176,61 +132,73 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 	 */
 	private Component getBottomComponent() {
 
-		btnFindNext = new JButton("Find Next");
-		configButton(btnFindNext);
-		btnReplace = new JButton("Replace");
-		configButton(btnReplace);
-		btnReplaceAll = new JButton("Replace All");
-		configButton(btnReplaceAll);
-		btnFindAll = new JButton("Find All");
-		configButton(btnFindAll);
-		btnClose = new JButton("Close");
-		configButton(btnClose);
-		lblStrNotFound = new JLabel("String not found.");
-		lblStrNotFound.setForeground(Color.red);
-		Color darkgreen = new Color(0, 153, 0);
-		lblEndOfDoc = new JLabel("End of document reached.");
-		lblEndOfDoc.setForeground(darkgreen);
-		lblBeginOfDoc = new JLabel("Beginning of document reached.");
-		lblBeginOfDoc.setForeground(darkgreen);
-		lblOccNum = new JLabel();
-		lblOccNum.setForeground(darkgreen);
+        JPanel buttonsPanel = new JPanel(new GridBagLayout());
+        Insets buttonsInsets = new Insets(5, 5, 5, 5);
+        {
+            btnIgnore = new JButton("Ignore");
+            configButton(btnIgnore);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(btnIgnore, c);
+        }
+        {
+            btnIgnoreAll = new JButton("Ignore All");
+            configButton(btnIgnoreAll);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(btnIgnoreAll, c);
 
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-		topPanel.add(Box.createHorizontalStrut(16));
-		topPanel.add(btnFindNext);
-		topPanel.add(Box.createHorizontalStrut(10));
-		// topPanel.add(Box.createHorizontalGlue());
-		// topPanel.add(btnFindAll);
-		// topPanel.add(Box.createHorizontalStrut(10));
-		topPanel.add(btnReplace);
-		topPanel.add(Box.createHorizontalStrut(10));
-		topPanel.add(btnReplaceAll);
-		topPanel.add(Box.createHorizontalGlue());
+        }
+        {
+            btnReplace = new JButton("Replace");
+            configButton(btnReplace);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 0;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(btnReplace, c);
+        }
+        {
+            btnReplaceAll = new JButton("Replace All");
+            configButton(btnReplaceAll);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(btnReplaceAll, c);
+        }
+        {
+            btnAddIts = new JButton("Add ITS");
+            configButton(btnAddIts);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 2;
+            c.gridy = 0;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(btnAddIts, c);
+        }
+        {
+            btnAddItsAll = new JButton("Add ITS All");
+            configButton(btnAddItsAll);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 2;
+            c.gridy = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(btnAddItsAll, c);
+        }
 
-		topPanel.add(Box.createHorizontalStrut(16));
-
-		JPanel bottomPanel = new JPanel();
-		bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
-		bottomPanel.add(Box.createHorizontalStrut(5));
-		bottomPanel.add(lblStrNotFound);
-		bottomPanel.add(lblOccNum);
-		bottomPanel.add(lblBeginOfDoc);
-		bottomPanel.add(lblEndOfDoc);
-		bottomPanel.add(Box.createHorizontalGlue());
-		bottomPanel.add(btnClose);
-		bottomPanel.add(Box.createHorizontalStrut(16));
-		lblStrNotFound.setVisible(false);
-		lblEndOfDoc.setVisible(false);
-		lblBeginOfDoc.setVisible(false);
-
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.add(topPanel);
-		panel.add(bottomPanel);
-
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(buttonsPanel, BorderLayout.CENTER);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 		return panel;
 	}
 
@@ -254,111 +222,78 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 	 */
 	private Component getMainComponent() {
 
-		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
-		JLabel lblFind = new JLabel("Find:");
-		configLabel(lblFind);
-		lblReplace = new JLabel("Replace with:");
-		configLabel(lblReplace);
-		txtFind = new JTextField();
-		configTxt(txtFind);
-		txtReplace = new JTextField();
-		configTxt(txtReplace);
-
-		panel.add(lblFind);
-		panel.add(txtFind);
-		panel.add(lblReplace);
-		panel.add(txtReplace);
-		panel.add(getSettingsPanel());
-
+		JPanel panel = new JPanel(new GridBagLayout());
+        {
+            JLabel lblFind = new JLabel("Unknown word:");
+            configLabel(lblFind);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.anchor = GridBagConstraints.EAST;
+            panel.add(lblFind, c);
+        }
+        {
+            txtUnknownWord = new JTextField();
+            configTxt(txtUnknownWord);
+            txtUnknownWord.setEditable(false);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 0;
+            c.ipadx = TXT_WIDTH;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = new Insets(5, 10, 5, 10);
+            panel.add(txtUnknownWord, c);
+        }
+        {
+            btnLearn = new JButton("Learn");
+            configButton(btnLearn);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 2;
+            c.gridy = 0;
+            panel.add(btnLearn);
+        }
+        {
+            JLabel lblReplace = new JLabel("Replace with:");
+            configLabel(lblReplace);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 1;
+            c.anchor = GridBagConstraints.EAST;
+            panel.add(lblReplace, c);
+        }
+        {
+            txtReplaceWord = new JTextField();
+            configTxt(txtReplaceWord);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 1;
+            c.ipadx = TXT_WIDTH;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.insets = new Insets(5, 10, 5, 10);
+            panel.add(txtReplaceWord, c);
+        }
+        {
+            JLabel lblSuggestions = new JLabel("Suggestions:");
+            configLabel(lblSuggestions);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 2;
+            c.anchor = GridBagConstraints.NORTHEAST;
+            c.insets = new Insets(5, 0, 0, 0);
+            panel.add(lblSuggestions, c);
+        }
+        {
+            lstSuggestions = new JList<>();
+            JScrollPane spSuggestions = new JScrollPane(lstSuggestions);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 2;
+            c.ipadx = TXT_WIDTH;
+            c.ipady = lstSuggestions.getFont().getSize() * 5;
+            c.insets = new Insets(5, 10, 5, 10);
+            panel.add(spSuggestions, c);
+        }
 		return panel;
-	}
-
-	/**
-	 * Gets the settings panel.
-	 * 
-	 * @return the settings panel.
-	 */
-	private Component getSettingsPanel() {
-
-		JPanel settingsPanel = new JPanel();
-		settingsPanel.add(getOptionsPanel());
-		settingsPanel.add(getDirectionPanel());
-		settingsPanel.add(getScopePanel());
-		return settingsPanel;
-	}
-
-	/**
-	 * Gets the options panel.
-	 * 
-	 * @return the options panel.
-	 */
-	private Component getOptionsPanel() {
-
-		JPanel optionsPanel = new JPanel();
-		optionsPanel.setPreferredSize(new Dimension(SETTING_PANELS_WIDTH,
-				SETTING_PANELS_HEIGHT));
-		optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
-		optionsPanel.setBorder(BorderFactory.createTitledBorder("Options"));
-		ckCaseSensitive = new JCheckBox("Match Case");
-		ckCaseSensitive.addItemListener(this);
-		ckWholeWord = new JCheckBox("Whole Word");
-		ckWholeWord.addItemListener(this);
-		ckWrapSearch = new JCheckBox("Wrap Search");
-		ckWrapSearch.addItemListener(this);
-		optionsPanel.add(ckCaseSensitive);
-		optionsPanel.add(ckWholeWord);
-		optionsPanel.add(ckWrapSearch);
-		return optionsPanel;
-	}
-
-	/**
-	 * Gets the direction panel.
-	 * 
-	 * @return the direction panel.
-	 */
-	private Component getDirectionPanel() {
-
-		JPanel directionPanel = new JPanel();
-		directionPanel.setPreferredSize(new Dimension(SETTING_PANELS_WIDTH,
-				SETTING_PANELS_HEIGHT));
-		directionPanel
-				.setLayout(new BoxLayout(directionPanel, BoxLayout.Y_AXIS));
-		directionPanel.setBorder(BorderFactory.createTitledBorder("Direction"));
-		rbtnDown = new JRadioButton("Down");
-		rbtnDown.addItemListener(this);
-		rbtnUp = new JRadioButton("Up");
-		rbtnUp.addItemListener(this);
-		rbtnDown.setSelected(true);
-		ButtonGroup group = new ButtonGroup();
-		group.add(rbtnDown);
-		group.add(rbtnUp);
-		directionPanel.add(rbtnDown);
-		directionPanel.add(rbtnUp);
-		return directionPanel;
-	}
-
-	/**
-	 * Gets the scope panel.
-	 * 
-	 * @return the scope panel.
-	 */
-	private Component getScopePanel() {
-		JPanel scopePanel = new JPanel();
-		scopePanel.setPreferredSize(new Dimension(SETTING_PANELS_WIDTH,
-				SETTING_PANELS_HEIGHT));
-		scopePanel.setLayout(new BoxLayout(scopePanel, BoxLayout.Y_AXIS));
-		scopePanel.setBorder(BorderFactory.createTitledBorder("Scope"));
-		rbtnSource = new JRadioButton("Source");
-		rbtnSource.addItemListener(this);
-		rbtnTarget = new JRadioButton("Target");
-		rbtnTarget.addItemListener(this);
-		ButtonGroup group = new ButtonGroup();
-		group.add(rbtnSource);
-		group.add(rbtnTarget);
-		scopePanel.add(rbtnSource);
-		scopePanel.add(rbtnTarget);
-		return scopePanel;
 	}
 
 	/**
@@ -402,78 +337,19 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		if (e.getSource().equals(btnClose)) {
-			close();
-		} else if (e.getSource().equals(btnFindNext)) {
-			findNext();
+        if (e.getSource().equals(btnLearn)) {
+            // learn();
 		} else if (e.getSource().equals(btnReplace)) {
 			replace();
 		} else if (e.getSource().equals(btnReplaceAll)) {
 			replaceAll();
-			// } else if (e.getSource().equals(btnFindAll)) {
-			// findAll();
 		}
-	}
-
-	/**
-	 * Sets the search result and the proper label is displayed.
-	 * 
-	 * @param result
-	 *            the result.
-	 */
-	public void setResult(int result) {
-
-		if (result == SpellcheckController.RESULT_FOUND) {
-			lblBeginOfDoc.setVisible(false);
-			lblEndOfDoc.setVisible(false);
-			lblStrNotFound.setVisible(false);
-		} else if (result == SpellcheckController.RESULT_NOT_FOUND) {
-			lblBeginOfDoc.setVisible(false);
-			lblEndOfDoc.setVisible(false);
-			lblStrNotFound.setVisible(true);
-			lblOccNum.setVisible(false);
-		} else if (result == SpellcheckController.RESULT_END_OF_DOC_REACHED) {
-			if (rbtnDown.isSelected()) {
-				lblBeginOfDoc.setVisible(false);
-				lblEndOfDoc.setVisible(true);
-			} else {
-				lblBeginOfDoc.setVisible(true);
-				lblEndOfDoc.setVisible(false);
-			}
-			lblStrNotFound.setVisible(false);
-		}
-	}
-
-	/**
-	 * Displays the number of found occurrences.
-	 * 
-	 * @param occurNum
-	 *            the number of occurrences.
-	 */
-	public void displayOccurrenceNum(int occurNum) {
-
-		lblOccNum.setText(OCCUR_NUM_LBL_TEXT.replace(OCCUR_NUM_REPLACE_STRING,
-				String.valueOf(occurNum)));
-		setResult(SpellcheckController.RESULT_FOUND);
-		lblOccNum.setVisible(true);
-	}
-
-	/**
-	 * Hides the number of occurrences.
-	 */
-	public void hideOccNumber() {
-
-		lblOccNum.setVisible(false);
-		lblBeginOfDoc.setVisible(false);
-		lblEndOfDoc.setVisible(false);
 	}
 
 	/**
 	 * Replaces all instances.
 	 */
 	private void replaceAll() {
-
-		controller.replaceAll(txtReplace.getText());
 	}
 
 	/**
@@ -481,17 +357,6 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 	 * text field.
 	 */
 	private void replace() {
-
-		controller.replace(txtReplace.getText());
-	}
-
-	/**
-	 * Finds the next occurrence of the text contained in the find text field.
-	 */
-	private void findNext() {
-		if (!txtFind.getText().isEmpty()) {
-			controller.findNext(txtFind.getText());
-		}
 	}
 
 	/**
@@ -503,62 +368,4 @@ public class SpellcheckDialog extends JDialog implements ActionListener,
 		setVisible(false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
-	 */
-	@Override
-	public void itemStateChanged(ItemEvent e) {
-
-		if (e.getStateChange() == ItemEvent.SELECTED) {
-			if (e.getSource().equals(rbtnSource)) {
-				enableReplaceFunctionality(false);
-				controller.setSourceScope();
-			} else if (e.getSource().equals(rbtnTarget)) {
-				enableReplaceFunctionality(true);
-				controller.setTargetScope();
-			} else if (e.getSource().equals(rbtnDown)) {
-				controller.setSearchDirectionDown();
-			} else if (e.getSource().equals(rbtnUp)) {
-				controller.setSearchDirectionUp();
-			}
-		}
-		if (e.getSource().equals(ckCaseSensitive)) {
-			controller.setCaseSensitive(ckCaseSensitive.isSelected());
-		} else if (e.getSource().equals(ckWholeWord)) {
-			controller.setWholeWord(ckWholeWord.isSelected());
-		} else if (e.getSource().equals(ckWrapSearch)) {
-			controller.setWrapSearch(ckWrapSearch.isSelected());
-		}
-	}
-
-	/**
-	 * Enables the replace functionality.
-	 * 
-	 * @param enable
-	 *            boolean stating if the replace functionality is enabled.
-	 */
-	private void enableReplaceFunctionality(boolean enable) {
-
-		txtReplace.setEnabled(enable);
-		btnReplace.setEnabled(enable);
-		btnReplaceAll.setEnabled(enable);
-		lblReplace.setEnabled(enable);
-	}
-
-	/**
-	 * Gets the selected scope.
-	 * 
-	 * @return the selected scope.
-	 */
-	public int getSelectedScope() {
-
-		if (rbtnSource.isSelected()) {
-			return Spellchecker.SCOPE_SOURCE;
-		} else {
-			return Spellchecker.SCOPE_TARGET;
-		}
-	}
 }
