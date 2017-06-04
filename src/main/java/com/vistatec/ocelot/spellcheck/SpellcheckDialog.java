@@ -12,7 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -95,10 +94,6 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
 	/** The controller. */
 	private SpellcheckController controller;
-
-    private int resultIdx;
-
-    private List<CheckResult> results;
 
 	/**
 	 * Constructor.
@@ -360,27 +355,15 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         if (e.getSource().equals(btnLearn)) {
             // learn();
         } else if (e.getSource().equals(btnIgnore)) {
-            ignoreOne();
+            controller.ignoreOne();
         } else if (e.getSource().equals(btnIgnoreAll)) {
-            ignoreAll();
+            controller.ignoreAll();
 		} else if (e.getSource().equals(btnReplace)) {
 			replace();
 		} else if (e.getSource().equals(btnReplaceAll)) {
 			replaceAll();
 		}
 	}
-
-    private void ignoreOne() {
-        resultIdx++;
-        updateResult();
-    }
-
-    private void ignoreAll() {
-        List<CheckResult> newResults = new ArrayList<>(results);
-        String ignored = results.get(resultIdx).getWord();
-        newResults.removeIf(r -> r.getWord().equals(ignored));
-        setResults(newResults);
-    }
 
 	/**
 	 * Replaces all instances.
@@ -404,13 +387,6 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 		setVisible(false);
 	}
 
-    public void setResults(List<CheckResult> results) {
-        this.resultIdx = 0;
-        this.results = results;
-        progressBar.setVisible(false);
-        updateResult();
-    }
-
     public void setProgress(int cur, int max) {
         progressBar.setIndeterminate(false);
         progressBar.setValue(cur);
@@ -430,22 +406,13 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         }
     }
 
-    private CheckResult getCurrentResult() {
-        if (results != null && !results.isEmpty() && resultIdx >= 0 && resultIdx < results.size()) {
-            return results.get(resultIdx);
-        } else {
-            return null;
-        }
-    }
-
-    private void updateResult() {
-        CheckResult result = getCurrentResult();
+    public void setResult(CheckResult result) {
         if (result != null) {
+            progressBar.setVisible(false);
             setAllEnabled(true);
             txtUnknownWord.setText(result.getWord());
             List<String> suggestions = result.getSuggestions();
             lstSuggestions.setListData(suggestions.toArray(new String[suggestions.size()]));
-            setTitle("Spellcheck (" + (results.size() - resultIdx) + " remaining)");
         } else {
             setAllEnabled(false);
             txtUnknownWord.setText(null);
@@ -453,6 +420,10 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
             lstSuggestions.setListData(new String[0]);
             setTitle("Spellcheck");
         }
+    }
+
+    public void setRemaining(int remaining) {
+        setTitle("Spellcheck (" + remaining + " remaining)");
     }
 
     @Override

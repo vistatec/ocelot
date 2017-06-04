@@ -50,9 +50,6 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	/** The Ocelot event queue. */
 	private OcelotEventQueue eventQueue;
 
-	/** The word finder object. */
-	private Spellchecker spellchecker;
-
 	/** The find and replace dialog. */
 	private SpellcheckDialog scDialog;
 
@@ -65,14 +62,13 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	/** The list of Ocelot segments. */
 	private List<OcelotSegment> segments;
 
-	/** Last searched text. */
-	private String lastSearchedText;
-
 	/** List of replaced results. */
 	private List<Integer> replacedResIdxList;
 	
     /** Worker for loading spellcheck results. */
     private SpellcheckWorker scWorker;
+
+    private ResultsManager scResults;
 
 	private int[] sortedIndexMap;
 
@@ -85,7 +81,6 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	public SpellcheckController(OcelotEventQueue eventQueue) {
 
 		this.eventQueue = eventQueue;
-		spellchecker = new Spellchecker();
 		replacedResIdxList = new ArrayList<Integer>();
 	}
 
@@ -119,8 +114,12 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	 * Clears the controller.
 	 */
 	private void clear() {
-		lastSearchedText = null;
 		replacedResIdxList.clear();
+        scResults = null;
+        if (scWorker != null) {
+            scWorker.cancel(true);
+            scWorker = null;
+        }
 	}
 
 	private List<OcelotSegment> getSortedSegmentList(){
@@ -146,7 +145,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         scWorker.execute();
     }
 
-    class SpellcheckWorker extends SwingWorker<List<CheckResult>, Integer> {
+    class SpellcheckWorker extends SwingWorker<ResultsManager, Integer> {
 
         private final List<OcelotSegment> segments;
 
@@ -155,7 +154,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         }
 
         @Override
-        protected List<CheckResult> doInBackground() throws Exception {
+        protected ResultsManager doInBackground() throws Exception {
             Language lang = Languages.getLanguageForLocale(targetLocale);
             JLanguageTool lt = new JLanguageTool(lang);
             lt.getCategories().keySet().forEach(lt::disableCategory);
@@ -189,7 +188,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
                 }
                 publish(segIndex);
             }
-            return results;
+            return new ResultsManager(results);
         }
 
         @Override
@@ -201,54 +200,25 @@ public class SpellcheckController implements OcelotEventQueueListener {
         @Override
         protected void done() {
             try {
-                List<CheckResult> results = get();
-                eventQueue.post(new HighlightEvent(new ArrayList<>(results), 0));
-                scDialog.setResults(results);
+                scResults = get();
+                update();
             } catch (InterruptedException | ExecutionException e) {
                 // Nothing
             }
         }
     }
 
-	/**
-	 * Finds the next occurrence of the text.
-	 * 
-	 * @param text
-	 *            the text to be searched.
-	 */
-	public void findNext(String text) {
-
-		if (checkDocumentOpened()) {
-			// if the text to be searched has changed, then start to search from
-			// the beginning (or the end) of the document
-			if (lastSearchedText == null || !text.equals(lastSearchedText)) {
-				lastSearchedText = text;
-				replacedResIdxList.clear();
-				spellchecker.goToStartOfDocument();
-				spellchecker.clearAllResults();
-				List<FindResult> results = spellchecker.findWord(text, getSortedSegmentList());
-				if (results != null && !results.isEmpty()) {
-					sendHighlightEvent(results);
-				} else {
-					eventQueue.post(new HighlightEvent(null, -1));
-				}
-				// if a list of results already exists, then go to the next
-				// result
-			} else if (spellchecker.getAllResults() != null
-					&& !spellchecker.getAllResults().isEmpty()) {
-				do {
-					spellchecker.goToNextResult();
-				} while (replacedResIdxList.contains(spellchecker
-						.getCurrentResIndex()));
-				if (spellchecker.getCurrentResIndex() != -1
-						&& spellchecker.getCurrentResIndex() != spellchecker
-								.getAllResults().size()) {
-					sendHighlightEvent(spellchecker.getAllResults());
-				} else {
-				}
-			}
-		}
-	}
+    private void update() {
+        if (scResults.hasResults()) {
+            eventQueue.post(new HighlightEvent(new ArrayList<>(scResults.getAllResults()),
+                    scResults.getCurrentResIndex()));
+            scDialog.setResult(scResults.getCurrentResult());
+            scDialog.setRemaining(scResults.getRemainingResults());
+        } else {
+            eventQueue.post(new HighlightEvent(null, -1));
+            scDialog.setResult(null);
+        }
+    }
 
 	/**
 	 * Sends the highlight event for current results.
@@ -262,7 +232,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		int currResIdx = -1;
 		if (replacedResIdxList.isEmpty()) {
 			resultsToSend = results;
-			currResIdx = spellchecker.getCurrentResIndex();
+            currResIdx = scResults.getCurrentResIndex();
 		} else {
 			resultsToSend = new ArrayList<FindResult>();
 			for (int i = 0; i < results.size(); i++) {
@@ -270,7 +240,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 					resultsToSend.add(results.get(i));
 				}
 			}
-			currResIdx = resultsToSend.indexOf(results.get(spellchecker
+            currResIdx = resultsToSend.indexOf(results.get(scResults
 					.getCurrentResIndex()));
 		}
 
@@ -278,96 +248,11 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	}
 
 	/**
-	 * Replaces the string currently highlighted in the grid, with a new string.
-	 * This method simply sends an event and then the segment view will take
-	 * care of the text replacing.
-	 * 
-	 * @param newString
-	 *            the new string.
-	 */
-	public void replace(String newString) {
-		boolean replace = true;
-		if (newString.isEmpty()) {
-			int option = JOptionPane
-					.showConfirmDialog(
-							scDialog,
-							"Do you want to replace the selected occurrence with an empty string?",
-							"Replace", JOptionPane.YES_NO_OPTION);
-			replace = option == JOptionPane.YES_OPTION;
-		}
-		if (replace) {
-			if (spellchecker.getAllResults() != null
-					&& !spellchecker.getAllResults().isEmpty()) {
-				int indexToReplace = spellchecker.getCurrentResIndexForReplace();
-				if (replacedResIdxList.contains(indexToReplace)) {
-					findNext(lastSearchedText);
-				} else if (indexToReplace != -1) {
-					eventQueue.post(new ReplaceEvent(newString, spellchecker
-							.getAllResults().get(indexToReplace)
-							.getSegmentIndex(), ReplaceEvent.REPLACE));
-					spellchecker.replacedString(newString);
-					replacedResIdxList.add(indexToReplace);
-					if (replacedResIdxList.size() == spellchecker.getAllResults()
-							.size()) {
-						spellchecker.clearAllResults();
-						clear();
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Set the scope to the source.
-	 */
-	public void setSourceScope() {
-		spellchecker.setScope(Spellchecker.SCOPE_SOURCE, sourceLocale);
-		clear();
-	}
-
-	/**
 	 * Sets the scope to the target.
 	 */
 	public void setTargetScope() {
-		spellchecker.setScope(Spellchecker.SCOPE_TARGET, targetLocale);
+        // spellchecker.setScope(Spellchecker.SCOPE_TARGET, targetLocale);
 		clear();
-	}
-
-	/**
-	 * Sets the "whole word" option.
-	 * 
-	 * @param wholeWord
-	 *            if <true> the whole word option will be set.
-	 */
-	public void setWholeWord(boolean wholeWord) {
-		spellchecker.enableOption(Spellchecker.WHOLE_WORD_OPTION, wholeWord);
-		clear();
-	}
-
-	/**
-	 * Sets the "case sensitive" option.
-	 * 
-	 * @param caseSensitive
-	 *            if <true> the case sensitive option will be set.
-	 */
-	public void setCaseSensitive(boolean caseSensitive) {
-		spellchecker
-				.enableOption(Spellchecker.CASE_SENSITIVE_OPTION, caseSensitive);
-		clear();
-	}
-
-	/**
-	 * Sets the search direction to "down".
-	 */
-	public void setSearchDirectionDown() {
-		spellchecker.setDirection(Spellchecker.DIRECTION_DOWN);
-	}
-
-	/**
-	 * Sets the search direction to "up".
-	 */
-	public void setSearchDirectionUp() {
-		spellchecker.setDirection(Spellchecker.DIRECTION_UP);
 	}
 
 	/**
@@ -390,9 +275,10 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	 * Closes the find and replace dialog.
 	 */
 	public void closeDialog() {
-
-		spellchecker.reset();
-		scDialog = null;
+        if (scDialog != null) {
+            scDialog.dispose();
+            scDialog = null;
+        }
 		clear();
 		// The Highlight event with null result, clear the table from the
 		// highlighted values
@@ -408,17 +294,6 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	private boolean checkDocumentOpened() {
 
 		return sourceLocale != null && targetLocale != null && segments != null;
-	}
-
-	/**
-	 * Enable/Disable the wrap search option.
-	 * 
-	 * @param enable
-	 *            if <code>true</code> the wrap search is set.
-	 */
-	public void setWrapSearch(boolean enable) {
-
-		spellchecker.enableOption(Spellchecker.WRAP_SEARCH_OPTION, enable);
 	}
 
 	/**
@@ -440,7 +315,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		}
 		if (replace) {
 			eventQueue.post(new ReplaceEvent(text, ReplaceEvent.REPLACE_ALL));
-			spellchecker.clearAllResults();
+            // spellchecker.clearAllResults();
 			clear();
 		}
 	}
@@ -462,4 +337,14 @@ public class SpellcheckController implements OcelotEventQueueListener {
 					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
+
+    public void ignoreOne() {
+        scResults.ignoreOne();
+        update();
+    }
+
+    public void ignoreAll() {
+        scResults.ignoreAll();
+        update();
+    }
 }
