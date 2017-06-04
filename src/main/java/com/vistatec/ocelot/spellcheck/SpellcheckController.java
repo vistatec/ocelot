@@ -4,6 +4,7 @@ import java.awt.Window;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -141,11 +142,17 @@ public class SpellcheckController implements OcelotEventQueueListener {
         if (scWorker != null) {
             scWorker.cancel(true);
         }
-        scWorker = new SpellcheckWorker();
+        scWorker = new SpellcheckWorker(getSortedSegmentList());
         scWorker.execute();
     }
 
     class SpellcheckWorker extends SwingWorker<List<CheckResult>, Integer> {
+
+        private final List<OcelotSegment> segments;
+
+        public SpellcheckWorker(List<OcelotSegment> segments) {
+            this.segments = segments;
+        }
 
         @Override
         protected List<CheckResult> doInBackground() throws Exception {
@@ -154,7 +161,6 @@ public class SpellcheckController implements OcelotEventQueueListener {
             lt.getCategories().keySet().forEach(lt::disableCategory);
             lt.enableRuleCategory(Categories.TYPOS.getId());
             List<CheckResult> results = new ArrayList<>();
-            List<OcelotSegment> segments = getSortedSegmentList();
             for (int segIndex = 0; segIndex < segments.size(); segIndex++) {
                 if (isCancelled()) {
                     return null;
@@ -184,6 +190,12 @@ public class SpellcheckController implements OcelotEventQueueListener {
                 publish(segIndex);
             }
             return results;
+        }
+
+        @Override
+        protected void process(List<Integer> chunks) {
+            Collections.sort(chunks);
+            scDialog.setProgress(chunks.get(chunks.size() - 1), segments.size());
         }
 
         @Override

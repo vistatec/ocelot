@@ -20,6 +20,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -84,6 +85,9 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
     /** The replacement word text field. */
     private JTextField txtReplaceWord;
+
+    /** The progress bar shown while loading. */
+    private JProgressBar progressBar;
 
     /** The suggested replacements. */
     private JList<String> lstSuggestions;
@@ -207,6 +211,12 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(buttonsPanel, BorderLayout.CENTER);
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+
+        progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        progressBar.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10),
+                progressBar.getBorder()));
+        panel.add(progressBar, BorderLayout.SOUTH);
 		return panel;
 	}
 
@@ -380,7 +390,14 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     public void setResults(List<CheckResult> results) {
         this.resultIdx = 0;
         this.results = results;
+        progressBar.setVisible(false);
         updateResult();
+    }
+
+    public void setProgress(int cur, int max) {
+        progressBar.setIndeterminate(false);
+        progressBar.setValue(cur);
+        progressBar.setMaximum(max);
     }
 
     private void setAllEnabled(boolean enabled) {
