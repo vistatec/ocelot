@@ -1,12 +1,21 @@
 package com.vistatec.ocelot.spellcheck;
 
 import java.awt.Window;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
+
+import org.languagetool.JLanguageTool;
+import org.languagetool.Language;
+import org.languagetool.Languages;
+import org.languagetool.rules.Categories;
+import org.languagetool.rules.RuleMatch;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.events.HighlightEvent;
@@ -18,6 +27,9 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentAtom;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 /**
  * Controller class supervising all the processes pertaining to spellchecking
@@ -58,6 +70,9 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	/** List of replaced results. */
 	private List<Integer> replacedResIdxList;
 	
+    /** Worker for loading spellcheck results. */
+    private SpellcheckWorker scWorker;
+
 	private int[] sortedIndexMap;
 
 	/**
@@ -122,6 +137,67 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		return sortedList;
 	}
 	
+    private void checkSpelling() {
+        if (scWorker != null) {
+            scWorker.cancel(true);
+        }
+        scWorker = new SpellcheckWorker();
+        scWorker.execute();
+    }
+
+    class SpellcheckWorker extends SwingWorker<List<CheckResult>, Integer> {
+
+        @Override
+        protected List<CheckResult> doInBackground() throws Exception {
+            Language lang = Languages.getLanguageForLocale(targetLocale);
+            JLanguageTool lt = new JLanguageTool(lang);
+            lt.getCategories().keySet().forEach(lt::disableCategory);
+            lt.enableRuleCategory(Categories.TYPOS.getId());
+            List<CheckResult> results = new ArrayList<>();
+            List<OcelotSegment> segments = getSortedSegmentList();
+            for (int segIndex = 0; segIndex < segments.size(); segIndex++) {
+                if (isCancelled()) {
+                    return null;
+                }
+                OcelotSegment seg = segments.get(segIndex);
+                SegmentVariant var = seg.getTarget();
+                List<SegmentAtom> atoms = var.getAtoms();
+                for (int atomIndex = 0; atomIndex < atoms.size(); atomIndex++) {
+                    if (isCancelled()) {
+                        return null;
+                    }
+                    SegmentAtom atom = atoms.get(atomIndex);
+                    if (atom instanceof TextAtom) {
+                        String text = ((TextAtom) atom).getData();
+                        try {
+                            List<RuleMatch> matches = lt.check(text);
+                            for (RuleMatch match : matches) {
+                                String word = text.substring(match.getFromPos(), match.getToPos());
+                                results.add(new CheckResult(segIndex, atomIndex, match.getFromPos(), match.getToPos(),
+                                        word, match.getSuggestedReplacements()));
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                publish(segIndex);
+            }
+            return results;
+        }
+
+        @Override
+        protected void done() {
+            try {
+                List<CheckResult> results = get();
+                eventQueue.post(new HighlightEvent(new ArrayList<>(results), 0));
+                scDialog.setResults(results);
+            } catch (InterruptedException | ExecutionException e) {
+                // Nothing
+            }
+        }
+    }
+
 	/**
 	 * Finds the next occurrence of the text.
 	 * 
@@ -292,6 +368,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		if (scDialog == null) {
 			scDialog = new SpellcheckDialog(owner, this);
 			scDialog.open();
+            checkSpelling();
 		} else {
 			scDialog.requestFocus();
 		}
