@@ -381,6 +381,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 	 * Replaces all instances.
 	 */
 	private void replaceAll() {
+        controller.replaceAll(txtReplaceWord.getText());
 	}
 
 	/**

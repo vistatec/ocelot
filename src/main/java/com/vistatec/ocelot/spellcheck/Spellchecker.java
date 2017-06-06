@@ -141,4 +141,17 @@ public class Spellchecker {
             allResults.remove(idx);
         }
     }
+
+    public void replacedAll(String newString) {
+        CheckResult currRes = getCurrentResult();
+        List<Integer> affectedIndices = new ArrayList<>();
+        for (int i = allResults.size() - 1; i >= 0; i--) {
+            if (allResults.get(i).getWord().equals(currRes.getWord())) {
+                affectedIndices.add(i);
+            }
+        }
+        for (int i : affectedIndices) {
+            replacedImpl(newString, i);
+        }
+    }
 }

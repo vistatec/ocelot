@@ -300,8 +300,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		}
 		if (replace) {
 			eventQueue.post(new ReplaceEvent(text, ReplaceEvent.REPLACE_ALL));
-            // spellchecker.clearAllResults();
-			clear();
+            spellchecker.replacedAll(text);
+            update();
 		}
 	}
 
