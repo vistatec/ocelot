@@ -255,6 +255,32 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		return sourceLocale != null && targetLocale != null && segments != null;
 	}
 
+    /**
+     * Replaces the string currently highlighted in the grid, with a new string.
+     * This method simply sends an event and then the segment view will take
+     * care of the text replacing.
+     * 
+     * @param newString
+     *            the new string.
+     */
+    public void replace(String newString) {
+        boolean replace = true;
+        if (newString.isEmpty()) {
+            int option = JOptionPane.showConfirmDialog(scDialog,
+                    "Do you want to replace the selected word with an empty string?", "Replace",
+                    JOptionPane.YES_NO_OPTION);
+            replace = option == JOptionPane.YES_OPTION;
+        }
+        if (replace) {
+            if (spellchecker.hasResults()) {
+                CheckResult res = spellchecker.getCurrentResult();
+                eventQueue.post(new ReplaceEvent(newString, res.getSegmentIndex(), ReplaceEvent.REPLACE));
+                spellchecker.replaced(newString);
+                update();
+            }
+        }
+    }
+
 	/**
 	 * Replaces all the highlighted strings with a specific text.
 	 *

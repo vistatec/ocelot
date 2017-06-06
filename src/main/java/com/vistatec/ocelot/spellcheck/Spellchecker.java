@@ -119,4 +119,26 @@ public class Spellchecker {
     public int getRemainingResults() {
         return allResults.size() - currResultIndex;
     }
+
+    public void replaced(String newString) {
+        replacedImpl(newString, currResultIndex);
+    }
+
+    private void replacedImpl(String newString, int idx) {
+        if (allResults != null && !allResults.isEmpty() && idx >= 0 && idx < allResults.size()) {
+            CheckResult currRes = allResults.get(idx);
+            int resIdx = idx + 1;
+            int delta = newString.length() - (currRes.getStringEndIndex() - currRes.getStringStartIndex());
+            while (resIdx < allResults.size()) {
+                CheckResult nextRes = allResults.get(resIdx++);
+                if (nextRes.getSegmentIndex() == currRes.getSegmentIndex()
+                        && nextRes.getAtomIndex() == currRes.getAtomIndex()) {
+
+                    nextRes.setStringStartIndex(nextRes.getStringStartIndex() + delta);
+                    nextRes.setStringEndIndex(nextRes.getStringEndIndex() + delta);
+                }
+            }
+            allResults.remove(idx);
+        }
+    }
 }
