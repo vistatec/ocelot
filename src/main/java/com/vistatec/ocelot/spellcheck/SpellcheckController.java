@@ -164,6 +164,13 @@ public class SpellcheckController implements OcelotEventQueueListener {
                 update();
             } catch (InterruptedException | CancellationException e) {
                 // Nothing
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof LocaleNotSupportedException) {
+                    scDialog.setResult(null);
+                    scDialog.setMessage(e.getCause().getMessage());
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
     }

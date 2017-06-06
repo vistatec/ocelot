@@ -92,6 +92,9 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     /** The suggested replacements. */
     private JList<String> lstSuggestions;
 
+    /** The label for messages to the user. */
+    private JLabel lblMessage;
+
 	/** The controller. */
 	private SpellcheckController controller;
 
@@ -308,7 +311,16 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
             c.insets = new Insets(5, 10, 5, 10);
             panel.add(spSuggestions, c);
         }
-		return panel;
+
+        lblMessage = new JLabel();
+        lblMessage.setVisible(false);
+        lblMessage.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10),
+                lblMessage.getBorder()));
+        JPanel parentPanel = new JPanel(new BorderLayout());
+        parentPanel.add(panel, BorderLayout.CENTER);
+        parentPanel.add(lblMessage, BorderLayout.NORTH);
+
+        return parentPanel;
 	}
 
 	/**
@@ -395,6 +407,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
     private void setAllEnabled(boolean enabled) {
         setAllEnabledImpl(this, enabled);
+        lblMessage.setEnabled(true);
     }
 
     private static void setAllEnabledImpl(Container container, boolean enabled) {
@@ -407,8 +420,9 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     }
 
     public void setResult(CheckResult result) {
+        progressBar.setVisible(false);
+        txtReplaceWord.setText(null);
         if (result != null) {
-            progressBar.setVisible(false);
             setAllEnabled(true);
             txtUnknownWord.setText(result.getWord());
             List<String> suggestions = result.getSuggestions();
@@ -416,7 +430,6 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         } else {
             setAllEnabled(false);
             txtUnknownWord.setText(null);
-            txtReplaceWord.setText(null);
             lstSuggestions.setListData(new String[0]);
             setTitle("Spellcheck");
         }
@@ -434,6 +447,11 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         if (e.getSource() == lstSuggestions) {
             txtReplaceWord.setText(lstSuggestions.getSelectedValue());
         }
+    }
+
+    public void setMessage(String msg) {
+        lblMessage.setText(msg);
+        lblMessage.setVisible(true);
     }
 
 }
