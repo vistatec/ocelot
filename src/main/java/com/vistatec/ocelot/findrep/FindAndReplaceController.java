@@ -83,9 +83,9 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 
 		segments = e.getDocument().getSegments();
 		sortedIndexMap = null;
-		sourceLocale = new Locale(e.getDocument().getSrcLocale()
+        sourceLocale = Locale.forLanguageTag(e.getDocument().getSrcLocale()
 				.getOriginalLocId());
-		targetLocale = new Locale(e.getDocument().getTgtLocale()
+        targetLocale = Locale.forLanguageTag(e.getDocument().getTgtLocale()
 				.getOriginalLocId());
 		if (frDialog != null) {
 			int selectedScope = frDialog.getSelectedScope();
