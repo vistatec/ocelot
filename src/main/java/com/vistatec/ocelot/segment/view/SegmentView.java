@@ -398,14 +398,18 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		
 		SegmentVariant updatedTarget = target.createCopy();
 		int replacedOccNum = 0;
-		if(target.getHighlightDataList() != null){
-			for(HighlightData hd: target.getHighlightDataList()){
+        List<HighlightData> hds = target.getHighlightDataList();
+        if (hds != null) {
+            // Iterate backwards because otherwise indices will be off for
+            // subsequent replacements
+            for (int i = hds.size() - 1; i >= 0; i--) {
+                HighlightData hd = hds.get(i);
                 String currText = target.getAtoms().get(hd.getAtomIndex()).getData()
                         .substring(hd.getHighlightIndices()[0], hd.getHighlightIndices()[1]);
                 if (currText.equals(oldString)) {
                     int startOffset = 0;
-                    for (int i = 0; i < hd.getAtomIndex(); i++) {
-                        startOffset += target.getAtoms().get(i).getLength();
+                    for (int j = 0; j < hd.getAtomIndex(); j++) {
+                        startOffset += target.getAtoms().get(j).getLength();
                     }
                     startOffset += hd.getHighlightIndices()[0];
                     int oldStringLength = hd.getHighlightIndices()[1] - hd.getHighlightIndices()[0];
