@@ -376,7 +376,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 	public void replace(ReplaceEvent e) {
 
 		if (e.getAction() == ReplaceEvent.REPLACE && currHLVariant != null) {
-			replaceTarget(e.getNewString(), e.getSegmentIndex());
+            replaceTarget(e.getOldString(), e.getNewString(), e.getSegmentIndex());
 		} else if (e.getAction() == ReplaceEvent.REPLACE_ALL) {
 
 			OcelotSegment segment = null;
@@ -385,32 +385,34 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 				segment = segmentTableModel.getSegment(segIdx);
 				if(segment.isTranslatable() && segment.isEditable()){
-					replacedOccNum += replaceAllTarget(
-							(BaseSegmentVariant) segment.getTarget(),
-							e.getNewString(), segIdx);
+                        replacedOccNum += replaceAllTarget((BaseSegmentVariant) segment.getTarget(), e.getOldString(),
+                                e.getNewString(), segIdx);
 				}
 			}
 			eventQueue.post(new ReplaceDoneEvent(replacedOccNum));
 		}
 	}
 
-	private int replaceAllTarget(BaseSegmentVariant target, String newString,
+    private int replaceAllTarget(BaseSegmentVariant target, String oldString, String newString,
 			int segIdx) {
 		
 		SegmentVariant updatedTarget = target.createCopy();
 		int replacedOccNum = 0;
 		if(target.getHighlightDataList() != null){
 			for(HighlightData hd: target.getHighlightDataList()){
-				int startOffset = 0;
-				for (int i = 0; i < hd.getAtomIndex(); i++) {
-					startOffset += target.getAtoms().get(i).getLength();
-				}
-				startOffset += hd.getHighlightIndices()[0];
-				int oldStringLength = hd.getHighlightIndices()[1]
-						- hd.getHighlightIndices()[0];
-				updatedTarget.modifyChars(startOffset, oldStringLength,
-						newString);
-				replacedOccNum++;
+                String currText = target.getAtoms().get(hd.getAtomIndex()).getData()
+                        .substring(hd.getHighlightIndices()[0], hd.getHighlightIndices()[1]);
+                if (currText.equals(oldString)) {
+                    int startOffset = 0;
+                    for (int i = 0; i < hd.getAtomIndex(); i++) {
+                        startOffset += target.getAtoms().get(i).getLength();
+                    }
+                    startOffset += hd.getHighlightIndices()[0];
+                    int oldStringLength = hd.getHighlightIndices()[1] - hd.getHighlightIndices()[0];
+
+                    updatedTarget.modifyChars(startOffset, oldStringLength, newString);
+                    replacedOccNum++;
+                }
 			}
 			target.clearHighlightedText();
 			eventQueue.post(new SegmentTargetUpdateEvent(xliff,
@@ -422,7 +424,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		return replacedOccNum;
 	}
 
-	private void replaceTarget(String newString, int segmentIndex) {
+	private void replaceTarget(String oldString, String newString, int segmentIndex) {
 		
 		OcelotSegment segment = segmentTableModel.getSegment(sort.convertRowIndexToModel(segmentIndex));
 		if(segment.isTranslatable() && segment.isEditable()){
@@ -433,9 +435,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 							.getHighlightDataList().size()) {
 	
 				if(updatedTarget instanceof FragmentVariant){
-					replaceTargetTextXliff20((FragmentVariant)updatedTarget, newString);
+                    replaceTargetTextXliff20((FragmentVariant) updatedTarget, oldString, newString);
 				} else {
-					replaceTargetTextXliff12((BaseSegmentVariant)updatedTarget, newString);
+                    replaceTargetTextXliff12((BaseSegmentVariant) updatedTarget, oldString, newString);
 				}
 				eventQueue.post(new SegmentTargetUpdateEvent(xliff,
 						segment,
@@ -446,40 +448,50 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		}
 	}
 
-	private void replaceTargetTextXliff12(BaseSegmentVariant target, String replaceString) {
+    private void replaceTargetTextXliff12(BaseSegmentVariant target, String oldString, String replaceString) {
 
 		HighlightData hd = currHLVariant.getHighlightDataList().get(
 				currHLVariant.getCurrentHighlightedIndex());
-		int startOffset = 0;
-		for (int i = 0; i < hd.getAtomIndex(); i++) {
-			startOffset += currHLVariant.getAtoms().get(i).getLength();
-		}
-		startOffset += hd.getHighlightIndices()[0];
-		int oldStringLength = hd.getHighlightIndices()[1]
-				- hd.getHighlightIndices()[0];
-		target.modifyChars(startOffset, oldStringLength,
-				replaceString);
-		currHLVariant.replaced(replaceString);
+        String currText = currHLVariant.getAtoms().get(hd.getAtomIndex()).getData()
+                .substring(hd.getHighlightIndices()[0], hd.getHighlightIndices()[1]);
+        if (currText.equals(oldString)) {
+            int startOffset = 0;
+            for (int i = 0; i < hd.getAtomIndex(); i++) {
+                startOffset += currHLVariant.getAtoms().get(i).getLength();
+            }
+            startOffset += hd.getHighlightIndices()[0];
+            int oldStringLength = hd.getHighlightIndices()[1] - hd.getHighlightIndices()[0];
+            target.modifyChars(startOffset, oldStringLength, replaceString);
+            currHLVariant.replaced(replaceString);
+        }
 		target.setHighlightDataList(currHLVariant.getHighlightDataList());
 	}
 
-	private void replaceTargetTextXliff20(FragmentVariant target, String replaceString ) {
+    private void replaceTargetTextXliff20(FragmentVariant target, String oldString, String replaceString) {
 		
 		HighlightData hd = currHLVariant.getHighlightDataList().get(
 				currHLVariant.getCurrentHighlightedIndex());
 		
+		boolean replaced = false;
 		if(target.getAtoms() != null && hd.getAtomIndex()<target.getAtoms().size()){
 			if(target.getAtoms().get(hd.getAtomIndex()) instanceof TextAtom ) {
 				TextAtom txtAtom = (TextAtom)target.getAtoms().get(hd.getAtomIndex());
-				String newText = txtAtom.getData().substring(0, hd.getHighlightIndices()[0]) + 
-						replaceString + txtAtom.getData().substring(hd.getHighlightIndices()[1]);
-				TextAtom newTextAtom  = new TextAtom(newText);
-				target.getAtoms().set(hd.getAtomIndex(), newTextAtom);
-			}
-		}
+                String existString = txtAtom.getData().substring(hd.getHighlightIndices()[0],
+                        hd.getHighlightIndices()[1]);
+                if (existString.equals(oldString)) {
+                    String newText = txtAtom.getData().substring(0, hd.getHighlightIndices()[0]) + replaceString
+                            + txtAtom.getData().substring(hd.getHighlightIndices()[1]);
+                    TextAtom newTextAtom = new TextAtom(newText);
+                    target.getAtoms().set(hd.getAtomIndex(), newTextAtom);
+                    replaced = true;
+                }
+            }
+        }
 		target.setHighlightDataList(currHLVariant.getHighlightDataList());
 		target.setCurrentHighlightedIndex(currHLVariant.getCurrentHighlightedIndex());
-		target.replaced(replaceString);
+		if (replaced) {
+		    target.replaced(replaceString);
+        }
 	}
 	
 
