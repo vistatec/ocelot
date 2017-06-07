@@ -274,7 +274,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
         if (replace) {
             if (spellchecker.hasResults()) {
                 CheckResult res = spellchecker.getCurrentResult();
-                eventQueue.post(new ReplaceEvent(newString, res.getSegmentIndex(), ReplaceEvent.REPLACE));
+                eventQueue
+                        .post(new ReplaceEvent(res.getWord(), newString, res.getSegmentIndex(), ReplaceEvent.REPLACE));
                 spellchecker.replaced(newString);
                 update();
             }
@@ -299,7 +300,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
 			replace = option == JOptionPane.YES_OPTION;
 		}
 		if (replace) {
-			eventQueue.post(new ReplaceEvent(text, ReplaceEvent.REPLACE_ALL));
+            eventQueue
+                    .post(new ReplaceEvent(spellchecker.getCurrentResult().getWord(), text, ReplaceEvent.REPLACE_ALL));
             spellchecker.replacedAll(text);
             update();
 		}
