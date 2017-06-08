@@ -120,6 +120,7 @@ import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteUpdatedEvent;
 import com.vistatec.ocelot.events.SegmentRowsSortedEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
+import com.vistatec.ocelot.events.SegmentTargetEditEvent;
 import com.vistatec.ocelot.events.SegmentTargetEnterEvent;
 import com.vistatec.ocelot.events.SegmentTargetExitEvent;
 import com.vistatec.ocelot.events.SegmentTargetResetEvent;
@@ -1352,7 +1353,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			        .getVariant();
 			int row = sourceTargetTable.getSelectedRow();
 			eventQueue.post(new SegmentTargetExitEvent(xliff, seg));
-			eventQueue.post(new SegmentTargetUpdateEvent(xliff, seg,
+            eventQueue.post(new SegmentTargetEditEvent(xliff, seg,
 			        updatedTarget));
 			postSegmentSelection(seg);
 			editingRow = -1;
