@@ -93,6 +93,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 				.getOriginalLocId());
         spellchecker.setLocale(targetLocale);
 		clear();
+        closeDialog();
 	}
 
 	@Subscribe
@@ -100,6 +101,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 
 		this.sortedIndexMap = e.getSortedIndexMap();
 		clear();
+        closeDialog();
 	}
 
 	/**
@@ -238,7 +240,6 @@ public class SpellcheckController implements OcelotEventQueueListener {
             scDialog.dispose();
             scDialog = null;
         }
-		clear();
 		// The Highlight event with null result, clear the table from the
 		// highlighted values
 		eventQueue.post(new HighlightEvent(null, -1));
