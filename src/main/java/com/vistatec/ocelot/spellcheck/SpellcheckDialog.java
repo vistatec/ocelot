@@ -134,6 +134,24 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 				controller.closeDialog();
 			}
 		});
+        addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                if (!(e.getOppositeWindow() instanceof JDialog)) {
+                    setAllEnabled(false);
+                }
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                if (!(e.getOppositeWindow() instanceof JDialog)) {
+                    setAllEnabled(true);
+                    if (controller.segmentsWereModified()) {
+                        controller.checkSpelling();
+                    }
+                }
+            }
+        });
 	}
 
 	/**
@@ -422,7 +440,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     }
 
     public void setResult(CheckResult result) {
-        progressBar.setVisible(false);
+        setProgressVisible(false);
         txtReplaceWord.setText(null);
         if (result != null) {
             setAllEnabled(true);
@@ -454,6 +472,10 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     public void setMessage(String msg) {
         lblMessage.setText(msg);
         lblMessage.setVisible(true);
+    }
+
+    public void setProgressVisible(boolean visible) {
+        progressBar.setVisible(visible);
     }
 
 }

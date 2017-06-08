@@ -10,6 +10,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.google.common.eventbus.Subscribe;
@@ -18,10 +19,13 @@ import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ReplaceDoneEvent;
 import com.vistatec.ocelot.events.ReplaceEvent;
 import com.vistatec.ocelot.events.SegmentRowsSortedEvent;
+import com.vistatec.ocelot.events.SegmentTargetEditEvent;
+import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.SegmentVariant;
 
 /**
  * Controller class supervising all the processes pertaining to spellchecking
@@ -62,6 +66,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
     private Spellchecker spellchecker;
 
 	private int[] sortedIndexMap;
+
+    private boolean dirty;
 
 	/**
 	 * Constructor.
@@ -114,6 +120,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
             scWorker.cancel(true);
             scWorker = null;
         }
+        dirty = false;
 	}
 
 	private List<OcelotSegment> getSortedSegmentList(){
@@ -131,7 +138,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 		return sortedList;
 	}
 
-    private void checkSpelling() {
+    void checkSpelling() {
         if (scWorker != null) {
             scWorker.cancel(true);
         }
@@ -149,6 +156,10 @@ public class SpellcheckController implements OcelotEventQueueListener {
 
         @Override
         protected Void doInBackground() throws Exception {
+            SwingUtilities.invokeLater(() -> {
+                scDialog.setResult(null);
+                scDialog.setProgressVisible(true);
+            });
             spellchecker.spellcheck(segments, this::isCancelled, (n, total) -> publish(n));
             return null;
         }
@@ -164,6 +175,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
             try {
                 get();
                 update();
+                dirty = false;
             } catch (InterruptedException | CancellationException e) {
                 // Nothing
             } catch (ExecutionException e) {
@@ -224,6 +236,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	 */
 	public void displayDialog(Window owner) {
 		if (scDialog == null) {
+            dirty = false;
 			scDialog = new SpellcheckDialog(owner, this);
 			scDialog.open();
             checkSpelling();
@@ -260,7 +273,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
      * Replaces the string currently highlighted in the grid, with a new string.
      * This method simply sends an event and then the segment view will take
      * care of the text replacing.
-     * 
+     *
      * @param newString
      *            the new string.
      */
@@ -334,5 +347,24 @@ public class SpellcheckController implements OcelotEventQueueListener {
     public void ignoreAll() {
         spellchecker.ignoreAll();
         update();
+    }
+
+    @Subscribe
+    public void segmentTargetEdited(SegmentTargetEditEvent e) {
+        // This partially duplicates logic in BaseSegment.updateTarget(), which
+        // we don't want to use because it mutates the segment, and it is
+        // properly called in SegmentServiceImpl.updateSegmentTarget(). We can't
+        // consume the resulting event of the latter (SegmentEditEvent) because
+        // it is too generic.
+        SegmentVariant updatedTarget = e.getUpdatedTarget();
+        dirty = !updatedTarget.getDisplayText().equals(e.getSegment().getTarget().getDisplayText());
+    }
+
+    public void segmentTargetReset(SegmentTargetResetEvent e) {
+        dirty = true;
+    }
+
+    boolean segmentsWereModified() {
+        return dirty;
     }
 }
