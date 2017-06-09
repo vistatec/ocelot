@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.1" xmlns:its="http://www.w3.org/2005/11/its" xmlns:lgtk="http://www.lingotek.com/xliff/1.2" version="1.2"><file datatype="txt" date="2016-11-22T19:48:18Z" original="Test file 5.txt" source-language="en-US" target-language="es-ES">
+    <body>
+      <trans-unit id="ca379d2f-d40f-4c86-9b2a-398d1236addd">
+        <source>This is a short test sentence.</source>
+		<target>This is a short sentence.</target>
+	  <note from="ocelot"/></trans-unit>
+      <trans-unit id="c4ca440e-b9e4-4f08-b7b1-5cdab2b1a9c6">
+        <source>And another test sentence.</source>
+        <target xml:lang="es-es">And another test sentence.</target>
+	  </trans-unit>
+      <trans-unit id="b7cafd7f-ff79-4fa7-8b08-2f650b3b94a9">
+        <source>And a third test sentence.</source>
+        <target xml:lang="es-es">And a third test sentence.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
