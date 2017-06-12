@@ -7,6 +7,8 @@ import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.config.json.LingoTekConfig;
 import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
+import com.vistatec.ocelot.config.json.SpellingConfig;
+import com.vistatec.ocelot.config.json.SpellingConfig.SpellingDictionary;
 import com.vistatec.ocelot.config.json.TmManagement;
 import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 import com.vistatec.ocelot.plugins.Plugin;
@@ -65,4 +67,10 @@ public interface JsonConfigService {
     public boolean isLingoTekConfigured();
     
     public OcelotAzureConfig getOcelotAzureConfiguration();
+
+    public SpellingConfig getSpellingConfig();
+
+    public SpellingDictionary getSpellingDictionary(String language);
+
+    public void saveSpellingDictionary(String language, SpellingDictionary dictionary) throws TransferException;
 }
