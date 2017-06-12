@@ -184,13 +184,15 @@ public class SpellcheckController implements OcelotEventQueueListener {
                 update();
                 dirty = false;
             } catch (InterruptedException | CancellationException e) {
-                // Nothing
+                LOGGER.trace("Exception occurred while performing spellcheck", e);
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof LocaleNotSupportedException) {
                     scDialog.setResult(null);
                     scDialog.setMessage(e.getCause().getMessage());
                 } else {
-                    e.printStackTrace();
+                    LOGGER.trace("Error occurred while performing spellcheck", e);
+                    JOptionPane.showMessageDialog(scDialog, "An error has occurred while performing spellcheck.",
+                            "Spellcheck Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
