@@ -154,17 +154,11 @@ public class SpellcheckController implements OcelotEventQueueListener {
         if (scWorker != null) {
             scWorker.cancel(true);
         }
-        scWorker = new SpellcheckWorker(getSortedSegmentList());
+        scWorker = new SpellcheckWorker();
         scWorker.execute();
     }
 
     class SpellcheckWorker extends SwingWorker<Void, Integer> {
-
-        private final List<OcelotSegment> segments;
-
-        public SpellcheckWorker(List<OcelotSegment> segments) {
-            this.segments = segments;
-        }
 
         @Override
         protected Void doInBackground() throws Exception {
@@ -172,7 +166,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
                 scDialog.setResult(null);
                 scDialog.setProgressVisible(true);
             });
-            spellchecker.spellcheck(segments, this::isCancelled, (n, total) -> publish(n));
+            spellchecker.spellcheck(getSortedSegmentList(), this::isCancelled, (n, total) -> publish(n),
+                    cfgService.getSpellingConfig());
             return null;
         }
 
