@@ -116,7 +116,7 @@ public class OcelotModule extends AbstractModule {
             
             frController = new FindAndReplaceController(eventQueue);
             eventQueue.registerListener(frController);
-            scController = new SpellcheckController(eventQueue);
+            scController = new SpellcheckController(eventQueue, ocelotCfgService);
             eventQueue.registerListener(scController);
             LingoTekManager lgkManager = new LingoTekManager(ocelotCfgService.getLingoTekConfigurationParams());
             bind(LingoTekManager.class).toInstance(lgkManager);

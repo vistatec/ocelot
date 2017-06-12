@@ -13,7 +13,13 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.config.json.SpellingConfig.SpellingDictionary;
 import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ReplaceDoneEvent;
@@ -33,6 +39,9 @@ import com.vistatec.ocelot.segment.model.SegmentVariant;
  */
 public class SpellcheckController implements OcelotEventQueueListener {
 
+    /** The logger for this class. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpellcheckController.class);
+
 	/** Result found constant. */
 	public static final int RESULT_FOUND = 0;
 
@@ -44,6 +53,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
 
 	/** The Ocelot event queue. */
 	private OcelotEventQueue eventQueue;
+
+    private JsonConfigService cfgService;
 
 	/** The find and replace dialog. */
 	private SpellcheckDialog scDialog;
@@ -75,9 +86,10 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	 * @param eventQueue
 	 *            the event queue
 	 */
-	public SpellcheckController(OcelotEventQueue eventQueue) {
+    public SpellcheckController(OcelotEventQueue eventQueue, JsonConfigService cfgService) {
 
 		this.eventQueue = eventQueue;
+        this.cfgService = cfgService;
         spellchecker = new Spellchecker();
 		replacedResIdxList = new ArrayList<Integer>();
 	}
@@ -366,5 +378,20 @@ public class SpellcheckController implements OcelotEventQueueListener {
 
     boolean segmentsWereModified() {
         return dirty;
+    }
+
+    public void learnWord(String word) {
+        spellchecker.ignoreAll();
+        update();
+        String lang = spellchecker.getLanguage();
+        SpellingDictionary dict = cfgService.getSpellingDictionary(lang);
+        dict.getLearnedWords().add(word);
+        try {
+            cfgService.saveSpellingDictionary(lang, dict);
+        } catch (TransferException e) {
+            LOGGER.trace("Error while saving learned word " + word + " for language " + lang, e);
+            JOptionPane.showMessageDialog(scDialog, "An error has occurred while saving settings.", "Spellcheck Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

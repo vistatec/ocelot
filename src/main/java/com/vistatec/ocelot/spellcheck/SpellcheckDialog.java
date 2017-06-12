@@ -383,7 +383,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 	public void actionPerformed(ActionEvent e) {
 
         if (e.getSource().equals(btnLearn)) {
-            // learn();
+            learn();
         } else if (e.getSource().equals(btnIgnore)) {
             controller.ignoreOne();
         } else if (e.getSource().equals(btnIgnoreAll)) {
@@ -394,6 +394,10 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 			replaceAll();
 		}
 	}
+
+    private void learn() {
+        controller.learnWord(txtUnknownWord.getText());
+    }
 
 	/**
 	 * Replaces all instances.

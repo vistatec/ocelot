@@ -14,6 +14,8 @@ import org.languagetool.Languages;
 import org.languagetool.rules.Categories;
 import org.languagetool.rules.RuleMatch;
 
+import com.vistatec.ocelot.config.json.SpellingConfig;
+import com.vistatec.ocelot.config.json.SpellingConfig.SpellingDictionary;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
@@ -22,6 +24,7 @@ import com.vistatec.ocelot.segment.model.TextAtom;
 public class Spellchecker {
 
     private Locale locale = null;
+    private Language ltLanguage = null;
     private List<CheckResult> allResults = null;
 
     private int currResultIndex = -1;
@@ -33,6 +36,7 @@ public class Spellchecker {
 
     public void reset() {
         allResults = null;
+        ltLanguage = null;
         currResultIndex = -1;
     }
 
@@ -41,6 +45,7 @@ public class Spellchecker {
         if (!lang.getLocale().getLanguage().equals(locale.getLanguage())) {
             throw new LocaleNotSupportedException("Spellchecking is not supported for locale " + locale);
         }
+        this.ltLanguage = lang;
         JLanguageTool lt = new JLanguageTool(lang);
         lt.getCategories().keySet().forEach(lt::disableCategory);
         lt.enableRuleCategory(Categories.TYPOS.getId());
@@ -48,8 +53,10 @@ public class Spellchecker {
     }
 
     public List<CheckResult> spellcheck(List<OcelotSegment> segments, Supplier<Boolean> isCancelled,
-            BiConsumer<Integer, Integer> onProcessed) throws LocaleNotSupportedException {
+            BiConsumer<Integer, Integer> onProcessed, SpellingConfig cfg)
+            throws LocaleNotSupportedException {
         JLanguageTool lt = getLanguageTool();
+        SpellingDictionary dict = cfg.getDictionary(getLanguage());
         List<CheckResult> results = new ArrayList<>();
         for (int segIndex = 0; segIndex < segments.size(); segIndex++) {
             if (isCancelled.get()) {
@@ -69,8 +76,10 @@ public class Spellchecker {
                         List<RuleMatch> matches = lt.check(text);
                         for (RuleMatch match : matches) {
                             String word = text.substring(match.getFromPos(), match.getToPos());
-                            results.add(new CheckResult(segIndex, atomIndex, match.getFromPos(), match.getToPos(), word,
-                                    match.getSuggestedReplacements()));
+                            if (!dict.getLearnedWords().contains(word)) {
+                                results.add(new CheckResult(segIndex, atomIndex, match.getFromPos(), match.getToPos(),
+                                        word, match.getSuggestedReplacements()));
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -153,5 +162,9 @@ public class Spellchecker {
         for (int i : affectedIndices) {
             replacedImpl(newString, i);
         }
+    }
+
+    public String getLanguage() {
+        return ltLanguage == null ? null : ltLanguage.getLocaleWithCountryAndVariant().toLanguageTag();
     }
 }
