@@ -30,6 +30,8 @@ package com.vistatec.ocelot.xliff.okapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -212,6 +214,46 @@ public class TestOkapiXliff20Parser {
                 .text(" #1.");
         segs.add(seg8.build());
         return segs;
+    }
+    
+    @Test
+    public void testReadNotesMultipleSegmentsPerUnit() throws Exception{
+    	
+    	File testFile = new File(TestOkapiXliff20Parser.class.getResource(
+                "file_with_notes_multiple_segm_2.0.xlf").toURI());
+		OkapiXLIFF20Parser parser = new OkapiXLIFF20Parser();
+		List<OcelotSegment> testSegments = parser.parse(testFile);
+		for(OcelotSegment segment: testSegments){
+			if(segment.getSegmentId().equals("s1")){
+				assertEquals(1, segment.getNotes().size());
+				assertEquals("This is a note for the segment s1", segment.getNotes().getOcelotNote().getContent());
+			} else if(segment.getSegmentId().equals("s3")){
+				assertEquals(1, segment.getNotes().size());
+				assertEquals("This is a note for the segment s3", segment.getNotes().getOcelotNote().getContent());
+			} else {
+				assertEquals(0, segment.getNotes().size());
+			}
+		}
+    }
+    
+    @Test
+    public void testReadNotesOneSegmentPerUnit() throws Exception {
+    	
+    	File testFile = new File(TestOkapiXliff20Parser.class.getResource(
+                "file_with_notes_single_segm_2.0.xlf").toURI());
+		OkapiXLIFF20Parser parser = new OkapiXLIFF20Parser();
+		List<OcelotSegment> testSegments = parser.parse(testFile);
+		for(OcelotSegment segment: testSegments){
+			if(segment.getSegmentId().equals("s1")){
+				assertEquals(1, segment.getNotes().size());
+				assertEquals("Note for Segment s1", segment.getNotes().getOcelotNote().getContent());
+			} else if(segment.getSegmentId().equals("s6")){
+				assertEquals(1, segment.getNotes().size());
+				assertEquals("Note for Segment s6", segment.getNotes().getOcelotNote().getContent());
+			} else {
+				assertEquals(0, segment.getNotes().size());
+			}
+		}
     }
     
 }

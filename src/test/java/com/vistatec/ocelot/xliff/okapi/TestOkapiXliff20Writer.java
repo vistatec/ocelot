@@ -33,6 +33,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.config.OcelotJsonConfigTransferService;
 import com.vistatec.ocelot.config.TestProvenanceConfig;
+import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
@@ -40,6 +41,7 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.LinkEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
+import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
@@ -86,6 +88,183 @@ public class TestOkapiXliff20Writer extends XMLTestCase {
 		checkAgainstGoldXML(savedFile, "xliff2.0.enriched-small-nojson.xlf");
 
 	}
+	
+	@Test
+	public void testWriteNotesMultipleSegments() throws Exception {
+		
+		File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+		 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+			OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+			OkapiXliffService xliffService = new OkapiXliffService(cfgService,
+			        eventQueue);
+			eventQueue.registerListener(xliffService);
+
+			File xliffFile = new File(getClass().getResource(
+			        "test_file_multiple_seg_2.0.xlf").toURI());
+			XLIFFDocument xliff = xliffService.parse(xliffFile);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			segmentService.setSegments(xliff);
+			for(OcelotSegment seg: xliff.getSegments()){
+				if(seg.getSegmentId().equals("s1")){
+					seg.getNotes().add(new Note("ocelot-1", "This is a note for the segment s1"));
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				} else if (seg.getSegmentId().equals("s3")){
+					seg.getNotes().add(new Note("ocelot-3", "This is a note for the segment s3"));
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				}
+			}
+			File savedFile = saveXliffToTemp(xliffService, xliff);
+			checkAgainstGoldXML(savedFile,
+	                "file_with_notes_multiple_segm_2.0.xlf");
+			
+	}
+	
+	@Test
+	public void testWriteNoteSingleSegment() throws Exception {
+		
+		File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+		 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+			OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+			OkapiXliffService xliffService = new OkapiXliffService(cfgService,
+			        eventQueue);
+			eventQueue.registerListener(xliffService);
+
+			File xliffFile = new File(getClass().getResource(
+			        "file_single_segm_2.0.xlf").toURI());
+			XLIFFDocument xliff = xliffService.parse(xliffFile);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			segmentService.setSegments(xliff);
+			for(OcelotSegment seg: xliff.getSegments()){
+				if(seg.getSegmentId().equals("s1")){
+					seg.getNotes().add(new Note("ocelot-1", "This is a note for the segment s1"));
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				} else if (seg.getSegmentId().equals("s4")){
+					seg.getNotes().add(new Note("ocelot-3", "This is a note for the segment s4"));
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				}
+			}
+			File savedFile = saveXliffToTemp(xliffService, xliff);
+			checkAgainstGoldXML(savedFile,
+	                "file_single_segm_with_notes2.0.xlf");
+			
+	}
+	
+	@Test
+	public void testUpdateNoteSingleSegment() throws Exception {
+		
+		File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+		 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+			OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+			OkapiXliffService xliffService = new OkapiXliffService(cfgService,
+			        eventQueue);
+			eventQueue.registerListener(xliffService);
+
+			File xliffFile = new File(getClass().getResource(
+			        "file_single_segm_with_notes2.0.xlf").toURI());
+			XLIFFDocument xliff = xliffService.parse(xliffFile);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			segmentService.setSegments(xliff);
+			for(OcelotSegment seg: xliff.getSegments()){
+				if(seg.getSegmentId().equals("s1")){
+					Note ocelotNote = seg.getNotes().getOcelotNote(); 
+					ocelotNote.setContent(ocelotNote.getContent() + " edited");
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				}
+			}
+			File savedFile = saveXliffToTemp(xliffService, xliff);
+			checkAgainstGoldXML(savedFile,
+	                "file_single_segm_with_notes_updated2.0.xlf");
+			
+	}
+	
+	@Test
+	public void testDeleteNoteSingleSegment() throws Exception {
+		
+		File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+		 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+			OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+			OkapiXliffService xliffService = new OkapiXliffService(cfgService,
+			        eventQueue);
+			eventQueue.registerListener(xliffService);
+
+			File xliffFile = new File(getClass().getResource(
+			        "file_single_segm_with_notes2.0.xlf").toURI());
+			XLIFFDocument xliff = xliffService.parse(xliffFile);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			segmentService.setSegments(xliff);
+			for(OcelotSegment seg: xliff.getSegments()){
+				if(seg.getSegmentId().equals("s1")){
+					Note ocelotNote = seg.getNotes().getOcelotNote(); 
+					seg.getNotes().remove(ocelotNote);
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				}
+			}
+			File savedFile = saveXliffToTemp(xliffService, xliff);
+			checkAgainstGoldXML(savedFile,
+	                "file_single_segm_with_notes_deleted2.0.xlf");
+			
+	}
+	
+	@Test
+	public void testUpdateNotesMultipleSegments() throws Exception {
+		
+		File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+		 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+			OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+			OkapiXliffService xliffService = new OkapiXliffService(cfgService,
+			        eventQueue);
+			eventQueue.registerListener(xliffService);
+
+			File xliffFile = new File(getClass().getResource(
+			        "file_with_notes_multiple_segm_2.0.xlf").toURI());
+			XLIFFDocument xliff = xliffService.parse(xliffFile);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			segmentService.setSegments(xliff);
+			for(OcelotSegment seg: xliff.getSegments()){
+				if(seg.getSegmentId().equals("s1")){
+					Note note = seg.getNotes().getOcelotNote();
+					note.setContent(note.getContent() + " edited");
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+					break;
+				}
+			}
+			File savedFile = saveXliffToTemp(xliffService, xliff);
+			checkAgainstGoldXML(savedFile,
+	                "file_with_notes_multiple_segm_updated_2.0.xlf");
+			
+	}
+	
+	@Test
+	public void testDeleteNotesMultipleSegments() throws Exception {
+		
+		File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+		 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+			OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+			OkapiXliffService xliffService = new OkapiXliffService(cfgService,
+			        eventQueue);
+			eventQueue.registerListener(xliffService);
+
+			File xliffFile = new File(getClass().getResource(
+			        "file_with_notes_multiple_segm_2.0.xlf").toURI());
+			XLIFFDocument xliff = xliffService.parse(xliffFile);
+			SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+			segmentService.setSegments(xliff);
+			for(OcelotSegment seg: xliff.getSegments()){
+				if(seg.getSegmentId().equals("s1")){
+					seg.getNotes().remove(seg.getNotes().getOcelotNote());
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				} else if(seg.getSegmentId().equals("s3")){
+					seg.getNotes().remove(seg.getNotes().getOcelotNote());
+					xliffService.updateNotes(new SegmentNoteEditEvent(xliff, seg));
+				}
+			}
+			File savedFile = saveXliffToTemp(xliffService, xliff);
+			checkAgainstGoldXML(savedFile,
+	                "test_file_multiple_seg_2.0.xlf");
+			
+	}
+	
+	
 
 	private File checkJson(File savedFile, SegmentService segmentService)
 	        throws Exception {

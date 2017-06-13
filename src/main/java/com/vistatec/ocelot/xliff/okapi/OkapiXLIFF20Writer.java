@@ -80,353 +80,395 @@ import com.vistatec.ocelot.xliff.XLIFFWriter;
  * Write out XLIFF 2.0 files.
  */
 public class OkapiXLIFF20Writer implements XLIFFWriter {
-	
-    private static final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
-    private final OkapiXLIFF20Parser parser;
-    private final UserProvenance userProvenance;
-    private final OcelotEventQueue eventQueue;
 
-    public OkapiXLIFF20Writer(OkapiXLIFF20Parser parser, UserProvenance userProvenance,
-            OcelotEventQueue eventQueue) {
-        this.parser = parser;
-        this.userProvenance = userProvenance;
-        this.eventQueue = eventQueue;
-    }
+	private static final Logger LOG = LoggerFactory.getLogger(OkapiXLIFF20Writer.class);
+	private final OkapiXLIFF20Parser parser;
+	private final UserProvenance userProvenance;
+	private final OcelotEventQueue eventQueue;
 
-    @Override
-    public void updateSegment(OcelotSegment seg) {
-        OkapiSegment okapiSeg = (OkapiSegment) seg;
-        Segment unitPart = this.parser.getSegmentUnitPart(okapiSeg.eventNum);
-        if (unitPart == null) {
-            LOG.error("Failed to find Okapi Unit Part associated with segment #"+okapiSeg.getSegmentNumber());
+	public OkapiXLIFF20Writer(OkapiXLIFF20Parser parser, UserProvenance userProvenance, OcelotEventQueue eventQueue) {
+		this.parser = parser;
+		this.userProvenance = userProvenance;
+		this.eventQueue = eventQueue;
+	}
 
-        } else if (unitPart.isSegment()) {
-            if (okapiSeg.hasOriginalTarget()) {
-                FragmentVariant targetFrag = (FragmentVariant) okapiSeg.getTarget();
-                Fragment updatedOkapiFragment = targetFrag.getUpdatedOkapiFragment(unitPart.getTarget());
-                unitPart.setTarget(updatedOkapiFragment);
-                manageRevision(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()), unitPart, parser.getTargetVersion(seg.getSegmentId()));
-            }
-            
-            updateITSLQIAnnotations(unitPart, okapiSeg);
+	@Override
+	public void updateSegment(OcelotSegment seg) {
+		OkapiSegment okapiSeg = (OkapiSegment) seg;
+		Segment unitPart = this.parser.getSegmentUnitPart(okapiSeg.eventNum);
+		if (unitPart == null) {
+			LOG.error("Failed to find Okapi Unit Part associated with segment #" + okapiSeg.getSegmentNumber());
 
-            if (!haveAddedOcelotProvAnnotation(unitPart, okapiSeg)) {
-                updateITSProvAnnotations(unitPart, okapiSeg);
-            }
+		} else if (unitPart.isSegment()) {
+			if (okapiSeg.hasOriginalTarget()) {
+				FragmentVariant targetFrag = (FragmentVariant) okapiSeg.getTarget();
+				Fragment updatedOkapiFragment = targetFrag.getUpdatedOkapiFragment(unitPart.getTarget());
+				unitPart.setTarget(updatedOkapiFragment);
+				manageRevision(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()), unitPart,
+						parser.getTargetVersion(seg.getSegmentId()));
+			}
 
-            FragmentVariant source = (FragmentVariant) okapiSeg.getSource();
-            source.updateSegmentAtoms(unitPart);
+			updateITSLQIAnnotations(unitPart, okapiSeg);
 
-            FragmentVariant target = (FragmentVariant) okapiSeg.getTarget();
-            target.updateSegmentAtoms(unitPart);
-            target.setAtomsHighlightedText();
+			if (!haveAddedOcelotProvAnnotation(unitPart, okapiSeg)) {
+				updateITSProvAnnotations(unitPart, okapiSeg);
+			}
 
-        } else {
-            LOG.error("Unit part associated with Segment was not an Okapi Segment!");
-            LOG.error("Failed to update Unit Part for segment #"+okapiSeg.getSegmentNumber());
-        }
-    }
-    
-    
+			FragmentVariant source = (FragmentVariant) okapiSeg.getSource();
+			source.updateSegmentAtoms(unitPart);
 
-    private void updateNotes(Event segmentEvent, OkapiSegment okapiSeg) {
-	    
-    	if(segmentEvent.isUnit()){
-    		Unit unit = segmentEvent.getUnit();
-    		Note ocelotNote = null;
-    		if(okapiSeg.getNotes() != null){
-    			ocelotNote = okapiSeg.getNotes().getOcelotNote();
-    		}
-    		if(ocelotNote != null){
-    			net.sf.okapi.lib.xliff2.core.Note okapiNote = findOcelotNoteInUnit(unit);
-    			//CASE 1 - note created for this segment
-    			if(okapiNote == null){
-    				okapiNote = new net.sf.okapi.lib.xliff2.core.Note(ocelotNote.getContent());
-    				okapiNote.setId(ocelotNote.getId());
-    				unit.addNote(okapiNote);
-    				//CASE 2 - note changed for this segment	
-    			} else {
-    				okapiNote.setText(ocelotNote.getContent());
-    			}
-    		} else {
-    			net.sf.okapi.lib.xliff2.core.Note okapiNote = findOcelotNoteInUnit(unit);
-    			//CASE 3 - note deleted for this segment
-    			if(okapiNote != null){
-    				unit.getNotes().remove(okapiNote);
-    			}
-    		}
-    	}
-    }
-    
-    private net.sf.okapi.lib.xliff2.core.Note findOcelotNoteInUnit(Unit unit ){
-    	
-    	net.sf.okapi.lib.xliff2.core.Note note = null;
-    	if(unit.getNotes() != null){
-    		for(net.sf.okapi.lib.xliff2.core.Note currNote: unit.getNotes()){
-    			if(currNote.getId().startsWith(Note.OCELOT_ID_PREFIX)){
-    				note = currNote;
-    				break;
-    			}
-    		}
-    	}
-    	return note;
-    }
-    
-	private void manageRevision(Event event, Segment unitPart, TargetVersion nextVersion) {
+			FragmentVariant target = (FragmentVariant) okapiSeg.getTarget();
+			target.updateSegmentAtoms(unitPart);
+			target.setAtomsHighlightedText();
 
-    	if(event.isUnit()){
-    		Unit unit =  event.getUnit();
-    		Item item = null;
-    		Date now = new Date();
-    		if(!unit.hasChangeTrack()){
-    			ChangeTrack changeTrack = new ChangeTrack();
-    			unit.setChangeTrack(changeTrack);
-    			Revisions revisions = createTargetRevisions(nextVersion.getVersion(), unitPart.getId());
-    			changeTrack.add(revisions);
-    			Revision revision = createCurrentRevision(nextVersion.getVersion(), parser.getRevisionDateFormatter().format(now));
-    			revisions.add(revision);
-    			item = new Item();
-    			item.setProperty(Item.PROPERTY_CONTENT_VALUE);
-    			revision.add(item);
-    		} else {
-    			Revisions targetRevisions = null;
-    			Iterator<Revisions> revsIt = unit.getChangeTrack().iterator();
-    			Revisions revs = null;
-    			while(revsIt.hasNext()) {
-    				revs = revsIt.next();
-    				if(isTargetRevisions(revs, unitPart.getId()) ){
-    					targetRevisions = revs;
-    					break;
-    				}
-    			}
-    			if(targetRevisions == null){
-    				targetRevisions = createTargetRevisions(nextVersion.getVersion(), unitPart.getId());
-    				unit.getChangeTrack().add(targetRevisions);
-    			}
-    			Revision currentRevision = null;
-    			for(Revision rev: targetRevisions){
-    				if(rev.getVersion().equals(nextVersion.getVersion())){
-    					currentRevision = rev;
-    					break;
-    				}
-    			}
-    			if(currentRevision == null){
-    				currentRevision = createCurrentRevision(nextVersion.getVersion(), parser.getRevisionDateFormatter().format(now));
-    				targetRevisions.add(currentRevision);
-    				targetRevisions.setCurrentVersion(nextVersion.getVersion());
-    			}
-    			Iterator<Item> itemsIt = currentRevision.iterator();
-    			Item currItem = null;
-    			while(itemsIt.hasNext()){
-    				currItem = itemsIt.next();
-    				if(currItem.getProperty().equals(Item.PROPERTY_CONTENT_VALUE)){
-    					item = currItem;
-    					break;
-    				}
-    			}
-    			if(item == null){
-    				item = new Item();
-    				item.setProperty(Item.PROPERTY_CONTENT_VALUE);
-    				currentRevision.add(item);
-    			}
-    		}
-    		item.setText(StringEscapeUtils.escapeXml11(unitPart.getTarget().toString()));
-    		nextVersion.setUpdated(true);
-    	}
-    }
-	
-	private boolean isTargetRevisions(Revisions revs, String ref){
-		
-		return revs.getAppliesTo().equals(Const.ELEM_TARGET) && ((ref != null && ref.equals(revs.getRef())) || (ref == null && revs.getRef() == null));
+		} else {
+			LOG.error("Unit part associated with Segment was not an Okapi Segment!");
+			LOG.error("Failed to update Unit Part for segment #" + okapiSeg.getSegmentNumber());
+		}
+	}
+
+	private void updateNotes(Event segmentEvent, OcelotSegment ocelotSeg) {
+
+		if (segmentEvent.isUnit()) {
+			Unit unit = segmentEvent.getUnit();
+			Note ocelotNote = null;
+			if (ocelotSeg.getNotes() != null) {
+				ocelotNote = ocelotSeg.getNotes().getOcelotNote();
+			}
+			Segment okapiSegment = findOkapiSegment(unit, ocelotSeg);
+			if (ocelotNote != null) {
+				net.sf.okapi.lib.xliff2.core.Note okapiNote = findOcelotNoteInUnitForSegment(unit,
+						okapiSegment);
+				if (okapiNote == null) {
+					// CASE 1 - note created for this segment
+					addNoteToSegment(okapiSegment, ocelotNote, unit);
+				} else {
+					// CASE 2 - note changed for this segment
+					okapiNote.setText(ocelotNote.getContent());
+				}
+			} else {
+				// CASE 3 - note deleted for this segment
+				net.sf.okapi.lib.xliff2.core.Note okapiNote = findOcelotNoteInUnitForSegment(unit,
+						okapiSegment);
+				if (okapiNote != null) {
+					removeNoteFromSegment(okapiSegment, okapiNote, unit);
+				}
+			}
+		}
 	}
 	
-    private Revisions createTargetRevisions(String version, String ref){
-    	
-    	Revisions targetRevisions = new Revisions();
-    	targetRevisions.setAppliesTo(Const.ELEM_TARGET);
-    	targetRevisions.setCurrentVersion(version);
-    	targetRevisions.setRef(ref);
-    	return targetRevisions;
-    }
-    
-    private Revision createCurrentRevision(String version, String date){
-    	
-    	Revision revision = new Revision();
+	private void removeNoteFromSegment(Segment okapiSegment, net.sf.okapi.lib.xliff2.core.Note okapiNote, Unit unit){
+		
+		unit.getNotes().remove(okapiNote);
+		if(unit.getSegmentCount() > 1){
+			okapiSegment.removeMarkers(false, "comment");
+		}
+	}
+	
+	private void addNoteToSegment(Segment okapiSegment, Note ocelotNote, Unit unit){
+		
+		net.sf.okapi.lib.xliff2.core.Note okapiNote = new net.sf.okapi.lib.xliff2.core.Note();
+		okapiNote.setText(ocelotNote.getContent());
+		okapiNote.setId(ocelotNote.getId());
+		unit.getNotes().add(okapiNote);
+		if (unit.getSegmentCount() > 1) {
+			String noteTagId = "n-" + unit.getId() + okapiSegment.getId();
+			MTag noteTag = new MTag(noteTagId, "comment");
+			noteTag.setRef("#n=" + ocelotNote.getId());
+			okapiSegment.getSource().annotate(0, -1, noteTag);
+		}
+	}
+
+	private Segment findOkapiSegment(Unit unit, OcelotSegment ocelotSeg) {
+		Segment okapiSegment = null;
+		for (Segment currSeg : unit.getSegments()) {
+			if (currSeg.getId().equals(ocelotSeg.getSegmentId())) {
+				okapiSegment = currSeg;
+				break;
+			}
+		}
+		return okapiSegment;
+	}
+
+	private net.sf.okapi.lib.xliff2.core.Note findOcelotNoteInUnitForSegment(Unit unit, Segment okapiSegment) {
+
+		net.sf.okapi.lib.xliff2.core.Note note = null;
+		if (unit.getSegmentCount() > 1 && okapiSegment != null) {
+			note = parser.findNoteForSegment(parser.findOcelotNotes(unit), okapiSegment, true);
+		} else {
+			List<net.sf.okapi.lib.xliff2.core.Note> notes = parser.findOcelotNotes(unit);
+			if (!notes.isEmpty()) {
+				note = notes.get(0);
+			}
+		}
+		return note;
+	}
+
+	private void manageRevision(Event event, Segment unitPart, TargetVersion nextVersion) {
+
+		if (event.isUnit()) {
+			Unit unit = event.getUnit();
+			Item item = null;
+			Date now = new Date();
+			if (!unit.hasChangeTrack()) {
+				ChangeTrack changeTrack = new ChangeTrack();
+				unit.setChangeTrack(changeTrack);
+				Revisions revisions = createTargetRevisions(nextVersion.getVersion(), unitPart.getId());
+				changeTrack.add(revisions);
+				Revision revision = createCurrentRevision(nextVersion.getVersion(),
+						parser.getRevisionDateFormatter().format(now));
+				revisions.add(revision);
+				item = new Item();
+				item.setProperty(Item.PROPERTY_CONTENT_VALUE);
+				revision.add(item);
+			} else {
+				Revisions targetRevisions = null;
+				Iterator<Revisions> revsIt = unit.getChangeTrack().iterator();
+				Revisions revs = null;
+				while (revsIt.hasNext()) {
+					revs = revsIt.next();
+					if (isTargetRevisions(revs, unitPart.getId())) {
+						targetRevisions = revs;
+						break;
+					}
+				}
+				if (targetRevisions == null) {
+					targetRevisions = createTargetRevisions(nextVersion.getVersion(), unitPart.getId());
+					unit.getChangeTrack().add(targetRevisions);
+				}
+				Revision currentRevision = null;
+				for (Revision rev : targetRevisions) {
+					if (rev.getVersion().equals(nextVersion.getVersion())) {
+						currentRevision = rev;
+						break;
+					}
+				}
+				if (currentRevision == null) {
+					currentRevision = createCurrentRevision(nextVersion.getVersion(),
+							parser.getRevisionDateFormatter().format(now));
+					targetRevisions.add(currentRevision);
+					targetRevisions.setCurrentVersion(nextVersion.getVersion());
+				}
+				Iterator<Item> itemsIt = currentRevision.iterator();
+				Item currItem = null;
+				while (itemsIt.hasNext()) {
+					currItem = itemsIt.next();
+					if (currItem.getProperty().equals(Item.PROPERTY_CONTENT_VALUE)) {
+						item = currItem;
+						break;
+					}
+				}
+				if (item == null) {
+					item = new Item();
+					item.setProperty(Item.PROPERTY_CONTENT_VALUE);
+					currentRevision.add(item);
+				}
+			}
+			item.setText(StringEscapeUtils.escapeXml11(unitPart.getTarget().toString()));
+			nextVersion.setUpdated(true);
+		}
+	}
+
+	private boolean isTargetRevisions(Revisions revs, String ref) {
+
+		return revs.getAppliesTo().equals(Const.ELEM_TARGET)
+				&& ((ref != null && ref.equals(revs.getRef())) || (ref == null && revs.getRef() == null));
+	}
+
+	private Revisions createTargetRevisions(String version, String ref) {
+
+		Revisions targetRevisions = new Revisions();
+		targetRevisions.setAppliesTo(Const.ELEM_TARGET);
+		targetRevisions.setCurrentVersion(version);
+		targetRevisions.setRef(ref);
+		return targetRevisions;
+	}
+
+	private Revision createCurrentRevision(String version, String date) {
+
+		Revision revision = new Revision();
 		revision.setVersion(version);
 		revision.setDatetime(date);
 		return revision;
-    }
-    
+	}
 
 	/**
-     * Records the Ocelot ITS Provenance record to the Okapi segment
-     * representation used when saving the file using the Okapi XLIFF 2.0 writer.
-     * @param unitPart - Okapi representation of the segment to annotate
-     * @param seg - Ocelot segment
-     */
-    private void updateITSProvAnnotations(Part unitPart, OcelotSegment seg) {
-        Provenances okapiOcelotProv = getOkapiOcelotProvenance(seg);
-        if (okapiOcelotProv != null) {
-            ITSWriter.annotate(unitPart.getTarget(), 0, -1, okapiOcelotProv);
+	 * Records the Ocelot ITS Provenance record to the Okapi segment
+	 * representation used when saving the file using the Okapi XLIFF 2.0
+	 * writer.
+	 * 
+	 * @param unitPart
+	 *            - Okapi representation of the segment to annotate
+	 * @param seg
+	 *            - Ocelot segment
+	 */
+	private void updateITSProvAnnotations(Part unitPart, OcelotSegment seg) {
+		Provenances okapiOcelotProv = getOkapiOcelotProvenance(seg);
+		if (okapiOcelotProv != null) {
+			ITSWriter.annotate(unitPart.getTarget(), 0, -1, okapiOcelotProv);
 
-            Provenance ocelotProv = new OkapiProvenance(okapiOcelotProv.getList().get(0));
-            eventQueue.post(new ProvenanceAddEvent(ocelotProv, seg, true));
-        }
-    }
+			Provenance ocelotProv = new OkapiProvenance(okapiOcelotProv.getList().get(0));
+			eventQueue.post(new ProvenanceAddEvent(ocelotProv, seg, true));
+		}
+	}
 
-    /**
-     * Constructs the Okapi representation of the Ocelot ITS Provenance record
-     * if the reviewer's profile is set.
-     * @param seg - Ocelot segment
-     * @return - Okapi ITS Provenance Object or null if profile {@link UserProvenance} is not set
-     */
-    private Provenances getOkapiOcelotProvenance(OcelotSegment seg) {
-        if (userProvenance.isEmpty()) {
-            return null;
-        }
+	/**
+	 * Constructs the Okapi representation of the Ocelot ITS Provenance record
+	 * if the reviewer's profile is set.
+	 * 
+	 * @param seg
+	 *            - Ocelot segment
+	 * @return - Okapi ITS Provenance Object or null if profile
+	 *         {@link UserProvenance} is not set
+	 */
+	private Provenances getOkapiOcelotProvenance(OcelotSegment seg) {
+		if (userProvenance.isEmpty()) {
+			return null;
+		}
 
-        String ocelotProvId = "OcelotProv" + seg.getSegmentNumber();
-        Provenances okapiProvGroup = new Provenances(ocelotProvId);
+		String ocelotProvId = "OcelotProv" + seg.getSegmentNumber();
+		Provenances okapiProvGroup = new Provenances(ocelotProvId);
 
-        net.sf.okapi.lib.xliff2.its.Provenance okapiProv
-                = new net.sf.okapi.lib.xliff2.its.Provenance();
-        okapiProv.setRevPerson(userProvenance.getRevPerson());
-        okapiProv.setRevOrg(userProvenance.getRevOrg());
-        okapiProv.setRevTool("http://open.vistatec.com/ocelot");
-        okapiProv.setProvRef(userProvenance.getProvRef());
-        okapiProvGroup.getList().add(okapiProv);
+		net.sf.okapi.lib.xliff2.its.Provenance okapiProv = new net.sf.okapi.lib.xliff2.its.Provenance();
+		okapiProv.setRevPerson(userProvenance.getRevPerson());
+		okapiProv.setRevOrg(userProvenance.getRevOrg());
+		okapiProv.setRevTool("http://open.vistatec.com/ocelot");
+		okapiProv.setProvRef(userProvenance.getProvRef());
+		okapiProvGroup.getList().add(okapiProv);
 
-        return okapiProvGroup;
-    }
+		return okapiProvGroup;
+	}
 
-    private boolean haveAddedOcelotProvAnnotation(Part unitPart, OcelotSegment seg) {
-        boolean haveAddedUserProv = seg.hasOcelotProvenance();
+	private boolean haveAddedOcelotProvAnnotation(Part unitPart, OcelotSegment seg) {
+		boolean haveAddedUserProv = seg.hasOcelotProvenance();
 
-        List<Tag> targetTags = unitPart.getTarget().getOwnTags();
-        for (Tag tag : targetTags) {
-            if (tag.isMarker()) {
-                MTag mtag = (MTag) tag;
+		List<Tag> targetTags = unitPart.getTarget().getOwnTags();
+		for (Tag tag : targetTags) {
+			if (tag.isMarker()) {
+				MTag mtag = (MTag) tag;
 
-                if (mtag.hasITSItem()) {
-                    Provenances provMetadata = (Provenances) mtag.getITSItems()
-                            .get(net.sf.okapi.lib.xliff2.its.Provenance.class);
-                    if (provMetadata != null
-                            && provMetadata.getGroupId().matches("OcelotProv[0-9]*")) {
-                        haveAddedUserProv = true;
-                    }
-                }
-            }
-        }
-        return haveAddedUserProv;
-    }
+				if (mtag.hasITSItem()) {
+					Provenances provMetadata = (Provenances) mtag.getITSItems()
+							.get(net.sf.okapi.lib.xliff2.its.Provenance.class);
+					if (provMetadata != null && provMetadata.getGroupId().matches("OcelotProv[0-9]*")) {
+						haveAddedUserProv = true;
+					}
+				}
+			}
+		}
+		return haveAddedUserProv;
+	}
 
-    /**
-     * Update LQI annotations on the segment. TODO: separate from non-LQI updates
-     * @param unitPart - Okapi representation of the segment
-     * @param seg - Ocelot segment
-     */
-    public void updateITSLQIAnnotations(Part unitPart, OcelotSegment seg) {
-        removeExistingLqiAnnotationsFromSegment(unitPart);
+	/**
+	 * Update LQI annotations on the segment. TODO: separate from non-LQI
+	 * updates
+	 * 
+	 * @param unitPart
+	 *            - Okapi representation of the segment
+	 * @param seg
+	 *            - Ocelot segment
+	 */
+	public void updateITSLQIAnnotations(Part unitPart, OcelotSegment seg) {
+		removeExistingLqiAnnotationsFromSegment(unitPart);
 
-        if (!seg.getLQI().isEmpty()) {
-            String ocelotLqiId = "OcelotLQI" + seg.getSegmentNumber();
-            LocQualityIssues newOkapiLqiGroup = convertOcelotToOkapiLqi(
-                    seg.getLQI(), ocelotLqiId);
-            ITSWriter.annotate(unitPart.getTarget(), 0, -1, newOkapiLqiGroup);
-        }
-    }
+		if (!seg.getLQI().isEmpty()) {
+			String ocelotLqiId = "OcelotLQI" + seg.getSegmentNumber();
+			LocQualityIssues newOkapiLqiGroup = convertOcelotToOkapiLqi(seg.getLQI(), ocelotLqiId);
+			ITSWriter.annotate(unitPart.getTarget(), 0, -1, newOkapiLqiGroup);
+		}
+	}
 
-    private void removeExistingLqiAnnotationsFromSegment(Part unitPart) {
-        List<Tag> sourceTags = unitPart.getSource().getOwnTags();
-        List<Tag> targetTags = unitPart.getTarget().getOwnTags();
+	private void removeExistingLqiAnnotationsFromSegment(Part unitPart) {
+		List<Tag> sourceTags = unitPart.getSource().getOwnTags();
+		List<Tag> targetTags = unitPart.getTarget().getOwnTags();
 
-        removeExistingLqiAnnotations(unitPart, false, sourceTags);
-        removeExistingLqiAnnotations(unitPart, true, targetTags);
-    }
+		removeExistingLqiAnnotations(unitPart, false, sourceTags);
+		removeExistingLqiAnnotations(unitPart, true, targetTags);
+	}
 
-    private void removeExistingLqiAnnotations(Part unitPart, boolean isTarget, List<Tag> tags) {
-        for (Tag tag : tags) {
-            if (tag.isMarker()) {
-                MTag mtag = (MTag) tag;
-                if (mtag.hasITSItem()) {
-                    ITSItems items = mtag.getITSItems();
-                    IITSItem itsLqiItem = items.get(LocQualityIssue.class);
-                    if (itsLqiItem != null) {
-                        // Don't delete the LQI issues for opening tags so we
-                        // can find the corresponding closing tag and delete it as well
-                        if (mtag.getTagType() == TagType.CLOSING ||
-                                mtag.getTagType() == TagType.STANDALONE) {
-                            items.remove(itsLqiItem);
-                        }
-                        // TODO: Assumes MTag is only used for ITS metadata
-                        if (items.size() <= 1) {
-                            Fragment frag = isTarget ?
-                                    unitPart.getTarget() : unitPart.getSource();
-                            frag.remove(mtag);
-                        }
-                    }
-                }
-            }
-        }
-    }
+	private void removeExistingLqiAnnotations(Part unitPart, boolean isTarget, List<Tag> tags) {
+		for (Tag tag : tags) {
+			if (tag.isMarker()) {
+				MTag mtag = (MTag) tag;
+				if (mtag.hasITSItem()) {
+					ITSItems items = mtag.getITSItems();
+					IITSItem itsLqiItem = items.get(LocQualityIssue.class);
+					if (itsLqiItem != null) {
+						// Don't delete the LQI issues for opening tags so we
+						// can find the corresponding closing tag and delete it
+						// as well
+						if (mtag.getTagType() == TagType.CLOSING || mtag.getTagType() == TagType.STANDALONE) {
+							items.remove(itsLqiItem);
+						}
+						// TODO: Assumes MTag is only used for ITS metadata
+						if (items.size() <= 1) {
+							Fragment frag = isTarget ? unitPart.getTarget() : unitPart.getSource();
+							frag.remove(mtag);
+						}
+					}
+				}
+			}
+		}
+	}
 
-    private LocQualityIssues convertOcelotToOkapiLqi(List<LanguageQualityIssue> ocelotLqi, String ocelotLqiId) {
-        LocQualityIssues newLqiGroup = new LocQualityIssues(ocelotLqiId);
-        for (LanguageQualityIssue lqi : ocelotLqi) {
-            LocQualityIssue newLqi = new LocQualityIssue();
-            newLqi.setType(lqi.getType());
-            newLqi.setComment(lqi.getComment());
-            newLqi.setSeverity(lqi.getSeverity());
+	private LocQualityIssues convertOcelotToOkapiLqi(List<LanguageQualityIssue> ocelotLqi, String ocelotLqiId) {
+		LocQualityIssues newLqiGroup = new LocQualityIssues(ocelotLqiId);
+		for (LanguageQualityIssue lqi : ocelotLqi) {
+			LocQualityIssue newLqi = new LocQualityIssue();
+			newLqi.setType(lqi.getType());
+			newLqi.setComment(lqi.getComment());
+			newLqi.setSeverity(lqi.getSeverity());
 
-            if (lqi.getProfileReference() != null) {
-                newLqi.setProfileRef(lqi.getProfileReference().toString());
-            }
+			if (lqi.getProfileReference() != null) {
+				newLqi.setProfileRef(lqi.getProfileReference().toString());
+			}
 
-            newLqi.setEnabled(lqi.isEnabled());
-            newLqiGroup.getList().add(newLqi);
-        }
-        return newLqiGroup;
-    }
+			newLqi.setEnabled(lqi.isEnabled());
+			newLqiGroup.getList().add(newLqi);
+		}
+		return newLqiGroup;
+	}
 
-    @Override
-    public void save(File file) throws IOException, UnsupportedEncodingException {
-        net.sf.okapi.lib.xliff2.writer.XLIFFWriter writer = new net.sf.okapi.lib.xliff2.writer.XLIFFWriter();
-        StringWriter tmp = new StringWriter();
-        writer.create(tmp, parser.getSourceLang());
-        writer.setLineBreak("\n"); //FIXME: OS linebreak detection in XLIFF filter doesn't seem to work (Mac) so we need to set it.
-        writer.setWithOriginalData(true);
-        for (Event event : parser.getEvents()) {
-            writer.writeEvent(event);
-        }
-        writer.close();
-        tmp.close();
-        Writer outputFile = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath()), "UTF-8"));
-        outputFile.write(tmp.toString());
-        outputFile.flush();
-        outputFile.close();
-        parser.updateTargetVersions();
-    }
+	@Override
+	public void save(File file) throws IOException, UnsupportedEncodingException {
+		net.sf.okapi.lib.xliff2.writer.XLIFFWriter writer = new net.sf.okapi.lib.xliff2.writer.XLIFFWriter();
+		StringWriter tmp = new StringWriter();
+		writer.create(tmp, parser.getSourceLang());
+		writer.setLineBreak("\n"); // FIXME: OS linebreak detection in XLIFF
+									// filter doesn't seem to work (Mac) so we
+									// need to set it.
+		writer.setWithOriginalData(true);
+		for (Event event : parser.getEvents()) {
+			writer.writeEvent(event);
+		}
+		writer.close();
+		tmp.close();
+		Writer outputFile = new BufferedWriter(
+				new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath()), "UTF-8"));
+		outputFile.write(tmp.toString());
+		outputFile.flush();
+		outputFile.close();
+		parser.updateTargetVersions();
+	}
 
 	@Override
 	public void updateNotes(OcelotSegment seg) {
 
-		OkapiSegment okapiSeg = (OkapiSegment) seg;
-		updateNotes(this.parser.getSegmentEvent(okapiSeg.getSegmentNumber()),
-		        okapiSeg);
+		// OkapiSegment okapiSeg = (OkapiSegment) seg;
+		updateNotes(this.parser.getSegmentEvent(seg.getSegmentNumber()), seg);
 
 	}
 
 	@Override
 	public void updateTiming(Double time) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void updateLqiConfiguration(String lqiConfName) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
