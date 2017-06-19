@@ -33,7 +33,7 @@ public abstract class LQIConstants {
 
 	/** Default category names. */
 	public final static String[] DEFAULT_CATEGORIES_NAMES = { "terminology",
-	        "style", "inconsistent-entities", "duplication",
+            "style", "misspelling", "inconsistent-entities", "duplication",
 	        "internationalization", "whitespace", "omission", "mistranslation" };
 
 	/** Complete list of LQI categories. */
