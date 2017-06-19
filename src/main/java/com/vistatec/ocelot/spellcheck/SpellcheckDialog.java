@@ -98,6 +98,9 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 	/** The controller. */
 	private SpellcheckController controller;
 
+    /** The currently displayed check result */
+    private CheckResult result;
+
 	/**
 	 * Constructor.
 	 * 
@@ -137,14 +140,14 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         addWindowFocusListener(new WindowAdapter() {
             @Override
             public void windowLostFocus(WindowEvent e) {
-                if (!(e.getOppositeWindow() instanceof JDialog)) {
+                if (!isChild(e.getOppositeWindow())) {
                     setAllEnabled(false);
                 }
             }
 
             @Override
             public void windowGainedFocus(WindowEvent e) {
-                if (!(e.getOppositeWindow() instanceof JDialog)) {
+                if (result != null && !isChild(e.getOppositeWindow())) {
                     setAllEnabled(true);
                     if (controller.segmentsWereModified()) {
                         controller.checkSpelling();
@@ -153,6 +156,14 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
             }
         });
 	}
+
+    private boolean isChild(Component c) {
+        if (c == null) {
+            return false;
+        }
+        Container parent = c.getParent();
+        return parent == this || isChild(parent);
+    }
 
 	/**
 	 * Gets the component to be displayed at the bottom of the dialog.
@@ -444,6 +455,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     }
 
     public void setResult(CheckResult result) {
+        this.result = result;
         setProgressVisible(false);
         txtReplaceWord.setText(null);
         if (result != null) {
