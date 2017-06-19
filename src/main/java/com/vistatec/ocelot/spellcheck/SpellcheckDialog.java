@@ -15,7 +15,9 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -26,6 +28,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.vistatec.ocelot.lqi.model.LQISeverity;
 
 /**
  * Dialog providing graphical tools for checking and correcting spelling.
@@ -79,6 +83,9 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
     /** The add ITS all button. */
     private JButton btnAddItsAll;
+
+    /** The ITS severity selector */
+    private JComboBox<LQISeverity> cbxSeverity;
 
     /** The unknown word text field. */
     private JTextField txtUnknownWord;
@@ -234,6 +241,15 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
             c.fill = GridBagConstraints.HORIZONTAL;
             c.insets = buttonsInsets;
             buttonsPanel.add(btnAddItsAll, c);
+        }
+        {
+            cbxSeverity = new JComboBox<>();
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 3;
+            c.gridy = 0;
+            c.gridheight = 2;
+            c.insets = buttonsInsets;
+            buttonsPanel.add(cbxSeverity, c);
         }
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -492,6 +508,10 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
     public void setProgressVisible(boolean visible) {
         progressBar.setVisible(visible);
+    }
+
+    public void setSeverities(List<LQISeverity> severities) {
+        cbxSeverity.setModel(new DefaultComboBoxModel<>(severities.toArray(new LQISeverity[severities.size()])));
     }
 
 }
