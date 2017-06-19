@@ -21,6 +21,7 @@ import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.config.json.SpellingConfig.SpellingDictionary;
 import com.vistatec.ocelot.events.HighlightEvent;
+import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ReplaceDoneEvent;
@@ -31,6 +32,7 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
@@ -394,6 +396,22 @@ public class SpellcheckController implements OcelotEventQueueListener {
             LOGGER.trace("Error while saving learned word " + word + " for language " + lang, e);
             JOptionPane.showMessageDialog(scDialog, "An error has occurred while saving settings.", "Spellcheck Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void addItsAnnotation(LQISeverity severity) {
+        LanguageQualityIssue lqi = new LanguageQualityIssue();
+        lqi.setSeverity(severity.getScore());
+        lqi.setType("misspelling");
+        lqi.setSeverityName(severity.getName());
+        CheckResult res = spellchecker.getCurrentResult();
+        if (res != null) {
+            int idx = res.getSegmentIndex();
+            if (idx >= 0 && idx < getSortedSegmentList().size()) {
+                OcelotSegment seg = getSortedSegmentList().get(idx);
+                eventQueue.post(new LQIAdditionEvent(lqi, seg));
+                ignoreOne();
+            }
         }
     }
 

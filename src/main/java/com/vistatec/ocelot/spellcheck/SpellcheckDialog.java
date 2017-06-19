@@ -422,8 +422,14 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 			replace();
 		} else if (e.getSource().equals(btnReplaceAll)) {
 			replaceAll();
+        } else if (e.getSource().equals(btnAddIts)) {
+            addItsAnnotation();
 		}
 	}
+
+    private void addItsAnnotation() {
+        controller.addItsAnnotation((LQISeverity) cbxSeverity.getSelectedItem());
+    }
 
     private void learn() {
         controller.learnWord(txtUnknownWord.getText());
