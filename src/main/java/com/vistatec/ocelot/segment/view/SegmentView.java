@@ -915,9 +915,9 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	@Subscribe
 	public void notifyModifiedLQI(LQIModificationEvent event) {
-		int selectedRow = sourceTargetTable.getSelectedRow();
-		updateTableRow(selectedRow);
-		sourceTargetTable.setRowSelectionInterval(selectedRow, selectedRow);
+        int row = sort.convertRowIndexToView(segmentTableModel.getModelIndexForSegment(event.getSegment()));
+		updateTableRow(row);
+		sourceTargetTable.setRowSelectionInterval(row, row);
 		eventQueue.post(new LQISelectionEvent(event.getLQI()));
 		postSegmentSelection(event.getSegment());
 		requestFocusTable();
