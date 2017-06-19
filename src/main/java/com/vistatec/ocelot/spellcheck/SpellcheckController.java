@@ -21,6 +21,7 @@ import com.vistatec.ocelot.config.JsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.config.json.SpellingConfig.SpellingDictionary;
 import com.vistatec.ocelot.events.HighlightEvent;
+import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ReplaceDoneEvent;
 import com.vistatec.ocelot.events.ReplaceEvent;
@@ -30,6 +31,8 @@ import com.vistatec.ocelot.events.SegmentTargetResetEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindResult;
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
 
@@ -75,6 +78,8 @@ public class SpellcheckController implements OcelotEventQueueListener {
     private SpellcheckWorker scWorker;
 
     private Spellchecker spellchecker;
+
+    private LQIGridConfiguration lqiConfig;
 
 	private int[] sortedIndexMap;
 
@@ -246,7 +251,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	public void displayDialog(Window owner) {
 		if (scDialog == null) {
             dirty = false;
-			scDialog = new SpellcheckDialog(owner, this);
+            scDialog = new SpellcheckDialog(owner, this, lqiConfig.getSeverities());
 			scDialog.open();
             checkSpelling();
 		} else {
@@ -389,6 +394,14 @@ public class SpellcheckController implements OcelotEventQueueListener {
             LOGGER.trace("Error while saving learned word " + word + " for language " + lang, e);
             JOptionPane.showMessageDialog(scDialog, "An error has occurred while saving settings.", "Spellcheck Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @Subscribe
+    public void lqiConfigChanged(LQIConfigurationSelectionChangedEvent evt) {
+        lqiConfig = evt.getNewSelectedConfiguration();
+        if (scDialog != null) {
+            scDialog.setSeverities(lqiConfig == null ? Collections.emptyList() : lqiConfig.getSeverities());
         }
     }
 }

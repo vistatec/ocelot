@@ -109,19 +109,22 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
     private CheckResult result;
 
 	/**
-	 * Constructor.
-	 * 
-	 * @param owner
-	 *            the owner window
-	 * @param controller
-	 *            the controller
-	 */
-	public SpellcheckDialog(Window owner, SpellcheckController controller) {
+     * Constructor.
+     * 
+     * @param owner
+     *            the owner window
+     * @param controller
+     *            the controller
+     * @param list
+     *            the severity settings for ITS annotations
+     */
+    public SpellcheckDialog(Window owner, SpellcheckController controller, List<LQISeverity> severities) {
 
 		super(owner);
 		setModal(false);
 		this.controller = controller;
 		makeFrame();
+        setSeverities(severities);
 	}
 
 	/**
@@ -510,7 +513,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         progressBar.setVisible(visible);
     }
 
-    public void setSeverities(List<LQISeverity> severities) {
+    public final void setSeverities(List<LQISeverity> severities) {
         cbxSeverity.setModel(new DefaultComboBoxModel<>(severities.toArray(new LQISeverity[severities.size()])));
     }
 
