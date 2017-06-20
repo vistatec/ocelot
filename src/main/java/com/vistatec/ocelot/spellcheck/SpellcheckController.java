@@ -416,6 +416,25 @@ public class SpellcheckController implements OcelotEventQueueListener {
         }
     }
 
+    public void addItsAnnotationAll(LQISeverity severity) {
+        if (spellchecker.hasResults()) {
+            List<CheckResult> ignored = spellchecker.ignoreAll();
+            for (CheckResult res : ignored) {
+                LanguageQualityIssue lqi = new LanguageQualityIssue();
+                lqi.setSeverity(severity.getScore());
+                lqi.setType("misspelling");
+                lqi.setSeverityName(severity.getName());
+                lqi.setComment(res.getWord());
+                int idx = res.getSegmentIndex();
+                if (idx >= 0 && idx < getSortedSegmentList().size()) {
+                    OcelotSegment seg = getSortedSegmentList().get(idx);
+                    eventQueue.post(new LQIAdditionEvent(lqi, seg, true));
+                }
+            }
+            update();
+        }
+    }
+
     @Subscribe
     public void lqiConfigChanged(LQIConfigurationSelectionChangedEvent evt) {
         lqiConfig = evt.getNewSelectedConfiguration();
