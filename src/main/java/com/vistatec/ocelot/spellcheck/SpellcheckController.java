@@ -56,6 +56,12 @@ public class SpellcheckController implements OcelotEventQueueListener {
 	/** Result end of document reached constant. */
 	public static final int RESULT_END_OF_DOC_REACHED = 2;
 
+    /**
+     * LQI category name; must be consistent with
+     * LQIConstants.LQI_CATEGORIES_LIST
+     */
+    public static final String LQI_CATEGORY_MISSPELLING = "misspelling";
+
 	/** The Ocelot event queue. */
 	private OcelotEventQueue eventQueue;
 
@@ -402,7 +408,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
     public void addItsAnnotation(LQISeverity severity) {
         LanguageQualityIssue lqi = new LanguageQualityIssue();
         lqi.setSeverity(severity.getScore());
-        lqi.setType("misspelling");
+        lqi.setType(LQI_CATEGORY_MISSPELLING);
         lqi.setSeverityName(severity.getName());
         CheckResult res = spellchecker.getCurrentResult();
         lqi.setComment(res.getWord());
@@ -422,7 +428,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
             for (CheckResult res : ignored) {
                 LanguageQualityIssue lqi = new LanguageQualityIssue();
                 lqi.setSeverity(severity.getScore());
-                lqi.setType("misspelling");
+                lqi.setType(LQI_CATEGORY_MISSPELLING);
                 lqi.setSeverityName(severity.getName());
                 lqi.setComment(res.getWord());
                 int idx = res.getSegmentIndex();
