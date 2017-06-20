@@ -405,6 +405,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         lqi.setType("misspelling");
         lqi.setSeverityName(severity.getName());
         CheckResult res = spellchecker.getCurrentResult();
+        lqi.setComment(res.getWord());
         if (res != null) {
             int idx = res.getSegmentIndex();
             if (idx >= 0 && idx < getSortedSegmentList().size()) {
