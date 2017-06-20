@@ -409,7 +409,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
             int idx = res.getSegmentIndex();
             if (idx >= 0 && idx < getSortedSegmentList().size()) {
                 OcelotSegment seg = getSortedSegmentList().get(idx);
-                eventQueue.post(new LQIAdditionEvent(lqi, seg));
+                eventQueue.post(new LQIAdditionEvent(lqi, seg, true));
                 ignoreOne();
             }
         }
