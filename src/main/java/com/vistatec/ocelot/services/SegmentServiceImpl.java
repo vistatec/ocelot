@@ -124,7 +124,7 @@ public class SegmentServiceImpl implements SegmentService {
         seg.addLQI(lqi);
         eventQueue.post(new ItsDocStatsUpdateLqiEvent(lqi));
         eventQueue.post(new SegmentEditEvent(xliff, seg));
-        eventQueue.post(new LQIModificationEvent(lqi, seg));
+        eventQueue.post(new LQIModificationEvent(lqi, seg, e.isQuiet()));
     }
 
     @Subscribe
