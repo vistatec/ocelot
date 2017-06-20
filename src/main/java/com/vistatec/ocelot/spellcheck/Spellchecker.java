@@ -2,6 +2,7 @@ package com.vistatec.ocelot.spellcheck;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -111,10 +112,18 @@ public class Spellchecker {
         currResultIndex = Math.max(0, Math.min(currResultIndex, allResults.size() - 1));
     }
 
-    public void ignoreAll() {
-        String ignored = allResults.get(currResultIndex).getWord();
-        allResults.removeIf(r -> r.getWord().equals(ignored));
+    public List<CheckResult> ignoreAll() {
+        String ignoredWord = allResults.get(currResultIndex).getWord();
+        List<CheckResult> ignoredResults = new ArrayList<>();
+        for (Iterator<CheckResult> it = allResults.iterator(); it.hasNext();) {
+            CheckResult r = it.next();
+            if (r.getWord().equals(ignoredWord)) {
+                it.remove();
+                ignoredResults.add(r);
+            }
+        }
         checkIndex();
+        return ignoredResults;
     }
 
     public List<CheckResult> getAllResults() {
