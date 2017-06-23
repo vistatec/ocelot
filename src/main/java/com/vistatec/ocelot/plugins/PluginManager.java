@@ -105,11 +105,14 @@ public class PluginManager implements OcelotEventQueueListener {
 	private List<String> fremePluginClassNames = new ArrayList<String>();
 	private List<String> qualityPluginClassNames = new ArrayList<String>();
 	private List<String> timerPluginClassNames = new ArrayList<String>();
+	private String dqfPluginClassName;
 	private HashMap<ITSPlugin, Boolean> itsPlugins;
 	private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private HashMap<ReportPlugin, Boolean> reportPlugins;
 	private HashMap<FremePlugin, Boolean> fremePlugins;
 	private HashMap<TimerPlugin, Boolean> timerPlugins;
+	private HashMap<DQFPlugin, Boolean> dqfPlugins;
+	private JMenu dqfMenu;
 	private FremePluginManager fremeManager;
 	private OcelotEventQueue eventQueue;
 	private ClassLoader classLoader;
@@ -125,6 +128,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		this.reportPlugins = new HashMap<ReportPlugin, Boolean>();
 		this.timerPlugins = new HashMap<TimerPlugin, Boolean>();
         this.fremePlugins = new HashMap<FremePlugin, Boolean>();
+        this.dqfPlugins = new HashMap<>();
 		this.fremeManager = new FremePluginManager(eventQueue);
 		this.eventQueue = eventQueue;
 		this.cfgService = cfgService;
@@ -148,13 +152,19 @@ public class PluginManager implements OcelotEventQueueListener {
         Set<? extends Plugin> fremePlugins = getFremePlugins();
         Set<? extends Plugin> qualityPlugins = getQualityPlugins();
         Set<? extends Plugin> timerPlugins = getTimerPlugins();
+        Set<? extends Plugin> dqfPlugins = getDqfPlugins();
 		plugins.addAll(itsPlugins);
 		plugins.addAll(segmentPlugins);
 		plugins.addAll(reportPlugins);
         plugins.addAll(fremePlugins);
         plugins.addAll(qualityPlugins);
         plugins.addAll(timerPlugins);
+        plugins.addAll(dqfPlugins);
 		return plugins;
+	}
+
+	private Set<DQFPlugin> getDqfPlugins() {
+		return dqfPlugins.keySet();
 	}
 
 	/**
@@ -207,6 +217,8 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof TimerPlugin) {
 			TimerPlugin timerPlugin = (TimerPlugin) plugin;
 			enabled = timerPlugins.get(timerPlugin);
+		} else if( plugin instanceof DQFPlugin ){
+			enabled = dqfPlugins.get(plugin);
 		}
 		return enabled;
 	}
@@ -236,6 +248,9 @@ public class PluginManager implements OcelotEventQueueListener {
 			TimerPlugin timerPlugin = (TimerPlugin) plugin;
 			timerPlugins.put(timerPlugin, enabled);
 			timerPlugin.getTimerWidget().setEnabled(enabled);
+		} else if (plugin instanceof DQFPlugin) {
+			dqfPlugins.put((DQFPlugin)plugin, enabled);
+			dqfMenu.setEnabled(enabled);
 		}
 		cfgService.savePluginEnabled(plugin, enabled);
 	}
@@ -524,6 +539,20 @@ public class PluginManager implements OcelotEventQueueListener {
         				e.printStackTrace();
         			}
         		}
+		if (dqfPluginClassName != null) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends DQFPlugin> c = (Class<DQFPlugin>) Class.forName(dqfPluginClassName, false, classLoader);
+				DQFPlugin plugin = c.newInstance();
+				dqfPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void installClassLoader(File[] jarFiles) throws IOException {
@@ -546,6 +575,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				                .currentThread().getContextClassLoader());
 			        }
 		        });
+		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 
 	void scanJar(final File file) {
@@ -644,10 +674,22 @@ public class PluginManager implements OcelotEventQueueListener {
 								                + name);
 							} else {
 								timerPluginClassNames.add(name);
-							} }
-					} catch (ClassNotFoundException ex) {
+							} 
+						} else if (DQFPlugin.class.isAssignableFrom(clazz)) {
+								dqfPluginClassName = name;
+						} 
+					} catch (ClassNotFoundException | NoClassDefFoundError ex) {
 						// XXX shouldn't happen?
 						System.out.println("Warning: " + ex.getMessage());
+						URLClassLoader loader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+						MyClassLoader l = new MyClassLoader(loader.getURLs());
+						l.addURL(new URL(file.getAbsolutePath()));
+						try {
+							Class c = l.loadClass(name);
+							System.out.println(c.getName());
+						} catch (ClassNotFoundException e1) {
+							e1.printStackTrace();
+						}
 					}
 				}
 			}
@@ -798,6 +840,12 @@ public class PluginManager implements OcelotEventQueueListener {
 			qualityPluginManager.setOcelotMainFrame(ocelotFrame);
 			menuList.add(qualityPluginManager.getQualityPluginMenu());
 		}
+		if(dqfPlugins != null && !dqfPlugins.isEmpty()){
+			DQFPlugin plugin = dqfPlugins.keySet().iterator().next();
+			dqfMenu = plugin.getDqfMenu(ocelotFrame);
+			menuList.add(dqfMenu);
+			dqfMenu.setEnabled(dqfPlugins.get(plugin));
+		}
 		return menuList;
 	}
 
@@ -904,4 +952,22 @@ public class PluginManager implements OcelotEventQueueListener {
 		eventQueue.post(new PluginAddedEvent());		
     }
 
+}
+class MyClassLoader extends URLClassLoader{
+	  
+    /**
+     * @param urls, to carryforward the existing classpath.
+     */
+    public MyClassLoader(URL[] urls) {
+        super(urls);
+    }
+     
+    @Override
+    /**
+     * add ckasspath to the loader.
+     */
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
+  
 }
