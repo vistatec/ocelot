@@ -405,7 +405,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         }
     }
 
-    public void addItsAnnotation(LQISeverity severity) {
+    public void addLqi(LQISeverity severity) {
         LanguageQualityIssue lqi = new LanguageQualityIssue();
         lqi.setSeverity(severity.getScore());
         lqi.setType(LQI_CATEGORY_MISSPELLING);
@@ -422,7 +422,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         }
     }
 
-    public void addItsAnnotationAll(LQISeverity severity) {
+    public void addLqiAll(LQISeverity severity) {
         if (spellchecker.hasResults()) {
             List<CheckResult> ignored = spellchecker.ignoreAll();
             for (CheckResult res : ignored) {

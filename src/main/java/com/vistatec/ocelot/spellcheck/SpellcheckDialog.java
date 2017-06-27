@@ -78,13 +78,13 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 	/** The replace all button. */
 	private JButton btnReplaceAll;
 
-    /** The add ITS button. */
-    private JButton btnAddIts;
+    /** The add LQI button. */
+    private JButton btnAddLqi;
 
-    /** The add ITS all button. */
-    private JButton btnAddItsAll;
+    /** The add LQI all button. */
+    private JButton btnAddLqiAll;
 
-    /** The ITS severity selector */
+    /** The LQI severity selector */
     private JComboBox<LQISeverity> cbxSeverity;
 
     /** The unknown word text field. */
@@ -116,7 +116,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
      * @param controller
      *            the controller
      * @param list
-     *            the severity settings for ITS annotations
+     *            the severity settings for LQIs
      */
     public SpellcheckDialog(Window owner, SpellcheckController controller, List<LQISeverity> severities) {
 
@@ -226,24 +226,24 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
             buttonsPanel.add(btnReplaceAll, c);
         }
         {
-            btnAddIts = new JButton("Add ITS");
-            configButton(btnAddIts);
+            btnAddLqi = new JButton("Add LQI");
+            configButton(btnAddLqi);
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 2;
             c.gridy = 0;
             c.fill = GridBagConstraints.HORIZONTAL;
             c.insets = buttonsInsets;
-            buttonsPanel.add(btnAddIts, c);
+            buttonsPanel.add(btnAddLqi, c);
         }
         {
-            btnAddItsAll = new JButton("Add ITS All");
-            configButton(btnAddItsAll);
+            btnAddLqiAll = new JButton("Add LQI All");
+            configButton(btnAddLqiAll);
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 2;
             c.gridy = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
             c.insets = buttonsInsets;
-            buttonsPanel.add(btnAddItsAll, c);
+            buttonsPanel.add(btnAddLqiAll, c);
         }
         {
             cbxSeverity = new JComboBox<>();
@@ -422,19 +422,19 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 			replace();
 		} else if (e.getSource().equals(btnReplaceAll)) {
 			replaceAll();
-        } else if (e.getSource().equals(btnAddIts)) {
-            addItsAnnotation();
-        } else if (e.getSource().equals(btnAddItsAll)) {
-            addItsAnnotationAll();
+        } else if (e.getSource().equals(btnAddLqi)) {
+            addLqi();
+        } else if (e.getSource().equals(btnAddLqiAll)) {
+            addLqiAll();
 		}
 	}
 
-    private void addItsAnnotation() {
-        controller.addItsAnnotation((LQISeverity) cbxSeverity.getSelectedItem());
+    private void addLqi() {
+        controller.addLqi((LQISeverity) cbxSeverity.getSelectedItem());
     }
 
-    private void addItsAnnotationAll() {
-        controller.addItsAnnotationAll((LQISeverity) cbxSeverity.getSelectedItem());
+    private void addLqiAll() {
+        controller.addLqiAll((LQISeverity) cbxSeverity.getSelectedItem());
     }
 
     private void learn() {
