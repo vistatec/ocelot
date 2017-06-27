@@ -411,7 +411,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         lqi.setType(LQI_CATEGORY_MISSPELLING);
         lqi.setSeverityName(severity.getName());
         CheckResult res = spellchecker.getCurrentResult();
-        lqi.setComment(res.getWord());
+        lqi.setComment(summarizeResult(res));
         if (res != null) {
             int idx = res.getSegmentIndex();
             if (idx >= 0 && idx < getSortedSegmentList().size()) {
@@ -430,7 +430,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
                 lqi.setSeverity(severity.getScore());
                 lqi.setType(LQI_CATEGORY_MISSPELLING);
                 lqi.setSeverityName(severity.getName());
-                lqi.setComment(res.getWord());
+                lqi.setComment(summarizeResult(res));
                 int idx = res.getSegmentIndex();
                 if (idx >= 0 && idx < getSortedSegmentList().size()) {
                     OcelotSegment seg = getSortedSegmentList().get(idx);
@@ -439,6 +439,15 @@ public class SpellcheckController implements OcelotEventQueueListener {
             }
             update();
         }
+    }
+
+    private String summarizeResult(CheckResult res) {
+        List<String> suggestions = res.getSuggestions();
+        if (suggestions.size() > 3) {
+            suggestions = suggestions.subList(0, 3);
+        }
+        return String.format("Misspelled word: \"%s\"; possible corrections: \"%s\"", res.getWord(),
+                String.join("\", \"", suggestions));
     }
 
     @Subscribe
