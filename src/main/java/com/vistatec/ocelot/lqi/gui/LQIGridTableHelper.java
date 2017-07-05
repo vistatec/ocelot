@@ -703,6 +703,13 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		severityDialog.setVisible(true);
 	}
 
+	public void setTableEnabled(boolean enabled){
+		
+		lqiTable.setEnabled(enabled);
+//		lqiTable.getTableHeader().resizeAndRepaint();
+		lqiTable.revalidate();
+		lqiTable.repaint();
+	}
 }
 
 /**
@@ -766,4 +773,6 @@ class SeverityMenuItem extends JMenuItem {
 	public LQISeverity getSeverity() {
 		return severity;
 	}
+	
+	
 }

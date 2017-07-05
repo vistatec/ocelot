@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.config.JsonConfigService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.EnrichingStartedStoppedEvent;
 import com.vistatec.ocelot.events.EnrichmentViewEvent;
@@ -118,10 +119,11 @@ public class PluginManager implements OcelotEventQueueListener {
 	private ClassLoader classLoader;
 	private File pluginDir;
 	private final JsonConfigService cfgService;
+	private final LqiJsonConfigService lqiConfigService;
 	private QualityPluginManager qualityPluginManager;
 	private JMenu reportMenu;
 
-	public PluginManager(JsonConfigService cfgService, File pluginDir,
+	public PluginManager(JsonConfigService cfgService, LqiJsonConfigService lqiConfigService, File pluginDir,
 			OcelotEventQueue eventQueue) {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
@@ -132,6 +134,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		this.fremeManager = new FremePluginManager(eventQueue);
 		this.eventQueue = eventQueue;
 		this.cfgService = cfgService;
+		this.lqiConfigService = lqiConfigService;
 		this.pluginDir = pluginDir;
 		qualityPluginManager = new QualityPluginManager();
 	}
@@ -545,6 +548,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				Class<? extends DQFPlugin> c = (Class<DQFPlugin>) Class.forName(dqfPluginClassName, false, classLoader);
 				DQFPlugin plugin = c.newInstance();
 				dqfPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+				plugin.setLQIConfigService(lqiConfigService);
 			} catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
 				System.out.println("Warning: " + e.getMessage());
@@ -681,15 +685,15 @@ public class PluginManager implements OcelotEventQueueListener {
 					} catch (ClassNotFoundException | NoClassDefFoundError ex) {
 						// XXX shouldn't happen?
 						System.out.println("Warning: " + ex.getMessage());
-						URLClassLoader loader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-						MyClassLoader l = new MyClassLoader(loader.getURLs());
-						l.addURL(new URL(file.getAbsolutePath()));
-						try {
-							Class c = l.loadClass(name);
-							System.out.println(c.getName());
-						} catch (ClassNotFoundException e1) {
-							e1.printStackTrace();
-						}
+//						URLClassLoader loader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+//						MyClassLoader l = new MyClassLoader(loader.getURLs());
+//						l.addURL(new URL(file.getAbsolutePath()));
+//						try {
+//							Class c = l.loadClass(name);
+//							System.out.println(c.getName());
+//						} catch (ClassNotFoundException e1) {
+//							e1.printStackTrace();
+//						}
 					}
 				}
 			}

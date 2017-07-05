@@ -39,6 +39,7 @@ import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
 import com.vistatec.ocelot.config.ConfigTransferService;
+import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
@@ -46,49 +47,49 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
 public class TestPluginManager {
 
-    @Test
-    public void testPluginManager() throws Exception {
-        URL url = getClass().getResource("/");
-        // If this assertion fails, it's probably something related
-        // to the build environment
-        assertNotNull(url);
+	@Test
+	public void testPluginManager() throws Exception {
+		URL url = getClass().getResource("/");
+		// If this assertion fails, it's probably something related
+		// to the build environment
+		assertNotNull(url);
 
-        File pluginDir = new File(url.toURI());
-        OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
-        PluginManager pluginManager = new PluginManager(new OcelotJsonConfigService(new TestJsonConfigTransferService()), pluginDir, eventQueue);
-//        PluginManager pluginManager = new PluginManager(
-//                new OcelotConfigService(new TestConfigTransferService()), pluginDir, eventQueue);
-        pluginManager.discover();
+		File pluginDir = new File(url.toURI());
+		OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+		PluginManager pluginManager = new PluginManager(
+				new OcelotJsonConfigService(new TestJsonConfigTransferService()),
+				new LqiJsonConfigService(new TestJsonConfigTransferService()), pluginDir, eventQueue);
+		// PluginManager pluginManager = new PluginManager(
+		// new OcelotConfigService(new TestConfigTransferService()), pluginDir,
+		// eventQueue);
+		pluginManager.discover();
 
-        Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
-        assertEquals(1, itsPlugins.size());
-        Plugin itsPlugin = itsPlugins.iterator().next();
-        assertEquals("Sample ITS Plugin", itsPlugin.getPluginName());
-        assertEquals("1.0", itsPlugin.getPluginVersion());
+		Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
+		assertEquals(1, itsPlugins.size());
+		Plugin itsPlugin = itsPlugins.iterator().next();
+		assertEquals("Sample ITS Plugin", itsPlugin.getPluginName());
+		assertEquals("1.0", itsPlugin.getPluginVersion());
 
-        Set<SegmentPlugin> segPlugins = pluginManager.getSegmentPlugins();
-        assertEquals(1, segPlugins.size());
-        Plugin segPlugin = segPlugins.iterator().next();
-        assertEquals("Sample Segment Plugin", segPlugin.getPluginName());
-        assertEquals("1.0", segPlugin.getPluginVersion());
-    }
+		Set<SegmentPlugin> segPlugins = pluginManager.getSegmentPlugins();
+		assertEquals(1, segPlugins.size());
+		Plugin segPlugin = segPlugins.iterator().next();
+		assertEquals("Sample Segment Plugin", segPlugin.getPluginName());
+		assertEquals("1.0", segPlugin.getPluginVersion());
+	}
 
-    
-    public class TestJsonConfigTransferService implements ConfigTransferService{
+	public class TestJsonConfigTransferService implements ConfigTransferService {
 
 		@Override
-        public com.vistatec.ocelot.config.json.RootConfig read()
-                throws TransferException {
-			
+		public com.vistatec.ocelot.config.json.RootConfig read() throws TransferException {
+
 			return new com.vistatec.ocelot.config.json.OcelotRootConfig();
-        }
+		}
 
 		@Override
-        public void save(com.vistatec.ocelot.config.json.RootConfig config)
-                throws TransferException {
+		public void save(com.vistatec.ocelot.config.json.RootConfig config) throws TransferException {
 			throw new UnsupportedOperationException("Not supported yet.");
-	        
-        }
-    	
-    }
+
+		}
+
+	}
 }

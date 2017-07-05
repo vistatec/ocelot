@@ -32,6 +32,14 @@ public class LQIInfoPanel extends JPanel {
 	private JTextField txtSupplier;
 
 	private JTextField txtThreshold;
+	
+	private JLabel lblName;
+	
+	private JLabel lblThreshold;
+	
+	private JLabel lblSupplier;
+	
+	private JLabel lblPercent;
 
 	public LQIInfoPanel() {
 
@@ -56,7 +64,8 @@ public class LQIInfoPanel extends JPanel {
 		c.gridy = 0;
 		c.insets = new Insets(10, 10, 10, 0);
 		c.anchor = GridBagConstraints.LINE_END;
-		add(new JLabel("Name"), c);
+		lblName = new JLabel("Name");
+		add(lblName, c);
 
 		c.gridx = 1;
 		c.gridy = 0;
@@ -70,7 +79,8 @@ public class LQIInfoPanel extends JPanel {
 		c.anchor = GridBagConstraints.LINE_END;
 		c.insets = new Insets(10, 10, 10, 0);
 		c.fill = GridBagConstraints.NONE;
-		add(new JLabel("Threshold"), c);
+		lblThreshold = new JLabel("Threshold");
+		add(lblThreshold, c);
 
 		c.gridx = 3;
 		c.gridy = 0;
@@ -84,14 +94,16 @@ public class LQIInfoPanel extends JPanel {
 		c.anchor = GridBagConstraints.LINE_START;
 		c.fill = GridBagConstraints.NONE;
 		c.insets = new Insets(10, 2, 10, 10);
-		add(new JLabel("%"), c);
+		lblPercent = new JLabel("%");
+		add(lblPercent, c);
 
 		c.gridx = 0;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.LINE_END;
 		c.insets = new Insets(0, 10, 10, 0);
 		c.fill = GridBagConstraints.NONE;
-		add(new JLabel("Supplier"), c);
+		lblSupplier = new JLabel("Supplier");
+		add(lblSupplier, c);
 
 		c.gridx = 1;
 		c.anchor = GridBagConstraints.LINE_START;
@@ -160,5 +172,16 @@ public class LQIInfoPanel extends JPanel {
 		txtName.setEditable(editable);
 		txtSupplier.setEditable(editable);
 		txtThreshold.setEditable(editable);
+	}
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		txtName.setEnabled(enabled);
+		txtSupplier.setEnabled(enabled);
+		txtThreshold.setEnabled(enabled);
+		lblName.setEnabled(enabled);
+		lblPercent.setEnabled(enabled);
+		lblSupplier.setEnabled(enabled);
+		lblThreshold.setEnabled(enabled);
 	}
 }

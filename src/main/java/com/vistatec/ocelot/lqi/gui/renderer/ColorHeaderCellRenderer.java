@@ -7,6 +7,7 @@ import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
 /**
@@ -43,6 +44,11 @@ public class ColorHeaderCellRenderer extends ColorCellRenderer {
         label.setBorder(new LineBorder(borderColor));
         label.setFont(label.getFont().deriveFont(Font.BOLD));
         label.setHorizontalAlignment(SwingConstants.CENTER);
+        if(table.isEnabled()){
+        	label.setForeground(UIManager.getColor("Label.foreground"));
+        } else {
+        	label.setForeground(UIManager.getColor("Label.disabledForeground"));
+        }
         return label;
     }
 

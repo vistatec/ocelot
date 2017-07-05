@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import com.vistatec.ocelot.lqi.gui.LQIGridTableModel;
@@ -51,9 +52,17 @@ public class ColorCellRenderer extends DefaultTableCellRenderer {
 			        (int) (color.getGreen() * 0.95),
 			        (int) (color.getBlue() * 0.95));
 			comp.setBackground(darkerColor);
+		} else if (!table.isEnabled()){
+			Color transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 150);
+			comp.setBackground(transparentColor);
 		} else {
 			comp.setBackground(color);
 		}
+		 if(table.isEnabled()){
+			 comp.setForeground(UIManager.getColor("Label.foreground"));
+	        } else {
+	        	comp.setForeground(UIManager.getColor("Label.disabledForeground"));
+	        }
 		return comp;
 	}
 

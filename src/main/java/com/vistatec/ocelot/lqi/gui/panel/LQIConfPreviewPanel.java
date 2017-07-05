@@ -66,6 +66,14 @@ public class LQIConfPreviewPanel extends JPanel {
 		revalidate();
 
 	}
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		
+		infoPanel.setEnabled(enabled);
+		tableContainer.setEnabled(enabled);
+		tableHelper.setTableEnabled(enabled);
+	}
 
 	public void clear() {
 		System.out.println("Clear preview");

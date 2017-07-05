@@ -89,7 +89,7 @@ public class OcelotModule extends AbstractModule {
             Configs configs = confManager.getRulesConfigs();
             ruleConfig = new RulesParser().loadConfig(configs.getRulesReader());
 
-            pluginManager = new PluginManager(ocelotCfgService, confManager.getPluginsFolder(), eventQueue);
+            pluginManager = new PluginManager(ocelotCfgService, lqiCfgService, confManager.getPluginsFolder(), eventQueue);
             pluginManager.discover();
             eventQueue.registerListener(pluginManager);
 
