@@ -152,6 +152,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		this.filter = new XLIFFFilter();
 		Parameters filterParams = new Parameters();
 		filterParams.setAddAltTrans(true);
+		filterParams.setEscapeGT(true);
 		this.filter.setParameters(filterParams);
 		this.filter.open(fileDoc);
 		int fileEventNum = 0;
