@@ -86,6 +86,7 @@ import com.vistatec.ocelot.plugins.ReportPlugin.ReportException;
 import com.vistatec.ocelot.plugins.freme.FremeMenu;
 import com.vistatec.ocelot.plugins.freme.FremePlugin;
 import com.vistatec.ocelot.plugins.freme.FremePluginManager;
+import com.vistatec.ocelot.project.ProjectFile;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
@@ -549,6 +550,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				DQFPlugin plugin = c.newInstance();
 				dqfPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 				plugin.setLQIConfigService(lqiConfigService);
+				plugin.setOcelotEventQueue(eventQueue);
 			} catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
 				System.out.println("Warning: " + e.getMessage());
@@ -788,6 +790,12 @@ public class PluginManager implements OcelotEventQueueListener {
 			        .getSegment().getSegmentNumber(), true,
 			        FremePluginManager.OVERRIDE_ENRICHMENTS);
 		}
+		if(dqfPlugins != null && !dqfPlugins.isEmpty()){
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			if(isEnabled(dqfPlugin)){
+				dqfPlugin.editedSegment(e.getSegment());
+			}
+		}
 	}
 
 	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber,
@@ -955,6 +963,14 @@ public class PluginManager implements OcelotEventQueueListener {
 	public void pluginsAdded() {		
 		eventQueue.post(new PluginAddedEvent());		
     }
+
+	public void notifyOpenProjectFile(ProjectFile projectFile) {
+		
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if(isEnabled(dqfPlugin)){
+			dqfPlugin.fileOpened(projectFile);
+		}
+	}
 
 }
 class MyClassLoader extends URLClassLoader{

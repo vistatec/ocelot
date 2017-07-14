@@ -56,6 +56,7 @@ import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.plugins.PluginManager;
+import com.vistatec.ocelot.project.ProjectFile;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.EditDistanceReportService;
@@ -79,6 +80,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     private final EditDistanceReportService editDistService;
     private XLIFFDocument openXliffFile;
 
+    private ProjectFile openedProjectFile;
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
     private boolean temporaryFile;
@@ -130,6 +132,13 @@ public class OcelotApp implements OcelotEventQueueListener {
     	}
     	
     	return defFileName; 
+    }
+    
+    public void openProjectFile(ProjectFile projectFile ) throws FileNotFoundException, IOException, XMLStreamException{
+    	
+    	this.openedProjectFile = projectFile;
+    	openFile(projectFile.getFile(), false);
+    	pluginManager.notifyOpenProjectFile(projectFile);
     }
     
     public void openFile(File openFile, boolean temporaryFile) throws IOException, FileNotFoundException, XMLStreamException {
