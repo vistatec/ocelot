@@ -122,6 +122,10 @@ public class LQIGridTableContainer extends JScrollPane {
 		
 		tableHelper.getLqiTableModel().fireTableStructureChanged();
 	}
+	
+	public void refreshData(){
+		tableHelper.getLqiTableModel().fireTableDataChanged();
+	}
 
 	private void configTable() {
 

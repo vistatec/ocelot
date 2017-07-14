@@ -28,8 +28,11 @@
  */
 package com.vistatec.ocelot.its.stats.view;
 
+import com.vistatec.ocelot.its.model.ErrorCategoryAndSeverityMapper;
 import com.vistatec.ocelot.its.stats.model.ITSStats;
+import com.vistatec.ocelot.its.stats.model.LanguageQualityIssueStats;
 import com.google.common.eventbus.Subscribe;
+import com.vistatec.ocelot.events.ErrorCategoryStdChangedEvent;
 import com.vistatec.ocelot.events.ItsDocStatsChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 
@@ -45,91 +48,102 @@ import com.vistatec.ocelot.services.ITSDocStatsService;
  * Table View for displaying segment ITS metadata.
  */
 public class ITSDocStatsTableView extends JScrollPane implements OcelotEventQueueListener {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private final DocumentStatsTableModel docStatsModel;
-    protected JTable docStatsTable;
-    private final TableRowSorter<DocumentStatsTableModel> sort;
+	private final DocumentStatsTableModel docStatsModel;
+	protected JTable docStatsTable;
+	private final TableRowSorter<DocumentStatsTableModel> sort;
 
-    @Inject
-    public ITSDocStatsTableView(ITSDocStatsService docStatsService) {
-        docStatsModel = new DocumentStatsTableModel(docStatsService);
-        docStatsTable = new JTable(docStatsModel);
+	@Inject
+	public ITSDocStatsTableView(ITSDocStatsService docStatsService) {
+		docStatsModel = new DocumentStatsTableModel(docStatsService);
+		docStatsTable = new JTable(docStatsModel);
 
-        sort = new TableRowSorter<>(docStatsModel);
-        docStatsTable.setRowSorter(sort);
+		sort = new TableRowSorter<>(docStatsModel);
+		docStatsTable.setRowSorter(sort);
 
-        setViewportView(docStatsTable);
-    }
+		setViewportView(docStatsTable);
+	}
 
-    @Subscribe
-    public void docStatsChanged(ItsDocStatsChangedEvent event) {
-        docStatsModel.fireTableDataChanged();
-    }
+	@Subscribe
+	public void docStatsChanged(ItsDocStatsChangedEvent event) {
+		docStatsModel.fireTableDataChanged();
+	}
 
-    static class DocumentStatsTableModel extends AbstractTableModel {
-        private static final long serialVersionUID = 1L;
+	@Subscribe
+	public void errorCatModeChanged(ErrorCategoryStdChangedEvent event) {
+		docStatsModel.fireTableDataChanged();
+	}
 
-        DocumentStatsTableModel(ITSDocStatsService docStatsService) {
-            this.docStatsService = docStatsService;
-        }
+	static class DocumentStatsTableModel extends AbstractTableModel {
+		private static final long serialVersionUID = 1L;
 
-        public static final int NUMCOLS = 4;
-        public String[] colNames = {"Data Category", "Type", "Value", "Count"};
-        private final ITSDocStatsService docStatsService;
+		DocumentStatsTableModel(ITSDocStatsService docStatsService) {
+			this.docStatsService = docStatsService;
+		}
 
-        @Override
-        public int getRowCount() {
-            return this.docStatsService.getNumStats();
-        }
+		public static final int NUMCOLS = 4;
+		public String[] colNames = { "Data Category", "Type", "Value", "Count" };
+		private final ITSDocStatsService docStatsService;
 
-        @Override
-        public int getColumnCount() {
-            return NUMCOLS;
-        }
+		@Override
+		public int getRowCount() {
+			return this.docStatsService.getNumStats();
+		}
 
-        @Override
-        public String getColumnName(int col) {
-            return col < NUMCOLS ? colNames[col] : "";
-        }
+		@Override
+		public int getColumnCount() {
+			return NUMCOLS;
+		}
 
-        @Override
-        public Class<?> getColumnClass(int col) {
-            if (col == 3) {
-                return Integer.class;
-            } else {
-                return String.class;
-            }
-        }
+		@Override
+		public String getColumnName(int col) {
+			return col < NUMCOLS ? colNames[col] : "";
+		}
 
-        @Override
-        public Object getValueAt(int row, int col) {
-            Object tableCell;
-            switch (col) {
-                case 0:
-                    tableCell = getItsStatistic(row).getDataCategory();
-                    break;
+		@Override
+		public Class<?> getColumnClass(int col) {
+			if (col == 3) {
+				return Integer.class;
+			} else {
+				return String.class;
+			}
+		}
 
-                case 1:
-                    tableCell = getItsStatistic(row).getType();
-                    break;
+		@Override
+		public Object getValueAt(int row, int col) {
+			Object tableCell;
+			ITSStats stats = getItsStatistic(row);
+			switch (col) {
+			case 0:
+				tableCell = stats.getDataCategory();
+				break;
 
-                case 2:
-                    tableCell = getItsStatistic(row).getValue();
-                    break;
+			case 1:
+				if (stats instanceof LanguageQualityIssueStats) {
+					tableCell = ErrorCategoryAndSeverityMapper.getInstance()
+							.getErrorCategory(stats.getType());
+				} else {
+					tableCell = stats.getType();
+				}
+				break;
 
-                case 3:
-                    tableCell = getItsStatistic(row).getCount();
-                    break;
+			case 2:
+				tableCell = stats.getValue();
+				break;
 
-                default:
-                    throw new IllegalArgumentException("Incorrect number of columns: "+col);
-            }
-            return tableCell;
-        }
+			case 3:
+				tableCell = stats.getCount();
+				break;
 
-        private ITSStats getItsStatistic(int row) {
-            return this.docStatsService.getItsStatistic(row);
-        }
-    }
+			default:
+				throw new IllegalArgumentException("Incorrect number of columns: " + col);
+			}
+			return tableCell;
+		}
+
+		private ITSStats getItsStatistic(int row) {
+			return this.docStatsService.getItsStatistic(row);
+		}
+	}
 }

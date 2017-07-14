@@ -710,6 +710,7 @@ public class LQIGridTableHelper implements MouseListener, TableCellListener,
 		lqiTable.revalidate();
 		lqiTable.repaint();
 	}
+
 }
 
 /**

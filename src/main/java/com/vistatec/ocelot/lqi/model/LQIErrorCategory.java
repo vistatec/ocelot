@@ -20,13 +20,15 @@ public class LQIErrorCategory {
 
 	/** The weight. */
 	private double weight;
-	
+
+	/** States if this error categories is not categorized in ITS. */
+	private boolean itsUncategorized;
 
 	/**
 	 * Default constructor.
 	 */
 	public LQIErrorCategory() {
-		
+
 	}
 
 	/**
@@ -35,9 +37,9 @@ public class LQIErrorCategory {
 	 * @param name
 	 *            the category name.
 	 */
-	public LQIErrorCategory( final String name) {
+	public LQIErrorCategory(final String name) {
 
-		this(name, 0, null);
+		this(name, 0, null, false);
 	}
 
 	/**
@@ -50,16 +52,32 @@ public class LQIErrorCategory {
 	 * @param shortcuts
 	 *            the list of shortcuts.
 	 */
-	public LQIErrorCategory(final String name, final float weight,
-	        final List<LQIShortCut> shortcuts) {
-		
+	public LQIErrorCategory(final String name, final float weight, final List<LQIShortCut> shortcuts) {
+
+		this(name, weight, shortcuts, false);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param name
+	 *            the category name.
+	 * @param weight
+	 *            the weight.
+	 * @param shortcuts
+	 *            the list of shortcuts.
+	 * @param uncategorized
+	 *            a boolean stating if this category is not categorized in ITS
+	 */
+	public LQIErrorCategory(final String name, final float weight, final List<LQIShortCut> shortcuts,
+			boolean uncategorized) {
+
 		this.name = name;
 		this.weight = weight;
 		this.shortcuts = shortcuts;
+		this.itsUncategorized = uncategorized;
 	}
 
-	
-	
 	/**
 	 * Gets the category name.
 	 * 
@@ -136,6 +154,10 @@ public class LQIErrorCategory {
 		return shortcuts;
 	}
 
+	public boolean isItsUncategorized() {
+		return itsUncategorized;
+	}
+
 	/**
 	 * Clones this category.
 	 * 
@@ -145,13 +167,12 @@ public class LQIErrorCategory {
 	 */
 	public LQIErrorCategory clone(List<LQISeverity> severities) {
 
-		LQIErrorCategory clonedErrCat = new LQIErrorCategory( name);
+		LQIErrorCategory clonedErrCat = new LQIErrorCategory(name);
 		clonedErrCat.setWeight(weight);
 		if (shortcuts != null) {
 			List<LQIShortCut> clonedShortcuts = new ArrayList<LQIShortCut>();
 			for (LQIShortCut shortcut : shortcuts) {
-				clonedShortcuts.add(shortcut.clone(getSeverityByName(shortcut
-				        .getSeverity().getName(), severities)));
+				clonedShortcuts.add(shortcut.clone(getSeverityByName(shortcut.getSeverity().getName(), severities)));
 			}
 			clonedErrCat.setShortcuts(clonedShortcuts);
 		}
@@ -168,8 +189,7 @@ public class LQIErrorCategory {
 	 *            the list of severities
 	 * @return the severity haviing the desired name.
 	 */
-	private LQISeverity getSeverityByName(String severityName,
-	        List<LQISeverity> severities) {
+	private LQISeverity getSeverityByName(String severityName, List<LQISeverity> severities) {
 
 		LQISeverity severity = null;
 		if (severities != null) {
@@ -215,8 +235,7 @@ public class LQIErrorCategory {
 		if (shortcuts == null) {
 			shortcuts = new ArrayList<LQIShortCut>();
 		}
-		LQIShortCut existingShortcut = getShortcut(shortcut.getSeverity()
-		        .getName());
+		LQIShortCut existingShortcut = getShortcut(shortcut.getSeverity().getName());
 		if (existingShortcut != null) {
 			shortcuts.remove(existingShortcut);
 		}
@@ -239,17 +258,22 @@ public class LQIErrorCategory {
 
 	@Override
 	public boolean equals(Object obj) {
-        if (obj == this) return true;
-	    if (obj == null || !(obj instanceof LQIErrorCategory)) return false;
-	    LQIErrorCategory c = (LQIErrorCategory)obj;
-	    return Objects.equals(name, c.name) &&
-	           weight == c.weight &&
-	           Objects.equals(comment, c.comment) &&
-	           Objects.equals(shortcuts, c.shortcuts);
+		if (obj == this)
+			return true;
+		if (obj == null || !(obj instanceof LQIErrorCategory))
+			return false;
+		LQIErrorCategory c = (LQIErrorCategory) obj;
+		return Objects.equals(name, c.name) && weight == c.weight && Objects.equals(comment, c.comment)
+				&& Objects.equals(shortcuts, c.shortcuts);
 	}
 
 	@Override
 	public int hashCode() {
-	    return Objects.hash(name, weight, comment, shortcuts);
+		return Objects.hash(name, weight, comment, shortcuts);
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 }

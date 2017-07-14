@@ -43,12 +43,14 @@ import com.google.common.eventbus.Subscribe;
 import com.vistatec.ocelot.ContextMenu;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.events.ErrorCategoryStdChangedEvent;
 import com.vistatec.ocelot.events.LQIDeselectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.LQISelectionEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.its.model.ErrorCategoryAndSeverityMapper;
 import com.vistatec.ocelot.its.model.ITSMetadata;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
@@ -59,161 +61,173 @@ import com.vistatec.ocelot.xliff.XLIFFDocument;
 /**
  * Table View for displaying segment ITS metadata.
  */
-public class LanguageQualityIssueTableView extends SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> implements OcelotEventQueueListener {
-    private static final long serialVersionUID = 1L;
+public class LanguageQualityIssueTableView extends
+		SegmentAttributeTablePane<LanguageQualityIssueTableView.LQITableModel> implements OcelotEventQueueListener {
+	private static final long serialVersionUID = 1L;
 
-    private XLIFFDocument xliff;
-    private OcelotEventQueue eventQueue;
-    
-    private LqiJsonConfigService lqiService;
+	private XLIFFDocument xliff;
+	private OcelotEventQueue eventQueue;
 
-    public LanguageQualityIssueTableView(OcelotEventQueue eventQueue, LqiJsonConfigService lqiService) {
-        this.eventQueue = eventQueue;
-        this.lqiService = lqiService;
-        addMouseListener(new LQIPopupMenuListener());
-    }
+	private LqiJsonConfigService lqiService;
 
-    @Override
-    protected LQITableModel createTableModel() {
-        return new LQITableModel();
-    }
+	public LanguageQualityIssueTableView(OcelotEventQueue eventQueue, LqiJsonConfigService lqiService) {
+		this.eventQueue = eventQueue;
+		this.lqiService = lqiService;
+		addMouseListener(new LQIPopupMenuListener());
+	}
 
-    @Override
-    protected JTable buildTable(LQITableModel model) {
-        JTable table = super.buildTable(model);
-        ListSelectionModel tableSelectionModel = table.getSelectionModel();
-        tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
-        table.addMouseListener(new LQIPopupMenuListener());
-        return table;
-    }
+	@Override
+	protected LQITableModel createTableModel() {
+		return new LQITableModel();
+	}
 
-    @Subscribe
-    public void handleLQIUpdate(LQIModificationEvent e) {
-        getTableModel().fireTableDataChanged();
-    }
+	@Override
+	protected JTable buildTable(LQITableModel model) {
+		JTable table = super.buildTable(model);
+		ListSelectionModel tableSelectionModel = table.getSelectionModel();
+		tableSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tableSelectionModel.addListSelectionListener(new LQISelectionHandler());
+		table.addMouseListener(new LQIPopupMenuListener());
+		return table;
+	}
 
-    @Subscribe
-    public void openFile(OpenFileEvent e) {
-        this.xliff = e.getDocument();
-    }
+	@Subscribe
+	public void handleLQIUpdate(LQIModificationEvent e) {
+		getTableModel().fireTableDataChanged();
+	}
 
-    public void selectedLQI() {
-        int rowIndex = getTable().getSelectedRow();
-        if (rowIndex >= 0) {
-            ITSMetadata selected = getTableModel().getRow(rowIndex);
-            eventQueue.post(new LQISelectionEvent((LanguageQualityIssue)selected));
-        }
-    }
+	@Subscribe
+	public void openFile(OpenFileEvent e) {
+		this.xliff = e.getDocument();
+	}
 
-    @Override
-    protected void segmentSelected(OcelotSegment seg) {
-        List<LanguageQualityIssue> lqiData = seg.getLQI();
-        getTableModel().setRows(lqiData);
-        super.segmentSelected(seg);
-    }
+	@Subscribe
+	public void handleErrorCategoryModeChangedEvent(ErrorCategoryStdChangedEvent event) {
+		int row = getTable().getSelectedRow();
+		getTableModel().fireTableDataChanged();
+		if (row > -1) {
+			getTable().getSelectionModel().setSelectionInterval(row, row);
+		}
+	}
 
-    @Override
-    public void clearSelection() {
-        super.clearSelection();
-        eventQueue.post(new LQIDeselectionEvent());
-    }
+	public void selectedLQI() {
+		int rowIndex = getTable().getSelectedRow();
+		if (rowIndex >= 0) {
+			ITSMetadata selected = getTableModel().getRow(rowIndex);
+			eventQueue.post(new LQISelectionEvent((LanguageQualityIssue) selected));
+		}
+	}
 
-    static class LQITableModel extends AbstractTableModel {
-        private static final long serialVersionUID = 1L;
+	@Override
+	protected void segmentSelected(OcelotSegment seg) {
+		List<LanguageQualityIssue> lqiData = seg.getLQI();
+		getTableModel().setRows(lqiData);
+		super.segmentSelected(seg);
+	}
 
-        public static final int NUMCOLS = 3;
-        public String[] colNames = {"Type", "Severity", "Comment"};
-        private List<LanguageQualityIssue> rows = new ArrayList<LanguageQualityIssue>();
+	@Override
+	public void clearSelection() {
+		super.clearSelection();
+		eventQueue.post(new LQIDeselectionEvent());
+	}
 
-        public LanguageQualityIssue getRow(int row) {
-            return rows.get(row);
-        }
+	static class LQITableModel extends AbstractTableModel {
+		private static final long serialVersionUID = 1L;
 
-        public void setRows(List<LanguageQualityIssue> attrs) {
-            rows.clear();
-            rows.addAll(attrs);
-        }
+		public static final int NUMCOLS = 3;
+		public String[] colNames = { "Type", "Severity", "Comment" };
+		private List<LanguageQualityIssue> rows = new ArrayList<LanguageQualityIssue>();
 
-        public void deleteRows() {
-            rows.clear();
-        }
+		public LanguageQualityIssue getRow(int row) {
+			return rows.get(row);
+		}
 
-        @Override
-        public int getRowCount() {
-            return rows.size();
-        }
+		public void setRows(List<LanguageQualityIssue> attrs) {
+			rows.clear();
+			rows.addAll(attrs);
+		}
 
-        @Override
-        public int getColumnCount() {
-            return NUMCOLS;
-        }
+		public void deleteRows() {
+			rows.clear();
+		}
 
-        @Override
-        public String getColumnName(int col) {
-            return col < NUMCOLS ? colNames[col] : "";
-        }
+		@Override
+		public int getRowCount() {
+			return rows.size();
+		}
 
-        @Override
-        public Object getValueAt(int row, int col) {
-            Object tableCell;
-            switch (col) {
-                case 0:
-                    tableCell = rows.get(row).getType();
-                    break;
+		@Override
+		public int getColumnCount() {
+			return NUMCOLS;
+		}
 
-                case 1:
-                    tableCell = rows.get(row).getSeverity();
-                    break;
-                case 2:
-                    tableCell = rows.get(row).getComment();
-                    break;
+		@Override
+		public String getColumnName(int col) {
+			return col < NUMCOLS ? colNames[col] : "";
+		}
 
-                default:
-                    throw new IllegalArgumentException("Incorrect number of columns: " + col);
-            }
-            return tableCell;
-        }
-    }
+		@Override
+		public Object getValueAt(int row, int col) {
+			Object tableCell;
+			switch (col) {
+			case 0:
+				tableCell = ErrorCategoryAndSeverityMapper.getInstance().getErrorCategory(rows.get(row).getType());
+				break;
 
-    public class LQISelectionHandler implements ListSelectionListener {
-        @Override
-        public void valueChanged(ListSelectionEvent e) {
-            selectedLQI();
-        }
-    }
+			case 1:
+				tableCell = rows.get(row).getSeverity();
+				break;
+			case 2:
+				tableCell = rows.get(row).getComment();
+				break;
 
-    public class LQIPopupMenuListener extends MouseAdapter {
-        @Override
-        public void mousePressed(MouseEvent e) {
-            lqiPopup(e);
-        }
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            lqiPopup(e);
-        }
-        void lqiPopup(MouseEvent e) {
-            LanguageQualityIssue selectedLQI = null;
-            if (getTable() != null) {
-                int r = getTable().rowAtPoint(e.getPoint());
-                if (r >= 0 && r < getTable().getRowCount()) {
-                    getTable().setRowSelectionInterval(r, r);
-                    selectedLQI = getTableModel().getRow(r);
-                }
-            }
-            if (e.isPopupTrigger() && getSelectedSegment() != null) {
-            	LQIGridConfigurations lqiGrid;
-                try {
-	                lqiGrid = lqiService.readLQIConfig();
-                ContextMenu menu = selectedLQI == null ?
-                        new ContextMenu(xliff, getSelectedSegment(), eventQueue, lqiGrid) :
-                        new ContextMenu(xliff, getSelectedSegment(), selectedLQI, eventQueue, lqiGrid);
-                menu.show(e.getComponent(), e.getX(), e.getY());
-                } catch (TransferException e1) {
-	                // TODO Auto-generated catch block
-	                e1.printStackTrace();
-                }
-            }
-        }
-    }
+			default:
+				throw new IllegalArgumentException("Incorrect number of columns: " + col);
+			}
+			return tableCell;
+		}
+	}
+
+	public class LQISelectionHandler implements ListSelectionListener {
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			selectedLQI();
+		}
+	}
+
+	public class LQIPopupMenuListener extends MouseAdapter {
+		@Override
+		public void mousePressed(MouseEvent e) {
+			lqiPopup(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			lqiPopup(e);
+		}
+
+		void lqiPopup(MouseEvent e) {
+			LanguageQualityIssue selectedLQI = null;
+			if (getTable() != null) {
+				int r = getTable().rowAtPoint(e.getPoint());
+				if (r >= 0 && r < getTable().getRowCount()) {
+					getTable().setRowSelectionInterval(r, r);
+					selectedLQI = getTableModel().getRow(r);
+				}
+			}
+			if (e.isPopupTrigger() && getSelectedSegment() != null) {
+				LQIGridConfigurations lqiGrid;
+				try {
+					lqiGrid = lqiService.readLQIConfig();
+					ContextMenu menu = selectedLQI == null
+							? new ContextMenu(xliff, getSelectedSegment(), eventQueue, lqiGrid)
+							: new ContextMenu(xliff, getSelectedSegment(), selectedLQI, eventQueue, lqiGrid);
+					menu.show(e.getComponent(), e.getX(), e.getY());
+				} catch (TransferException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
+	}
 }

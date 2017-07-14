@@ -9,7 +9,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -30,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.model.ErrorCategoryAndSeverityMapper;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.lqi.model.LQIErrorCategory;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
@@ -37,12 +40,10 @@ import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQISeverity;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 
-public class LanguageQualityIssuePropsPanel extends JPanel implements
-        ActionListener, Runnable {
+public class LanguageQualityIssuePropsPanel extends JPanel implements ActionListener, Runnable {
 	private static final long serialVersionUID = 4489879495975477888L;
 
-	private static final Logger LOG = LoggerFactory
-	        .getLogger(LanguageQualityIssuePropsPanel.class);
+	private static final Logger LOG = LoggerFactory.getLogger(LanguageQualityIssuePropsPanel.class);
 
 	private OcelotEventQueue eventQueue;
 
@@ -95,8 +96,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 
 	private JScrollPane commentScroll;
 
-	public LanguageQualityIssuePropsPanel(OcelotEventQueue eventQueue,
-	        LQIGridConfigurations lqiGrid) {
+	public LanguageQualityIssuePropsPanel(OcelotEventQueue eventQueue, LQIGridConfigurations lqiGrid) {
 
 		this.eventQueue = eventQueue;
 		this.lqiGrid = lqiGrid;
@@ -142,18 +142,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		add(typeLabel, gridBag);
 
 		typeList = new JComboBox<String>();
-		if (lqiGrid != null ) {
-			LQIGridConfiguration activeConf = lqiGrid.getActiveConfiguration();
-			if(activeConf != null && activeConf.getErrorCategories() != null){
-				
-				String[] types = new String[activeConf.getErrorCategories().size()];
-				int i = 0;
-				for (LQIErrorCategory errCat : activeConf.getErrorCategories()) {
-					types[i++] = errCat.getName();
-				}
-				typeList.setModel(new DefaultComboBoxModel<>(types));
-			}
-		}
+		setTypeListModel();
 		gridBag.gridx = 1;
 		gridBag.gridy = 1;
 		add(typeList, gridBag);
@@ -181,13 +170,12 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		add(severityLabel, gridBag);
 
 		severityList = new JComboBox<>();
-		if (lqiGrid != null ) {
+		if (lqiGrid != null) {
 			LQIGridConfiguration activeConf = lqiGrid.getActiveConfiguration();
-			if(activeConf != null && activeConf.getSeverities() != null){
-				
-				severityList.setModel(new DefaultComboBoxModel<>(activeConf
-						.getSeverities().toArray(
-								new LQISeverity[activeConf.getSeverities().size()])));
+			if (activeConf != null && activeConf.getSeverities() != null) {
+
+				severityList.setModel(new DefaultComboBoxModel<>(
+						activeConf.getSeverities().toArray(new LQISeverity[activeConf.getSeverities().size()])));
 			}
 		}
 		gridBag.gridx = 1;
@@ -281,8 +269,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		commentContent.setText(prevComment != null ? prevComment : "");
 		// severityRating.setValue(prevSeverity);
 		severityList.setSelectedItem(prevSeverity);
-		profileRefLink.setText(prevProfile != null ? prevProfile.toString()
-		        : "");
+		profileRefLink.setText(prevProfile != null ? prevProfile.toString() : "");
 		if (prevEnabled) {
 			enabledTrue.doClick();
 		} else {
@@ -291,15 +278,16 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 	}
 
 	public void setType(String metadataType) {
-		boolean found = false;
+		int typeIndex = -1;
 		for (int i = 0; i < typeList.getModel().getSize(); i++) {
-			if (typeList.getModel().getElementAt(i).equals(metadataType)) {
-				found = true;
+			if (typeList.getModel().getElementAt(i)
+					.equals(ErrorCategoryAndSeverityMapper.getInstance().getErrorCategory(metadataType))) {
+				typeIndex = i;
 				break;
 			}
 		}
-		if (found) {
-			typeList.setSelectedItem(metadataType);
+		if (typeIndex > -1) {
+			typeList.setSelectedIndex(typeIndex);
 		} else {
 			typeList.setSelectedIndex(0);
 		}
@@ -324,18 +312,16 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 
 		} else if (e.getSource() == btnSave) {
 			LanguageQualityIssue lqi = new LanguageQualityIssue();
-			lqi.setType(typeList.getSelectedItem().toString());
+			lqi.setType(ErrorCategoryAndSeverityMapper.getInstance()
+					.getITSCategoryName(typeList.getSelectedItem().toString()));
 			lqi.setComment(commentContent.getText());
-			lqi.setSeverity(((LQISeverity) severityList.getSelectedItem())
-			        .getScore());
-			lqi.setSeverityName(((LQISeverity) severityList.getSelectedItem())
-			        .getName());
+			lqi.setSeverity(((LQISeverity) severityList.getSelectedItem()).getScore());
+			lqi.setSeverityName(((LQISeverity) severityList.getSelectedItem()).getName());
 			if (!profileRefLink.getText().isEmpty()) {
 				try {
 					lqi.setProfileReference(new URL(profileRefLink.getText()));
 				} catch (MalformedURLException ex) {
-					LOG.warn("Profile reference '" + profileRefLink.getText()
-					        + "' is not a valid URL", ex);
+					LOG.warn("Profile reference '" + profileRefLink.getText() + "' is not a valid URL", ex);
 				}
 			}
 			lqi.setEnabled(enabled);
@@ -351,8 +337,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 				eventQueue.post(new LQIAdditionEvent(lqi, selectedSeg));
 				frame.dispose();
 			} else {
-				eventQueue.post(new LQIEditEvent(lqi, this.selectedLQI,
-				        selectedSeg, this.selectedLQI));
+				eventQueue.post(new LQIEditEvent(lqi, this.selectedLQI, selectedSeg, this.selectedLQI));
 			}
 
 		} else if (e.getSource() == enabledTrue) {
@@ -376,8 +361,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		btnSave.setEnabled(segment != null);
 	}
 
-	public void setMetadata(OcelotSegment selectedSegment,
-	        LanguageQualityIssue lqi) {
+	public void setMetadata(OcelotSegment selectedSegment, LanguageQualityIssue lqi) {
 		setSegment(selectedSegment);
 		this.selectedLQI = lqi;
 
@@ -405,8 +389,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		severityList.setSelectedItem(prevSeverity);
 
 		profileLabel.setText("Profile Reference");
-		profileRefLink.setText(prevProfile != null ? prevProfile.toString()
-		        : "");
+		profileRefLink.setText(prevProfile != null ? prevProfile.toString() : "");
 
 		enabledLabel.setText("Enabled");
 		enabledTrue.setSelected(prevEnabled);
@@ -444,6 +427,30 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements
 		}
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	private void setTypeListModel() {
+		if (lqiGrid != null) {
+			LQIGridConfiguration activeConf = lqiGrid.getActiveConfiguration();
+			if (activeConf != null && activeConf.getErrorCategories() != null) {
+
+				List<String> types = new ArrayList<>();
+				for (LQIErrorCategory errCat : activeConf.getErrorCategories()) {
+					types.add(errCat.getName());
+				}
+				typeList.setModel(new DefaultComboBoxModel<>(ErrorCategoryAndSeverityMapper.getInstance()
+						.getErrorCategoryList(types).toArray(new String[types.size()])));
+			}
+		}
+	}
+
+	public void refreshTypeList() {
+
+		// typeList.setModel(new DefaultComboBoxModel<>(items));
+		String selItem = typeList.getSelectedItem().toString();
+		setTypeListModel();
+		typeList.setSelectedItem(ErrorCategoryAndSeverityMapper.getInstance().getErrorCategory(selItem));
+		repaint();
 	}
 
 }

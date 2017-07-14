@@ -37,6 +37,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.events.ErrorCategoryStdChangedEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.SegmentSelectionEvent;
@@ -126,6 +127,13 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     @Subscribe
     public void openFile(OpenFileEvent e) {
         showSegmentDetailView(null);
+    }
+    
+    @Subscribe
+    public void errorCatModeChanged(ErrorCategoryStdChangedEvent event){
+    	if(lqiDetailView != null){
+    		lqiDetailView.refreshTypeList();
+    	}
     }
 
     private void showSegmentDetailView(OcelotSegment segment) {
