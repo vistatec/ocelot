@@ -1,5 +1,5 @@
 {
-  "name" : "Test Zip",
+  "name" : "SaveFileTest",
   "sourceLanguage" : {
     "id" : 72,
     "name" : "English(United States)",
@@ -17,39 +17,39 @@
       "source" : "This is a short test sentence.",
       "index" : 1,
       "dqfMapping" : {
-        "dqfId" : 5166762,
+        "dqfId" : 5180516,
         "dqfUUID" : null,
-        "clientId" : "318bd80c-05b3-4e66-a9e3-936e7f26af8b"
+        "clientId" : "7f3cb80c-3e4c-4d4f-ae40-cb077ea9fd25"
       }
     }, {
       "ocelotSegmentId" : null,
       "source" : "And another test sentence.",
       "index" : 2,
       "dqfMapping" : {
-        "dqfId" : 5166763,
+        "dqfId" : 5180517,
         "dqfUUID" : null,
-        "clientId" : "6cf39e02-6cbc-4629-a125-6e3abe26d6cb"
+        "clientId" : "1f837421-45f4-448d-9c74-036ad878dafe"
       }
     }, {
       "ocelotSegmentId" : null,
       "source" : "And a third test sentence.",
       "index" : 3,
       "dqfMapping" : {
-        "dqfId" : 5166764,
+        "dqfId" : 5180518,
         "dqfUUID" : null,
-        "clientId" : "372da553-c2d2-4023-8624-a888f9289ee9"
+        "clientId" : "28186529-9c61-4244-91c8-d5a05879ea3d"
       }
     } ],
     "dqfInfo" : {
-      "dqfId" : 103266,
+      "dqfId" : 104316,
       "dqfUUID" : null,
-      "clientId" : "aaf1be38-6cb3-42b0-b71e-fa849166ba97"
+      "clientId" : "3bc3985d-4044-4bb4-a270-2d1ec7e648a9"
     }
   } ],
   "dqfMapping" : {
-    "dqfId" : 38333,
-    "dqfUUID" : "a1f322b3-fcdf-444b-a988-7c28b9683cce",
-    "clientId" : "33b97a56-c962-4e19-a9f4-796dfb6254c8"
+    "dqfId" : 38503,
+    "dqfUUID" : "9fd5e66b-0233-44dd-aaf8-21c218188b7a",
+    "clientId" : "081e8795-7586-438d-81df-c3ecb24d5aa9"
   },
   "tasks" : [ {
     "name" : "Task 1",
@@ -58,52 +58,25 @@
     "assignee" : "phil.ritchie@vistatec.com",
     "automatic" : false,
     "file" : {
-      "name" : null,
+      "name" : "altTrans.xlf",
       "targetLanguage" : {
         "id" : null,
         "name" : null,
         "localeCode" : "es-ES"
       },
       "dqfInfo" : {
-        "dqfId" : 103266,
+        "dqfId" : 104316,
         "dqfUUID" : null,
-        "clientId" : "aaf1be38-6cb3-42b0-b71e-fa849166ba97"
+        "clientId" : "3bc3985d-4044-4bb4-a270-2d1ec7e648a9"
       },
       "translations" : null,
       "reviews" : null
     },
-    "subTasks" : [ {
-      "name" : "Task 1.1",
-      "type" : "review",
-      "status" : "assigned",
-      "assignee" : "phil.ritchie@vistatec.com",
-      "automatic" : false,
-      "file" : {
-        "name" : null,
-        "targetLanguage" : {
-          "id" : null,
-          "name" : null,
-          "localeCode" : "es-ES"
-        },
-        "dqfInfo" : {
-          "dqfId" : 103266,
-          "dqfUUID" : null,
-          "clientId" : "aaf1be38-6cb3-42b0-b71e-fa849166ba97"
-        },
-        "translations" : null,
-        "reviews" : null
-      },
-      "subTasks" : null,
-      "dqfInfo" : {
-        "dqfId" : 38335,
-        "dqfUUID" : "656839af-08eb-4646-a33d-c4e745429a52",
-        "clientId" : "896542cd-0566-4cc7-afbd-43ca5eb2f432"
-      }
-    } ],
+    "subTasks" : null,
     "dqfInfo" : {
-      "dqfId" : 38334,
-      "dqfUUID" : "9b0f781a-0f90-4c0d-9054-11c9adf5a90e",
-      "clientId" : "49b7b6f9-dd08-41e7-a4db-b3b86606d65f"
+      "dqfId" : 38504,
+      "dqfUUID" : "3aae45cd-4336-46e8-8edd-c0fb5316baac",
+      "clientId" : "70a17f9e-8468-4f65-b040-33719a19d69f"
     }
   } ],
   "createdBy" : "phil.ritchie@vistatec.com",

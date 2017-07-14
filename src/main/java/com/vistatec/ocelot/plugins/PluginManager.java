@@ -404,6 +404,12 @@ public class PluginManager implements OcelotEventQueueListener {
 				}
 			}
 		}
+		if(dqfPlugins != null && !dqfPlugins.isEmpty()){
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			if(isEnabled(dqfPlugin)){
+				dqfPlugin.fileSaved(filename);
+			}
+		}
 		
 	}
 	

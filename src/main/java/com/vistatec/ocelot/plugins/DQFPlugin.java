@@ -20,4 +20,6 @@ public interface DQFPlugin extends Plugin {
 	public void fileOpened(ProjectFile file);
 
 	public void editedSegment(OcelotSegment segment);
+	
+	public void fileSaved(String filename );
 }
