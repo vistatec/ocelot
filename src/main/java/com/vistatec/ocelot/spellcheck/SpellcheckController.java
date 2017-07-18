@@ -176,6 +176,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         @Override
         protected Void doInBackground() throws Exception {
             SwingUtilities.invokeLater(() -> {
+                scDialog.setMessage(null);
                 scDialog.setResult(null);
                 scDialog.setProgressVisible(true);
             });
@@ -220,6 +221,7 @@ public class SpellcheckController implements OcelotEventQueueListener {
         } else {
             eventQueue.post(new HighlightEvent(null, -1));
             scDialog.setResult(null);
+            scDialog.setMessage("No spelling issues");
         }
     }
 

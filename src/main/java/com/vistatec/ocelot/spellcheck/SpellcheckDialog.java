@@ -361,6 +361,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
         }
 
         lblMessage = new JLabel();
+        lblMessage.setHorizontalAlignment(SwingConstants.CENTER);
         lblMessage.setVisible(false);
         lblMessage.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10),
                 lblMessage.getBorder()));
@@ -518,7 +519,7 @@ public class SpellcheckDialog extends JDialog implements ActionListener, ListSel
 
     public void setMessage(String msg) {
         lblMessage.setText(msg);
-        lblMessage.setVisible(true);
+        lblMessage.setVisible(msg != null);
     }
 
     public void setProgressVisible(boolean visible) {
