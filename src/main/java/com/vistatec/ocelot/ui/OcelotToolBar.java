@@ -240,4 +240,9 @@ public class OcelotToolBar extends JToolBar {
 		sourceFontTool.loadFontsAndSizes(null);
 		targetFontTool.loadFontsAndSizes(null);
 	}
+	
+	public void setLqiToolEnabled(boolean enabled) {
+		
+		lqiConfTool.setEnabled(enabled);
+	}
 }

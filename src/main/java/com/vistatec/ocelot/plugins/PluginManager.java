@@ -791,16 +791,21 @@ public class PluginManager implements OcelotEventQueueListener {
 
 	@Subscribe
 	public void segmentEdit(SegmentEditEvent e) {
+		
+		try {
 		if (e.getSegment().getTarget() instanceof BaseSegmentVariant) {
 			enrichVariant((BaseSegmentVariant) e.getSegment().getTarget(), e
 			        .getSegment().getSegmentNumber(), true,
 			        FremePluginManager.OVERRIDE_ENRICHMENTS);
 		}
-		if(dqfPlugins != null && !dqfPlugins.isEmpty()){
+		if(e.getEditType() == SegmentEditEvent.TARGET_CHANGED && dqfPlugins != null && !dqfPlugins.isEmpty()){
 			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
 			if(isEnabled(dqfPlugin)){
 				dqfPlugin.editedSegment(e.getSegment());
 			}
+		}
+		}catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -890,6 +895,10 @@ public class PluginManager implements OcelotEventQueueListener {
 	public void handleLqiDeleted(LQIRemoveEvent event) {
 
 		qualityPluginManager.removedQualityIssue(event.getLQI());
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if(isEnabled(dqfPlugin)){
+			dqfPlugin.errorDeleted(event.getSegment(), event.getLQI());
+		}
 		handleTimerOnUserAction();
 	}
 
@@ -897,13 +906,22 @@ public class PluginManager implements OcelotEventQueueListener {
 	public void handleLqiAdded(LQIAdditionEvent event) {
 
 		qualityPluginManager.addQualityIssue(event.getLQI());
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if(isEnabled(dqfPlugin)){
+			dqfPlugin.errorAdded(event.getSegment(), event.getLQI());
+		}
 		handleTimerOnUserAction();
+		
 	}
 
 	@Subscribe
 	public void handleLqiEdited(LQIEditEvent event) {
 		qualityPluginManager.editedQualityIssue(event.getOldLQI(),
 		        event.getLQI());
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if(isEnabled(dqfPlugin)){
+			dqfPlugin.errorEdited(event.getSegment(), event.getLQI());
+		}
 		handleTimerOnUserAction();
 	}
 	

@@ -3,6 +3,8 @@ package com.vistatec.ocelot.project;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
+
 public class OcelotProject {
 
 	private String name;
@@ -12,6 +14,8 @@ public class OcelotProject {
 //	private String location;
 	
 	private List<ProjectFile> files;
+	
+	private LQIGridConfiguration lqiGridConf;
 	
 //	private ProjectLocation location;
 	
@@ -87,6 +91,14 @@ private String tempLocation;
 			files = new ArrayList<>();
 		}
 		files.add(file);
+	}
+
+	public LQIGridConfiguration getLqiGridConf() {
+		return lqiGridConf;
+	}
+
+	public void setLqiGridConf(LQIGridConfiguration lqiGridConf) {
+		this.lqiGridConf = lqiGridConf;
 	}
 	
 }

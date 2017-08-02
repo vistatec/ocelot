@@ -162,4 +162,8 @@ public class OcelotLQIConfTool extends JPanel implements ItemListener {
 		return ((ConfigurationItem)cmbConfigs.getSelectedItem()).getConfiguration();
 	}
 	
+	public void setEnabled(boolean enabled){
+		cmbConfigs.setEnabled(enabled);
+	}
+	
 }

@@ -66,11 +66,13 @@ public class ErrorCategoryAndSeverityMapper {
 		dqf_cat_2_its_cat.put("Other", "other");
 
 		its_sev_2_dqf_sev = new HashMap<>();
+		its_sev_2_dqf_sev.put("Neutral", "neutral");
 		its_sev_2_dqf_sev.put("Minor", "minor");
 		its_sev_2_dqf_sev.put("Major", "major");
 		its_sev_2_dqf_sev.put("Critical", "critical");
 
 		dqf_sev_2_its_sev = new HashMap<>();
+		dqf_sev_2_its_sev.put("neutral", "Neutral");
 		dqf_sev_2_its_sev.put("minor", "Minor");
 		dqf_sev_2_its_sev.put("major", "Major");
 		dqf_sev_2_its_sev.put("critical", "Critical");

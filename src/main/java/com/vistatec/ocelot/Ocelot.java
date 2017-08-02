@@ -186,6 +186,16 @@ public class Ocelot extends JPanel
 
 	private void openProject(OcelotProject project) {
 
+		if(project.getLqiGridConf() != null){
+			LQIGridConfigurations tempLQIConfigurations = new LQIGridConfigurations();
+			tempLQIConfigurations.addConfiguration(project.getLqiGridConf());
+			tempLQIConfigurations.setActiveConfiguration(project.getLqiGridConf());
+			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
+					project.getLqiGridConf());
+			lqiGridController.setDqfConfiguration(tempLQIConfigurations);
+			toolBar.setLQIConfigurations(tempLQIConfigurations);
+			toolBar.setLqiToolEnabled(false);
+		}
 		final JInternalFrame projectFrame = new JInternalFrame(project.getName(), false, true, false, false);
 		projectEditorTabbedPane = new JTabbedPane();
 		OcelotProjectPanel projectPanel = new OcelotProjectPanel(eventQueue);
@@ -193,7 +203,6 @@ public class Ocelot extends JPanel
 		projectEditorTabbedPane.addTab("Project", projectPanel);
 		projectEditorTabbedPane.addTab("File Editor", tmConcordanceSplitPane);
 		projectFrame.add(projectEditorTabbedPane);
-		projectFrame.setVisible(true);
 		mainSplitPane.setRightComponent(projectFrame);
 		projectFrame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
 		projectFrame.addInternalFrameListener(new InternalFrameAdapter() {
@@ -221,6 +230,7 @@ public class Ocelot extends JPanel
 				
 			}
 		});
+		projectFrame.setVisible(true);
 		revalidate();
 	}
 
@@ -233,6 +243,18 @@ public class Ocelot extends JPanel
 		menuSaveAsTmx.setEnabled(false);
 		menuSaveToAzure.setEnabled(false);
 		toolBar.clearFontTools();
+		try {
+			LQIGridConfigurations actualLQIConfs = lqiGridController.getConfigService().readLQIConfig(); 
+			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
+					actualLQIConfs.getActiveConfiguration());
+			toolBar.setLQIConfigurations(actualLQIConfs);
+			toolBar.setLqiToolEnabled(true);
+			lqiGridController.setDqfConfiguration(null);
+			
+		} catch (TransferException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		mainSplitPane.remove(projectEditorTabbedPane);
 		mainSplitPane.setRightComponent(tmConcordanceSplitPane);
 		projectEditorTabbedPane = null;

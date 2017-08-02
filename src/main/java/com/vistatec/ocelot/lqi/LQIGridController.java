@@ -62,6 +62,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 
 	private boolean canManageConf;
 	
+	private LQIGridConfigurations dqfLqiGridConf;
 	
 	/**
 	 * Controller.
@@ -86,7 +87,8 @@ public class LQIGridController implements OcelotEventQueueListener {
 	public void displayLQIGrid(Window owner) {
 		logger.debug("Displaying the LQI Grid.");
 		if (!isDialogOpened(gridDialog)) {
-			gridDialog = new LQIGridDialogView(owner, this, readLQIGridConfiguration(owner), canManageConf);
+			LQIGridConfigurations activeConfigurations = dqfLqiGridConf != null ? dqfLqiGridConf : readLQIGridConfiguration(owner);
+			gridDialog = new LQIGridDialogView(owner, this, activeConfigurations, canManageConf);
 			SwingUtilities.invokeLater(gridDialog);
 		} else {
 			// if the LQI grid is already opened, just give it the focus
@@ -186,7 +188,7 @@ public class LQIGridController implements OcelotEventQueueListener {
 			 * must be updated.
 			 */
 			// do something only if the active configuration actually changed.
-			if (lqiGridConfigurations != null
+			if (dqfLqiGridConf == null && lqiGridConfigurations != null
 					&& !lqiGridConfigurations.getActiveConfiguration().equals(event.getNewSelectedConfiguration())) {
 				try {
 					configService.setActiveConfiguration(event.getNewSelectedConfiguration().getName());
@@ -296,6 +298,9 @@ public class LQIGridController implements OcelotEventQueueListener {
 		return platformSupport;
 	}
 
+	public void setDqfConfiguration(LQIGridConfigurations dqfConf){
+		dqfLqiGridConf = dqfConf;
+	}
 }
 
 class LqiConfigComparator implements Comparator<LQIGridConfiguration> {

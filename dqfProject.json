@@ -1,5 +1,5 @@
 {
-  "name" : "Test Proj 1",
+  "name" : "Review Test 1",
   "sourceLanguage" : {
     "id" : 72,
     "name" : "English(United States)",
@@ -17,42 +17,42 @@
       "source" : "This is a short test sentence.",
       "index" : 1,
       "dqfMapping" : {
-        "dqfId" : 5182067,
+        "dqfId" : 5182852,
         "dqfUUID" : null,
-        "clientId" : "9d62acdb-8590-47e5-9ab9-843d4c258c57"
+        "clientId" : "16821712-1f9f-4ce5-a83c-700f36bea251"
       }
     }, {
       "ocelotSegmentId" : null,
       "source" : "And another test sentence.",
       "index" : 2,
       "dqfMapping" : {
-        "dqfId" : 5182068,
+        "dqfId" : 5182853,
         "dqfUUID" : null,
-        "clientId" : "94bbb47a-009f-4f82-b4ef-4ea2b318a86a"
+        "clientId" : "abf97d32-ad23-4675-9e4a-b6ed8df094aa"
       }
     }, {
       "ocelotSegmentId" : null,
       "source" : "And a third test sentence.",
       "index" : 3,
       "dqfMapping" : {
-        "dqfId" : 5182069,
+        "dqfId" : 5182854,
         "dqfUUID" : null,
-        "clientId" : "f1f083e6-1674-4124-b6cf-ce4a489d64d8"
+        "clientId" : "6ea6f98d-657f-4fd1-a525-a15f28984d78"
       }
     } ],
     "dqfInfo" : {
-      "dqfId" : 107888,
+      "dqfId" : 108029,
       "dqfUUID" : null,
-      "clientId" : "8864b2ce-2233-4896-902a-0d05558b25d4"
+      "clientId" : "2912684b-eb3f-40aa-9737-66b39df7a0e8"
     }
   } ],
   "dqfMapping" : {
-    "dqfId" : 39626,
-    "dqfUUID" : "2fd861c7-37d3-4065-9ab4-225ee69c9c5c",
-    "clientId" : "15c336ff-5031-40b5-9cf2-5c820f71363a"
+    "dqfId" : 39899,
+    "dqfUUID" : "4fa057c0-0e46-43e8-8c60-d800bad6b350",
+    "clientId" : "3d42004f-0a40-4362-a598-3920281e77bb"
   },
   "tasks" : [ {
-    "name" : "Task 1",
+    "name" : "Translation Task",
     "type" : "translation",
     "status" : "assigned",
     "assignee" : "phil.ritchie@vistatec.com",
@@ -65,20 +65,166 @@
         "localeCode" : "es-ES"
       },
       "dqfInfo" : {
-        "dqfId" : 107888,
+        "dqfId" : 108029,
         "dqfUUID" : null,
-        "clientId" : "8864b2ce-2233-4896-902a-0d05558b25d4"
+        "clientId" : "2912684b-eb3f-40aa-9737-66b39df7a0e8"
       },
       "translations" : null,
       "reviews" : null
     },
-    "subTasks" : null,
+    "subTasks" : [ {
+      "name" : "Review Task",
+      "type" : "review",
+      "status" : "assigned",
+      "assignee" : "phil.ritchie@vistatec.com",
+      "automatic" : false,
+      "file" : {
+        "name" : "altTrans.xlf",
+        "targetLanguage" : {
+          "id" : null,
+          "name" : null,
+          "localeCode" : "es-ES"
+        },
+        "dqfInfo" : {
+          "dqfId" : 108029,
+          "dqfUUID" : null,
+          "clientId" : "2912684b-eb3f-40aa-9737-66b39df7a0e8"
+        },
+        "translations" : null,
+        "reviews" : null
+      },
+      "subTasks" : null,
+      "dqfInfo" : {
+        "dqfId" : 39901,
+        "dqfUUID" : "046b19eb-821f-4db1-b32b-46162ec90184",
+        "clientId" : "2391f93a-edee-4c8d-81af-610e40264c70"
+      }
+    } ],
     "dqfInfo" : {
-      "dqfId" : 39627,
-      "dqfUUID" : "5d8466ee-f65c-4efb-bf1e-6f9067793e52",
-      "clientId" : "ddbfd11e-71c9-4085-a2ee-6088ecb73b0d"
+      "dqfId" : 39900,
+      "dqfUUID" : "c8fa4b8b-a03a-468b-acdc-bdb2787a6187",
+      "clientId" : "fa2e8f26-bc0f-494e-889d-72ac1f2f8a45"
     }
   } ],
   "createdBy" : "phil.ritchie@vistatec.com",
-  "reviewSettings" : null
+  "reviewSettings" : {
+    "id" : 3737,
+    "sampling" : 10.0,
+    "threshold" : 80.0,
+    "type" : "combined",
+    "errorSeveritySetting" : [ {
+      "id" : 10693,
+      "errorSeverity" : {
+        "id" : 1,
+        "name" : "neutral",
+        "defaultValue" : 1.0
+      },
+      "value" : 1.0
+    }, {
+      "id" : 10694,
+      "errorSeverity" : {
+        "id" : 2,
+        "name" : "minor",
+        "defaultValue" : 2.0
+      },
+      "value" : 2.0
+    }, {
+      "id" : 10695,
+      "errorSeverity" : {
+        "id" : 3,
+        "name" : "major",
+        "defaultValue" : 3.0
+      },
+      "value" : 3.0
+    }, {
+      "id" : 10696,
+      "errorSeverity" : {
+        "id" : 4,
+        "name" : "critical",
+        "defaultValue" : 4.0
+      },
+      "value" : 4.0
+    } ],
+    "errorTypologySetting" : [ {
+      "id" : 36574,
+      "errorCategory" : {
+        "id" : 9,
+        "name" : "Addition",
+        "code" : "11",
+        "definition" : "The target text includes text not present in the source.",
+        "example" : "A translation includes portions of another translation that were inadvertently pasted into the document.",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36575,
+      "errorCategory" : {
+        "id" : 10,
+        "name" : "Omission",
+        "code" : "12",
+        "definition" : "Content is missing from the translation that is present in the source.",
+        "example" : "A paragraph present in the source is missing in the translation.",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36576,
+      "errorCategory" : {
+        "id" : 11,
+        "name" : "Mistranslation",
+        "code" : "13",
+        "definition" : "The target content does not accurately represent the source content.",
+        "example" : "A source text states that a medicine should not be administered in doses greater than 200 mg, but the translation states that it should be administered in doses greater than 200 mg (i.e., negation has been omitted).",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36577,
+      "errorCategory" : {
+        "id" : 14,
+        "name" : "Untranslated",
+        "code" : "16",
+        "definition" : "Content that should have been translated has been left untranslated.",
+        "example" : "A sentence in a Japanese document translated into English is left in Japanese.",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36578,
+      "errorCategory" : {
+        "id" : 16,
+        "name" : "Punctuation",
+        "code" : "21",
+        "definition" : "Punctuation is used incorrectly (for the locale or style)",
+        "example" : "An English text uses a semicolon where a comma should be used.",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36579,
+      "errorCategory" : {
+        "id" : 17,
+        "name" : "Spelling",
+        "code" : "22",
+        "definition" : "Issues related to spelling of words",
+        "example" : "The German word Zustellung is spelled Zustetlugn.",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36580,
+      "errorCategory" : {
+        "id" : 18,
+        "name" : "Grammar",
+        "code" : "23",
+        "definition" : "Issues related to the grammar or syntax of the text, other than spelling and orthography.",
+        "example" : "An English text reads “The man was seeing the his wife.”",
+        "errorCategories" : [ ]
+      }
+    }, {
+      "id" : 36581,
+      "errorCategory" : {
+        "id" : 19,
+        "name" : "Grammatical register",
+        "code" : "24",
+        "definition" : "The content uses the wrong grammatical register, such as using informal pronouns or verb forms when their formal counterparts are required.",
+        "example" : "A text used for a highly formal announcement uses the Norwegian du form instead of the expected De.",
+        "errorCategories" : [ ]
+      }
+    } ]
+  }
 }
