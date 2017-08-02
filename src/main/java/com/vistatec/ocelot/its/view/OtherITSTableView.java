@@ -75,7 +75,8 @@ public class OtherITSTableView extends SegmentAttributeTablePane<OtherITSTableVi
         }
 
         public void deleteRows() {
-            rows.clear();
+			rows.clear();
+			fireTableDataChanged();
         }
 
         @Override
@@ -116,4 +117,10 @@ public class OtherITSTableView extends SegmentAttributeTablePane<OtherITSTableVi
             return ret;
         }
     }
+
+	@Override
+	public void clearTable() {
+		getTableModel().deleteRows();
+		
+	}
 }

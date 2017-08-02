@@ -978,6 +978,14 @@ public class PluginManager implements OcelotEventQueueListener {
 		}
 	}
 
+	public void projectClosed() {
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if(isEnabled(dqfPlugin)){
+			dqfPlugin.projectClosed();
+		}
+		
+	}
+
 }
 class MyClassLoader extends URLClassLoader{
 	  

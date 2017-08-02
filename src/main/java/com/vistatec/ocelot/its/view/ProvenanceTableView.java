@@ -97,7 +97,8 @@ public class ProvenanceTableView extends SegmentAttributeTablePane<ProvenanceTab
         }
 
         public void deleteRows() {
-            rows.clear();
+			rows.clear();
+			fireTableDataChanged();
         }
 
         @Override
@@ -160,4 +161,9 @@ public class ProvenanceTableView extends SegmentAttributeTablePane<ProvenanceTab
             selectedProv();
         }
     }
+
+	@Override
+	public void clearTable() {
+		getTableModel().deleteRows();		
+	}
 }

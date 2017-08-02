@@ -58,6 +58,8 @@ public abstract class SegmentAttributeTablePane<T extends AbstractTableModel> ex
     }
 
     protected abstract T createTableModel();
+    
+    protected abstract void clearTable();
 
     protected JTable buildTable(T model) {
         return new JTable(model);

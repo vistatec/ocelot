@@ -159,6 +159,8 @@ public class OcelotFontTool extends JPanel implements ItemListener {
             cmbFontSize.setEnabled(true);
         } else {
             // Disables the combo boxes if there is no language tag.
+        	cmbFontFamily.setModel(new DefaultComboBoxModel<String>());
+        	cmbFontSize.setModel(new DefaultComboBoxModel<Integer>());
             cmbFontFamily.setEnabled(false);
             cmbFontSize.setEnabled(false);
 

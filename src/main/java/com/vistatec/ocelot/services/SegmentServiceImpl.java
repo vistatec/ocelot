@@ -169,6 +169,7 @@ public class SegmentServiceImpl implements SegmentService {
 
     @Override
     public void clearAllSegments() {
+    	xliff = null;
         eventQueue.post(new ItsDocStatsClearEvent());
     }
 }

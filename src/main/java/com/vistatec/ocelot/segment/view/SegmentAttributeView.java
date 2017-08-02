@@ -37,6 +37,7 @@ import javax.swing.event.ChangeListener;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
+import com.vistatec.ocelot.events.ClearViewEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -104,6 +105,20 @@ public class SegmentAttributeView extends JTabbedPane implements OcelotEventQueu
             }
         });
     }
+    
+    @Subscribe
+	public void clearViews(ClearViewEvent e){
+    	
+    	try{
+		lqiTableView.clearTable();
+		provTableView.clearTable();
+		itsTableView.clearTable();
+		taTableView.clearTable();
+		termTableView.clearTable();
+    	}catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 
     @Subscribe
     public void metadataSelected(ItsSelectionEvent e) {

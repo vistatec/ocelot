@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vistatec.ocelot.events.ClearViewEvent;
 import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.ProvenanceAddEvent;
@@ -199,8 +200,8 @@ public class OcelotApp implements OcelotEventQueueListener {
         }
         this.fileDirty = false;
         editDistService.createEditDistanceReport(filename);
-        pluginManager.notifySavedFile(filename);
         Files.move(tmpPath, saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        pluginManager.notifySavedFile(filename);
         openFile = saveFile;
     }
 
@@ -267,5 +268,16 @@ public class OcelotApp implements OcelotEventQueueListener {
 		return pluginManager.getSegmentTextContextMenuItems(segment, text,
 				offset, target, ownerWindow);
 	}
+
+	public void closeProject() {
+		openedProjectFile = null;
+		eventQueue.post(new ClearViewEvent());
+		segmentService.clearAllSegments();
+		pluginManager.projectClosed();
+	}
+
+	public boolean isProjectOpened() {
+		return openedProjectFile != null;
+	}	
 
 }

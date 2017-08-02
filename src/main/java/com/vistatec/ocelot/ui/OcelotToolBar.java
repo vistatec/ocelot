@@ -235,4 +235,9 @@ public class OcelotToolBar extends JToolBar {
 		insertComponents(widgets);
 		revalidate();
 	}
+	
+	public void clearFontTools(){
+		sourceFontTool.loadFontsAndSizes(null);
+		targetFontTool.loadFontsAndSizes(null);
+	}
 }

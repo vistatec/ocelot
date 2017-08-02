@@ -99,8 +99,10 @@ class ProjectFilesTableModel extends AbstractTableModel {
 	private static final int TARGET_LANG_COL = 1;
 
 	private static final int TYPE_COL = 2;
+	
+	private static final int STATUS_COL = 3;
 
-	private final String[] columns = { "File", "Target Language", "Type" };
+	private final String[] columns = { "File", "Target Language", "Type", "Status" };
 
 	private List<ProjectFile> model;
 
@@ -135,6 +137,8 @@ class ProjectFilesTableModel extends AbstractTableModel {
 				break;
 			case TYPE_COL:
 				retValue = file.getType().toString();
+				break;
+			case STATUS_COL:
 				break;
 			default:
 				break;

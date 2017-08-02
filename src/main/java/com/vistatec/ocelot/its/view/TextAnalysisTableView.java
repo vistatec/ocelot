@@ -159,6 +159,17 @@ public class TextAnalysisTableView extends SegmentAttributeTablePane<TextAnalysi
 			return retValue;
 		}
 
+		public void deleteRows() {
+			rows = null;
+			fireTableDataChanged();
+		}
+
+	}
+
+	@Override
+	public void clearTable() {
+
+		getTableModel().deleteRows();
 	}
 	
 }

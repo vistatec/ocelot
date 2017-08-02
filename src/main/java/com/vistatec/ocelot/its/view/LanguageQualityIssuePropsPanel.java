@@ -401,6 +401,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements ActionList
 		segmentId.setText("");
 		typeLabel.setText("");
 		typeList.setVisible(false);
+		severityList.setVisible(false);
 		commentLabel.setText("");
 		commentContent.setText("");
 		commentScroll.setVisible(false);

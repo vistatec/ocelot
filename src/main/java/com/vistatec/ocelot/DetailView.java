@@ -37,6 +37,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.events.ClearViewEvent;
 import com.vistatec.ocelot.events.ErrorCategoryStdChangedEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
@@ -188,5 +189,10 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
             remove(segDetailView);
             segDetailView = null;
         }
+    }
+    
+    @Subscribe
+    public void clearView(ClearViewEvent e){
+    	clearDisplay();
     }
 }

@@ -76,6 +76,11 @@ public class TermsTableView extends SegmentAttributeTablePane<TermsTableView.Ter
 			this.rows = rows;
 		}
 		
+		public void deleteRows() {
+			rows = null;
+			fireTableDataChanged();
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * @see javax.swing.table.TableModel#getRowCount()
@@ -147,6 +152,11 @@ public class TermsTableView extends SegmentAttributeTablePane<TermsTableView.Ter
 			return retValue;
 		}
 
+	}
+
+	@Override
+	public void clearTable() {
+		getTableModel().deleteRows();
 	}
 	
 }

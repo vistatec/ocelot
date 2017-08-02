@@ -66,6 +66,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -77,8 +78,9 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.JTextComponent;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -101,8 +103,8 @@ import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
 import com.vistatec.ocelot.events.OpenProjectEvent;
 import com.vistatec.ocelot.events.OpenProjectFileEvent;
-import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.PluginAddedEvent;
+import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.findrep.FindAndReplaceController;
@@ -184,13 +186,56 @@ public class Ocelot extends JPanel
 
 	private void openProject(OcelotProject project) {
 
+		final JInternalFrame projectFrame = new JInternalFrame(project.getName(), false, true, false, false);
 		projectEditorTabbedPane = new JTabbedPane();
 		OcelotProjectPanel projectPanel = new OcelotProjectPanel(eventQueue);
 		projectPanel.loadFiles(project.getFiles());
 		projectEditorTabbedPane.addTab("Project", projectPanel);
-		projectEditorTabbedPane.addTab("File Editor", mainSplitPane.getRightComponent());
-		mainSplitPane.setRightComponent(projectEditorTabbedPane);
+		projectEditorTabbedPane.addTab("File Editor", tmConcordanceSplitPane);
+		projectFrame.add(projectEditorTabbedPane);
+		projectFrame.setVisible(true);
+		mainSplitPane.setRightComponent(projectFrame);
+		projectFrame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+		projectFrame.addInternalFrameListener(new InternalFrameAdapter() {
+			@Override
+			public void internalFrameClosing(InternalFrameEvent e) {
+				System.out.println("Closing");
+				boolean canClose = true;
+				if(ocelotApp.isProjectOpened() && ocelotApp.isFileDirty()){
+					int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to save the project?", "Save Project", JOptionPane.YES_NO_CANCEL_OPTION);
+					canClose = option == JOptionPane.YES_OPTION || option == JOptionPane.NO_OPTION;
+					if(option == JOptionPane.YES_OPTION){
+						saveFile();
+					}
+				}
+				if(canClose){
+					projectFrame.setVisible(false);
+					closeProject();
+				}
+			}
+			
+			@Override
+			public void internalFrameClosed(InternalFrameEvent e) {
+				System.out.println("Closed");
+				
+				
+			}
+		});
 		revalidate();
+	}
+
+	private void closeProject() {
+		ocelotApp.closeProject();
+		segmentView.reloadTable();
+		setMainTitle("");
+		menuSave.setEnabled(false);
+		menuSaveAs.setEnabled(false);
+		menuSaveAsTmx.setEnabled(false);
+		menuSaveToAzure.setEnabled(false);
+		toolBar.clearFontTools();
+//		mainSplitPane.remove(projectEditorTabbedPane);
+		mainSplitPane.setRightComponent(tmConcordanceSplitPane);
+		projectEditorTabbedPane = null;
 	}
 
 	@Subscribe
@@ -282,7 +327,11 @@ public class Ocelot extends JPanel
 	}
 
 	public void setMainTitle(String sourceTitle) {
-		mainframe.setTitle(APPNAME + " - " + sourceTitle);
+		if (sourceTitle != null && !sourceTitle.isEmpty()) {
+			mainframe.setTitle(APPNAME + " - " + sourceTitle);
+		} else {
+			mainframe.setTitle(APPNAME);
+		}
 	}
 
 	public void setMainTitle(String sourceTitle, String targetTitle) {
@@ -344,12 +393,25 @@ public class Ocelot extends JPanel
 	}
 
 	private void promptOpenXLIFFFile() {
-		FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
-		fd.setFilenameFilter(new XliffFileFilter());
-		fd.setVisible(true);
-		File sourceFile = getSelectedFile(fd);
-		fd.dispose();
-		openFile(sourceFile, false);
+
+		boolean promptFileChooser = true;
+		if (ocelotApp.isProjectOpened()) {
+			int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to close the current project?",
+					"Open File", JOptionPane.YES_NO_OPTION);
+			if (option == JOptionPane.YES_OPTION) {
+				closeProject();
+			} else {
+				promptFileChooser = false;
+			}
+		}
+		if (promptFileChooser) {
+			FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
+			fd.setFilenameFilter(new XliffFileFilter());
+			fd.setVisible(true);
+			File sourceFile = getSelectedFile(fd);
+			fd.dispose();
+			openFile(sourceFile, false);
+		}
 	}
 
 	private void openFile(File file, boolean temporary) {

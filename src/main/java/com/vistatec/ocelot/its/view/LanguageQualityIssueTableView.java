@@ -125,11 +125,14 @@ public class LanguageQualityIssueTableView extends
 		super.segmentSelected(seg);
 	}
 
+	
+	
 	@Override
 	public void clearSelection() {
 		super.clearSelection();
 		eventQueue.post(new LQIDeselectionEvent());
 	}
+	
 
 	static class LQITableModel extends AbstractTableModel {
 		private static final long serialVersionUID = 1L;
@@ -149,6 +152,7 @@ public class LanguageQualityIssueTableView extends
 
 		public void deleteRows() {
 			rows.clear();
+			fireTableDataChanged();
 		}
 
 		@Override
@@ -229,5 +233,10 @@ public class LanguageQualityIssueTableView extends
 				}
 			}
 		}
+	}
+
+	@Override
+	public void clearTable() {
+		getTableModel().deleteRows();
 	}
 }
