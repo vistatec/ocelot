@@ -94,7 +94,12 @@ public class ErrorCategoryAndSeverityMapper {
 		return its_cat_2_dqf_cat.get(itsErrorCategoryName);
 	}
 
-	public String getITSCategoryName(String categoryName) {
+	public String getITSCategoryName(String dqfCategoryName){
+		return dqf_cat_2_its_cat.get(dqfCategoryName);
+				
+	}
+	
+	public String getCategoryNameForLQI(String categoryName) {
 		if(activeMode == ITS_MODE){
 			return categoryName;
 		} else {

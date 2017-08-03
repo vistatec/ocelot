@@ -136,7 +136,7 @@ public class LQIGridDialogView extends JDialog implements Runnable, ActionListen
 				String categoryName = tableHelper.getLqiTable()
 						.getValueAt(button.getCategoryRow(), tableHelper.getLqiTableModel().getErrorCategoryColumn())
 						.toString();
-				controller.createNewLqi(ErrorCategoryAndSeverityMapper.getInstance().getITSCategoryName(categoryName),
+				controller.createNewLqi(ErrorCategoryAndSeverityMapper.getInstance().getCategoryNameForLQI(categoryName),
 						severity, severityName);
 			}
 		};

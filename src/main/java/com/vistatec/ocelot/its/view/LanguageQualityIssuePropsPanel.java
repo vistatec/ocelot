@@ -313,7 +313,7 @@ public class LanguageQualityIssuePropsPanel extends JPanel implements ActionList
 		} else if (e.getSource() == btnSave) {
 			LanguageQualityIssue lqi = new LanguageQualityIssue();
 			lqi.setType(ErrorCategoryAndSeverityMapper.getInstance()
-					.getITSCategoryName(typeList.getSelectedItem().toString()));
+					.getCategoryNameForLQI(typeList.getSelectedItem().toString()));
 			lqi.setComment(commentContent.getText());
 			lqi.setSeverity(((LQISeverity) severityList.getSelectedItem()).getScore());
 			lqi.setSeverityName(((LQISeverity) severityList.getSelectedItem()).getName());
