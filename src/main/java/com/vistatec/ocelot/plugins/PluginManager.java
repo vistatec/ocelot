@@ -53,6 +53,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -996,12 +997,22 @@ public class PluginManager implements OcelotEventQueueListener {
 		}
 	}
 
-	public void projectClosed() {
+	public void dqfProjectClosed() {
 		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
 		if(isEnabled(dqfPlugin)){
 			dqfPlugin.projectClosed();
 		}
 		
+	}
+	
+	public ImageIcon getDQFIcon(){
+		
+		ImageIcon icon = null;
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if(isEnabled(dqfPlugin)){
+			icon = dqfPlugin.getDQFIcon();
+		}
+		return icon;
 	}
 
 }

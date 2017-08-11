@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -269,11 +270,15 @@ public class OcelotApp implements OcelotEventQueueListener {
 				offset, target, ownerWindow);
 	}
 
-	public void closeProject() {
+	public void closeDQFProject() {
 		openedProjectFile = null;
 		eventQueue.post(new ClearViewEvent());
 		segmentService.clearAllSegments();
-		pluginManager.projectClosed();
+		pluginManager.dqfProjectClosed();
+	}
+	
+	public ImageIcon getDQFIcon(){
+		return pluginManager.getDQFIcon();
 	}
 
 	public boolean isProjectOpened() {

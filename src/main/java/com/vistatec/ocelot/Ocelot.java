@@ -96,12 +96,12 @@ import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.DQFProjectOpenedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
 import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
-import com.vistatec.ocelot.events.OpenProjectEvent;
 import com.vistatec.ocelot.events.OpenProjectFileEvent;
 import com.vistatec.ocelot.events.PluginAddedEvent;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
@@ -117,8 +117,6 @@ import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.profile.ProfileManager;
-import com.vistatec.ocelot.project.OcelotProject;
-import com.vistatec.ocelot.project.OcelotProjectPanel;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
@@ -184,23 +182,23 @@ public class Ocelot extends JPanel
 
 	private boolean enableStorage;
 
-	private void openProject(OcelotProject project) {
-
-		if(project.getLqiGridConf() != null){
+	private void displayProjectComponent(String projectName, Component projectComponent, LQIGridConfiguration lqiGridConfiguration){
+		
+		if(lqiGridConfiguration != null){
 			LQIGridConfigurations tempLQIConfigurations = new LQIGridConfigurations();
-			tempLQIConfigurations.addConfiguration(project.getLqiGridConf());
-			tempLQIConfigurations.setActiveConfiguration(project.getLqiGridConf());
+			tempLQIConfigurations.addConfiguration(lqiGridConfiguration);
+			tempLQIConfigurations.setActiveConfiguration(lqiGridConfiguration);
 			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
-					project.getLqiGridConf());
+					lqiGridConfiguration);
 			lqiGridController.setDqfConfiguration(tempLQIConfigurations);
 			toolBar.setLQIConfigurations(tempLQIConfigurations);
 			toolBar.setLqiToolEnabled(false);
 		}
-		final JInternalFrame projectFrame = new JInternalFrame(project.getName(), false, true, false, false);
+		
+		final JInternalFrame projectFrame = new JInternalFrame(projectName, false, true, false, false);
+		projectFrame.setFrameIcon(ocelotApp.getDQFIcon());
 		projectEditorTabbedPane = new JTabbedPane();
-		OcelotProjectPanel projectPanel = new OcelotProjectPanel(eventQueue);
-		projectPanel.loadFiles(project.getFiles());
-		projectEditorTabbedPane.addTab("Project", projectPanel);
+		projectEditorTabbedPane.addTab("Project", projectComponent);
 		projectEditorTabbedPane.addTab("File Editor", tmConcordanceSplitPane);
 		projectFrame.add(projectEditorTabbedPane);
 		mainSplitPane.setRightComponent(projectFrame);
@@ -219,7 +217,7 @@ public class Ocelot extends JPanel
 				}
 				if(canClose){
 					projectFrame.setVisible(false);
-					closeProject();
+					closeDQFProject();
 				}
 			}
 			
@@ -233,9 +231,10 @@ public class Ocelot extends JPanel
 		projectFrame.setVisible(true);
 		revalidate();
 	}
+	
 
-	private void closeProject() {
-		ocelotApp.closeProject();
+	private void closeDQFProject() {
+		ocelotApp.closeDQFProject();
 		segmentView.reloadTable();
 		setMainTitle("");
 		menuSave.setEnabled(false);
@@ -275,8 +274,8 @@ public class Ocelot extends JPanel
 	}
 
 	@Subscribe
-	public void handleOpenProjectEvent(OpenProjectEvent event) {
-		openProject(event.getProject());
+	public void handleDQFProjectOpenedEvent(DQFProjectOpenedEvent event){
+		displayProjectComponent(event.getProjectName(), event.getProjectGuiComponent(), event.getProjLqiGridConfiguration());
 	}
 
 	public Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
@@ -421,7 +420,7 @@ public class Ocelot extends JPanel
 			int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to close the current project?",
 					"Open File", JOptionPane.YES_NO_OPTION);
 			if (option == JOptionPane.YES_OPTION) {
-				closeProject();
+				closeDQFProject();
 			} else {
 				promptFileChooser = false;
 			}
