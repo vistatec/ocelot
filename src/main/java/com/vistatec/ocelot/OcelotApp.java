@@ -136,12 +136,15 @@ public class OcelotApp implements OcelotEventQueueListener {
     	return defFileName; 
     }
     
+    @Deprecated
     public void openProjectFile(ProjectFile projectFile ) throws FileNotFoundException, IOException, XMLStreamException{
     	
     	this.openedProjectFile = projectFile;
     	openFile(projectFile.getFile(), false);
     	pluginManager.notifyOpenProjectFile(projectFile);
     }
+
+    
     
     public void openFile(File openFile, boolean temporaryFile) throws IOException, FileNotFoundException, XMLStreamException {
         openXliffFile = xliffService.parse(openFile);
@@ -271,10 +274,15 @@ public class OcelotApp implements OcelotEventQueueListener {
 	}
 
 	public void closeDQFProject() {
+
 		openedProjectFile = null;
-		eventQueue.post(new ClearViewEvent());
-		segmentService.clearAllSegments();
 		pluginManager.dqfProjectClosed();
+	}
+	
+	public void closeFile(){
+		openFile = null;
+		segmentService.clearAllSegments();
+		eventQueue.post(new ClearViewEvent());
 	}
 	
 	public ImageIcon getDQFIcon(){

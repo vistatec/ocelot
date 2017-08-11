@@ -96,6 +96,8 @@ import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
+import com.vistatec.ocelot.events.DQFFileClosedEvent;
+import com.vistatec.ocelot.events.DQFFileOpenedEvent;
 import com.vistatec.ocelot.events.DQFProjectOpenedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
@@ -232,16 +234,21 @@ public class Ocelot extends JPanel
 		revalidate();
 	}
 	
-
-	private void closeDQFProject() {
-		ocelotApp.closeDQFProject();
-		segmentView.reloadTable();
+	private void closeFile(){
+		
+		ocelotApp.closeFile();
 		setMainTitle("");
 		menuSave.setEnabled(false);
 		menuSaveAs.setEnabled(false);
 		menuSaveAsTmx.setEnabled(false);
 		menuSaveToAzure.setEnabled(false);
 		toolBar.clearFontTools();
+	}
+	
+
+	private void closeDQFProject() {
+		ocelotApp.closeDQFProject();
+		closeFile();
 		try {
 			LQIGridConfigurations actualLQIConfs = lqiGridController.getConfigService().readLQIConfig(); 
 			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
@@ -259,6 +266,27 @@ public class Ocelot extends JPanel
 		projectEditorTabbedPane = null;
 	}
 
+	@Subscribe
+	public void handleDQFFileOpenedEvenet(DQFFileOpenedEvent event){
+		try {
+			ocelotApp.openFile(event.getFile(), false);
+		} catch (FileNotFoundException ex) {
+			LOG.error("Failed to parse file '" + event.getFile().getName() + "'", ex);
+		} catch (Exception e) {
+			String errorMsg = "Could not open " + event.getFile().getName();
+			LOG.error(errorMsg, e);
+			alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
+		}
+		projectEditorTabbedPane.setSelectedIndex(1);
+	}
+	
+	@Subscribe
+	public void handleDQFFileClosedEvent(DQFFileClosedEvent event){
+		
+		closeFile();
+	}
+	
+	@Deprecated
 	@Subscribe
 	public void handleOpenProjectFileEvent(OpenProjectFileEvent event) {
 		try {

@@ -13,6 +13,7 @@ import javax.swing.table.AbstractTableModel;
 import com.vistatec.ocelot.events.OpenProjectFileEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 
+@Deprecated
 public class OcelotProjectPanel extends JPanel implements MouseListener {
 
 	private static final long serialVersionUID = -4150958748577903247L;
