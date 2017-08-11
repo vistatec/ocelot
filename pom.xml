@@ -29,6 +29,10 @@
 			<name>Okapi Snapshot</name>
 			<url>http://repository-okapi.forge.cloudbees.com/snapshot/</url>
 		</repository>
+		<repository>
+			<id>maven-local-repo</id>
+			<url>file:///${project.basedir}/maven-local-repo</url>
+		</repository>
 	</repositories>
 
 
@@ -94,7 +98,7 @@
 		<dependency>
 			<groupId>net.sf.okapi.filters</groupId>
 			<artifactId>okapi-filter-xliff</artifactId>
-			<version>${okapi.version}</version>
+			<version>0.34-SNAPSHOT-CDATA</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.okapi.lib</groupId>

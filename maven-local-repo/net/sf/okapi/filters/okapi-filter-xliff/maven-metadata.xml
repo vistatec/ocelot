@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>net.sf.okapi.filters</groupId>
+  <artifactId>okapi-filter-xliff</artifactId>
+  <versioning>
+    <release>0.34-SNAPSHOT-CDATA</release>
+    <versions>
+      <version>0.34-SNAPSHOT-CDATA</version>
+    </versions>
+    <lastUpdated>20170811082143</lastUpdated>
+  </versioning>
+</metadata>
