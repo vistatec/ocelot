@@ -19,9 +19,9 @@ public interface DQFPlugin extends Plugin {
 	
 	public void setOcelotEventQueue(OcelotEventQueue eventQueue );
 	
-	public void fileOpened(ProjectFile file);
+//	public void fileOpened(ProjectFile file);
 
-	public void editedSegment(OcelotSegment segment);
+	public void editedSegment(OcelotSegment segment, Integer time);
 	
 	public void fileSaved(String filename );
 

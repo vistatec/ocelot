@@ -136,13 +136,13 @@ public class OcelotApp implements OcelotEventQueueListener {
     	return defFileName; 
     }
     
-    @Deprecated
-    public void openProjectFile(ProjectFile projectFile ) throws FileNotFoundException, IOException, XMLStreamException{
-    	
-    	this.openedProjectFile = projectFile;
-    	openFile(projectFile.getFile(), false);
-    	pluginManager.notifyOpenProjectFile(projectFile);
-    }
+//    @Deprecated
+//    public void openProjectFile(ProjectFile projectFile ) throws FileNotFoundException, IOException, XMLStreamException{
+//    	
+//    	this.openedProjectFile = projectFile;
+//    	openFile(projectFile.getFile(), false);
+//    	pluginManager.notifyOpenProjectFile(projectFile);
+//    }
 
     
     

@@ -107,6 +107,7 @@ import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.events.ClearViewEvent;
 import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
@@ -310,6 +311,12 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		xliff = e.getDocument();
 	}
 
+	@Subscribe
+	public void handleClearViewEvent(ClearViewEvent event){
+		
+		segmentTableModel.fireTableDataChanged();
+	}
+	
 	@Subscribe
 	public void highlightStrings(HighlightEvent e) {
 

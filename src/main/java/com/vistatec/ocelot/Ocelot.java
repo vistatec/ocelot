@@ -286,20 +286,20 @@ public class Ocelot extends JPanel
 		closeFile();
 	}
 	
-	@Deprecated
-	@Subscribe
-	public void handleOpenProjectFileEvent(OpenProjectFileEvent event) {
-		try {
-			ocelotApp.openProjectFile(event.getProjectFile());
-		} catch (FileNotFoundException ex) {
-			LOG.error("Failed to parse file '" + event.getProjectFile().getFile().getName() + "'", ex);
-		} catch (Exception e) {
-			String errorMsg = "Could not open " + event.getProjectFile().getFile().getName();
-			LOG.error(errorMsg, e);
-			alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
-		}
-		projectEditorTabbedPane.setSelectedIndex(1);
-	}
+//	@Deprecated
+//	@Subscribe
+//	public void handleOpenProjectFileEvent(OpenProjectFileEvent event) {
+//		try {
+//			ocelotApp.openProjectFile(event.getProjectFile());
+//		} catch (FileNotFoundException ex) {
+//			LOG.error("Failed to parse file '" + event.getProjectFile().getFile().getName() + "'", ex);
+//		} catch (Exception e) {
+//			String errorMsg = "Could not open " + event.getProjectFile().getFile().getName();
+//			LOG.error(errorMsg, e);
+//			alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
+//		}
+//		projectEditorTabbedPane.setSelectedIndex(1);
+//	}
 
 	@Subscribe
 	public void handleDQFProjectOpenedEvent(DQFProjectOpenedEvent event){

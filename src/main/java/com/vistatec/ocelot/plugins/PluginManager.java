@@ -802,7 +802,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		if(e.getEditType() == SegmentEditEvent.TARGET_CHANGED && dqfPlugins != null && !dqfPlugins.isEmpty()){
 			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
 			if(isEnabled(dqfPlugin)){
-				dqfPlugin.editedSegment(e.getSegment());
+				dqfPlugin.editedSegment(e.getSegment(), 0);
 			}
 		}
 		}catch (Exception ex) {
@@ -906,12 +906,16 @@ public class PluginManager implements OcelotEventQueueListener {
 	@Subscribe
 	public void handleLqiAdded(LQIAdditionEvent event) {
 
+		try {
 		qualityPluginManager.addQualityIssue(event.getLQI());
 		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
 		if(isEnabled(dqfPlugin)){
 			dqfPlugin.errorAdded(event.getSegment(), event.getLQI());
 		}
 		handleTimerOnUserAction();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -989,13 +993,13 @@ public class PluginManager implements OcelotEventQueueListener {
 		eventQueue.post(new PluginAddedEvent());		
     }
 
-	public void notifyOpenProjectFile(ProjectFile projectFile) {
-		
-		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-		if(isEnabled(dqfPlugin)){
-			dqfPlugin.fileOpened(projectFile);
-		}
-	}
+//	public void notifyOpenProjectFile(ProjectFile projectFile) {
+//		
+//		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+//		if(isEnabled(dqfPlugin)){
+//			dqfPlugin.fileOpened(projectFile);
+//		}
+//	}
 
 	public void dqfProjectClosed() {
 		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
