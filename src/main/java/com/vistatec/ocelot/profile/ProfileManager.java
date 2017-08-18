@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.config.ConfigurationException;
 import com.vistatec.ocelot.config.ConfigurationManager;
 import com.vistatec.ocelot.config.ProfileConfigService;
@@ -31,8 +32,7 @@ public class ProfileManager implements IProfileManager {
 
 	private ProfileConfigService configService;
 
-	public ProfileManager(File confDir, ProfileConfigService configService,
-	        OcelotEventQueue eventQueue) {
+	public ProfileManager(File confDir, ProfileConfigService configService, OcelotEventQueue eventQueue) {
 
 		this.confDir = confDir;
 		this.configService = configService;
@@ -76,26 +76,24 @@ public class ProfileManager implements IProfileManager {
 		// if it is a new profile, create a new configuration folder and copy
 		// the default configuration
 
-		log.debug("Changing the current profile to \"" + selProfile + "\"...");
-		try {
-			if (!getProfiles().contains(selProfile)) {
-				createProfileDir(selProfile);
+		if (Ocelot.getInstance().canQuitOcelot()) {
+			log.debug("Changing the current profile to \"" + selProfile + "\"...");
+			try {
+				if (!getProfiles().contains(selProfile)) {
+					createProfileDir(selProfile);
+				}
+				configService.changeActiveProfile(selProfile);
+				eventQueue.post(new ProfileChangedEvent(selProfile));
+			} catch (TransferException e) {
+				log.error("Error while saving the new profile.", e);
+				throw new ProfileException(e);
+			} catch (ConfigurationException e) {
+				log.error("Error while copying the default directory to the new configuration folder.", e);
+				throw new ProfileException(e);
+			} catch (SecurityException e) {
+				log.error("Security exception while creating the new configuration directory", e);
+				throw new ProfileException(e);
 			}
-			configService.changeActiveProfile(selProfile);
-			eventQueue.post(new ProfileChangedEvent(selProfile));
-		} catch (TransferException e) {
-			log.error("Error while saving the new profile.", e);
-			throw new ProfileException(e);
-		} catch (ConfigurationException e) {
-			log.error(
-			        "Error while copying the default directory to the new configuration folder.",
-			        e);
-			throw new ProfileException(e);
-		} catch (SecurityException e) {
-			log.error(
-			        "Security exception while creating the new configuration directory",
-			        e);
-			throw new ProfileException(e);
 		}
 	}
 
@@ -104,8 +102,7 @@ public class ProfileManager implements IProfileManager {
 	 * profile if they have been created. This method should be invoked when an
 	 * error occurs while changing the active profile.
 	 */
-	public void restoreOldProfile(String oldProfile, String newProfile,
-	        boolean folderCreated) throws ProfileException {
+	public void restoreOldProfile(String oldProfile, String newProfile, boolean folderCreated) throws ProfileException {
 
 		log.debug("Restoring old profile...");
 		try {
@@ -152,31 +149,32 @@ public class ProfileManager implements IProfileManager {
 
 	private void createProfileDir(String selProfile) throws ConfigurationException {
 		log.debug("Creating a new profile directory \"" + selProfile + "\"...");
-//		DirectoryConfigurationUtils.createNewProfileFolder(confDir, selProfile);
+		// DirectoryConfigurationUtils.createNewProfileFolder(confDir,
+		// selProfile);
 		ConfigurationManager.createNewProfileFolder(new File(confDir, selProfile));
 	}
 
-	private void promptDefaultProfileMessage(Window currWindow){
-		
+	private void promptDefaultProfileMessage(Window currWindow) {
+
 		DefaultProfileWarningDialog warnDialog = new DefaultProfileWarningDialog(currWindow);
 		warnDialog.promptWarningMessage();
-		if(warnDialog.isDoNotShowAgainFlagged()){
+		if (warnDialog.isDoNotShowAgainFlagged()) {
 			log.debug("Do not show again the default configuration message.");
-			 try {
-	            configService.doNotShowAgain();
-            } catch (TransferException e) {
-            	log.error("Error while setting the do not show again flag", e);
-            }
+			try {
+				configService.doNotShowAgain();
+			} catch (TransferException e) {
+				log.error("Error while setting the do not show again flag", e);
+			}
 		}
 	}
-	
-	public void checkProfileAndPromptMessage(Window currWindow){
-		
-		if(configService.mustPromptMessage()){
+
+	public void checkProfileAndPromptMessage(Window currWindow) {
+
+		if (configService.mustPromptMessage()) {
 			promptDefaultProfileMessage(currWindow);
 		}
 	}
-	
+
 }
 
 class DirectoryFilter implements FileFilter {

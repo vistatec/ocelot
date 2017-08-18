@@ -33,7 +33,7 @@ public class OSXPlatformSupport implements PlatformSupport {
             setQuitHandler(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ocelot.handleApplicationExit();
+                    ocelot.quitOcelot();
                 }
             });
             setAboutHandler(new ActionListener() {

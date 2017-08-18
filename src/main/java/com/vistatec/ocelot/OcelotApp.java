@@ -39,6 +39,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -82,7 +83,7 @@ public class OcelotApp implements OcelotEventQueueListener {
     private final EditDistanceReportService editDistService;
     private XLIFFDocument openXliffFile;
 
-    private ProjectFile openedProjectFile;
+//    private ProjectFile openedProjectFile;
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
     private boolean temporaryFile;
@@ -275,13 +276,18 @@ public class OcelotApp implements OcelotEventQueueListener {
 
 	public void closeDQFProject() {
 
-		openedProjectFile = null;
+//		openedProjectFile = null;
 		pluginManager.dqfProjectClosed();
+	}
+	
+	public void closeDQFTask(){
+		pluginManager.dqfTaskClosed();
 	}
 	
 	public void closeFile(){
 		openFile = null;
 		segmentService.clearAllSegments();
+		fileDirty = false;
 		eventQueue.post(new ClearViewEvent());
 	}
 	
@@ -289,8 +295,22 @@ public class OcelotApp implements OcelotEventQueueListener {
 		return pluginManager.getDQFIcon();
 	}
 
-	public boolean isProjectOpened() {
-		return openedProjectFile != null;
-	}	
+	public boolean isDQFPluginInstalled(){
+		return pluginManager.isDQFPluginInstalled();
+	}
+
+	public void OcelotClosing() {
+		
+		pluginManager.manageOcelotClosing();
+	}
+
+	public void setOcelotClosingWaitingDialog(JDialog waitingDialog) {
+
+		pluginManager.setOcelotClosingWaitingDialog(waitingDialog);
+	}
+	
+//	public boolean isProjectOpened() {
+//		return openedProjectFile != null;
+//	}	
 
 }

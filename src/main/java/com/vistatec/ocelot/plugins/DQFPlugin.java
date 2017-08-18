@@ -3,6 +3,7 @@ package com.vistatec.ocelot.plugins;
 import java.awt.Window;
 
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JMenu;
 
 import com.vistatec.ocelot.config.LqiJsonConfigService;
@@ -34,4 +35,10 @@ public interface DQFPlugin extends Plugin {
 	public void errorEdited(OcelotSegment segment, LanguageQualityIssue lqi);
 	
 	public ImageIcon getDQFIcon();
+
+	public void taskClosed();
+
+	public void handleOcelotClosing();
+
+	public void setOcelotClosingWaitingDialog(JDialog waitingDialog);
 }

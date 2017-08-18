@@ -95,6 +95,7 @@ import com.vistatec.ocelot.config.OcelotJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
 import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.di.OcelotModule;
+import com.vistatec.ocelot.dqf.DQFOcelotGuiHelper;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
 import com.vistatec.ocelot.events.DQFFileClosedEvent;
 import com.vistatec.ocelot.events.DQFFileOpenedEvent;
@@ -142,6 +143,8 @@ public class Ocelot extends JPanel
 	private Image icon;
 	private static Logger LOG = LoggerFactory.getLogger(Ocelot.class);
 
+	private static Ocelot ocelotInstance;
+
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
 	private JMenuItem menuOpenXLIFF, menuDownloadLGK, menuExit, menuAbout, menuRules, menuProv, menuSave, menuSaveAs,
@@ -160,7 +163,8 @@ public class Ocelot extends JPanel
 	private JSplitPane mainSplitPane;
 	private JSplitPane segAttrSplitPane;
 	private JSplitPane tmConcordanceSplitPane;
-	private JTabbedPane projectEditorTabbedPane;
+	// private JTabbedPane projectEditorTabbedPane;
+	// private JTabbedPane taskEditorTabbedPane;
 	private SegmentAttributeView segmentAttrView;
 	private DetailView itsDetailView;
 	private SegmentView segmentView;
@@ -178,64 +182,161 @@ public class Ocelot extends JPanel
 	private final LQIGridController lqiGridController;
 	private final LingoTekManager lgkManager;
 
+	private DQFOcelotGuiHelper dqfGuiHelper;
+
 	private PlatformSupport platformSupport;
 
 	private StorageService storageService;
 
 	private boolean enableStorage;
 
-	private void displayProjectComponent(String projectName, Component projectComponent, LQIGridConfiguration lqiGridConfiguration){
-		
-		if(lqiGridConfiguration != null){
+	public static Ocelot getInstance() {
+		return ocelotInstance;
+	}
+
+	public void setDQFLQIGridConfiguration(LQIGridConfiguration lqiGridConfiguration) {
+
+		if (lqiGridConfiguration != null) {
 			LQIGridConfigurations tempLQIConfigurations = new LQIGridConfigurations();
 			tempLQIConfigurations.addConfiguration(lqiGridConfiguration);
 			tempLQIConfigurations.setActiveConfiguration(lqiGridConfiguration);
-			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
-					lqiGridConfiguration);
+			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(), lqiGridConfiguration);
 			lqiGridController.setDqfConfiguration(tempLQIConfigurations);
 			toolBar.setLQIConfigurations(tempLQIConfigurations);
 			toolBar.setLqiToolEnabled(false);
 		}
-		
-		final JInternalFrame projectFrame = new JInternalFrame(projectName, false, true, false, false);
-		projectFrame.setFrameIcon(ocelotApp.getDQFIcon());
-		projectEditorTabbedPane = new JTabbedPane();
-		projectEditorTabbedPane.addTab("Project", projectComponent);
-		projectEditorTabbedPane.addTab("File Editor", tmConcordanceSplitPane);
-		projectFrame.add(projectEditorTabbedPane);
-		mainSplitPane.setRightComponent(projectFrame);
-		projectFrame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
-		projectFrame.addInternalFrameListener(new InternalFrameAdapter() {
-			@Override
-			public void internalFrameClosing(InternalFrameEvent e) {
-				System.out.println("Closing");
-				boolean canClose = true;
-				if(ocelotApp.isProjectOpened() && ocelotApp.isFileDirty()){
-					int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to save the project?", "Save Project", JOptionPane.YES_NO_CANCEL_OPTION);
-					canClose = option == JOptionPane.YES_OPTION || option == JOptionPane.NO_OPTION;
-					if(option == JOptionPane.YES_OPTION){
-						saveFile();
-					}
-				}
-				if(canClose){
-					projectFrame.setVisible(false);
-					closeDQFProject();
-				}
-			}
-			
-			@Override
-			public void internalFrameClosed(InternalFrameEvent e) {
-				System.out.println("Closed");
-				
-				
-			}
-		});
-		projectFrame.setVisible(true);
-		revalidate();
 	}
-	
-	private void closeFile(){
-		
+
+	public void restoreLQIGridConfiguration() throws TransferException {
+		LQIGridConfigurations actualLQIConfs = lqiGridController.getConfigService().readLQIConfig();
+		loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(), actualLQIConfs.getActiveConfiguration());
+		toolBar.setLQIConfigurations(actualLQIConfs);
+		toolBar.setLqiToolEnabled(true);
+		lqiGridController.setDqfConfiguration(null);
+	}
+
+	// private void displayProjectComponent(String projectName, Component
+	// projectComponent, LQIGridConfiguration lqiGridConfiguration){
+	//
+	// if(lqiGridConfiguration != null){
+	// LQIGridConfigurations tempLQIConfigurations = new
+	// LQIGridConfigurations();
+	// tempLQIConfigurations.addConfiguration(lqiGridConfiguration);
+	// tempLQIConfigurations.setActiveConfiguration(lqiGridConfiguration);
+	// loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
+	// lqiGridConfiguration);
+	// lqiGridController.setDqfConfiguration(tempLQIConfigurations);
+	// toolBar.setLQIConfigurations(tempLQIConfigurations);
+	// toolBar.setLqiToolEnabled(false);
+	// }
+	//
+	// final JInternalFrame projectFrame = new JInternalFrame(projectName,
+	// false, true, false, false);
+	// projectFrame.setFrameIcon(ocelotApp.getDQFIcon());
+	// projectEditorTabbedPane = new JTabbedPane();
+	// projectEditorTabbedPane.addTab("Project", projectComponent);
+	// projectEditorTabbedPane.addTab("File Editor", tmConcordanceSplitPane);
+	// projectFrame.add(projectEditorTabbedPane);
+	// mainSplitPane.setRightComponent(projectFrame);
+	// projectFrame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+	// projectFrame.addInternalFrameListener(new InternalFrameAdapter() {
+	// @Override
+	// public void internalFrameClosing(InternalFrameEvent e) {
+	// System.out.println("Closing");
+	// boolean canClose = true;
+	// if(ocelotApp.hasOpenFile() && ocelotApp.isFileDirty()){
+	// int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to
+	// save the project file?", "Save Project",
+	// JOptionPane.YES_NO_CANCEL_OPTION);
+	// canClose = option == JOptionPane.YES_OPTION || option ==
+	// JOptionPane.NO_OPTION;
+	// if(option == JOptionPane.YES_OPTION){
+	// saveFile();
+	// }
+	// }
+	// if(canClose){
+	// projectFrame.setVisible(false);
+	// closeDQFProject();
+	// }
+	// }
+	//
+	// @Override
+	// public void internalFrameClosed(InternalFrameEvent e) {
+	// System.out.println("Closed");
+	//
+	//
+	// }
+	// });
+	// projectFrame.setVisible(true);
+	// revalidate();
+	// }
+
+	// private void displayDQFTaskComponent(String taskName, Component
+	// taskComponent ){
+	// try{
+	// projectEditorTabbedPane.removeTabAt(1);
+	// taskEditorTabbedPane = new JTabbedPane();
+	// taskEditorTabbedPane.addTab("Task", taskComponent);
+	// taskEditorTabbedPane.addTab("File Editor", tmConcordanceSplitPane);
+	// final JInternalFrame taskFrame = new JInternalFrame(taskName, false,
+	// true, false, false);
+	// taskFrame.setFrameIcon(ocelotApp.getDQFIcon());
+	// taskFrame.add(taskEditorTabbedPane);
+	// JInternalFrame projectFrame =
+	// ((JInternalFrame)mainSplitPane.getRightComponent());
+	// projectFrame.remove(projectEditorTabbedPane);
+	// projectFrame.add(taskFrame, BorderLayout.CENTER);
+	// taskFrame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+	// taskFrame.addInternalFrameListener(new InternalFrameAdapter() {
+	// @Override
+	// public void internalFrameClosing(InternalFrameEvent e) {
+	// System.out.println("Closing");
+	// boolean canClose = true;
+	// if(ocelotApp.hasOpenFile() && ocelotApp.isFileDirty()){
+	// int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to
+	// save the opened file?", "Save Task File",
+	// JOptionPane.YES_NO_CANCEL_OPTION);
+	// canClose = option == JOptionPane.YES_OPTION || option ==
+	// JOptionPane.NO_OPTION;
+	// if(option == JOptionPane.YES_OPTION){
+	// saveFile();
+	// }
+	// }
+	// if(canClose){
+	// taskFrame.setVisible(false);
+	// closeDQFTask();
+	// }
+	// }
+	//
+	// @Override
+	// public void internalFrameClosed(InternalFrameEvent e) {
+	// System.out.println("Closed");
+	//
+	//
+	// }
+	// });
+	// taskFrame.setVisible(true);
+	// projectFrame.revalidate();
+	// projectFrame.repaint();
+	// }catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	//// repaint();
+	//
+	// }
+
+	// protected void closeDQFTask() {
+	//
+	// closeFile();
+	// projectEditorTabbedPane.add("File Editor", tmConcordanceSplitPane);
+	// JInternalFrame projectFrame =
+	// ((JInternalFrame)mainSplitPane.getRightComponent());
+	// projectFrame.add(projectEditorTabbedPane);
+	// projectFrame.revalidate();
+	// }
+
+	public void closeFile() {
+
 		ocelotApp.closeFile();
 		setMainTitle("");
 		menuSave.setEnabled(false);
@@ -244,69 +345,82 @@ public class Ocelot extends JPanel
 		menuSaveToAzure.setEnabled(false);
 		toolBar.clearFontTools();
 	}
-	
 
-	private void closeDQFProject() {
-		ocelotApp.closeDQFProject();
-		closeFile();
-		try {
-			LQIGridConfigurations actualLQIConfs = lqiGridController.getConfigService().readLQIConfig(); 
-			loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
-					actualLQIConfs.getActiveConfiguration());
-			toolBar.setLQIConfigurations(actualLQIConfs);
-			toolBar.setLqiToolEnabled(true);
-			lqiGridController.setDqfConfiguration(null);
-			
-		} catch (TransferException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//		mainSplitPane.remove(projectEditorTabbedPane);
-		mainSplitPane.setRightComponent(tmConcordanceSplitPane);
-		projectEditorTabbedPane = null;
-	}
+	// private void closeDQFProject() {
+	// ocelotApp.closeDQFProject();
+	// closeFile();
+	// try {
+	// LQIGridConfigurations actualLQIConfs =
+	// lqiGridController.getConfigService().readLQIConfig();
+	// loadLQIKeyListener(toolBar.getSelectedLQIConfiguration(),
+	// actualLQIConfs.getActiveConfiguration());
+	// toolBar.setLQIConfigurations(actualLQIConfs);
+	// toolBar.setLqiToolEnabled(true);
+	// lqiGridController.setDqfConfiguration(null);
+	//
+	// } catch (TransferException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	//// mainSplitPane.remove(projectEditorTabbedPane);
+	// mainSplitPane.setRightComponent(tmConcordanceSplitPane);
+	// projectEditorTabbedPane = null;
+	// }
 
-	@Subscribe
-	public void handleDQFFileOpenedEvenet(DQFFileOpenedEvent event){
-		try {
-			ocelotApp.openFile(event.getFile(), false);
-		} catch (FileNotFoundException ex) {
-			LOG.error("Failed to parse file '" + event.getFile().getName() + "'", ex);
-		} catch (Exception e) {
-			String errorMsg = "Could not open " + event.getFile().getName();
-			LOG.error(errorMsg, e);
-			alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
-		}
-		projectEditorTabbedPane.setSelectedIndex(1);
-	}
-	
-	@Subscribe
-	public void handleDQFFileClosedEvent(DQFFileClosedEvent event){
-		
-		closeFile();
-	}
-	
-//	@Deprecated
-//	@Subscribe
-//	public void handleOpenProjectFileEvent(OpenProjectFileEvent event) {
-//		try {
-//			ocelotApp.openProjectFile(event.getProjectFile());
-//		} catch (FileNotFoundException ex) {
-//			LOG.error("Failed to parse file '" + event.getProjectFile().getFile().getName() + "'", ex);
-//		} catch (Exception e) {
-//			String errorMsg = "Could not open " + event.getProjectFile().getFile().getName();
-//			LOG.error(errorMsg, e);
-//			alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
-//		}
-//		projectEditorTabbedPane.setSelectedIndex(1);
-//	}
+	// @Subscribe
+	// public void handleDQFFileOpenedEvenet(DQFFileOpenedEvent event){
+	// try {
+	// ocelotApp.openFile(event.getFile(), false);
+	// } catch (FileNotFoundException ex) {
+	// LOG.error("Failed to parse file '" + event.getFile().getName() + "'",
+	// ex);
+	// } catch (Exception e) {
+	// String errorMsg = "Could not open " + event.getFile().getName();
+	// LOG.error(errorMsg, e);
+	// alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
+	// }
+	// if(projectEditorTabbedPane.getTabCount() == 2){
+	// projectEditorTabbedPane.setSelectedIndex(1);
+	// } else {
+	// taskEditorTabbedPane.setSelectedIndex(1);
+	// }
+	// }
 
-	@Subscribe
-	public void handleDQFProjectOpenedEvent(DQFProjectOpenedEvent event){
-		displayProjectComponent(event.getProjectName(), event.getProjectGuiComponent(), event.getProjLqiGridConfiguration());
-	}
+	// @Subscribe
+	// public void handleDQFFileClosedEvent(DQFFileClosedEvent event){
+	//
+	// closeFile();
+	// }
 
-	public Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
+	// @Deprecated
+	// @Subscribe
+	// public void handleOpenProjectFileEvent(OpenProjectFileEvent event) {
+	// try {
+	// ocelotApp.openProjectFile(event.getProjectFile());
+	// } catch (FileNotFoundException ex) {
+	// LOG.error("Failed to parse file '" +
+	// event.getProjectFile().getFile().getName() + "'", ex);
+	// } catch (Exception e) {
+	// String errorMsg = "Could not open " +
+	// event.getProjectFile().getFile().getName();
+	// LOG.error(errorMsg, e);
+	// alertUser("XLIFF Parsing Error", errorMsg + ": " + e.getMessage());
+	// }
+	// projectEditorTabbedPane.setSelectedIndex(1);
+	// }
+
+	// @Subscribe
+	// public void handleDQFProjectOpenedEvent(DQFProjectOpenedEvent event){
+	// if(event.getIsTask()){
+	// displayDQFTaskComponent(event.getProjectName(),
+	// event.getProjectGuiComponent());
+	// } else {
+	// displayProjectComponent(event.getProjectName(),
+	// event.getProjectGuiComponent(), event.getProjLqiGridConfiguration());
+	// }
+	// }
+
+	private Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
 		super(new BorderLayout());
 		this.ocelotScope = ocelotScope;
 		this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
@@ -337,6 +451,18 @@ public class Ocelot extends JPanel
 		eventQueue.registerListener(detailView);
 
 		add(setupMainPane(segView, segAttrView, detailView));
+
+		createDQFGuiHelper();
+	}
+
+	private void createDQFGuiHelper() {
+
+		if (ocelotApp.isDQFPluginInstalled() && dqfGuiHelper == null) {
+
+			dqfGuiHelper = new DQFOcelotGuiHelper(ocelotApp, mainSplitPane, tmConcordanceSplitPane);
+			eventQueue.registerListener(dqfGuiHelper);
+		}
+
 	}
 
 	private Component setupMainPane(SegmentView segView, SegmentAttributeView segAttrView, DetailView detailView)
@@ -410,7 +536,7 @@ public class Ocelot extends JPanel
 		} else if (e.getSource().equals(menuWorkspace)) {
 			profileManager.displayProfileDialog(mainframe);
 		} else if (e.getSource() == this.menuExit) {
-			handleApplicationExit();
+			quitOcelot();
 		} else if (e.getSource() == this.menuSaveAs) {
 			saveAs();
 		} else if (e.getSource() == this.menuSaveToAzure) {
@@ -444,14 +570,17 @@ public class Ocelot extends JPanel
 	private void promptOpenXLIFFFile() {
 
 		boolean promptFileChooser = true;
-		if (ocelotApp.isProjectOpened()) {
-			int option = JOptionPane.showConfirmDialog(mainframe, "Do you want to close the current project?",
+		if (dqfGuiHelper != null && dqfGuiHelper.isDQFProjectOpen()) {
+			int option = JOptionPane.showConfirmDialog(mainframe,
+					"There is a currently open DQF project in Ocelot. If you open an external Xliff file the project will be closed. Do you wish to continue?",
 					"Open File", JOptionPane.YES_NO_OPTION);
 			if (option == JOptionPane.YES_OPTION) {
-				closeDQFProject();
+				promptFileChooser = dqfGuiHelper.startDQFProjectClosureProcedure(false);
 			} else {
 				promptFileChooser = false;
 			}
+		} else {
+			promptFileChooser = canCloseFile();
 		}
 		if (promptFileChooser) {
 			FileDialog fd = new FileDialog(mainframe, "Open", FileDialog.LOAD);
@@ -463,7 +592,7 @@ public class Ocelot extends JPanel
 		}
 	}
 
-	private void openFile(File file, boolean temporary) {
+	public void openFile(File file, boolean temporary) {
 		if (file != null) {
 			try {
 				ocelotApp.openFile(file, temporary);
@@ -488,9 +617,11 @@ public class Ocelot extends JPanel
 				segmentView.reloadTable();
 
 				menuSave.setEnabled(true);
-				menuSaveAs.setEnabled(true);
-				menuSaveAsTmx.setEnabled(true);
-				menuSaveToAzure.setEnabled(enableStorage);
+				if (dqfGuiHelper == null || !dqfGuiHelper.isDQFProjectOpen()) {
+					menuSaveAs.setEnabled(true);
+					menuSaveAsTmx.setEnabled(true);
+					menuSaveToAzure.setEnabled(enableStorage);
+				}
 				toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
 				toolBar.setSourceFont(segmentView.getSourceFont());
 				toolBar.setTargetFont(segmentView.getTargetFont());
@@ -526,7 +657,7 @@ public class Ocelot extends JPanel
 		}
 	}
 
-	private void saveFile() {
+	public void saveFile() {
 		if (ocelotApp.hasOpenFile()) {
 			if (ocelotApp.isTemporaryFile()) {
 				saveAs();
@@ -572,25 +703,57 @@ public class Ocelot extends JPanel
 		showModelessDialog(new AboutDialog(icon), "About Ocelot");
 	}
 
+	public boolean canCloseFile() {
+
+		boolean canClose = true;
+		if (ocelotApp.isFileDirty()) {
+			int rv = JOptionPane.showConfirmDialog(this,
+					"You have unsaved changes. Would you like to save before closing the file?", "Save Unsaved Changes",
+					JOptionPane.YES_NO_CANCEL_OPTION);
+			if (rv == JOptionPane.YES_OPTION) {
+				canClose = save(ocelotApp.getOpenFile());
+			} else if (rv != JOptionPane.NO_OPTION) {
+				canClose = false;
+			}
+		}
+		if(canClose){
+			closeFile();
+		}
+
+		return canClose;
+
+	}
+
+	public boolean canCloseDQFProject(boolean wait){
+		
+		boolean canClose = true;
+//		if (dqfGuiHelper != null && dqfGuiHelper.isDQFProjectOpen()) {
+			int option = JOptionPane.showConfirmDialog(mainframe,
+					"Do you want to close the currently open project?",
+					"Close DQF Project Message", JOptionPane.YES_NO_OPTION);
+			if (option == JOptionPane.YES_OPTION) {
+				canClose = dqfGuiHelper.startDQFProjectClosureProcedure(wait);
+			} else {
+				canClose = false;
+			}
+//		} 
+		return canClose;
+	}
+	
 	/**
 	 * Exit handler. This should prompt to save unsaved data.
 	 */
-	public void handleApplicationExit() {
+	public boolean canQuitOcelot() {
 		boolean canQuit = true;
-		if (ocelotApp.isFileDirty()) {
-			int rv = JOptionPane.showConfirmDialog(this,
-					"You have unsaved changes. Would you like to save before exiting?", "Save Unsaved Changes",
-					JOptionPane.YES_NO_CANCEL_OPTION);
-			if (rv == JOptionPane.YES_OPTION) {
-				canQuit = save(ocelotApp.getOpenFile());
-			} else if (rv != JOptionPane.NO_OPTION) {
-				canQuit = false;
-			}
-
+		if (dqfGuiHelper != null && dqfGuiHelper.isDQFProjectOpen()) {
+			canQuit = canCloseDQFProject(true);
+		} else {
+			canQuit = canCloseFile();
 		}
-		if (canQuit) {
-			quitOcelot();
-		}
+		// if (canQuit) {
+		// quitOcelot();
+		// }
+		return canQuit;
 	}
 
 	private void initializeMenuBar() {
@@ -716,6 +879,7 @@ public class Ocelot extends JPanel
 	@Subscribe
 	public void notifyPluginAdded(PluginAddedEvent event) {
 
+		createDQFGuiHelper();
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
@@ -744,7 +908,7 @@ public class Ocelot extends JPanel
 		mainframe.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				// TODO: cleanup
-				handleApplicationExit();
+				quitOcelot();
 			}
 		});
 
@@ -853,8 +1017,10 @@ public class Ocelot extends JPanel
 	private void restart() {
 
 		try {
-			close();
-			startOcelot();
+			if (canQuitOcelot()) {
+				close();
+				startOcelot();
+			}
 		} catch (Exception e) {
 			LOG.error("Error while starting Ocelot.", e);
 			e.printStackTrace();
@@ -864,11 +1030,11 @@ public class Ocelot extends JPanel
 	public static void startOcelot() throws IOException, InstantiationException, IllegalAccessException {
 		Injector ocelotScope = Guice.createInjector(new OcelotModule());
 
-		Ocelot ocelot = new Ocelot(ocelotScope);
-		DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelot);
+		ocelotInstance = new Ocelot(ocelotScope);
+		DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ocelotInstance);
 
 		try {
-			if (ocelot.useNativeUI) {
+			if (ocelotInstance.useNativeUI) {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} else {
 				UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -876,11 +1042,12 @@ public class Ocelot extends JPanel
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
-		SwingUtilities.invokeLater(ocelot);
+		SwingUtilities.invokeLater(ocelotInstance);
 	}
 
 	public void close() {
 		LQIKeyEventManager.destroy();
+		ocelotApp.OcelotClosing();
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
@@ -891,9 +1058,12 @@ public class Ocelot extends JPanel
 		});
 	}
 
-	private void quitOcelot() {
-		close();
-		System.exit(0);
+	public void quitOcelot() {
+		if (canQuitOcelot()) {
+			close();
+			ocelotInstance = null;
+			System.exit(0);
+		}
 	}
 
 	private void addEditingListenerToTxtFields() {

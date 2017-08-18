@@ -14,12 +14,15 @@ public class DQFProjectOpenedEvent implements OcelotEvent {
 	private Component projectGuiComponent;
 
 	private LQIGridConfiguration projLqiGridConfiguration;
+	
+	private boolean isTask;
 
-	public DQFProjectOpenedEvent(String projectName, Component projectGuiComponent,
+	public DQFProjectOpenedEvent(String projectName, Component projectGuiComponent, boolean isTask,
 			LQIGridConfiguration projLqiGridConfiguration) {
 
 		this.projectName = projectName;
 		this.projectGuiComponent = projectGuiComponent;
+		this.isTask = isTask;
 		this.projLqiGridConfiguration = projLqiGridConfiguration;
 	}
 
@@ -33,6 +36,10 @@ public class DQFProjectOpenedEvent implements OcelotEvent {
 
 	public LQIGridConfiguration getProjLqiGridConfiguration() {
 		return projLqiGridConfiguration;
+	}
+	
+	public boolean getIsTask(){
+		return isTask;
 	}
 	
 }

@@ -54,6 +54,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -131,8 +132,8 @@ public class PluginManager implements OcelotEventQueueListener {
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
 		this.reportPlugins = new HashMap<ReportPlugin, Boolean>();
 		this.timerPlugins = new HashMap<TimerPlugin, Boolean>();
-        this.fremePlugins = new HashMap<FremePlugin, Boolean>();
-        this.dqfPlugins = new HashMap<>();
+		this.fremePlugins = new HashMap<FremePlugin, Boolean>();
+		this.dqfPlugins = new HashMap<>();
 		this.fremeManager = new FremePluginManager(eventQueue);
 		this.eventQueue = eventQueue;
 		this.cfgService = cfgService;
@@ -154,17 +155,17 @@ public class PluginManager implements OcelotEventQueueListener {
 		Set<? extends Plugin> itsPlugins = getITSPlugins();
 		Set<? extends Plugin> segmentPlugins = getSegmentPlugins();
 		Set<? extends Plugin> reportPlugins = getReportPlugins();
-        Set<? extends Plugin> fremePlugins = getFremePlugins();
-        Set<? extends Plugin> qualityPlugins = getQualityPlugins();
-        Set<? extends Plugin> timerPlugins = getTimerPlugins();
-        Set<? extends Plugin> dqfPlugins = getDqfPlugins();
+		Set<? extends Plugin> fremePlugins = getFremePlugins();
+		Set<? extends Plugin> qualityPlugins = getQualityPlugins();
+		Set<? extends Plugin> timerPlugins = getTimerPlugins();
+		Set<? extends Plugin> dqfPlugins = getDqfPlugins();
 		plugins.addAll(itsPlugins);
 		plugins.addAll(segmentPlugins);
 		plugins.addAll(reportPlugins);
-        plugins.addAll(fremePlugins);
-        plugins.addAll(qualityPlugins);
-        plugins.addAll(timerPlugins);
-        plugins.addAll(dqfPlugins);
+		plugins.addAll(fremePlugins);
+		plugins.addAll(qualityPlugins);
+		plugins.addAll(timerPlugins);
+		plugins.addAll(dqfPlugins);
 		return plugins;
 	}
 
@@ -194,10 +195,10 @@ public class PluginManager implements OcelotEventQueueListener {
 	public Set<QualityPlugin> getQualityPlugins() {
 		return qualityPluginManager.getPlugins().keySet();
 	}
-        
-    public Set<TimerPlugin> getTimerPlugins() {
-    	return this.timerPlugins.keySet();
-    }
+
+	public Set<TimerPlugin> getTimerPlugins() {
+		return this.timerPlugins.keySet();
+	}
 
 	/**
 	 * Return if the plugin should receive data from the workbench.
@@ -222,14 +223,13 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof TimerPlugin) {
 			TimerPlugin timerPlugin = (TimerPlugin) plugin;
 			enabled = timerPlugins.get(timerPlugin);
-		} else if( plugin instanceof DQFPlugin ){
+		} else if (plugin instanceof DQFPlugin) {
 			enabled = dqfPlugins.get(plugin);
 		}
 		return enabled;
 	}
 
-	public void setEnabled(Plugin plugin, boolean enabled)
-	        throws TransferException {
+	public void setEnabled(Plugin plugin, boolean enabled) throws TransferException {
 		if (plugin instanceof ITSPlugin) {
 			ITSPlugin itsPlugin = (ITSPlugin) plugin;
 			itsPlugins.put(itsPlugin, enabled);
@@ -254,7 +254,7 @@ public class PluginManager implements OcelotEventQueueListener {
 			timerPlugins.put(timerPlugin, enabled);
 			timerPlugin.getTimerWidget().setEnabled(enabled);
 		} else if (plugin instanceof DQFPlugin) {
-			dqfPlugins.put((DQFPlugin)plugin, enabled);
+			dqfPlugins.put((DQFPlugin) plugin, enabled);
 			dqfMenu.setEnabled(enabled);
 		}
 		cfgService.savePluginEnabled(plugin, enabled);
@@ -282,8 +282,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	 * @param targetLang
 	 * @param segmentService
 	 */
-	public void exportData(String sourceLang, String targetLang,
-	        SegmentService segmentService) {
+	public void exportData(String sourceLang, String targetLang, SegmentService segmentService) {
 		for (int row = 0; row < segmentService.getNumSegments(); row++) {
 			OcelotSegment seg = segmentService.getSegment(row);
 			List<LanguageQualityIssue> lqi = seg.getLQI();
@@ -293,8 +292,8 @@ public class PluginManager implements OcelotEventQueueListener {
 					plugin.sendLQIData(sourceLang, targetLang, seg, lqi);
 					plugin.sendProvData(sourceLang, targetLang, seg, prov);
 				} catch (Exception e) {
-					LOG.error("ITS Plugin '" + plugin.getPluginName()
-					        + "' threw an exception on ITS metadata export", e);
+					LOG.error("ITS Plugin '" + plugin.getPluginName() + "' threw an exception on ITS metadata export",
+							e);
 				}
 			}
 		}
@@ -314,7 +313,7 @@ public class PluginManager implements OcelotEventQueueListener {
 					segPlugin.onSegmentTargetEnter(seg);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on segment target enter", e);
+							+ "' threw an exception on segment target enter", e);
 				}
 			}
 		}
@@ -335,7 +334,7 @@ public class PluginManager implements OcelotEventQueueListener {
 					segPlugin.onSegmentTargetExit(seg);
 				} catch (Exception e) {
 					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on segment target exit", e);
+							+ "' threw an exception on segment target exit", e);
 				}
 			}
 		}
@@ -345,22 +344,17 @@ public class PluginManager implements OcelotEventQueueListener {
 	public void enrichmentViewRequest(EnrichmentViewEvent e) {
 		try {
 			if (e.getViewType() == EnrichmentViewEvent.STD_VIEW) {
-				EnrichmentFrame enrichFrame = new EnrichmentFrame(
-				        e.getVariant(), null);
+				EnrichmentFrame enrichFrame = new EnrichmentFrame(e.getVariant(), null);
 				SwingUtilities.invokeLater(enrichFrame);
-			} else if(isFremePluginEnabled()){
+			} else if (isFremePluginEnabled()) {
 				if (e.getVariant().getTripleModel() == null) {
 					JOptionPane.showMessageDialog(null,
-					        "Impossible to create the graph. Some information is missing. Please, try to enrich this segment again.",
-					        "Enrichment Graph View",
-					        JOptionPane.WARNING_MESSAGE);
+							"Impossible to create the graph. Some information is missing. Please, try to enrich this segment again.",
+							"Enrichment Graph View", JOptionPane.WARNING_MESSAGE);
 				} else {
-					LDGraphFrame graphFrame = new LDGraphFrame(null,
-					        fremePlugins.keySet().iterator().next()
-					                .getGraphComponent(
-					                        e.getVariant().getTripleModel(),
-					                        e.getSegNum()),
-					        e.getSegNum(), e.isTarget());
+					LDGraphFrame graphFrame = new LDGraphFrame(null, fremePlugins.keySet().iterator().next()
+							.getGraphComponent(e.getVariant().getTripleModel(), e.getSegNum()), e.getSegNum(),
+							e.isTarget());
 					graphFrame.open();
 				}
 			}
@@ -375,19 +369,17 @@ public class PluginManager implements OcelotEventQueueListener {
 				try {
 					segPlugin.onFileOpen(filename);
 				} catch (Exception e) {
-					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on file open", e);
+					LOG.error("Segment plugin '" + segPlugin.getPluginName() + "' threw an exception on file open", e);
 				}
 			}
 		}
 		if (isReportPluginEnabled()) {
-			ReportPlugin reportPlugin = reportPlugins.keySet().iterator()
-			        .next();
+			ReportPlugin reportPlugin = reportPlugins.keySet().iterator().next();
 			reportPlugin.onOpenFile(filename, segments);
 		}
 		qualityPluginManager.initOpenedFileSettings(segments, filename);
-		for(TimerPlugin timerPlugin: timerPlugins.keySet()){
-			if(isEnabled(timerPlugin)){
+		for (TimerPlugin timerPlugin : timerPlugins.keySet()) {
+			if (isEnabled(timerPlugin)) {
 				timerPlugin.resetTimer();
 				timerPlugin.startTimer();
 			}
@@ -400,23 +392,22 @@ public class PluginManager implements OcelotEventQueueListener {
 				try {
 					segPlugin.onFileSave(filename);
 				} catch (Exception e) {
-					LOG.error("Segment plugin '" + segPlugin.getPluginName()
-					        + "' threw an exception on file save", e);
+					LOG.error("Segment plugin '" + segPlugin.getPluginName() + "' threw an exception on file save", e);
 				}
 			}
 		}
-		if(dqfPlugins != null && !dqfPlugins.isEmpty()){
+		if (dqfPlugins != null && !dqfPlugins.isEmpty()) {
 			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-			if(isEnabled(dqfPlugin)){
+			if (isEnabled(dqfPlugin)) {
 				dqfPlugin.fileSaved(filename);
 			}
 		}
-		
+
 	}
-	
-	public void notifyBeforeSaveFile(){
-		for(TimerPlugin timerPlugin: timerPlugins.keySet() ){
-			if(isEnabled(timerPlugin)){
+
+	public void notifyBeforeSaveFile() {
+		for (TimerPlugin timerPlugin : timerPlugins.keySet()) {
+			if (isEnabled(timerPlugin)) {
 				timerPlugin.stopTimer();
 			}
 		}
@@ -456,8 +447,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		for (String s : itsPluginClassNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class
-				        .forName(s, false, classLoader);
+				Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class.forName(s, false, classLoader);
 				ITSPlugin plugin = c.newInstance();
 				itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -471,8 +461,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		for (String s : segPluginClassNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class
-				        .forName(s, false, classLoader);
+				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class.forName(s, false, classLoader);
 				SegmentPlugin plugin = c.newInstance();
 				segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -486,8 +475,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		for (String s : reportPluginClassNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends ReportPlugin> c = (Class<ReportPlugin>) Class
-				        .forName(s, false, classLoader);
+				Class<? extends ReportPlugin> c = (Class<ReportPlugin>) Class.forName(s, false, classLoader);
 				ReportPlugin plugin = c.newInstance();
 				reportPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -502,12 +490,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		for (String s : fremePluginClassNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends FremePlugin> c = (Class<FremePlugin>) Class
-				        .forName(s, false, classLoader);
-				Constructor<? extends FremePlugin> constructor = c
-				        .getDeclaredConstructor(String.class);
-				FremePlugin plugin = constructor.newInstance(pluginDir
-				        .getAbsolutePath());
+				Class<? extends FremePlugin> c = (Class<FremePlugin>) Class.forName(s, false, classLoader);
+				Constructor<? extends FremePlugin> constructor = c.getDeclaredConstructor(String.class);
+				FremePlugin plugin = constructor.newInstance(pluginDir.getAbsolutePath());
 				fremePlugins.put(plugin, false);
 				setEnabled(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
@@ -522,11 +507,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		for (String s : qualityPluginClassNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends QualityPlugin> c = (Class<QualityPlugin>) Class
-				        .forName(s, false, classLoader);
+				Class<? extends QualityPlugin> c = (Class<QualityPlugin>) Class.forName(s, false, classLoader);
 				QualityPlugin plugin = c.newInstance();
-				qualityPluginManager.getPlugins().put(plugin,
-				        cfgService.wasPluginEnabled(plugin));
+				qualityPluginManager.getPlugins().put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
 				System.out.println("Warning: " + e.getMessage());
@@ -535,21 +518,20 @@ public class PluginManager implements OcelotEventQueueListener {
 				e.printStackTrace();
 			}
 		}
-                for (String s : timerPluginClassNames) {
-        			try {
-        				@SuppressWarnings("unchecked")
-        				Class<? extends TimerPlugin> c = (Class<TimerPlugin>) Class
-        				        .forName(s, false, classLoader);
-        				TimerPlugin plugin = c.newInstance();
-        				timerPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-        			} catch (ClassNotFoundException e) {
-        				// XXX Shouldn't happen?
-        				System.out.println("Warning: " + e.getMessage());
-        			} catch (Exception e) {
-        				// TODO Auto-generated catch block
-        				e.printStackTrace();
-        			}
-        		}
+		for (String s : timerPluginClassNames) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends TimerPlugin> c = (Class<TimerPlugin>) Class.forName(s, false, classLoader);
+				TimerPlugin plugin = c.newInstance();
+				timerPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
+			} catch (ClassNotFoundException e) {
+				// XXX Shouldn't happen?
+				System.out.println("Warning: " + e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		if (dqfPluginClassName != null) {
 			try {
 				@SuppressWarnings("unchecked")
@@ -580,14 +562,12 @@ public class PluginManager implements OcelotEventQueueListener {
 			pluginJarURLs.add(url);
 		}
 
-		classLoader = AccessController
-		        .doPrivileged(new PrivilegedAction<URLClassLoader>() {
-			        public URLClassLoader run() {
-				        return new URLClassLoader(pluginJarURLs
-				                .toArray(new URL[pluginJarURLs.size()]), Thread
-				                .currentThread().getContextClassLoader());
-			        }
-		        });
+		classLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+			public URLClassLoader run() {
+				return new URLClassLoader(pluginJarURLs.toArray(new URL[pluginJarURLs.size()]),
+						Thread.currentThread().getContextClassLoader());
+			}
+		});
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 
@@ -603,11 +583,9 @@ public class PluginManager implements OcelotEventQueueListener {
 					name = convertFileNameToClass(name);
 					System.out.println("-----" + name);
 					try {
-						Class<?> clazz = Class
-						        .forName(name, false, classLoader);
+						Class<?> clazz = Class.forName(name, false, classLoader);
 						// Skip non-instantiable classes
-						if (clazz.isInterface()
-						        || Modifier.isAbstract(clazz.getModifiers())) {
+						if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
 							continue;
 						}
 						if (ITSPlugin.class.isAssignableFrom(clazz)) {
@@ -617,9 +595,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// real classloader (I think)
 							if (itsPluginClassNames.contains(name)) {
 								// TODO: log this
-								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+								System.out.println("Warning: found multiple implementations of plugin class " + name);
 							} else {
 								itsPluginClassNames.add(name);
 							}
@@ -630,9 +606,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// real classloader (I think)
 							if (segPluginClassNames.contains(name)) {
 								// TODO: log this
-								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+								System.out.println("Warning: found multiple implementations of plugin class " + name);
 							} else {
 								segPluginClassNames.add(name);
 							}
@@ -643,9 +617,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// real classloader (I think)
 							if (reportPluginClassNames.contains(name)) {
 								// TODO: log this
-								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+								System.out.println("Warning: found multiple implementations of plugin class " + name);
 							} else {
 								reportPluginClassNames.add(name);
 							}
@@ -656,9 +628,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// real classloader (I think)
 							if (fremePluginClassNames.contains(name)) {
 								// TODO: log this
-								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+								System.out.println("Warning: found multiple implementations of plugin class " + name);
 							} else {
 								fremePluginClassNames.add(name);
 							}
@@ -669,9 +639,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// real classloader (I think)
 							if (qualityPluginClassNames.contains(name)) {
 								// TODO: log this
-								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+								System.out.println("Warning: found multiple implementations of plugin class " + name);
 							} else {
 								qualityPluginClassNames.add(name);
 							}
@@ -682,27 +650,27 @@ public class PluginManager implements OcelotEventQueueListener {
 							// real classloader (I think)
 							if (timerPluginClassNames.contains(name)) {
 								// TODO: log this
-								System.out
-								        .println("Warning: found multiple implementations of plugin class "
-								                + name);
+								System.out.println("Warning: found multiple implementations of plugin class " + name);
 							} else {
 								timerPluginClassNames.add(name);
-							} 
+							}
 						} else if (DQFPlugin.class.isAssignableFrom(clazz)) {
-								dqfPluginClassName = name;
-						} 
+							dqfPluginClassName = name;
+						}
 					} catch (ClassNotFoundException | NoClassDefFoundError ex) {
 						// XXX shouldn't happen?
 						System.out.println("Warning: " + ex.getMessage());
-//						URLClassLoader loader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-//						MyClassLoader l = new MyClassLoader(loader.getURLs());
-//						l.addURL(new URL(file.getAbsolutePath()));
-//						try {
-//							Class c = l.loadClass(name);
-//							System.out.println(c.getName());
-//						} catch (ClassNotFoundException e1) {
-//							e1.printStackTrace();
-//						}
+						// URLClassLoader loader =
+						// (URLClassLoader)ClassLoader.getSystemClassLoader();
+						// MyClassLoader l = new
+						// MyClassLoader(loader.getURLs());
+						// l.addURL(new URL(file.getAbsolutePath()));
+						// try {
+						// Class c = l.loadClass(name);
+						// System.out.println(c.getName());
+						// } catch (ClassNotFoundException e1) {
+						// e1.printStackTrace();
+						// }
 					}
 				}
 			}
@@ -742,19 +710,14 @@ public class PluginManager implements OcelotEventQueueListener {
 	}
 
 	@Subscribe
-	public void handleEnrichingStartedStoppedEvent(
-	        EnrichingStartedStoppedEvent event) {
+	public void handleEnrichingStartedStoppedEvent(EnrichingStartedStoppedEvent event) {
 
-		fremeManager
-		        .setEnriching(event.getAction() == EnrichingStartedStoppedEvent.STARTED);
-		FremeMenu fremeMenu = (FremeMenu) fremeManager
-		        .getFremeMenu(fremePlugins.keySet().iterator().next());
+		fremeManager.setEnriching(event.getAction() == EnrichingStartedStoppedEvent.STARTED);
+		FremeMenu fremeMenu = (FremeMenu) fremeManager.getFremeMenu(fremePlugins.keySet().iterator().next());
 		if (fremeMenu != null) {
-			((FremeMenu) fremeMenu)
-			        .setEnrichMenuEnabled(event.getAction() == EnrichingStartedStoppedEvent.STOPPED);
+			((FremeMenu) fremeMenu).setEnrichMenuEnabled(event.getAction() == EnrichingStartedStoppedEvent.STOPPED);
 		}
-		fremeManager
-		        .setContextMenuItemEnabled(event.getAction() == EnrichingStartedStoppedEvent.STOPPED);
+		fremeManager.setContextMenuItemEnabled(event.getAction() == EnrichingStartedStoppedEvent.STOPPED);
 	}
 
 	public void enrichSegments(List<OcelotSegment> segments) {
@@ -774,16 +737,14 @@ public class PluginManager implements OcelotEventQueueListener {
 			if (dashIdx != -1) {
 				targetLang = targetLang.substring(0, dashIdx);
 			}
-			fremePlugins.keySet().iterator().next()
-			        .setSourceAndTargetLanguages(sourceLang, targetLang);
+			fremePlugins.keySet().iterator().next().setSourceAndTargetLanguages(sourceLang, targetLang);
 		}
 	}
 
 	private void enrichSegments(int action) {
 
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
-			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
-			        .iterator().next();
+			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet().iterator().next();
 			if (fremeEntry.getValue()) {
 				fremeManager.enrich(fremeEntry.getKey(), action);
 			}
@@ -792,33 +753,29 @@ public class PluginManager implements OcelotEventQueueListener {
 
 	@Subscribe
 	public void segmentEdit(SegmentEditEvent e) {
-		
+
 		try {
-		if (e.getSegment().getTarget() instanceof BaseSegmentVariant) {
-			enrichVariant((BaseSegmentVariant) e.getSegment().getTarget(), e
-			        .getSegment().getSegmentNumber(), true,
-			        FremePluginManager.OVERRIDE_ENRICHMENTS);
-		}
-		if(e.getEditType() == SegmentEditEvent.TARGET_CHANGED && dqfPlugins != null && !dqfPlugins.isEmpty()){
-			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-			if(isEnabled(dqfPlugin)){
-				dqfPlugin.editedSegment(e.getSegment(), 0);
+			if (e.getSegment().getTarget() instanceof BaseSegmentVariant) {
+				enrichVariant((BaseSegmentVariant) e.getSegment().getTarget(), e.getSegment().getSegmentNumber(), true,
+						FremePluginManager.OVERRIDE_ENRICHMENTS);
 			}
-		}
-		}catch (Exception ex) {
+			if (e.getEditType() == SegmentEditEvent.TARGET_CHANGED && dqfPlugins != null && !dqfPlugins.isEmpty()) {
+				DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+				if (isEnabled(dqfPlugin)) {
+					dqfPlugin.editedSegment(e.getSegment(), 0);
+				}
+			}
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 
-	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber,
-	        boolean target, int action) {
+	public void enrichVariant(BaseSegmentVariant variant, int segmentNumber, boolean target, int action) {
 
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
-			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet()
-			        .iterator().next();
+			Entry<FremePlugin, Boolean> fremeEntry = fremePlugins.entrySet().iterator().next();
 			if (fremeEntry.getValue()) {
-				fremeManager.enrich(fremeEntry.getKey(), variant,
-				        segmentNumber, target, action);
+				fremeManager.enrich(fremeEntry.getKey(), variant, segmentNumber, target, action);
 			}
 		}
 	}
@@ -845,8 +802,7 @@ public class PluginManager implements OcelotEventQueueListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						reportPlugins.keySet().iterator().next()
-						        .generateReport(ocelotFrame);
+						reportPlugins.keySet().iterator().next().generateReport(ocelotFrame);
 					} catch (ReportException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -864,7 +820,7 @@ public class PluginManager implements OcelotEventQueueListener {
 			qualityPluginManager.setOcelotMainFrame(ocelotFrame);
 			menuList.add(qualityPluginManager.getQualityPluginMenu());
 		}
-		if(dqfPlugins != null && !dqfPlugins.isEmpty()){
+		if (dqfPlugins != null && !dqfPlugins.isEmpty()) {
 			DQFPlugin plugin = dqfPlugins.keySet().iterator().next();
 			dqfMenu = plugin.getDqfMenu(ocelotFrame);
 			menuList.add(dqfMenu);
@@ -875,29 +831,27 @@ public class PluginManager implements OcelotEventQueueListener {
 
 	public boolean isReportPluginEnabled() {
 		return reportPlugins != null && !reportPlugins.isEmpty()
-		        && reportPlugins.entrySet().iterator().next().getValue();
+				&& reportPlugins.entrySet().iterator().next().getValue();
 	}
 
 	public boolean isFremePluginEnabled() {
-		return fremePlugins != null && !fremePlugins.isEmpty()
-		        && fremePlugins.entrySet().iterator().next().getValue();
+		return fremePlugins != null && !fremePlugins.isEmpty() && fremePlugins.entrySet().iterator().next().getValue();
 	}
 
-
-    private void handleTimerOnUserAction(){
-    	for(TimerPlugin timerPlugin: timerPlugins.keySet()){
-			if(isEnabled(timerPlugin)){
+	private void handleTimerOnUserAction() {
+		for (TimerPlugin timerPlugin : timerPlugins.keySet()) {
+			if (isEnabled(timerPlugin)) {
 				timerPlugin.recordUserActivity();
 			}
 		}
-    }
-	
+	}
+
 	@Subscribe
 	public void handleLqiDeleted(LQIRemoveEvent event) {
 
 		qualityPluginManager.removedQualityIssue(event.getLQI());
 		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-		if(isEnabled(dqfPlugin)){
+		if (isEnabled(dqfPlugin)) {
 			dqfPlugin.errorDeleted(event.getSegment(), event.getLQI());
 		}
 		handleTimerOnUserAction();
@@ -907,134 +861,169 @@ public class PluginManager implements OcelotEventQueueListener {
 	public void handleLqiAdded(LQIAdditionEvent event) {
 
 		try {
-		qualityPluginManager.addQualityIssue(event.getLQI());
-		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-		if(isEnabled(dqfPlugin)){
-			dqfPlugin.errorAdded(event.getSegment(), event.getLQI());
-		}
-		handleTimerOnUserAction();
-		}catch (Exception e) {
+			qualityPluginManager.addQualityIssue(event.getLQI());
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			if (isEnabled(dqfPlugin)) {
+				dqfPlugin.errorAdded(event.getSegment(), event.getLQI());
+			}
+			handleTimerOnUserAction();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	@Subscribe
 	public void handleLqiEdited(LQIEditEvent event) {
-		qualityPluginManager.editedQualityIssue(event.getOldLQI(),
-		        event.getLQI());
+		qualityPluginManager.editedQualityIssue(event.getOldLQI(), event.getLQI());
 		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-		if(isEnabled(dqfPlugin)){
+		if (isEnabled(dqfPlugin)) {
 			dqfPlugin.errorEdited(event.getSegment(), event.getLQI());
 		}
 		handleTimerOnUserAction();
 	}
-	
+
 	@Subscribe
-	public void handleLQIConfigSelected(LQIConfigurationSelectionChangedEvent e){
-		
+	public void handleLQIConfigSelected(LQIConfigurationSelectionChangedEvent e) {
+
 		qualityPluginManager.loadConfiguration(e.getNewSelectedConfiguration());
 	}
 
-	public List<JMenuItem> getSegmentContextMenuItems(
-	        final OcelotSegment segment, final BaseSegmentVariant variant,
-	        final boolean target) {
+	public List<JMenuItem> getSegmentContextMenuItems(final OcelotSegment segment, final BaseSegmentVariant variant,
+			final boolean target) {
 
 		List<JMenuItem> items = new ArrayList<JMenuItem>();
 		if (fremePlugins != null && !fremePlugins.isEmpty()) {
 			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
 			if (fremePlugins.get(fremePlugin)) {
-				items = fremeManager.getSegmentContextMenuItems(fremePlugin,
-				        segment, variant, target);
+				items = fremeManager.getSegmentContextMenuItems(fremePlugin, segment, variant, target);
 			}
 		}
 		return items;
 	}
-	
-	public List<Component> getToolBarComponents(){
-		
+
+	public List<Component> getToolBarComponents() {
+
 		List<Component> components = new ArrayList<Component>();
-		if(timerPlugins != null && !timerPlugins.isEmpty()){
+		if (timerPlugins != null && !timerPlugins.isEmpty()) {
 			TimerPlugin timerPlugin = timerPlugins.keySet().iterator().next();
 			Component timerWidget = timerPlugin.getTimerWidget();
-			if(isEnabled(timerPlugin) ){
+			if (isEnabled(timerPlugin)) {
 				timerWidget.setEnabled(true);
 			} else {
-				timerWidget.setEnabled(false );
+				timerWidget.setEnabled(false);
 			}
 			components.add(timerWidget);
 		}
-		
+
 		return components;
 	}
 
 	public Double getTimerSeconds() {
 		Double time = null;
-		if(timerPlugins != null && !timerPlugins.isEmpty()){
+		if (timerPlugins != null && !timerPlugins.isEmpty()) {
 			TimerPlugin timerPlugin = timerPlugins.keySet().iterator().next();
-			if(isEnabled(timerPlugin)){
+			if (isEnabled(timerPlugin)) {
 				time = timerPlugin.getSeconds();
 			}
 		}
 		return time;
 	}
-	public List<JMenuItem> getSegmentTextContextMenuItems(final OcelotSegment segment, final String text, final int offset, final boolean target, final Window ownerWindow){		
-		
-		List<JMenuItem> items = new ArrayList<JMenuItem>();		
-		if(fremePlugins != null && !fremePlugins.isEmpty()){		
-			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();		
-			if (fremePlugins.get(fremePlugin)) {		
-				items = fremeManager.getTextContextMenuItems(segment, text, offset, target, ownerWindow);		
-			}		
-		}		
-		return items;		
-	}		
-	public void pluginsAdded() {		
-		eventQueue.post(new PluginAddedEvent());		
-    }
 
-//	public void notifyOpenProjectFile(ProjectFile projectFile) {
-//		
-//		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-//		if(isEnabled(dqfPlugin)){
-//			dqfPlugin.fileOpened(projectFile);
-//		}
-//	}
+	public List<JMenuItem> getSegmentTextContextMenuItems(final OcelotSegment segment, final String text,
+			final int offset, final boolean target, final Window ownerWindow) {
+
+		List<JMenuItem> items = new ArrayList<JMenuItem>();
+		if (fremePlugins != null && !fremePlugins.isEmpty()) {
+			FremePlugin fremePlugin = fremePlugins.keySet().iterator().next();
+			if (fremePlugins.get(fremePlugin)) {
+				items = fremeManager.getTextContextMenuItems(segment, text, offset, target, ownerWindow);
+			}
+		}
+		return items;
+	}
+
+	public void pluginsAdded() {
+		eventQueue.post(new PluginAddedEvent());
+	}
+
+	// public void notifyOpenProjectFile(ProjectFile projectFile) {
+	//
+	// DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+	// if(isEnabled(dqfPlugin)){
+	// dqfPlugin.fileOpened(projectFile);
+	// }
+	// }
 
 	public void dqfProjectClosed() {
-		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-		if(isEnabled(dqfPlugin)){
-			dqfPlugin.projectClosed();
+		if (isDQFPluginInstalled()) {
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			if (isEnabled(dqfPlugin)) {
+				dqfPlugin.projectClosed();
+			}
 		}
-		
+
 	}
-	
-	public ImageIcon getDQFIcon(){
-		
+
+	public ImageIcon getDQFIcon() {
+
 		ImageIcon icon = null;
-		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
-		if(isEnabled(dqfPlugin)){
-			icon = dqfPlugin.getDQFIcon();
+		if (isDQFPluginInstalled()) {
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			if (isEnabled(dqfPlugin)) {
+				icon = dqfPlugin.getDQFIcon();
+			}
 		}
 		return icon;
 	}
 
+	public void dqfTaskClosed() {
+		if (isDQFPluginInstalled()) {
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			if (isEnabled(dqfPlugin)) {
+				dqfPlugin.taskClosed();
+			}
+		}
+
+	}
+
+	public boolean isDQFPluginInstalled() {
+		return dqfPlugins != null && !dqfPlugins.isEmpty();
+	}
+
+	public void manageOcelotClosing() {
+		if (isDQFPluginInstalled()) {
+			DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+			dqfPlugin.handleOcelotClosing();
+		}
+	}
+
+	public void setOcelotClosingWaitingDialog(JDialog waitingDialog) {
+		DQFPlugin dqfPlugin = dqfPlugins.keySet().iterator().next();
+		if (isEnabled(dqfPlugin)) {
+			dqfPlugin.setOcelotClosingWaitingDialog(waitingDialog);
+		}
+
+	}
+
 }
-class MyClassLoader extends URLClassLoader{
-	  
-    /**
-     * @param urls, to carryforward the existing classpath.
-     */
-    public MyClassLoader(URL[] urls) {
-        super(urls);
-    }
-     
-    @Override
-    /**
-     * add ckasspath to the loader.
-     */
-    public void addURL(URL url) {
-        super.addURL(url);
-    }
-  
+
+class MyClassLoader extends URLClassLoader {
+
+	/**
+	 * @param urls,
+	 *            to carryforward the existing classpath.
+	 */
+	public MyClassLoader(URL[] urls) {
+		super(urls);
+	}
+
+	@Override
+	/**
+	 * add ckasspath to the loader.
+	 */
+	public void addURL(URL url) {
+		super.addURL(url);
+	}
+
 }
