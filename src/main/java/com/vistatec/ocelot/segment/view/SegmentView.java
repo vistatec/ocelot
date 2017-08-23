@@ -107,6 +107,7 @@ import com.vistatec.ocelot.SegmentViewColumn;
 import com.vistatec.ocelot.TextContextMenu;
 import com.vistatec.ocelot.config.LqiJsonConfigService;
 import com.vistatec.ocelot.config.TransferException;
+import com.vistatec.ocelot.events.GoToSegmentEvent;
 import com.vistatec.ocelot.events.HighlightEvent;
 import com.vistatec.ocelot.events.ItsSelectionEvent;
 import com.vistatec.ocelot.events.LQIModificationEvent;
@@ -303,6 +304,17 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		this.highlightedSegments = new ArrayList<Integer>();
 	}
 
+	@Subscribe
+	public void onGoToSegmentEvent(GoToSegmentEvent event) {
+
+		int tableIndex = segmentTableModel.getModelIndexBySegmentNumber(event.getSegmentNuber());
+		int viewIndex = sort.convertRowIndexToView(tableIndex);
+		sourceTargetTable.getSelectionModel().setSelectionInterval(viewIndex, viewIndex);
+		Rectangle segmentRect = sourceTargetTable.getCellRect(viewIndex,
+				segmentTableModel.getSegmentTargetColumnIndex(), true);
+		sourceTargetTable.scrollRectToVisible(segmentRect);
+	}
+	
 	@Subscribe
 	public void openFile(OpenFileEvent e) {
 		isSourceBidi = LocaleId.isBidirectional(e.getDocument().getSrcLocale());
