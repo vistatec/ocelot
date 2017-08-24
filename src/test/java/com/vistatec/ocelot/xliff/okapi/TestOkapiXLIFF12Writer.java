@@ -152,7 +152,7 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
 			segment = segmentService.getSegment(i);
 			((BaseSegmentVariant) segment.getSource())
 			        .addEnrichmentList(EnrichmentBuilder.getWritingXliff1_2TestEnrichments(segment.getSegmentNumber()));
-			((OkapiXliffService)xliffService).updateSegment(new SegmentEditEvent(xliff, segment));
+			((OkapiXliffService)xliffService).updateSegment(new SegmentEditEvent(xliff, segment, SegmentEditEvent.TARGET_CHANGED));
 		}
 		File savedFile = saveXliffToTemp(xliffService, xliff); 
 		XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
