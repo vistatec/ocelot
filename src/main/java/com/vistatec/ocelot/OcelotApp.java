@@ -181,18 +181,20 @@ public class OcelotApp implements OcelotEventQueueListener {
         File tmpFile = tmpPath.toFile();
         xliffService.saveTime(pluginManager.getTimerSeconds());
         xliffService.save(openXliffFile, tmpFile);
-        try {
-			XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
-			        openXliffFile.getSrcLocale().toString(), openXliffFile
-			                .getTgtLocale().toString());
-            annotationWriter.saveAnnotations(tmpFile, segmentService);
-        } catch (Exception e) {
-            if (!tmpFile.delete()) {
-                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
-            }
-            throw new ErrorAlertException("Unable to save!", "The file " + filename
-                    + " cannot be saved because the content is invalid. "
-                    + "If you edited tags, ensure they are correctly nested.");
+        if(pluginManager.isFremePluginEnabled()){
+	        try {
+				XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
+				        openXliffFile.getSrcLocale().toString(), openXliffFile
+				                .getTgtLocale().toString());
+	            annotationWriter.saveAnnotations(tmpFile, segmentService);
+	        } catch (Exception e) {
+	            if (!tmpFile.delete()) {
+	                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
+	            }
+	            throw new ErrorAlertException("Unable to save!", "The file " + filename
+	                    + " cannot be saved because the content is invalid. "
+	                    + "If you edited tags, ensure they are correctly nested.");
+	        }
         }
         this.fileDirty = false;
         editDistService.createEditDistanceReport(filename);
