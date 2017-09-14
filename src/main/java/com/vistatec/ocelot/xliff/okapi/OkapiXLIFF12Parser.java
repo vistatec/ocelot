@@ -49,6 +49,8 @@ import net.sf.okapi.common.annotation.GenericAnnotationType;
 import net.sf.okapi.common.annotation.GenericAnnotations;
 import net.sf.okapi.common.annotation.ITSLQIAnnotations;
 import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
+import net.sf.okapi.common.annotation.XLIFFNote;
+import net.sf.okapi.common.annotation.XLIFFNoteAnnotation;
 import net.sf.okapi.common.annotation.XLIFFPhase;
 import net.sf.okapi.common.annotation.XLIFFPhaseAnnotation;
 import net.sf.okapi.common.annotation.XLIFFTool;
@@ -150,6 +152,7 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		this.filter = new XLIFFFilter();
 		Parameters filterParams = new Parameters();
 		filterParams.setAddAltTrans(true);
+		filterParams.setEscapeGT(true);
 		this.filter.setParameters(filterParams);
 		this.filter.open(fileDoc);
 		int fileEventNum = 0;
@@ -288,13 +291,31 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 	}
 
 	private void readNotes(OkapiSegment seg, ITextUnit tu) {
-	    Property p = tu.getProperty(Property.NOTE);
-	    if (p != null) {
-	        // XLIFF 1.2 doesn't support note IDs, so we always display notes
-	        Notes notes = new Notes();
-	        notes.add(new Note(Note.OCELOT_ID_PREFIX + "1", p.getValue()));
+		
+		XLIFFNoteAnnotation noteAnnot = tu.getAnnotation(XLIFFNoteAnnotation.class);
+		XLIFFNote ocelotOkapiNote = null;
+		if(noteAnnot != null){
+			ocelotOkapiNote = readOcelotNote(noteAnnot);
+		}
+		if(ocelotOkapiNote != null ){
+			Notes notes = new Notes();
+	        notes.add(new Note(Note.OCELOT_ID_PREFIX + "1", ocelotOkapiNote.getNoteText()));
 	        seg.setNotes(notes);
-	    }
+		}
+	}
+	
+	public XLIFFNote readOcelotNote(XLIFFNoteAnnotation noteAnnot){
+		
+		XLIFFNote ocelotNote = null;
+		Iterator<XLIFFNote> notesIt = noteAnnot.iterator();
+		XLIFFNote currNote = null;
+		while(notesIt.hasNext() && ocelotNote == null){
+			currNote = notesIt.next();
+			if(Note.OCELOT_FROM_PROPERTY.equals(currNote.getFrom())){
+				ocelotNote = currNote;
+			}
+		}
+		return ocelotNote;
 	}
 
 	private OkapiSegment attachITSDataToSegment(OkapiSegment seg, ITextUnit tu,

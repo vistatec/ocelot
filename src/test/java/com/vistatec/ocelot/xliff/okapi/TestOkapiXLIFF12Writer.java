@@ -54,8 +54,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Resources;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -65,6 +63,7 @@ import com.vistatec.ocelot.config.TestProvenanceConfig;
 import com.vistatec.ocelot.events.LQIAdditionEvent;
 import com.vistatec.ocelot.events.LQIRemoveEvent;
 import com.vistatec.ocelot.events.SegmentEditEvent;
+import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.EventBusWrapper;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
@@ -74,6 +73,8 @@ import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.enrichment.LinkEnrichment;
 import com.vistatec.ocelot.segment.model.enrichment.TerminologyEnrichment;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.services.OkapiXliffService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.SegmentServiceImpl;
@@ -151,10 +152,9 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
 			segment = segmentService.getSegment(i);
 			((BaseSegmentVariant) segment.getSource())
 			        .addEnrichmentList(EnrichmentBuilder.getWritingXliff1_2TestEnrichments(segment.getSegmentNumber()));
-			((OkapiXliffService)xliffService).updateSegment(new SegmentEditEvent(xliff, segment));
+			((OkapiXliffService)xliffService).updateSegment(new SegmentEditEvent(xliff, segment, SegmentEditEvent.TARGET_CHANGED));
 		}
 		File savedFile = saveXliffToTemp(xliffService, xliff); 
-		System.out.println(savedFile.getAbsolutePath());
 		XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
 				xliff.getSrcLocale().toString(), xliff
 		                .getTgtLocale().toString());
@@ -166,6 +166,93 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
 			
 		
     }
+    
+    @Test
+    public void testWriteNote() throws Exception {
+    	
+    	File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+   	 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+   	OkapiXliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
+    	File xliffFile = new File(getClass()
+		        .getResource("test_file_xliff1.2.xlf").toURI());
+    	XLIFFDocument xliff = xliffService.parse(xliffFile);
+    	SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+        segmentService.setSegments(xliff);
+    	OcelotSegment segToUpdate = null;
+    	for (int i = 0; i < segmentService.getNumSegments(); i++) {
+    		if(segmentService.getSegment(i).getSegmentNumber() == 1){
+    			segToUpdate = segmentService.getSegment(i);
+    			break;
+    		}
+    	}
+    	Note note = new Note(Note.OCELOT_ID_PREFIX + "1", "Note 1");
+		segToUpdate.setNotes(new Notes());
+		segToUpdate.getNotes().add(note);
+
+		xliffService.updateNotes(new SegmentNoteEditEvent(xliff, segToUpdate));
+		File savedFile = saveXliffToTemp(xliffService, xliff);
+		
+		checkAgainstGoldXML(savedFile,
+                "test_file_with_note_xliff1.2.xlf");
+		
+    }
+    
+    @Test
+    public void testUpdateNote() throws Exception {
+    	
+    	File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+   	 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+   	OkapiXliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
+    	File xliffFile = new File(getClass()
+		        .getResource("test_file_with_note_xliff1.2.xlf").toURI());
+    	XLIFFDocument xliff = xliffService.parse(xliffFile);
+    	SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+        segmentService.setSegments(xliff);
+    	OcelotSegment segToUpdate = null;
+    	for (int i = 0; i < segmentService.getNumSegments(); i++) {
+    		if(segmentService.getSegment(i).getSegmentNumber() == 1){
+    			segToUpdate = segmentService.getSegment(i);
+    			break;
+    		}
+    	}
+    	Note ocelotNote = segToUpdate.getNotes().getOcelotNote();
+    	ocelotNote.setContent(ocelotNote.getContent() + " updated");
+		xliffService.updateNotes(new SegmentNoteEditEvent(xliff, segToUpdate));
+		File savedFile = saveXliffToTemp(xliffService, xliff);
+		
+		checkAgainstGoldXML(savedFile,
+                "test_file_with_note_updated_xliff1.2.xlf");
+		
+    }
+    
+    @Test
+    public void testDeleteNote() throws Exception {
+    	
+    	File testFile = new File(TestProvenanceConfig.class.getResource("test_empty_provenance.json").toURI());
+   	 OcelotJsonConfigService cfgService = new OcelotJsonConfigService(new OcelotJsonConfigTransferService(testFile));
+   	OkapiXliffService xliffService = new OkapiXliffService(cfgService, eventQueue);
+    	File xliffFile = new File(getClass()
+		        .getResource("test_file_with_note_xliff1.2.xlf").toURI());
+    	XLIFFDocument xliff = xliffService.parse(xliffFile);
+    	SegmentService segmentService = new SegmentServiceImpl(eventQueue);
+        segmentService.setSegments(xliff);
+    	OcelotSegment segToUpdate = null;
+    	for (int i = 0; i < segmentService.getNumSegments(); i++) {
+    		if(segmentService.getSegment(i).getSegmentNumber() == 1){
+    			segToUpdate = segmentService.getSegment(i);
+    			break;
+    		}
+    	}
+    	segToUpdate.setNotes(null);
+		xliffService.updateNotes(new SegmentNoteEditEvent(xliff, segToUpdate));
+		File savedFile = saveXliffToTemp(xliffService, xliff);
+		
+		checkAgainstGoldXML(savedFile,
+                "test_file_with_note_deleted_xliff1.2.xlf");
+		
+    }
+    
+    
 
     private File checkJson(File savedFile, SegmentService segmentService) throws Exception {
 	    

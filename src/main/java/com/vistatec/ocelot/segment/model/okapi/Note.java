@@ -4,6 +4,8 @@ public class Note {
 
 	public static final String OCELOT_ID_PREFIX = "ocelot-";
 	
+	public static final String OCELOT_FROM_PROPERTY = "ocelot";
+	
 	private String id;
 	
 	private String content;

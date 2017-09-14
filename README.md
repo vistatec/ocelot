@@ -4,7 +4,7 @@ Ocelot is an open source workbench for working with XLIFF files in a post-editin
 
 **Build Status:** [![build status](https://api.travis-ci.org/vistatec/ocelot.svg?branch=dev)](https://travis-ci.org/vistatec/ocelot/)
 
-##Downloading and Running##
+## Downloading and Running ##
 A pre-compiled version of Ocelot is available from the [Okapi downloads
 page](https://bintray.com/okapi/Distribution/Ocelot).  Ocelot is distributed
 as a JAR file that will run on any platform that has Java 1.7 or later
@@ -12,7 +12,7 @@ installed. There are also native executables for the Windows and Mac platforms.
 
 These files are also available on the [Releases page](https://github.com/vistatec/ocelot/releases).
 
-##Documentation##
+## Documentation ##
 Additional documentation is available on the 
 [Ocelot wiki](http://open.vistatec.com/ocelot).
 
@@ -20,11 +20,11 @@ Additional documentation is available on the
 To report a bug or request an enhancement, please create an account 
 in the [Ocelot JIRA](https://ocelot.atlassian.net/browse/OC) and track all issues there.
 
-##Requirements##
+## Requirements ##
 * Java 1.7
 * Maven (for compiling only)
 
-##Build##
+## Build ##
 Ocelot uses Maven, so all dependencies should be resolved upon build (mvn package). The output jar file will located in the created target folder.
 
 ### Mac Builds ###

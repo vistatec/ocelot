@@ -36,35 +36,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.sf.okapi.common.Event;
-import net.sf.okapi.common.LocaleId;
-import net.sf.okapi.common.Namespaces;
-import net.sf.okapi.common.annotation.AltTranslation;
-import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
-import net.sf.okapi.common.annotation.GenericAnnotation;
-import net.sf.okapi.common.annotation.GenericAnnotationType;
-import net.sf.okapi.common.annotation.ITSLQIAnnotations;
-import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
-import net.sf.okapi.common.annotation.XLIFFTool;
-import net.sf.okapi.common.encoder.EncoderManager;
-import net.sf.okapi.common.filters.IFilter;
-import net.sf.okapi.common.query.MatchType;
-import net.sf.okapi.common.resource.DocumentPart;
-import net.sf.okapi.common.resource.Ending;
-import net.sf.okapi.common.resource.ITextUnit;
-import net.sf.okapi.common.resource.Property;
-import net.sf.okapi.common.resource.StartSubDocument;
-import net.sf.okapi.common.resource.TextContainer;
-import net.sf.okapi.common.skeleton.GenericSkeleton;
-import net.sf.okapi.common.skeleton.GenericSkeletonPart;
-import net.sf.okapi.common.skeleton.ISkeletonWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +57,28 @@ import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
+
+import net.sf.okapi.common.Event;
+import net.sf.okapi.common.LocaleId;
+import net.sf.okapi.common.Namespaces;
+import net.sf.okapi.common.annotation.AltTranslation;
+import net.sf.okapi.common.annotation.AltTranslationsAnnotation;
+import net.sf.okapi.common.annotation.GenericAnnotation;
+import net.sf.okapi.common.annotation.GenericAnnotationType;
+import net.sf.okapi.common.annotation.ITSLQIAnnotations;
+import net.sf.okapi.common.annotation.ITSProvenanceAnnotations;
+import net.sf.okapi.common.annotation.XLIFFNote;
+import net.sf.okapi.common.annotation.XLIFFNoteAnnotation;
+import net.sf.okapi.common.annotation.XLIFFTool;
+import net.sf.okapi.common.encoder.EncoderManager;
+import net.sf.okapi.common.filters.IFilter;
+import net.sf.okapi.common.query.MatchType;
+import net.sf.okapi.common.resource.DocumentPart;
+import net.sf.okapi.common.resource.ITextUnit;
+import net.sf.okapi.common.resource.Property;
+import net.sf.okapi.common.resource.TextContainer;
+import net.sf.okapi.common.skeleton.GenericSkeleton;
+import net.sf.okapi.common.skeleton.ISkeletonWriter;
 
 /**
  * Write out XLIFF files using Okapi's XLIFFSkeletonWriter.
@@ -282,27 +280,34 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
         } else if (event.isTextUnit()) {
             ITextUnit textUnit = event.getTextUnit();
 
-            Note note = seg.getNotes().getOcelotNote();
-            if (note == null) {
-                // The note has been removed, so we should clear the content
-                textUnit.removeProperty(Property.NOTE);
-                return;
+            Note ocelotNote = seg.getNotes() != null ? seg.getNotes().getOcelotNote() : null;
+            XLIFFNoteAnnotation noteAnnotation = textUnit.getAnnotation(XLIFFNoteAnnotation.class);
+            noteAnnotation = noteAnnotation != null ? noteAnnotation : new XLIFFNoteAnnotation();
+            XLIFFNote ocelotOkapiNote = parser.readOcelotNote(noteAnnotation);	
+            if(ocelotNote != null ){
+            	// CASE 1 - new note created for this segment
+            	if(ocelotOkapiNote == null){
+            		ocelotOkapiNote = new XLIFFNote(ocelotNote.getContent());
+            		ocelotOkapiNote.setFrom(Note.OCELOT_FROM_PROPERTY);
+            		noteAnnotation.add(ocelotOkapiNote);
+            		textUnit.setAnnotation(noteAnnotation);
+            		LOG.debug("Created note for " + seg.getTuId() + ": '" + ocelotNote.getContent() + "'");
+            	// CASE 2 - note updated for this segment	
+            	} else {
+            		ocelotOkapiNote.setNoteText(ocelotNote.getContent());
+            		LOG.debug("Updated note for " + seg.getTuId() + " to '" + ocelotNote.getContent() + "'");
+            	}
+            //CASE 3 - note has been deleted
+            } else if (ocelotOkapiNote != null){
+            	ocelotOkapiNote.setNoteText(null);
+            	LOG.debug("Deleted note for " + seg.getTuId());
             }
-            String noteText = note.getContent();
-            Property prop = textUnit.getProperty(Property.NOTE);
-            if (prop == null) {
-                prop = new Property(Property.NOTE, noteText);
-                textUnit.setProperty(prop);
-            }
-            else {
-                prop.setValue(noteText);
-            }
-            LOG.info("Updated note for " + seg.getTuId() + " to '" + noteText + "'");
         } else {
             LOG.error("Event associated with Segment was not an Okapi TextUnit!");
             LOG.error("Failed to update event for segment #"+okapiSeg.getSegmentNumber());
         }
     }
+	
 
     private void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         StringBuilder tmp = new StringBuilder();
@@ -322,8 +327,6 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
                     tmp.append(skelWriter.processStartSubDocument(event.getStartSubDocument()));
                     break;
                 case END_SUBDOCUMENT:
-//                	addLqiConfInfo(event.getEnding());
-//                	addTimeInfo(event.getEnding());
                     tmp.append(skelWriter.processEndSubDocument(event.getEnding()));
                     break;
                 case TEXT_UNIT:
@@ -357,121 +360,6 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
         outputFile.close();
     }
     
-    private void writeHeader(StartSubDocument subDocument){
-    	
-    	if(subDocument.getSkeleton() != null){
-    		String currSkelString = subDocument.getSkeleton().toString();
-    		StringBuilder newSkelString = new StringBuilder();
-    		if(!currSkelString.contains(XliffDocumentConstants.HEADER_START)){
-    			GenericSkeleton skeleton = (GenericSkeleton)subDocument.getSkeleton();
-    			List<GenericSkeletonPart> newSkelParts = new ArrayList<GenericSkeletonPart>();
-    			for(GenericSkeletonPart skelPart: skeleton.getParts()){
-    				int bodyIndex = skelPart.getData().indexOf(XliffDocumentConstants.BODY_START);
-    				if(bodyIndex > 0){
-    					StringBuilder headerSkelPart = new StringBuilder();
-    					headerSkelPart.append(XliffDocumentConstants.HEADER_START);
-    					headerSkelPart.append("\n");
-    					headerSkelPart.append(XliffDocumentConstants.HEADER_END);
-    					headerSkelPart.append("\n");
-    					skelPart.getData().insert(bodyIndex, headerSkelPart);
-    				}
-    			}
-//    			int startBodyIndex = currSkelString.indexOf(XliffDocumentConstants.BODY_START);
-//    			if(startBodyIndex > 0){
-//    				newSkelString.append(currSkelString.substring(0, startBodyIndex));
-//    				newSkelString.append(XliffDocumentConstants.HEADER_START);
-//    				newSkelString.append("\n");
-//    				newSkelString.append(XliffDocumentConstants.HEADER_END);
-//    				newSkelString.append("\n");
-//    				newSkelString.append(currSkelString.substring(startBodyIndex));
-////    				currSkelString = newSkelString.toString();
-////    				newSkelString = new StringBuilder();
-//    				subDocument.setSkeleton(new GenericSkeleton(newSkelString.toString()));
-//    			}
-    		}
-    	}
-    }
-
-    private void addTimeInfo(StartSubDocument subDocument){
-    	
-    	if(time != null && subDocument.getSkeleton() != null){
-    		StringBuilder newSkelString = new StringBuilder();
-    		String currSkelString = subDocument.getSkeleton().toString();
-    		int headerEndIndex = currSkelString.indexOf(XliffDocumentConstants.HEADER_END);
-    		if(headerEndIndex > 0){
-    			int countIndex = currSkelString.indexOf(XliffDocumentConstants.COUNT_START);
-    			if(countIndex > 0){
-    				newSkelString.append(currSkelString.substring(0, countIndex + XliffDocumentConstants.COUNT_START.length()));
-    				newSkelString.append(time);
-    				newSkelString.append(currSkelString.substring(currSkelString.indexOf(XliffDocumentConstants.COUNT_END)));
-    			} else {
-    				newSkelString.append(currSkelString.substring(0, headerEndIndex));
-    				appendCountGroupInfo(newSkelString);
-    				newSkelString.append(currSkelString.substring(headerEndIndex + XliffDocumentConstants.HEADER_END.length()));
-    			}
-    		} else {
-    			int bodyIndex = currSkelString.indexOf(XliffDocumentConstants.BODY_START);
-    			newSkelString.append(currSkelString.substring(0, bodyIndex));
-    			newSkelString.append(XliffDocumentConstants.HEADER_START);
-    			newSkelString.append("\n");
-    			appendCountGroupInfo(newSkelString);
-    			newSkelString.append("\n");
-    			newSkelString.append(XliffDocumentConstants.HEADER_END);
-    			newSkelString.append("\n");
-    			newSkelString.append(currSkelString.substring(bodyIndex));
-    		}
-    		subDocument.setSkeleton(new GenericSkeleton(newSkelString.toString()));
-    		
-    	}
-    	
-    }
-    
-    
-    private void appendCountGroupInfo(StringBuilder stringBuilder ){
-    	
-    	stringBuilder.append(XliffDocumentConstants.COUNT_GROUP_START);
-    	stringBuilder.append("\n");
-    	stringBuilder.append(XliffDocumentConstants.COUNT_START);
-    	stringBuilder.append(time);
-    	stringBuilder.append(XliffDocumentConstants.COUNT_END);
-    	stringBuilder.append("\n");
-    	stringBuilder.append(XliffDocumentConstants.COUNT_GROUP_END);
-    	stringBuilder.append("\n");
-    }
-    
-    private void addLqiConfInfo(Ending ending) {
-		
-    	
-	}
-
-	private void addTimeInfo(Ending ending) {
-		
-    	if(time != null && ending.getSkeleton() != null){
-    		String currSkelString = ending.getSkeleton().toString();	
-    		int startIndex = currSkelString.indexOf(XliffDocumentConstants.COUNT_START);
-    		if(startIndex > 0){
-    			int endIndex = currSkelString.indexOf(XliffDocumentConstants.COUNT_END);
-    			String newSkelString = currSkelString.substring(0, startIndex + XliffDocumentConstants.COUNT_START.length()) + time + currSkelString.substring(endIndex);
-    			ending.setSkeleton(new GenericSkeleton(newSkelString));
-    		} else {
-    			StringBuilder timeSkeleton = new StringBuilder();
-    			int endFileIndex = currSkelString.indexOf(XliffDocumentConstants.FILE_END);
-    			if(endFileIndex > 0){
-    				timeSkeleton.append(currSkelString.substring(0, endFileIndex));
-    				timeSkeleton.append(XliffDocumentConstants.COUNT_GROUP_START);
-    				timeSkeleton.append("\n");
-    				timeSkeleton.append(XliffDocumentConstants.COUNT_START);
-    				timeSkeleton.append(time);
-    				timeSkeleton.append(XliffDocumentConstants.COUNT_END);
-    				timeSkeleton.append("\n");
-    				timeSkeleton.append(XliffDocumentConstants.COUNT_GROUP_END);
-    				timeSkeleton.append("\n");
-    				timeSkeleton.append(currSkelString.substring(endFileIndex));
-    				ending.setSkeleton(new GenericSkeleton(timeSkeleton.toString()));
-    			}
-    		}
-    	}
-	}
 
 	private DocumentPart preprocessDocumentPart(DocumentPart dp) {
         if (foundXliffElement) return dp;

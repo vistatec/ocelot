@@ -220,19 +220,24 @@ public class SegmentTableModel extends AbstractTableModel {
         return segmentService.getSegment(row);
     }
     
-    public int getModelIndexForSegment(OcelotSegment segment){
-    	
-    	int index = -1;
-    	for(int i = 0; i<segmentService.getNumSegments(); i++){
-    		if(segmentService.getSegment(i).getSegmentNumber() == segment.getSegmentNumber()){
-    			index = i;
-    			break;
-    		}
-    	}
-    	return index;
-    }
-    
-    
+	public int getModelIndexForSegment(OcelotSegment segment) {
+
+		return getModelIndexBySegmentNumber(segment.getSegmentNumber());
+	}
+
+	public int getModelIndexBySegmentNumber(int segmentNumber) {
+
+		int index = -1;
+		for (int i = 0; i < segmentService.getNumSegments(); i++) {
+			if (segmentService.getSegment(i).getSegmentNumber() == segmentNumber) {
+				index = i;
+				break;
+			}
+		}
+		return index;
+	}
+	
+	
     public void saveColumnConfiguration() throws TransferException {
 		
 		configService.saveColumnConfiguration(enabledColumns);

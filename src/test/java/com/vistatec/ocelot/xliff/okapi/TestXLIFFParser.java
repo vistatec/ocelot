@@ -28,33 +28,37 @@
  */
 package com.vistatec.ocelot.xliff.okapi;
 
+import static com.vistatec.ocelot.rules.StateQualifier.EXACT;
+import static com.vistatec.ocelot.rules.StateQualifier.FUZZY;
+import static com.vistatec.ocelot.rules.StateQualifier.ID;
+import static com.vistatec.ocelot.rules.StateQualifier.MT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.OtherITSMetadata;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
-import static com.vistatec.ocelot.rules.StateQualifier.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.*;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.TextContainer;
-
-import org.junit.Test;
-
-import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
-import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
-import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 
 /**
  * Test Okapi XLIFF parser conversion to Ocelot Segments.
@@ -258,5 +262,25 @@ public class TestXLIFFParser {
         OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
         List<OcelotSegment> segments = parser.parse(new File(getClass().getResource("/oc26.xlf").toURI()));
         assertEquals(1, segments.size());
+    }
+    
+    @Test
+    public void testReadNotes() throws Exception {
+    	
+    	OkapiXLIFF12Parser parser = new OkapiXLIFF12Parser();
+    	File testFile = new File(getClass()
+		        .getResource("test_file_with_note_xliff1.2.xlf").toURI());
+    	List<OcelotSegment> segments = parser.parse(testFile);
+    	OcelotSegment firstSegment = null;
+    	for(OcelotSegment segment: segments){
+    		if(segment.getSegmentNumber() == 1){
+    			firstSegment = segment;
+    			break;
+    		}
+    	}
+    	
+    	assertNotNull(firstSegment.getNotes());
+    	assertEquals(firstSegment.getNotes().size(), 1);
+    	assertEquals(firstSegment.getNotes().get(0).getContent(), "Note 1");
     }
 }

@@ -78,10 +78,13 @@ public class OcelotApp implements OcelotEventQueueListener {
     private final XliffService xliffService;
     private final EditDistanceReportService editDistService;
     private XLIFFDocument openXliffFile;
+    
+    private SegmentErrorChecker segErrorChecker;
 
     private File openFile;
     private boolean fileDirty = false, hasOpenFile = false;
     private boolean temporaryFile;
+    private boolean savedToAzure;
 
     @Inject
     public OcelotApp(OcelotEventQueue eventQueue, PluginManager pluginManager,
@@ -91,6 +94,7 @@ public class OcelotApp implements OcelotEventQueueListener {
         this.segmentService = segmentService;
         this.xliffService = xliffService;
 		this.editDistService = new EditDistanceReportService(segmentService);
+		this.segErrorChecker = new SegmentErrorChecker();
     }
 
     public File getOpenFile() {
@@ -150,6 +154,8 @@ public class OcelotApp implements OcelotEventQueueListener {
         } else {
         	fileName = openFile.getName();
         }
+        segErrorChecker.clear();
+        savedToAzure = false;
         eventQueue.post(new OpenFileEvent(fileName, openXliffFile));
     }
     
@@ -175,24 +181,27 @@ public class OcelotApp implements OcelotEventQueueListener {
         File tmpFile = tmpPath.toFile();
         xliffService.saveTime(pluginManager.getTimerSeconds());
         xliffService.save(openXliffFile, tmpFile);
-        try {
-			XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
-			        openXliffFile.getSrcLocale().toString(), openXliffFile
-			                .getTgtLocale().toString());
-            annotationWriter.saveAnnotations(tmpFile, segmentService);
-        } catch (Exception e) {
-            if (!tmpFile.delete()) {
-                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
-            }
-            throw new ErrorAlertException("Unable to save!", "The file " + filename
-                    + " cannot be saved because the content is invalid. "
-                    + "If you edited tags, ensure they are correctly nested.");
+        if(pluginManager.isFremePluginEnabled()){
+	        try {
+				XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
+				        openXliffFile.getSrcLocale().toString(), openXliffFile
+				                .getTgtLocale().toString());
+	            annotationWriter.saveAnnotations(tmpFile, segmentService);
+	        } catch (Exception e) {
+	            if (!tmpFile.delete()) {
+	                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
+	            }
+	            throw new ErrorAlertException("Unable to save!", "The file " + filename
+	                    + " cannot be saved because the content is invalid. "
+	                    + "If you edited tags, ensure they are correctly nested.");
+	        }
         }
         this.fileDirty = false;
         editDistService.createEditDistanceReport(filename);
         pluginManager.notifySavedFile(filename);
         Files.move(tmpPath, saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         openFile = saveFile;
+        segErrorChecker.clear();
     }
 
     public void saveLqiConfiguration(String lqiConfName) {
@@ -257,6 +266,31 @@ public class OcelotApp implements OcelotEventQueueListener {
 			final boolean target, Window ownerWindow) {
 		return pluginManager.getSegmentTextContextMenuItems(segment, text,
 				offset, target, ownerWindow);
+	}
+
+	public void initializeSegmentErrorChecker() {
+		segErrorChecker = new SegmentErrorChecker();
+		eventQueue.registerListener(segErrorChecker);
+	}
+
+	public void enableSegmentErrorChecker(boolean enabled) {
+		if(enabled){
+			eventQueue.registerListener(segErrorChecker);
+		}
+	}
+
+
+	public boolean checkEditedSegments(JFrame mainframe ) {
+		return segErrorChecker.checkIncompleteEditedSegments(mainframe, eventQueue);
+	}
+
+	public void savedToAzure() {
+		
+		savedToAzure = true;
+	}
+	
+	public boolean getSavedToAzure() {
+		return savedToAzure;
 	}
 
 }
