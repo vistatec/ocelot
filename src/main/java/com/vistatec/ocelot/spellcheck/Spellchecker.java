@@ -174,6 +174,14 @@ public class Spellchecker {
     }
 
     public String getLanguage() {
-        return ltLanguage == null ? null : ltLanguage.getLocaleWithCountryAndVariant().toLanguageTag();
+        if (ltLanguage == null) {
+            try {
+                getLanguageTool();
+            } catch (LocaleNotSupportedException e) {
+                throw new IllegalStateException(
+                        "Can't get effective spellchecking language because the specified locale was not supported", e);
+            }
+        }
+        return ltLanguage.getLocaleWithCountryAndVariant().toLanguageTag();
     }
 }
