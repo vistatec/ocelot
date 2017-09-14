@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+	<file original="dummy" source-language="de_DE" target-language="en_US">
+		<body>
+			<trans-unit translate="no" id="1">
+				<source>ghhghhh</source>
+				<target xml:lang="en-us">This segment has one misspelled word: fud.</target>
+			</trans-unit>
+			<trans-unit translate="yes" id="2">
+				<source>asdfghjkl;</source>
+				<target>This segment has two misspelled words: hoge fuga.</target>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
