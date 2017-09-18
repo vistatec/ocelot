@@ -445,6 +445,9 @@ public class SpellcheckController implements OcelotEventQueueListener {
 
     private String summarizeResult(CheckResult res) {
         List<String> suggestions = res.getSuggestions();
+        if (suggestions.isEmpty()) {
+            return String.format("Misspelled word: \"%s\"", res.getWord());
+        }
         if (suggestions.size() > 3) {
             suggestions = suggestions.subList(0, 3);
         }
