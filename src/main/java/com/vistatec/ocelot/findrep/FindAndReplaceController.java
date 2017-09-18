@@ -83,9 +83,9 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 
 		segments = e.getDocument().getSegments();
 		sortedIndexMap = null;
-		sourceLocale = new Locale(e.getDocument().getSrcLocale()
+        sourceLocale = Locale.forLanguageTag(e.getDocument().getSrcLocale()
 				.getOriginalLocId());
-		targetLocale = new Locale(e.getDocument().getTgtLocale()
+        targetLocale = Locale.forLanguageTag(e.getDocument().getTgtLocale()
 				.getOriginalLocId());
 		if (frDialog != null) {
 			int selectedScope = frDialog.getSelectedScope();
@@ -226,9 +226,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 				if (replacedResIdxList.contains(indexToReplace)) {
 					findNext(lastSearchedText);
 				} else if (indexToReplace != -1) {
-					eventQueue.post(new ReplaceEvent(newString, wordFinder
-							.getAllResults().get(indexToReplace)
-							.getSegmentIndex(), ReplaceEvent.REPLACE));
+                    eventQueue.post(new ReplaceEvent(lastSearchedText, newString,
+                            wordFinder.getAllResults().get(indexToReplace).getSegmentIndex(), ReplaceEvent.REPLACE));
 					wordFinder.replacedString(newString);
 					replacedResIdxList.add(indexToReplace);
 					if (replacedResIdxList.size() == wordFinder.getAllResults()
@@ -362,7 +361,7 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 			replace = option == JOptionPane.YES_OPTION;
 		}
 		if (replace) {
-			eventQueue.post(new ReplaceEvent(text, ReplaceEvent.REPLACE_ALL));
+            eventQueue.post(new ReplaceEvent(lastSearchedText, text, ReplaceEvent.REPLACE_ALL));
 			wordFinder.clearAllResults();
 			clear();
 		}

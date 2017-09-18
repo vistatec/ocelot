@@ -114,6 +114,7 @@ import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
 import com.vistatec.ocelot.segment.view.SegmentAttributeView;
 import com.vistatec.ocelot.segment.view.SegmentView;
+import com.vistatec.ocelot.spellcheck.SpellcheckController;
 import com.vistatec.ocelot.storage.model.PostUploadRequest;
 import com.vistatec.ocelot.storage.service.AzureStorageService;
 import com.vistatec.ocelot.storage.service.StorageService;
@@ -124,7 +125,7 @@ import com.vistatec.ocelot.ui.OcelotToolBar;
 
 /**
  * Main UI Thread class. Handles menu and file operations
- * 
+ *
  */
 public class Ocelot extends JPanel
 		implements Runnable, ActionListener, KeyEventDispatcher, ItemListener, OcelotEventQueueListener {
@@ -136,8 +137,8 @@ public class Ocelot extends JPanel
 
 	private JMenuBar menuBar;
 	private JMenu menuFile, menuView, menuExtensions, menuHelp, mnuEdit;
-	private JMenuItem menuOpenXLIFF, menuDownloadLGK, menuExit, menuAbout, menuRules, menuProv, menuSave, menuSaveAs,
-			menuFindReplace, menuWorkspace;
+	private JMenuItem menuOpenXLIFF, menuDownloadLGK, menuExit, menuAbout, menuRules, menuProv,
+            menuSave, menuSaveAs, menuFindReplace, menuSpellcheck, menuWorkspace;
 	private JMenuItem menuPlugins;
 	private JCheckBoxMenuItem menuTgtDiff;
 	private JCheckBoxMenuItem menuShowNotTrans;
@@ -157,6 +158,7 @@ public class Ocelot extends JPanel
 	private SegmentView segmentView;
 	private TmGuiManager tmGuiManager;
 	private FindAndReplaceController frController;
+    private SpellcheckController scController;
 	private OcelotJsonConfigService configService;
 	private ProfileManager profileManager;
 
@@ -186,6 +188,7 @@ public class Ocelot extends JPanel
 		this.lqiGridController = ocelotScope.getInstance(LQIGridController.class);
 		eventQueue.registerListener(ocelotApp);
 		this.frController = ocelotScope.getInstance(FindAndReplaceController.class);
+        this.scController = ocelotScope.getInstance(SpellcheckController.class);
 		this.configService = (OcelotJsonConfigService) ocelotScope.getInstance(JsonConfigService.class);
 		setEnableStorage(configService);
 		this.profileManager = ocelotScope.getInstance(ProfileManager.class);
@@ -295,6 +298,8 @@ public class Ocelot extends JPanel
 			lqiGridController.displayLQIGrid(mainframe);
 		} else if (e.getSource() == this.menuFindReplace) {
 			frController.displayDialog(mainframe);
+		} else if (e.getSource() == this.menuSpellcheck) {
+            scController.displayDialog(mainframe);
 		} else if (e.getSource().equals(menuShowNotTrans)) {
 			try {
 				segmentView.toggleNotTranslatableSegments(menuShowNotTrans.isSelected());
@@ -535,6 +540,9 @@ public class Ocelot extends JPanel
 		menuFindReplace = new JMenuItem("Find and Replace");
 		menuFindReplace.addActionListener(this);
 		mnuEdit.add(menuFindReplace);
+        menuSpellcheck = new JMenuItem("Spellcheck");
+        menuSpellcheck.addActionListener(this);
+        mnuEdit.add(menuSpellcheck);
 		menuBar.add(mnuEdit);
 
 		menuView = new JMenu("View");

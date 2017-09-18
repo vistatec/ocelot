@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+	<file original="dummy" source-language="de_DE" target-language="ru_RU">
+		<body>
+			<trans-unit translate="no" id="1">
+				<source>ghhghhh</source>
+				<target xml:lang="en-us">Перево́д — деятелллльность по интерпретации смысла текста на одном языке (исходном языке [ИЯ]) и созданию нового эквивалентного ему текста на другом языке (переводящем языке [ПЯ]).</target>
+			</trans-unit>
+			<trans-unit translate="yes" id="2">
+				<source>asdfghjkl;</source>
+				<target>Переводческая деятельность подразделяется на два существенно отличающихся друг от друга типа перевода.</target>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

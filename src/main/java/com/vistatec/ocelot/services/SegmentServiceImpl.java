@@ -93,11 +93,11 @@ public class SegmentServiceImpl implements SegmentService {
             eventQueue.post(new SegmentEditEvent(xliff, seg, SegmentEditEvent.TARGET_CHANGED));
         }
     }
-    
+
     @Subscribe
     @Override
     public void updateSegmentNote(SegmentNoteUpdatedEvent e){
-    	
+
     	OcelotSegment seg = e.getSegment();
     	String noteContent = e.getNoteContent();
     	if(seg.getNotes().editNote(noteContent, String.valueOf(seg.getSegmentNumber()))){
@@ -124,7 +124,7 @@ public class SegmentServiceImpl implements SegmentService {
         seg.addLQI(lqi);
         eventQueue.post(new ItsDocStatsUpdateLqiEvent(lqi));
         eventQueue.post(new SegmentEditEvent(xliff, seg, SegmentEditEvent.LQI_ADDED));
-        eventQueue.post(new LQIModificationEvent(lqi, seg));
+        eventQueue.post(new LQIModificationEvent(lqi, seg, e.isQuiet()));
     }
 
     @Subscribe

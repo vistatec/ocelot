@@ -14,6 +14,8 @@ import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.config.json.OcelotRootConfig;
 import com.vistatec.ocelot.config.json.PluginConfig;
 import com.vistatec.ocelot.config.json.ProvenanceConfig;
+import com.vistatec.ocelot.config.json.SpellingConfig;
+import com.vistatec.ocelot.config.json.SpellingConfig.SpellingDictionary;
 import com.vistatec.ocelot.config.json.TmManagement.TmConfig;
 import com.vistatec.ocelot.config.json.TmManagement.TmConfig.TmxFile;
 import com.vistatec.ocelot.plugins.Plugin;
@@ -144,6 +146,22 @@ public class OcelotJsonConfigService implements JsonConfigService {
 		config.getTmManagement().setTms(tmConfigs);
 		cfgXservice.save(config);
 	}
+
+    @Override
+    public SpellingConfig getSpellingConfig() {
+        return config.getSpellingConfig();
+    }
+
+    @Override
+    public SpellingDictionary getSpellingDictionary(String language) {
+        return config.getSpellingConfig().getDictionary(language);
+    }
+
+    @Override
+    public void saveSpellingDictionary(String language, SpellingDictionary dictionary) throws TransferException {
+        config.getSpellingConfig().setDictionary(language, dictionary);
+        cfgXservice.save(config);
+    }
 
 	@Override
 	public TmConfig getTmConfig(String tmName) {

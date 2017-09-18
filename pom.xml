@@ -14,6 +14,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<okapi.version>0.34-SNAPSHOT</okapi.version>
 		<okapi.xliff2.version>1.1</okapi.xliff2.version>
+        <languagetool.version>3.8</languagetool.version>
 		<dmg.title>${project.artifactId} ${project.version}</dmg.title>
 		<final.name>${project.artifactId}-${project.version}</final.name>
 	</properties>
@@ -66,14 +67,14 @@
 			<version>1.7.5</version>
 		</dependency>
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-core-lgpl</artifactId>
-			<version>1.9.13</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.8.8</version>
 		</dependency>
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-lgpl</artifactId>
-			<version>1.9.13</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.8.8.1</version>
 		</dependency>
 
 		<!-- Okapi -->
@@ -157,6 +158,21 @@
 			<version>4.2.0</version>
 		</dependency>
 
+        <dependency>
+            <groupId>org.languagetool</groupId>
+            <artifactId>languagetool-core</artifactId>
+            <version>${languagetool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.languagetool</groupId>
+            <artifactId>language-all</artifactId>
+            <version>${languagetool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.languagetool</groupId>
+            <artifactId>hunspell-native-libs</artifactId>
+            <version>2.9</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -166,8 +182,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -241,6 +257,10 @@
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>com.vistatec.ocelot.Ocelot</mainClass>
 								</transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/org/languagetool/language-module.properties</resource>
+                                </transformer>
 							</transformers>
 						</configuration>
 					</execution>

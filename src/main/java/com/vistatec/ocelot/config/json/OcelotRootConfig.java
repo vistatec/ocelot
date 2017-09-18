@@ -11,12 +11,14 @@ public class OcelotRootConfig implements RootConfig {
 	private LayoutConfig layout;
 	private LingoTekConfig lingoTek;
 	private OcelotAzureConfig azure;
+    private SpellingConfig spellingConfig;
 
 	public OcelotRootConfig() {
 		
 		plugins = new ArrayList<PluginConfig>();
 		userProvenance = new ProvenanceConfig();
 		tmManagement = new TmManagement();
+        spellingConfig = new SpellingConfig();
 		
     }
 	
@@ -43,6 +45,14 @@ public class OcelotRootConfig implements RootConfig {
 	public TmManagement getTmManagement() {
 		return tmManagement;
 	}
+
+    public void setSpellingConfig(SpellingConfig spellingConfig) {
+        this.spellingConfig = spellingConfig;
+    }
+
+    public SpellingConfig getSpellingConfig() {
+        return spellingConfig;
+    }
 
 	public void addPlugin(PluginConfig plugin) {
 
