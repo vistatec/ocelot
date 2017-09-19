@@ -364,6 +364,8 @@ public class Ocelot extends JPanel
 				menuSaveAs.setEnabled(true);
 				menuSaveAsTmx.setEnabled(true);
 				menuSaveToAzure.setEnabled(enableStorage);
+                menuFindReplace.setEnabled(true);
+                menuSpellcheck.setEnabled(true);
 				toolBar.loadFontsAndSizes(ocelotApp.getFileSourceLang(), ocelotApp.getFileTargetLang());
 				toolBar.setSourceFont(segmentView.getSourceFont());
 				toolBar.setTargetFont(segmentView.getTargetFont());
@@ -538,9 +540,11 @@ public class Ocelot extends JPanel
 
 		mnuEdit = new JMenu("Edit");
 		menuFindReplace = new JMenuItem("Find and Replace");
+        menuFindReplace.setEnabled(false);
 		menuFindReplace.addActionListener(this);
 		mnuEdit.add(menuFindReplace);
         menuSpellcheck = new JMenuItem("Spellcheck");
+        menuSpellcheck.setEnabled(false);
         menuSpellcheck.addActionListener(this);
         mnuEdit.add(menuSpellcheck);
 		menuBar.add(mnuEdit);
