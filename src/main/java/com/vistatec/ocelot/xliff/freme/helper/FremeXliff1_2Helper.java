@@ -4,6 +4,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+
+import net.sf.okapi.common.resource.TextUnit;
+
 public class FremeXliff1_2Helper extends FremeXliffHelper {
 
 	private static final String UNIT_NODE_NAME = "trans-unit";
@@ -81,5 +86,11 @@ public class FremeXliff1_2Helper extends FremeXliffHelper {
     public String getTypeAttribute() {
 	    return TYPE_ATTRIBUTE;
     }
+
+	@Override
+	public TextUnit getTextUnit(OcelotSegment segment, XLIFFParser parser) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

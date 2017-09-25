@@ -11,6 +11,9 @@ import org.w3c.dom.NodeList;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+
+import net.sf.okapi.common.resource.TextUnit;
 
 public class FremeXliff2_0Helper extends FremeXliffHelper {
 
@@ -118,6 +121,12 @@ public class FremeXliff2_0Helper extends FremeXliffHelper {
 	@Override
 	public String getTypeAttribute() {
 		return TYPE_ATTRIBUTE;
+	}
+
+	@Override
+	public TextUnit getTextUnit(OcelotSegment segment, XLIFFParser parser) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

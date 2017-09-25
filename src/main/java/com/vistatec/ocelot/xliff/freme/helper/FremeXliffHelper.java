@@ -8,6 +8,9 @@ import org.w3c.dom.Node;
 
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+
+import net.sf.okapi.common.resource.TextUnit;
 
 public abstract class FremeXliffHelper {
 
@@ -36,6 +39,8 @@ public abstract class FremeXliffHelper {
 	public abstract void insertLinkNode(Element unitElement, Node linkNode);
 	
 	public abstract String getTypeAttribute();
+	
+	public abstract TextUnit getTextUnit(OcelotSegment segment, XLIFFParser parser);
 
 	public List<OcelotSegment> getSegmentsForUnit(String unitId,
             SegmentService segService) {

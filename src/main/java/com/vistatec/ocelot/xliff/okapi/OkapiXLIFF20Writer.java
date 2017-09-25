@@ -40,6 +40,22 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vistatec.ocelot.config.UserProvenance;
+import com.vistatec.ocelot.events.ProvenanceAddEvent;
+import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.xliff.XLIFFWriter;
+
 import net.sf.okapi.lib.xliff2.Const;
 import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
 import net.sf.okapi.lib.xliff2.changeTracking.Item;
@@ -59,22 +75,6 @@ import net.sf.okapi.lib.xliff2.its.LocQualityIssue;
 import net.sf.okapi.lib.xliff2.its.LocQualityIssues;
 import net.sf.okapi.lib.xliff2.its.Provenances;
 import net.sf.okapi.lib.xliff2.reader.Event;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vistatec.ocelot.config.UserProvenance;
-import com.vistatec.ocelot.events.ProvenanceAddEvent;
-import com.vistatec.ocelot.events.api.OcelotEventQueue;
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
-import com.vistatec.ocelot.segment.model.okapi.Note;
-import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
-import com.vistatec.ocelot.xliff.XLIFFWriter;
 
 /**
  * Write out XLIFF 2.0 files.
@@ -430,7 +430,11 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
 	}
 
 	@Override
-	public void save(File file) throws IOException, UnsupportedEncodingException {
+	public void save(File file ) throws IOException, UnsupportedEncodingException {
+//		if(fremeEnabled){
+//			Xliff2_0FremeAnnotsWriter annotsWriter = new Xliff2_0FremeAnnotsWriter(parser);
+//			annotsWriter.writeAnnotations(segments);
+//		}
 		net.sf.okapi.lib.xliff2.writer.XLIFFWriter writer = new net.sf.okapi.lib.xliff2.writer.XLIFFWriter();
 		StringWriter tmp = new StringWriter();
 		writer.create(tmp, parser.getSourceLang());
@@ -469,6 +473,12 @@ public class OkapiXLIFF20Writer implements XLIFFWriter {
 	public void updateLqiConfiguration(String lqiConfName) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void updateEnrichments(OcelotSegment seg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

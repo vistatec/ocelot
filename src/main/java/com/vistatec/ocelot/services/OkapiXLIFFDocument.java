@@ -9,6 +9,7 @@ import com.vistatec.ocelot.xliff.XLIFFDocument;
 import com.vistatec.ocelot.xliff.XLIFFParser;
 import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
+import com.vistatec.ocelot.xliff.freme.XliffAnnotationWriter;
 
 import net.sf.okapi.common.LocaleId;
 
@@ -20,10 +21,12 @@ class OkapiXLIFFDocument implements XLIFFDocument {
     private String original;
     private XLIFFParser parser;
     private XLIFFWriter writer;
+    private XliffAnnotationWriter annotationWriter;
+//    private 
     private List<OcelotSegment> segments = new ArrayList<>();
 
     OkapiXLIFFDocument(File file, XLIFFVersion version, LocaleId srcLocale, LocaleId tgtLocale, String original,
-                   List<OcelotSegment> segments, XLIFFParser parser, XLIFFWriter writer) {
+                   List<OcelotSegment> segments, XLIFFParser parser, XLIFFWriter writer, XliffAnnotationWriter annotationWriter) {
         this.file = file;
         this.version = version;
         this.srcLocale = srcLocale;
@@ -31,6 +34,7 @@ class OkapiXLIFFDocument implements XLIFFDocument {
         this.original = original;
         this.parser = parser;
         this.writer = writer;
+        this.annotationWriter = annotationWriter;
         this.segments = segments;
     }
 
@@ -60,6 +64,10 @@ class OkapiXLIFFDocument implements XLIFFDocument {
 
     XLIFFWriter getWriter() {
         return writer;
+    }
+    
+    XliffAnnotationWriter getAnnotationWriter(){
+    	return annotationWriter;
     }
 
 	@Override

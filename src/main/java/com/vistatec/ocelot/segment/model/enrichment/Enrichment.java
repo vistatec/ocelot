@@ -25,23 +25,23 @@ public abstract class Enrichment {
 	private String type;
 
 	/** The offset start index as it is in the NIF file. */
-	protected int offsetStartIdx;
+	protected Integer offsetStartIdx;
 
 	/** The offset end index as it is in the NIF file. */
-	protected int offsetEndIdx;
+	protected Integer offsetEndIdx;
 
 	/**
 	 * The offset start index related to the text obtained by discarding tags.
 	 * It has the same value as <code>offsetStartIdx</code> if the text does not
 	 * contain any tags.
 	 */
-	protected int offsetNoTagsStartIdx;
+	protected Integer offsetNoTagsStartIdx;
 	/**
 	 * The offset start index related to the text obtained by discarding tags.
 	 * It has the same value as <code>offsetStartIdx</code> if the text does not
 	 * contain any tags.
 	 */
-	protected int offsetNoTagsEndIdx;
+	protected Integer offsetNoTagsEndIdx;
 	
 	/** the marker id. */
 	protected String id;
@@ -136,7 +136,7 @@ public abstract class Enrichment {
 	 * 
 	 * @return the offset start index.
 	 */
-	public int getOffsetStartIdx() {
+	public Integer getOffsetStartIdx() {
 		return offsetStartIdx;
 	}
 
@@ -155,7 +155,7 @@ public abstract class Enrichment {
 	 * 
 	 * @return the offset end index.
 	 */
-	public int getOffsetEndIdx() {
+	public Integer getOffsetEndIdx() {
 		return offsetEndIdx;
 	}
 
@@ -175,7 +175,7 @@ public abstract class Enrichment {
 	 * 
 	 * @return the no tags offset start index.
 	 */
-	public int getOffsetNoTagsStartIdx() {
+	public Integer getOffsetNoTagsStartIdx() {
 		return offsetNoTagsStartIdx;
 	}
 
@@ -195,7 +195,7 @@ public abstract class Enrichment {
 	 * 
 	 * @return the no tags offset end index.
 	 */
-	public int getOffsetNoTagsEndIdx() {
+	public Integer getOffsetNoTagsEndIdx() {
 		return offsetNoTagsEndIdx;
 	}
 
@@ -295,6 +295,32 @@ public abstract class Enrichment {
 	 */
 	public boolean isDisabled() {
 		return disabled;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if(obj instanceof Enrichment){
+			Enrichment enrichObj = (Enrichment) obj;
+			boolean equalOffsets = ((offsetStartIdx == null && enrichObj.offsetStartIdx == null) || (offsetStartIdx != null && offsetStartIdx.equals(enrichObj.offsetStartIdx)))
+					&& ((offsetEndIdx == null && enrichObj.offsetEndIdx == null) || (offsetEndIdx != null && offsetEndIdx.equals(enrichObj.offsetEndIdx)));
+			boolean equalNoTagsOffsets = ((offsetNoTagsStartIdx == null && enrichObj.offsetNoTagsStartIdx == null) || (offsetNoTagsStartIdx != null && offsetNoTagsStartIdx.equals(enrichObj.offsetNoTagsStartIdx)))
+					&& ((offsetNoTagsEndIdx == null && enrichObj.offsetNoTagsEndIdx == null) || (offsetNoTagsEndIdx != null && offsetNoTagsEndIdx.equals(enrichObj.offsetNoTagsEndIdx)));
+			return equalOffsets && equalNoTagsOffsets;
+		} else {
+			return super.equals(obj);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		int offsetsHashCode = 1;
+		if(offsetStartIdx != null && offsetEndIdx != null){
+			offsetsHashCode = offsetStartIdx * offsetEndIdx;
+		} else if (offsetNoTagsStartIdx != null && offsetNoTagsEndIdx != null){
+			offsetsHashCode = offsetNoTagsStartIdx * offsetNoTagsEndIdx;
+		}
+		return Integer.valueOf(offsetsHashCode).hashCode();
 	}
 
 }

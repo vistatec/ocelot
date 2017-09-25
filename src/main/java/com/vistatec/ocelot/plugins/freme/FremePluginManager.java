@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.Thread.State;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,6 +31,7 @@ import com.vistatec.ocelot.events.EnrichmentViewEvent;
 import com.vistatec.ocelot.events.ItsDocStatsRecalculateEvent;
 import com.vistatec.ocelot.events.RefreshSegmentView;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
 import com.vistatec.ocelot.its.model.EnrichmentMetaData;
 import com.vistatec.ocelot.plugins.exception.FremeEnrichmentException;
 import com.vistatec.ocelot.plugins.exception.UnknownServiceException;
@@ -46,7 +48,7 @@ import net.sf.okapi.common.resource.TextContainer;
  * Class managing calls to the FREME Plugin. It provides a pool of threads
  * invoking FREME services for Ocelot fragments.
  */
-public class FremePluginManager {
+public class FremePluginManager implements OcelotEventQueueListener {
 
 	/** The logger for this class. */
 	private final Logger logger = LoggerFactory.getLogger(FremePluginManager.class);
@@ -80,6 +82,10 @@ public class FremePluginManager {
 	private JMenuItem fremeMenuItem;
 	
 	private JMenuItem viewGraphMenuItem;
+	
+	private volatile boolean checkingElinkTemplate;
+	
+	private WaitingThread waitingThread;
 
 	/**
 	 * Constructor.
@@ -90,6 +96,7 @@ public class FremePluginManager {
 	public FremePluginManager(final OcelotEventQueue eventQueue) {
 
 		this.eventQueue = eventQueue;
+		this.eventQueue.registerListener(this);
 		createExecutor();
 	}
 
@@ -107,6 +114,14 @@ public class FremePluginManager {
 		this.segments = segments;
 	}
 
+	
+	private synchronized void runWaitingThread(){
+		
+		if(!checkingElinkTemplate &&  waitingThread != null && waitingThread.getState().equals(State.NEW)){
+			waitingThread.start();
+		}
+	}
+	
 	/**
 	 * Enriches the segments opened in Ocelot by invoking the FREME plugin.
 	 * 
@@ -114,7 +129,8 @@ public class FremePluginManager {
 	 *            the FREME plugin
 	 */
 	public void enrich(FremePlugin fremePlugin, int action) {
-
+		
+		
 		if (segments != null) {
 			if (action == OVERRIDE_ENRICHMENTS && existEnrichments()) {
 				resetSegments();
@@ -150,9 +166,9 @@ public class FremePluginManager {
 			eventQueue.post(new EnrichingStartedStoppedEvent(
 					EnrichingStartedStoppedEvent.STARTED));
 			addTasksToExecutor(fragmentsArrays, fremePlugin);
-			WaitingThread waitingThread = new WaitingThread(executor, segments,
+			waitingThread = new WaitingThread(executor, segments,
 					eventQueue);
-			waitingThread.start();
+			runWaitingThread();
 		}
 
 	}
@@ -763,6 +779,7 @@ class FremeEnricher implements Runnable {
 						Model model = fremePlugin.enrichSourceContent(frag
 								.getText());
 						frag.getVariant().setTripleModel(model);
+						model.write(System.out, "TTL");
 						enrichments = fremePlugin.getEnrichmentFromModel(model, false);
 						sourceTarget = EnrichmentMetaData.SOURCE;
 					}

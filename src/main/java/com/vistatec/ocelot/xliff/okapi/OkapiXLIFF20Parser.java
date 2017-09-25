@@ -57,7 +57,8 @@ import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.segment.model.okapi.OcelotRevision;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.xliff.XLIFFParser;
-import com.vistatec.ocelot.xliff.freme.EnrichmentConverterXLIFF20;
+import com.vistatec.ocelot.xliff.freme.EnrichmentConverter;
+import com.vistatec.ocelot.xliff.freme.FremeAnnotationReaderXliff20;
 
 import net.sf.okapi.lib.xliff2.Const;
 import net.sf.okapi.lib.xliff2.changeTracking.ChangeTrack;
@@ -95,7 +96,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
 	private String originalFileName;
-	private EnrichmentConverterXLIFF20 enrichmentConverter;
+	private EnrichmentConverter enrichmentConverter;
+	private FremeAnnotationReaderXliff20 annotationsReader;
 
 	public List<Event> getEvents() {
 		return this.events;
@@ -141,7 +143,8 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				if (xliffElement.getTargetLanguage() != null) {
 					this.targetLang = xliffElement.getTargetLanguage();
 				}
-				enrichmentConverter = new EnrichmentConverterXLIFF20(sourceLang, targetLang);
+				enrichmentConverter = new EnrichmentConverter();
+				annotationsReader = new FremeAnnotationReaderXliff20(sourceLang, targetLang);
 
 			} else if (event.isStartFile()) {
 				StartFileData fileData = event.getStartFileData();
@@ -151,13 +154,10 @@ public class OkapiXLIFF20Parser implements XLIFFParser {
 				List<Note> unitOcelotNotes = findOcelotNotes(unit);
 				for (Part unitPart : unit) {
 					if (unitPart.isSegment()) {
-						List<Enrichment> sourceEnrichments = enrichmentConverter.retrieveEnrichments(unit,
-								unitPart.getSource(), sourceLang, unitPart.getId());
-						List<Enrichment> targetEnrichments = enrichmentConverter.retrieveEnrichments(unit,
-								unitPart.getTarget(), targetLang, unitPart.getId());
+						Map<Fragment, List<Enrichment>> enrichmentsMap = annotationsReader.readEnrichments(unit, unitPart, unitPart.getId());
 						net.sf.okapi.lib.xliff2.core.Segment okapiSegment = (net.sf.okapi.lib.xliff2.core.Segment) unitPart;
 						OcelotSegment ocelotSegment = convertPartToSegment(okapiSegment, segmentUnitPartIndex++,
-								sourceEnrichments, targetEnrichments, unit.getId(), unitPart.getId(true),
+								enrichmentsMap.get(unitPart.getSource()), enrichmentsMap.get(unitPart.getTarget()), unit.getId(), unitPart.getId(true),
 								unit.getTranslate());
 						if (ocelotSegment.getTarget() != null) {
 							setTargetRevisions(unit, okapiSegment, ocelotSegment);

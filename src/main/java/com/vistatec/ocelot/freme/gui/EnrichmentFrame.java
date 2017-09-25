@@ -155,8 +155,8 @@ public class EnrichmentFrame extends JDialog implements Runnable,
 				        && lastEnrichedLabel.containsOffset(e
 				                .getOffsetNoTagsStartIdx())) {
 					lastEnrichedLabel.addEnrichment(e);
-					if (startIndex < e.getOffsetNoTagsEndIdx()) {
-						startIndex = e.getOffsetNoTagsEndIdx();
+					if (startIndex < e.getOffsetNoTagsEndIdx().intValue()) {
+						startIndex = e.getOffsetNoTagsEndIdx().intValue();
 					}
 				} else {
 					label = new JLabel(fragPlainText.substring(startIndex,
@@ -234,9 +234,9 @@ class EnrichmentComparator implements Comparator<Enrichment> {
 			comparison = -1;
 		} else if (o1.getOffsetNoTagsStartIdx() > o2.getOffsetNoTagsStartIdx()) {
 			comparison = 1;
-		} else if(o1.getOffsetEndIdx() > o2.getOffsetEndIdx()){		
+		} else if(o1.getOffsetNoTagsEndIdx() > o2.getOffsetNoTagsEndIdx()){		
 			comparison = -1;		
-		} else if(o1.getOffsetEndIdx() < o2.getOffsetEndIdx()){		
+		} else if(o1.getOffsetNoTagsEndIdx() < o2.getOffsetNoTagsEndIdx()){		
 			comparison = 1;	
 		}
 		return comparison;

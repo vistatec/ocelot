@@ -36,7 +36,30 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vistatec.ocelot.its.model.LanguageQualityIssue;
+import com.vistatec.ocelot.its.model.OtherITSMetadata;
+import com.vistatec.ocelot.its.model.Provenance;
+import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.rules.DataCategoryField;
+import com.vistatec.ocelot.rules.StateQualifier;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
+import com.vistatec.ocelot.segment.model.OcelotSegment;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
+import com.vistatec.ocelot.segment.model.okapi.Note;
+import com.vistatec.ocelot.segment.model.okapi.Notes;
+import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
+import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
+import com.vistatec.ocelot.xliff.XLIFFParser;
+import com.vistatec.ocelot.xliff.freme.EnrichmentConverter;
+import com.vistatec.ocelot.xliff.freme.FremeAnnotationReaderXliff12;
+import com.vistatec.ocelot.xliff.freme.OcelotFilterParameters;
+import com.vistatec.ocelot.xliff.freme.OcelotXliffFilter;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.FileUtil;
@@ -60,28 +83,7 @@ import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.RawDocument;
 import net.sf.okapi.common.resource.StartSubDocument;
 import net.sf.okapi.common.resource.TextContainer;
-import net.sf.okapi.filters.xliff.Parameters;
 import net.sf.okapi.filters.xliff.XLIFFFilter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vistatec.ocelot.its.model.LanguageQualityIssue;
-import com.vistatec.ocelot.its.model.OtherITSMetadata;
-import com.vistatec.ocelot.its.model.Provenance;
-import com.vistatec.ocelot.its.model.TextAnalysisMetaData;
-import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
-import com.vistatec.ocelot.rules.DataCategoryField;
-import com.vistatec.ocelot.rules.StateQualifier;
-import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
-import com.vistatec.ocelot.segment.model.OcelotSegment;
-import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
-import com.vistatec.ocelot.segment.model.okapi.Note;
-import com.vistatec.ocelot.segment.model.okapi.Notes;
-import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
-import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
-import com.vistatec.ocelot.xliff.XLIFFParser;
-import com.vistatec.ocelot.xliff.freme.EnrichmentConverterXLIFF12;
 
 /**
  * Parse XLIFF file for use in the workbench. The Event list is used when
@@ -92,11 +94,12 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 	private static Logger LOG = LoggerFactory
 	        .getLogger(OkapiXLIFF12Parser.class);
 	private LinkedList<Event> events;
-	private XLIFFFilter filter;
+	private OcelotXliffFilter filter;
 	private int documentSegmentNum;
 	private String sourceLang, targetLang;
 	private String originalFileName;
-	private EnrichmentConverterXLIFF12 enrichmentConverter;
+	private EnrichmentConverter enrichmentConverter;
+	private FremeAnnotationReaderXliff12 enrichmentsReader;
 
 	@Override
 	public String getSourceLang() {
@@ -149,10 +152,12 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		FileInputStream is = new FileInputStream(xliffFile);
 		RawDocument fileDoc = new RawDocument(is, "UTF-8", sourceLocale,
 		        targetLocale);
-		this.filter = new XLIFFFilter();
-		Parameters filterParams = new Parameters();
+		this.filter = new OcelotXliffFilter();
+		OcelotFilterParameters filterParams = new OcelotFilterParameters();
 		filterParams.setAddAltTrans(true);
 		filterParams.setEscapeGT(true);
+		filterParams.setIncludeIts(true);
+		filterParams.setManageFremeAnnotations(true);
 		this.filter.setParameters(filterParams);
 		this.filter.open(fileDoc);
 		int fileEventNum = 0;
@@ -194,7 +199,8 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 					setTargetLang(fileTargetLang);
 					fileDoc.setTargetLocale(LocaleId.fromString(fileTargetLang));
 				}
-				enrichmentConverter = new EnrichmentConverterXLIFF12(sourceLang, targetLang);
+				enrichmentConverter = new EnrichmentConverter();
+				enrichmentsReader = new FremeAnnotationReaderXliff12(sourceLang, targetLang);
 
 			} else if (event.isTextUnit()) {
 				ITextUnit tu = (ITextUnit) event.getResource();
@@ -231,13 +237,8 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		}
 
 		TextContainer oriTgtTu = retrieveOriginalTarget(tgtTu);
-		List<Enrichment> sourceEnrichments = enrichmentConverter
-		        .retrieveEnrichments(srcTu, tu, LocaleId.fromString(getSourceLang()).getLanguage());
-		List<Enrichment> targetEnrichments = enrichmentConverter
-		        .retrieveEnrichments(tgtTu, tu, LocaleId.fromString(getTargetLang()).getLanguage());
-		List<Enrichment> originalTargetEnrichments = enrichmentConverter
-		        .retrieveEnrichments(oriTgtTu, tu, LocaleId.fromString(getTargetLang()).getLanguage());
-
+		Map<TextContainer, List<Enrichment>> enrichmentsMap = enrichmentsReader.readEnrichments(tu, srcTu, tgtTu,
+				oriTgtTu);
 		OkapiSegment.Builder segBuilder = new OkapiSegment.Builder()
 		        .segmentNumber(documentSegmentNum++)
 		        .eventNumber(fileEventNum)
@@ -267,25 +268,25 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		}
 		OkapiSegment segment = segBuilder.build();
 		if (segment.getSource() instanceof BaseSegmentVariant
-		        && !sourceEnrichments.isEmpty()) {
+		        && enrichmentsMap.containsKey(srcTu)) {
 			((BaseSegmentVariant) segment.getSource())
-			        .addEnrichmentList(sourceEnrichments);
+			        .addEnrichmentList(enrichmentsMap.get(srcTu));
 //			((BaseSegmentVariant) segment.getSource()).setEnriched(true);
 		}
 		if (segment.getTarget() instanceof BaseSegmentVariant
-		        && !targetEnrichments.isEmpty()) {
+		        && enrichmentsMap.containsKey(tgtTu)) {
 			((BaseSegmentVariant) segment.getTarget())
-			        .addEnrichmentList(targetEnrichments);
+			        .addEnrichmentList(enrichmentsMap.get(tgtTu));
 //			((BaseSegmentVariant) segment.getTarget()).setEnriched(true);
 		}
 		if (segment.getOriginalTarget() instanceof BaseSegmentVariant
-		        && !originalTargetEnrichments.isEmpty()) {
+		        && enrichmentsMap.containsKey(oriTgtTu)) {
 			((BaseSegmentVariant) segment.getOriginalTarget())
-			        .addEnrichmentList(originalTargetEnrichments);
+			        .addEnrichmentList(enrichmentsMap.get(oriTgtTu));
 		}
 		List<Enrichment> totEnrichments = new ArrayList<Enrichment>(
-		        sourceEnrichments);
-		totEnrichments.addAll(targetEnrichments);
+		        enrichmentsMap.get(srcTu));
+		totEnrichments.addAll(enrichmentsMap.get(tgtTu));
 		readNotes(segment, tu);
 		return attachITSDataToSegment(segment, tu, srcTu, tgtTu, totEnrichments);
 	}
@@ -360,56 +361,56 @@ public class OkapiXLIFF12Parser implements XLIFFParser {
 		return seg;
 	}
 
-	private List<TextAnalysisMetaData> retrieveITSTAAnnotations(ITextUnit tu,
-	        TextContainer srcTu, TextContainer tgtTu) {
+//	private List<TextAnalysisMetaData> retrieveITSTAAnnotations(ITextUnit tu,
+//	        TextContainer srcTu, TextContainer tgtTu) {
+//
+//		List<TextAnalysisMetaData> taAnnotations = new ArrayList<TextAnalysisMetaData>();
+//		// Iterable<IAnnotation> annotations = tu.getAnnotations();
+//		// OK!!!!
+//		taAnnotations.addAll(createTaAnnotations(tu.getAnnotation(GenericAnnotations.class), TextAnalysisMetaData.SEGMENT));
+//		taAnnotations.addAll(createTaAnnotations(srcTu.getAnnotation(GenericAnnotations.class), TextAnalysisMetaData.SOURCE));
+//		if (tgtTu != null) {
+//			taAnnotations.addAll(createTaAnnotations(tgtTu.getAnnotation(GenericAnnotations.class), TextAnalysisMetaData.TARGET));
+//		}
+//		// tu.getAnnotation(GenericAnnotation)
+//		return taAnnotations;
+//	}
 
-		List<TextAnalysisMetaData> taAnnotations = new ArrayList<TextAnalysisMetaData>();
-		// Iterable<IAnnotation> annotations = tu.getAnnotations();
-		// OK!!!!
-		taAnnotations.addAll(createTaAnnotations(tu.getAnnotation(GenericAnnotations.class), TextAnalysisMetaData.SEGMENT));
-		taAnnotations.addAll(createTaAnnotations(srcTu.getAnnotation(GenericAnnotations.class), TextAnalysisMetaData.SOURCE));
-		if (tgtTu != null) {
-			taAnnotations.addAll(createTaAnnotations(tgtTu.getAnnotation(GenericAnnotations.class), TextAnalysisMetaData.TARGET));
-		}
-		// tu.getAnnotation(GenericAnnotation)
-		return taAnnotations;
-	}
-
-	private List<TextAnalysisMetaData> createTaAnnotations(
-	        GenericAnnotations annotations, String entityType) {
-
-		List<TextAnalysisMetaData> taAnnotations = new ArrayList<TextAnalysisMetaData>();
-		if (annotations != null) {
-			Iterator<GenericAnnotation> annotsIt = annotations.iterator();
-			GenericAnnotation annot = null;
-			TextAnalysisMetaData taAnnot = null;
-			while (annotsIt.hasNext()) {
-				annot = annotsIt.next();
-				if (annot.getType().equals(GenericAnnotationType.TA)) {
-					taAnnot = new TextAnalysisMetaData();
-					taAnnot.setEntity(entityType);
-					// taAnnot.setTaAnnotatorsRef(taAnnotatorsRef);
-					taAnnot.setTaClassRef(annot
-					        .getString(GenericAnnotationType.TA_CLASS));
-					taAnnot.setTaConfidence(annot
-					        .getDouble(GenericAnnotationType.TA_CONFIDENCE));
-					taAnnot.setTaIdentRef(annot
-					        .getString(GenericAnnotationType.TA_IDENT));
-					taAnnotations.add(taAnnot);
-				} else if (annot.getType().equals(GenericAnnotationType.ANNOT)) {
-					String annotValue = annot.getString(GenericAnnotationType.ANNOT_VALUE);
-					if(annotValue != null && annotValue.startsWith("text-analysis|")){
-						int index = annotValue.indexOf("text-analysis|") + "text-analysis|".length();
-						taAnnot = new TextAnalysisMetaData();
-						taAnnot.setTaAnnotatorsRef(annotValue.substring(index));
-						taAnnotations.add(taAnnot);
-					}
-				}
-
-			}
-		}
-		return taAnnotations;
-	}
+//	private List<TextAnalysisMetaData> createTaAnnotations(
+//	        GenericAnnotations annotations, String entityType) {
+//
+//		List<TextAnalysisMetaData> taAnnotations = new ArrayList<TextAnalysisMetaData>();
+//		if (annotations != null) {
+//			Iterator<GenericAnnotation> annotsIt = annotations.iterator();
+//			GenericAnnotation annot = null;
+//			TextAnalysisMetaData taAnnot = null;
+//			while (annotsIt.hasNext()) {
+//				annot = annotsIt.next();
+//				if (annot.getType().equals(GenericAnnotationType.TA)) {
+//					taAnnot = new TextAnalysisMetaData();
+//					taAnnot.setEntity(entityType);
+//					// taAnnot.setTaAnnotatorsRef(taAnnotatorsRef);
+//					taAnnot.setTaClassRef(annot
+//					        .getString(GenericAnnotationType.TA_CLASS));
+//					taAnnot.setTaConfidence(annot
+//					        .getDouble(GenericAnnotationType.TA_CONFIDENCE));
+//					taAnnot.setTaIdentRef(annot
+//					        .getString(GenericAnnotationType.TA_IDENT));
+//					taAnnotations.add(taAnnot);
+//				} else if (annot.getType().equals(GenericAnnotationType.ANNOT)) {
+//					String annotValue = annot.getString(GenericAnnotationType.ANNOT_VALUE);
+//					if(annotValue != null && annotValue.startsWith("text-analysis|")){
+//						int index = annotValue.indexOf("text-analysis|") + "text-analysis|".length();
+//						taAnnot = new TextAnalysisMetaData();
+//						taAnnot.setTaAnnotatorsRef(annotValue.substring(index));
+//						taAnnotations.add(taAnnot);
+//					}
+//				}
+//
+//			}
+//		}
+//		return taAnnotations;
+//	}
 
 	public ITSLQIAnnotations retrieveITSLQIAnnotations(ITextUnit tu,
 	        TextContainer srcTu, TextContainer tgtTu) {

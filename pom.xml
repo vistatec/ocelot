@@ -156,6 +156,12 @@
 			<artifactId>azure-storage</artifactId>
 			<version>4.2.0</version>
 		</dependency>
+		
+		<!-- <dependency>
+			<groupId>com.vistatec.fremeServices</groupId>
+			<artifactId>fremeServices</artifactId>
+			<version>0.0.1</version>
+		</dependency> -->
 
 	</dependencies>
 

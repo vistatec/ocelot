@@ -84,6 +84,12 @@ public class LinkEnrichment extends Enrichment {
 		this.language = language;
 	}
 
+	public LinkEnrichment(String language) {
+		
+		super(Enrichment.LINK_TYPE);
+		this.language = language;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -437,15 +443,14 @@ public class LinkEnrichment extends Enrichment {
 		if (obj instanceof LinkEnrichment) {
 			return referenceEntity
 					.equals(((LinkEnrichment) obj).referenceEntity)
-					&& offsetStartIdx == ((LinkEnrichment) obj).offsetStartIdx
-					&& offsetEndIdx == ((LinkEnrichment) obj).offsetEndIdx;
+					&& super.equals(obj);
 		} else {
-			return super.equals(obj);
+			return false;
 		}
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * referenceEntity.hashCode() * offsetStartIdx * offsetEndIdx;
+		return 31 * referenceEntity.hashCode() * super.hashCode();
 	}
 }

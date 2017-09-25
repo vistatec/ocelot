@@ -14,6 +14,8 @@ public interface XLIFFWriter {
     public void updateTiming(Double time);
     
     public void updateLqiConfiguration(String lqiConfName);
+    
+    public void updateEnrichments(OcelotSegment seg);
 
     public void save(File file) throws IOException, UnsupportedEncodingException;
 }

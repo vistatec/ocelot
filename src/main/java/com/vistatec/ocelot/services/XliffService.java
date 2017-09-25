@@ -14,7 +14,7 @@ import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
  */
 public interface XliffService extends OcelotEventQueueListener {
 
-    public XLIFFDocument parse(File xliffFile) throws IOException, XMLStreamException;
+    public XLIFFDocument parse(File xliffFile ) throws IOException, XMLStreamException;
 
     public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException;
 

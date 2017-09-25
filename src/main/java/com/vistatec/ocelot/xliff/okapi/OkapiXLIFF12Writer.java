@@ -51,12 +51,15 @@ import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.its.model.LanguageQualityIssue;
 import com.vistatec.ocelot.its.model.Provenance;
 import com.vistatec.ocelot.its.model.okapi.OkapiProvenance;
+import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.enrichment.Enrichment;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.OkapiSegment;
 import com.vistatec.ocelot.segment.model.okapi.TextContainerVariant;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
+import com.vistatec.ocelot.xliff.freme.FremeAnnotationWriterXliff12;
 
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.LocaleId;
@@ -93,10 +96,12 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
     private Double time;
     private String lqiConfiguration;
     private Xliff12HeaderWriter headerWriter;
+    private FremeAnnotationWriterXliff12 annotationWriter;
 
     public OkapiXLIFF12Writer(OkapiXLIFF12Parser xliffParser,
             UserProvenance userProvenance, OcelotEventQueue eventQueue) {
         this.parser = xliffParser;
+        annotationWriter = new FremeAnnotationWriterXliff12(parser);
         this.userProvenance = userProvenance;
         this.eventQueue = eventQueue;
         headerWriter = new Xliff12HeaderWriter();
@@ -136,6 +141,16 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
             LOG.error("Failed to update event for segment #"+okapiSeg.getSegmentNumber());
         }
     }
+    
+    public void addEnrichment(OcelotSegment segment, Enrichment enrichment){
+    	
+    }
+    
+    public void removeEnrichment(OcelotSegment segment, Enrichment enrichment){
+    	
+    }
+    
+//    public void 
 
     ITSProvenanceAnnotations addOcelotProvenance(OcelotSegment seg) {
         ITSProvenanceAnnotations provAnns = new ITSProvenanceAnnotations();
@@ -251,6 +266,13 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
         }
     }
 
+    
+    public void writeAnnotatios(List<OcelotSegment> segments){
+    	for(OcelotSegment segment: segments){
+    		annotationWriter.writeAnnotations(segment);
+    	}
+    }
+    
     @Override
     public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         saveEvents(parser.getFilter(), parser.getSegmentEvents(),
@@ -311,9 +333,19 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
 
     private void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         StringBuilder tmp = new StringBuilder();
+//        ((OcelotFilterParameters)filter.getParameters()).setManageFremeAnnotations(true);
         ISkeletonWriter skelWriter = filter.createSkeletonWriter();
+//        net.sf.okapi.common.filterwriter.XLIFFWriter writer = new net.sf.okapi.common.filterwriter.XLIFFWriter();
+//        writer.getParameters().setIncludeIts(true);
+////        IFilterWriter writer = filter.createFilterWriter();
+//        writer.setOutput(output);
         EncoderManager encoderManager = filter.getEncoderManager();
+//        writer.setOptions(locId, encoderManager.getEncoding());
+//        writer.getParameters().setEscapeGt(true);
+//        writer.getParameters().setIncludeNoTranslate(true);
+//        writer.getParameters().se
         for (Event event : events) {
+//        	writer.handleEvent(event);
             switch (event.getEventType()) {
                 case START_DOCUMENT:
                     tmp.append(skelWriter.processStartDocument(locId, "UTF-8", null, encoderManager,
@@ -353,6 +385,7 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
             }
         }
         skelWriter.close();
+//        writer.close();
         Writer outputFile = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
         outputFile.write(tmp.toString());
@@ -382,6 +415,11 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
               .append("=\"")
               .append(Namespaces.ITS_NS_URI)
               .append("\" ");
+            sb.append(" xmlns:")
+            .append(Namespaces.ITSXLF_NS_PREFIX)
+            .append("=\"")
+            .append(Namespaces.ITSXLF_NS_URI)
+            .append("\" ");
             sb.append(m.group(3));
             GenericSkeleton newSkel = new GenericSkeleton(sb.toString());
             dp.setSkeleton(newSkel);
@@ -397,5 +435,49 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
 	@Override
 	public void updateLqiConfiguration(String lqiConfName) {
 		this.lqiConfiguration = lqiConfName;
+	}
+
+	@Override
+	public void updateEnrichments(OcelotSegment seg) {
+	
+		OkapiSegment okapiSeg = (OkapiSegment) seg;
+        Event event = getParser().getSegmentEvent(okapiSeg.eventNum);
+        if (event == null) {
+            LOG.error("Failed to find Okapi Event associated with segment #"+okapiSeg.getSegmentNumber());
+
+        } else if (event.isTextUnit()) {
+        	
+        	ITextUnit tu = event.getTextUnit();
+        	if(((BaseSegmentVariant)seg.getSource()).isEnriched()) {
+        		writeEnrichments((BaseSegmentVariant) seg.getSource(), tu, tu.getSource());
+        	}
+        }
+	}
+	
+//	private void removeEnrichments(BaseSegmentVariant variant, ITextUnit tu, TextContainer tc){
+//		for(TextPart textPart: tc.getParts()){
+//			List<Code> codesToRemove = new ArrayList<>();
+//			for(Code code: textPart.getContent().getCodes()) {
+//				if(code.getGenericAnnotations() != null){
+//					GenericAnnotations annotsToRemove = new GenericAnnotations();
+//					for(GenericAnnotation annot: code.getGenericAnnotations()){
+//						if(annot instanceof FremeAnnotations)
+//					}
+//					for(GenericAnnotation annot: annotsToRemove){
+//						code.getGenericAnnotations().remove(annot);
+//					}
+//					if(code.getGenericAnnotations().size() == 0){
+//						codesToRemove.add(code);
+//					}
+//				}
+//			}
+//			textPart.getContent().getCodes().removeAll(codesToRemove);
+//		}
+//		
+//	}
+
+	private void writeEnrichments(BaseSegmentVariant source, ITextUnit tu, TextContainer source2) {
+		// TODO Auto-generated method stub
+		
 	}
 }

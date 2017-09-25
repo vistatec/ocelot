@@ -62,7 +62,6 @@ import com.vistatec.ocelot.services.EditDistanceReportService;
 import com.vistatec.ocelot.services.SegmentService;
 import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
-import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
 
 /**
  * Main Ocelot application context.
@@ -137,7 +136,10 @@ public class OcelotApp implements OcelotEventQueueListener {
     }
     
     public void openFile(File openFile, boolean temporaryFile) throws IOException, FileNotFoundException, XMLStreamException {
-        openXliffFile = xliffService.parse(openFile);
+    	
+
+    	long start = System.currentTimeMillis();
+    	openXliffFile = xliffService.parse(openFile);
         segmentService.clearAllSegments();
         segmentService.setSegments(openXliffFile);
 
@@ -157,6 +159,9 @@ public class OcelotApp implements OcelotEventQueueListener {
         segErrorChecker.clear();
         savedToAzure = false;
         eventQueue.post(new OpenFileEvent(fileName, openXliffFile));
+        long end = System.currentTimeMillis();
+        System.out.println("********** duration: " + (end-start));
+        
     }
     
     private String getFileNameFromOriginal(String originalName){
@@ -164,10 +169,12 @@ public class OcelotApp implements OcelotEventQueueListener {
     }
 
     public void saveFile(File saveFile) throws ErrorAlertException, IOException {
+    	
         if (saveFile == null) {
             throw new ErrorAlertException("No file to save!", "No file was specified to save to.");
         }
 
+        long start = System.currentTimeMillis();
         String filename = saveFile.getName();
         if (saveFile.exists() && !saveFile.canWrite()) {
             throw new ErrorAlertException("Unable to save!",
@@ -180,28 +187,31 @@ public class OcelotApp implements OcelotEventQueueListener {
         Path tmpPath = Files.createTempFile("ocelot", "save");
         File tmpFile = tmpPath.toFile();
         xliffService.saveTime(pluginManager.getTimerSeconds());
+        
         xliffService.save(openXliffFile, tmpFile);
-        if(pluginManager.isFremePluginEnabled()){
-	        try {
-				XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
-				        openXliffFile.getSrcLocale().toString(), openXliffFile
-				                .getTgtLocale().toString());
-	            annotationWriter.saveAnnotations(tmpFile, segmentService);
-	        } catch (Exception e) {
-	            if (!tmpFile.delete()) {
-	                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
-	            }
-	            throw new ErrorAlertException("Unable to save!", "The file " + filename
-	                    + " cannot be saved because the content is invalid. "
-	                    + "If you edited tags, ensure they are correctly nested.");
-	        }
-        }
+//        if(pluginManager.isFremePluginEnabled()){
+//	        try {
+//				XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
+//				        openXliffFile.getSrcLocale().toString(), openXliffFile
+//				                .getTgtLocale().toString());
+//	            annotationWriter.saveAnnotations(tmpFile, segmentService);
+//	        } catch (Exception e) {
+//	            if (!tmpFile.delete()) {
+//	                LOG.info("Failed to delete temp file: " + tmpFile.getPath());
+//	            }
+//	            throw new ErrorAlertException("Unable to save!", "The file " + filename
+//	                    + " cannot be saved because the content is invalid. "
+//	                    + "If you edited tags, ensure they are correctly nested.");
+//	        }
+//        }
         this.fileDirty = false;
         editDistService.createEditDistanceReport(filename);
         pluginManager.notifySavedFile(filename);
         Files.move(tmpPath, saveFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         openFile = saveFile;
         segErrorChecker.clear();
+        long end = System.currentTimeMillis();
+        System.out.println("Saving time: "  + (end-start) + " millisec");
     }
 
     public void saveLqiConfiguration(String lqiConfName) {

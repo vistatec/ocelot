@@ -7,6 +7,7 @@ import javax.xml.stream.XMLStreamException;
 
 import com.vistatec.ocelot.config.UserProvenance;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
+import com.vistatec.ocelot.xliff.freme.XliffAnnotationWriter;
 
 public interface XLIFFFactory {
 
@@ -16,4 +17,6 @@ public interface XLIFFFactory {
 
     public XLIFFWriter newXLIFFWriter(XLIFFParser parser,
             UserProvenance userProvenance, OcelotEventQueue eventQueue);
+    
+    public XliffAnnotationWriter newXliffAnnotationWriter(XLIFFParser parser);
 }

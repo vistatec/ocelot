@@ -50,6 +50,9 @@ import com.vistatec.ocelot.xliff.XLIFFFactory;
 import com.vistatec.ocelot.xliff.XLIFFParser;
 import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
+import com.vistatec.ocelot.xliff.freme.FremeAnnotationWriterXliff12;
+import com.vistatec.ocelot.xliff.freme.FremeAnnotationsWriterXliff20;
+import com.vistatec.ocelot.xliff.freme.XliffAnnotationWriter;
 
 /**
  * Detect which XLIFF parser version to use for the XLIFF file.
@@ -133,5 +136,15 @@ public class OkapiXLIFFFactory implements XLIFFFactory {
             throw new IllegalArgumentException("Unrecognized XLIFF parser version!");
         }
     }
+
+	@Override
+	public XliffAnnotationWriter newXliffAnnotationWriter(XLIFFParser parser) {
+		
+		if(parser instanceof OkapiXLIFF12Parser){
+			return new FremeAnnotationWriterXliff12((OkapiXLIFF12Parser)parser);
+		} else {
+			return new FremeAnnotationsWriterXliff20((OkapiXLIFF20Parser)parser);
+		}
+	}
 
 }

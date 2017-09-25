@@ -171,16 +171,16 @@ public class EntityEnrichment extends Enrichment {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof EntityEnrichment) {
-			return entityURL.equals(((EntityEnrichment) obj).getEntityURL())
-					&& offsetStartIdx == ((EntityEnrichment) obj).offsetStartIdx
-					&& offsetEndIdx == ((EntityEnrichment) obj).offsetEndIdx;
+			EntityEnrichment entityObj = (EntityEnrichment) obj;
+			return entityURL.equals(entityObj.getEntityURL()) && super.equals(entityObj);
 		} else {
-			return super.equals(obj);
+			return false;
 		}
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * entityURL.hashCode() * offsetStartIdx * offsetEndIdx;
+		
+		return 31 * entityURL.hashCode() * super.hashCode();
 	}
 }

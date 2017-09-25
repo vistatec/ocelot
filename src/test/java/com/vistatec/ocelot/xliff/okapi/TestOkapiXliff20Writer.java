@@ -48,7 +48,6 @@ import com.vistatec.ocelot.services.SegmentServiceImpl;
 import com.vistatec.ocelot.services.XliffService;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
 import com.vistatec.ocelot.xliff.freme.EnrichmentAnnotationsConstants;
-import com.vistatec.ocelot.xliff.freme.XliffFremeAnnotationWriter;
 
 public class TestOkapiXliff20Writer extends XMLTestCase {
 
@@ -79,10 +78,10 @@ public class TestOkapiXliff20Writer extends XMLTestCase {
 		}
 		File savedFile = saveXliffToTemp(xliffService, xliff);
 		System.out.println(savedFile.getAbsolutePath());
-		XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
-		        xliff.getSrcLocale().toString(), xliff.getTgtLocale()
-		                .toString());
-		annotationWriter.saveAnnotations(savedFile, segmentService);
+//		XliffFremeAnnotationWriter annotationWriter = new XliffFremeAnnotationWriter(
+//		        xliff.getSrcLocale().toString(), xliff.getTgtLocale()
+//		                .toString());
+//		annotationWriter.saveAnnotations(savedFile, segmentService);
 		savedFile = checkJson(savedFile, segmentService);
 
 		checkAgainstGoldXML(savedFile, "xliff2.0.enriched-small-nojson.xlf");

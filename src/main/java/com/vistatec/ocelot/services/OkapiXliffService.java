@@ -48,6 +48,7 @@ import com.vistatec.ocelot.xliff.XLIFFFactory;
 import com.vistatec.ocelot.xliff.XLIFFParser;
 import com.vistatec.ocelot.xliff.XLIFFVersion;
 import com.vistatec.ocelot.xliff.XLIFFWriter;
+import com.vistatec.ocelot.xliff.freme.XliffAnnotationWriter;
 import com.vistatec.ocelot.xliff.okapi.OkapiXLIFFFactory;
 
 /**
@@ -99,23 +100,25 @@ public class OkapiXliffService implements XliffService {
         XLIFFVersion version = xliffFactory.detectXLIFFVersion(xliffFile);
         XLIFFParser newParser = xliffFactory.newXLIFFParser(version);
         List<OcelotSegment> xliffSegments = newParser.parse(xliffFile);
-
+        XliffAnnotationWriter annotationWriter = xliffFactory.newXliffAnnotationWriter(newParser);
         XLIFFParser xliffParser = newParser;
         XLIFFWriter segmentWriter = xliffFactory.newXLIFFWriter(xliffParser,
                 cfgService.getUserProvenance(), eventQueue);
         return new OkapiXLIFFDocument(xliffFile, version, LocaleId.fromString(xliffParser.getSourceLang()),
                                   LocaleId.fromString(xliffParser.getTargetLang()), xliffParser.getOriginalFileName(), xliffSegments,
-                                  xliffParser, segmentWriter);
+                                  xliffParser, segmentWriter, annotationWriter);
     }
 
     @Override
     public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException {
     	
         OkapiXLIFFDocument okapiFile = getDoc(xliffFile);
+        okapiFile.getAnnotationWriter().writeAnnotations(okapiFile.getSegments());
         okapiFile.getWriter().updateTiming(time);
         okapiFile.getWriter().updateLqiConfiguration(lqiConfiguration);
         okapiFile.getWriter().save(dest);
         time = null;
     }
+
 
 }

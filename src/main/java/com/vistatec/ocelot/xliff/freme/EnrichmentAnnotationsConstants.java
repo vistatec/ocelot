@@ -37,5 +37,8 @@ public interface EnrichmentAnnotationsConstants {
 	
 	/** Terminology annotators ref start string. */
 	public String TERM_ANNOTATORS_REF_STRING = "terminology|";
-
+	
+	public String ANNOT_ORIGIN = "origin";
+	
+	public String FREME_ORIGIN = "freme";
 }

@@ -682,11 +682,14 @@ protected List<HighlightData> highlightDataList;
     }
 	
 	private void adjustOffsets(final Enrichment enrichment ){
-		if(enrichIndexMapping == null){
-			buildIndexMapping();
+		
+		if (enrichment.getOffsetNoTagsEndIdx() == null || enrichment.getOffsetNoTagsStartIdx() == null) {
+			if (enrichIndexMapping == null) {
+				buildIndexMapping();
+			}
+			enrichment.setOffsetNoTagsStartIdx(enrichIndexMapping[enrichment.getOffsetStartIdx()]);
+			enrichment.setOffsetNoTagsEndIdx(enrichIndexMapping[enrichment.getOffsetEndIdx()]);
 		}
-		enrichment.setOffsetNoTagsStartIdx(enrichIndexMapping[enrichment.getOffsetStartIdx()]);
-		enrichment.setOffsetNoTagsEndIdx(enrichIndexMapping[enrichment.getOffsetEndIdx()]);
 	}
 	
 	
@@ -729,6 +732,13 @@ protected List<HighlightData> highlightDataList;
 			
 		}
 		
+		System.out.println("***************************");
+		System.out.println("Variant: " + getDisplayText());
+		System.out.println("Index Mapping:\n");
+		for(int i = 0; i<enrichIndexMapping.length; i++){
+			System.out.println(i + " -> " + enrichIndexMapping[i]);
+		}
+		System.out.println("***************************");
 	}
 	
     
