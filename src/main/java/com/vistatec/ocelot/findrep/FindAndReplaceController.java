@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
@@ -56,8 +57,10 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 
 	/** List of replaced results. */
 	private List<Integer> replacedResIdxList;
-	
+
 	private int[] sortedIndexMap;
+
+	private boolean showNotTransSegments;
 
 	/**
 	 * Constructor.
@@ -65,9 +68,10 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 * @param eventQueue
 	 *            the event queue
 	 */
-	public FindAndReplaceController(OcelotEventQueue eventQueue) {
+	public FindAndReplaceController(OcelotEventQueue eventQueue, boolean showNotTransSegments) {
 
 		this.eventQueue = eventQueue;
+		this.showNotTransSegments = showNotTransSegments;
 		wordFinder = new WordFinder();
 		replacedResIdxList = new ArrayList<Integer>();
 	}
@@ -83,10 +87,8 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 
 		segments = e.getDocument().getSegments();
 		sortedIndexMap = null;
-        sourceLocale = Locale.forLanguageTag(e.getDocument().getSrcLocale()
-				.getOriginalLocId());
-        targetLocale = Locale.forLanguageTag(e.getDocument().getTgtLocale()
-				.getOriginalLocId());
+		sourceLocale = Locale.forLanguageTag(e.getDocument().getSrcLocale().toBCP47());
+		targetLocale = Locale.forLanguageTag(e.getDocument().getTgtLocale().toBCP47());
 		if (frDialog != null) {
 			int selectedScope = frDialog.getSelectedScope();
 			if (selectedScope == WordFinder.SCOPE_SOURCE) {
@@ -98,10 +100,10 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 		clear();
 
 	}
-	
+
 	@Subscribe
-	public void segmentsSorted(SegmentRowsSortedEvent e){
-		
+	public void segmentsSorted(SegmentRowsSortedEvent e) {
+
 		this.sortedIndexMap = e.getSortedIndexMap();
 		clear();
 	}
@@ -114,21 +116,38 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 		replacedResIdxList.clear();
 	}
 
-	private List<OcelotSegment> getSortedSegmentList(){
-		
-		List<OcelotSegment> sortedList = null;
-		if(sortedIndexMap != null){
+	private List<OcelotSegment> getSortedSegmentList() {
+
+		List<OcelotSegment> sortedList = new ArrayList<>();
+		if (sortedIndexMap != null) {
 			OcelotSegment[] sortedArray = new OcelotSegment[segments.size()];
-			for(int i = 0; i<segments.size(); i++){
-				sortedArray[sortedIndexMap[i]] = segments.get(i);
+			int newIndex = -1;
+			for (int i = 0; i < segments.size(); i++) {
+				newIndex = sortedIndexMap[i];
+				if (newIndex > -1) {
+					sortedArray[newIndex] = segments.get(i);
+				}
 			}
-			sortedList = Arrays.asList(sortedArray);
+			if (showNotTransSegments) {
+				sortedList = Arrays.asList(sortedArray);
+			} else {
+				
+				sortedList = Arrays.asList(sortedArray).stream()
+						.filter(seg -> seg != null)
+						.collect(Collectors.toList());
+			}
 		} else {
-			sortedList = segments;
+			if (showNotTransSegments) {
+				sortedList = segments;
+			} else {
+				sortedList = segments.stream()
+						.filter(s -> s.isTranslatable())
+						.collect(Collectors.toList());
+			}
 		}
 		return sortedList;
 	}
-	
+
 	/**
 	 * Finds the next occurrence of the text.
 	 * 
@@ -155,15 +174,12 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 				}
 				// if a list of results already exists, then go to the next
 				// result
-			} else if (wordFinder.getAllResults() != null
-					&& !wordFinder.getAllResults().isEmpty()) {
+			} else if (wordFinder.getAllResults() != null && !wordFinder.getAllResults().isEmpty()) {
 				do {
 					wordFinder.goToNextResult();
-				} while (replacedResIdxList.contains(wordFinder
-						.getCurrentResIndex()));
+				} while (replacedResIdxList.contains(wordFinder.getCurrentResIndex()));
 				if (wordFinder.getCurrentResIndex() != -1
-						&& wordFinder.getCurrentResIndex() != wordFinder
-								.getAllResults().size()) {
+						&& wordFinder.getCurrentResIndex() != wordFinder.getAllResults().size()) {
 					sendHighlightEvent(wordFinder.getAllResults());
 					frDialog.setResult(RESULT_FOUND);
 				} else {
@@ -193,8 +209,7 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 					resultsToSend.add(results.get(i));
 				}
 			}
-			currResIdx = resultsToSend.indexOf(results.get(wordFinder
-					.getCurrentResIndex()));
+			currResIdx = resultsToSend.indexOf(results.get(wordFinder.getCurrentResIndex()));
 		}
 
 		eventQueue.post(new HighlightEvent(resultsToSend, currResIdx));
@@ -211,27 +226,23 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	public void replace(String newString) {
 		boolean replace = true;
 		if (newString.isEmpty()) {
-			int option = JOptionPane
-					.showConfirmDialog(
-							frDialog,
-							"Do you want to replace the selected occurrence with an empty string?",
-							"Replace", JOptionPane.YES_NO_OPTION);
+			int option = JOptionPane.showConfirmDialog(frDialog,
+					"Do you want to replace the selected occurrence with an empty string?", "Replace",
+					JOptionPane.YES_NO_OPTION);
 			replace = option == JOptionPane.YES_OPTION;
 		}
 		if (replace) {
 			frDialog.hideOccNumber();
-			if (wordFinder.getAllResults() != null
-					&& !wordFinder.getAllResults().isEmpty()) {
+			if (wordFinder.getAllResults() != null && !wordFinder.getAllResults().isEmpty()) {
 				int indexToReplace = wordFinder.getCurrentResIndexForReplace();
 				if (replacedResIdxList.contains(indexToReplace)) {
 					findNext(lastSearchedText);
 				} else if (indexToReplace != -1) {
-                    eventQueue.post(new ReplaceEvent(lastSearchedText, newString,
-                            wordFinder.getAllResults().get(indexToReplace).getSegmentIndex(), ReplaceEvent.REPLACE));
+					eventQueue.post(new ReplaceEvent(lastSearchedText, newString,
+							wordFinder.getAllResults().get(indexToReplace).getSegmentIndex(), ReplaceEvent.REPLACE));
 					wordFinder.replacedString(newString);
 					replacedResIdxList.add(indexToReplace);
-					if (replacedResIdxList.size() == wordFinder.getAllResults()
-							.size()) {
+					if (replacedResIdxList.size() == wordFinder.getAllResults().size()) {
 						wordFinder.clearAllResults();
 						clear();
 					}
@@ -274,8 +285,7 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	 *            if <true> the case sensitive option will be set.
 	 */
 	public void setCaseSensitive(boolean caseSensitive) {
-		wordFinder
-				.enableOption(WordFinder.CASE_SENSITIVE_OPTION, caseSensitive);
+		wordFinder.enableOption(WordFinder.CASE_SENSITIVE_OPTION, caseSensitive);
 		clear();
 	}
 
@@ -353,15 +363,13 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 
 		boolean replace = true;
 		if (text.isEmpty()) {
-			int option = JOptionPane
-					.showConfirmDialog(
-							frDialog,
-							"Do you want to replace all occurrences with an empty string?",
-							"Replace", JOptionPane.YES_NO_OPTION);
+			int option = JOptionPane.showConfirmDialog(frDialog,
+					"Do you want to replace all occurrences with an empty string?", "Replace",
+					JOptionPane.YES_NO_OPTION);
 			replace = option == JOptionPane.YES_OPTION;
 		}
 		if (replace) {
-            eventQueue.post(new ReplaceEvent(lastSearchedText, text, ReplaceEvent.REPLACE_ALL));
+			eventQueue.post(new ReplaceEvent(lastSearchedText, text, ReplaceEvent.REPLACE_ALL));
 			wordFinder.clearAllResults();
 			clear();
 		}
@@ -378,10 +386,12 @@ public class FindAndReplaceController implements OcelotEventQueueListener {
 	public void handleReplaceAllDone(ReplaceDoneEvent e) {
 
 		if (frDialog != null) {
-			JOptionPane.showMessageDialog(frDialog,
-					"Replaced " + e.getReplacedOccurrencesNum()
-							+ " occurrences.", "Replace All",
-					JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(frDialog, "Replaced " + e.getReplacedOccurrencesNum() + " occurrences.",
+					"Replace All", JOptionPane.INFORMATION_MESSAGE);
 		}
+	}
+
+	public void setShowNotTransSegments(boolean showNotTransSegments) {
+		this.showNotTransSegments = showNotTransSegments;
 	}
 }

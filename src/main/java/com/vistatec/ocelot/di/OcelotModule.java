@@ -114,7 +114,7 @@ public class OcelotModule extends AbstractModule {
             eventQueue.registerListener(lqiGridController);
             bind(LQIGridController.class).toInstance(lqiGridController);
             
-            frController = new FindAndReplaceController(eventQueue);
+            frController = new FindAndReplaceController(eventQueue, ocelotCfgService.isShowNotTranslatableRows());
             eventQueue.registerListener(frController);
             scController = new SpellcheckController(eventQueue, ocelotCfgService);
             eventQueue.registerListener(scController);

@@ -304,6 +304,7 @@ public class Ocelot extends JPanel
 			try {
 				segmentView.toggleNotTranslatableSegments(menuShowNotTrans.isSelected());
 				configService.saveNotTransRowConfig(menuShowNotTrans.isSelected());
+				frController.setShowNotTransSegments(menuShowNotTrans.isSelected());
 			} catch (TransferException e1) {
 				LOG.warn("Impossible to save the \"Show not traslatable segments\" configuration", e1);
 			}

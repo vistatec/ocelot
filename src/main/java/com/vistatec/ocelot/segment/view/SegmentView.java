@@ -76,8 +76,8 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
-import javax.swing.ToolTipManager;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -93,8 +93,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-
-import net.sf.okapi.common.LocaleId;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,6 +147,8 @@ import com.vistatec.ocelot.segment.model.okapi.FragmentVariant;
 import com.vistatec.ocelot.segment.model.okapi.Note;
 import com.vistatec.ocelot.segment.model.okapi.Notes;
 import com.vistatec.ocelot.xliff.XLIFFDocument;
+
+import net.sf.okapi.common.LocaleId;
 
 /**
  * Table view containing the source and target segments extracted from the
@@ -359,7 +359,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				}
 			}
 			sourceTargetTable.scrollRectToVisible(sourceTargetTable
-					.getCellRect(sort.convertRowIndexToView(currSegmentIdx), 0, false));
+					.getCellRect(currSegmentIdx, 0, false));
 		}
 
 	}
@@ -1126,7 +1126,7 @@ public class SegmentView extends JScrollPane implements RuleListener,
 			if (sq != null) {
 				Color sqColor = ruleConfig.getStateQualifierColor(sq);
 				if (sqColor == null) {
-					LOG.debug("No UI color for state-qualifier '{}'", sq);
+//					LOG.debug("No UI color for state-qualifier '{}'", sq);
 				}
 				return sqColor;
 			}
@@ -1685,15 +1685,28 @@ public class SegmentView extends JScrollPane implements RuleListener,
 		}
 
 		@Override
+		public void allRowsChanged() {
+			clearHighlightedSegments();
+			super.allRowsChanged();
+			int[] sortIndexMap = getSortIndexMap();
+			eventQueue.post(new SegmentRowsSortedEvent(sortIndexMap));
+		}
+		
+		@Override
 		public void toggleSortOrder(int column) {
 			clearHighlightedSegments();
 			super.toggleSortOrder(column);
+			int[] sortIndexMap = getSortIndexMap();
+			eventQueue.post(new SegmentRowsSortedEvent(sortIndexMap));
+			
+		}
+		
+		private int[] getSortIndexMap() {
 			int[] sortIndexMap = new int[segmentTableModel.getRowCount()];
 			for(int i=0; i<segmentTableModel.getRowCount(); i++){
 				sortIndexMap[i] = sort.convertRowIndexToView(i);
 			}
-			eventQueue.post(new SegmentRowsSortedEvent(sortIndexMap));
-			
+			return sortIndexMap;
 		}
 	}
 
