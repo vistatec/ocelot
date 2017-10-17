@@ -4,7 +4,7 @@
 
 	<groupId>com.vistatec</groupId>
 	<artifactId>Ocelot</artifactId>
-	<version>3.0-rc13</version>
+	<version>3.0</version>
 	<packaging>jar</packaging>
 
 	<name>Ocelot</name>
@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<okapi.version>0.34-SNAPSHOT</okapi.version>
+		<okapi.version>0.34</okapi.version>
 		<okapi.xliff2.version>1.1</okapi.xliff2.version>
         <languagetool.version>3.8</languagetool.version>
 		<dmg.title>${project.artifactId} ${project.version}</dmg.title>
