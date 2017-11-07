@@ -68,7 +68,7 @@ public class TestOkapiSegmentWriter {
                 GenericAnnotationType.PROV_PROVREF, "X")));
         // pass empty provenance properties
         OkapiXLIFF12Writer segmentWriter = new OkapiXLIFF12Writer(null,
-                new UserProvenance(null, null, null), mockEventQueue);
+                new UserProvenance(null, null, null, null), mockEventQueue);
         // OC-16: make sure this doesn't crash
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         // We shouldn't add a second annotation record for our empty user provenance
@@ -91,7 +91,7 @@ public class TestOkapiSegmentWriter {
                 GenericAnnotationType.PROV_REVPERSON, "T",
                 GenericAnnotationType.PROV_PROVREF, "X")));
         OkapiXLIFF12Writer segmentWriter = new OkapiXLIFF12Writer(null,
-                new UserProvenance("T", "S", "X"), mockEventQueue);
+                new UserProvenance("T", "S", "X", ""), mockEventQueue);
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(1, provAnns.getAnnotations("its-prov").size());
     }
@@ -113,7 +113,7 @@ public class TestOkapiSegmentWriter {
         }});
 
         OkapiXLIFF12Writer segmentWriter = new OkapiXLIFF12Writer(null,
-                new UserProvenance("A", "B", "C"), mockEventQueue);
+                new UserProvenance("A", "B", "C", "D"), mockEventQueue);
         ITSProvenanceAnnotations provAnns = segmentWriter.addOcelotProvenance(seg);
         assertEquals(2, provAnns.getAnnotations("its-prov").size());
 

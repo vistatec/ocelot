@@ -54,8 +54,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Resources;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -151,7 +149,7 @@ public class TestOkapiXLIFF12Writer extends XMLTestCase {
 			segment = segmentService.getSegment(i);
 			((BaseSegmentVariant) segment.getSource())
 			        .addEnrichmentList(EnrichmentBuilder.getWritingXliff1_2TestEnrichments(segment.getSegmentNumber()));
-			((OkapiXliffService)xliffService).updateSegment(new SegmentEditEvent(xliff, segment));
+			((OkapiXliffService)xliffService).updateSegment(new SegmentEditEvent(xliff, segment, SegmentEditEvent.TARGET_CHANGED));
 		}
 		File savedFile = saveXliffToTemp(xliffService, xliff); 
 		System.out.println(savedFile.getAbsolutePath());

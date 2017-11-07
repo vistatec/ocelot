@@ -54,15 +54,12 @@ public class TestPluginManager {
 		// to the build environment
 		assertNotNull(url);
 
-		File pluginDir = new File(url.toURI());
-		OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
-		PluginManager pluginManager = new PluginManager(
-				new OcelotJsonConfigService(new TestJsonConfigTransferService()),
-				new LqiJsonConfigService(new TestJsonConfigTransferService()), pluginDir, eventQueue);
-		// PluginManager pluginManager = new PluginManager(
-		// new OcelotConfigService(new TestConfigTransferService()), pluginDir,
-		// eventQueue);
-		pluginManager.discover();
+        File pluginDir = new File(url.toURI());
+        OcelotEventQueue eventQueue = new EventBusWrapper(new EventBus());
+        PluginManager pluginManager = new PluginManager(new OcelotJsonConfigService(new TestJsonConfigTransferService()), new LqiJsonConfigService(new TestJsonConfigTransferService()), pluginDir, pluginDir, eventQueue);
+//        PluginManager pluginManager = new PluginManager(
+//                new OcelotConfigService(new TestConfigTransferService()), pluginDir, eventQueue);
+        pluginManager.discover();
 
 		Set<ITSPlugin> itsPlugins = pluginManager.getITSPlugins();
 		assertEquals(1, itsPlugins.size());

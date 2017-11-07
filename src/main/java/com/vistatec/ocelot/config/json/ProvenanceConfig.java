@@ -16,6 +16,8 @@ public class ProvenanceConfig {
 	
 	private String langCode;
 	
+	private String email;
+	
 	public void setExtRef(String extRef ){
 		this.extRef = extRef;
 	}
@@ -48,10 +50,18 @@ public class ProvenanceConfig {
 		return langCode;
 	}
 	
+	public void setEmail(String email){
+		this.email = email;
+	}
+	
+	public String getEmail(){
+		return email;
+	}
+	
 	@Override
 	public String toString() {
 
-		return "Reviewer: " + revPerson + ", organization: " + revOrg
+		return "Reviewer: " + revPerson + ", email: " + email + ", organization: " + revOrg
 				+ ", external ref: " + extRef + ", language code: " + langCode;
 	}
 	

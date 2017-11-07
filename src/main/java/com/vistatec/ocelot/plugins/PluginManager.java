@@ -32,17 +32,19 @@ import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,12 +56,15 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker.StateValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +93,6 @@ import com.vistatec.ocelot.plugins.ReportPlugin.ReportException;
 import com.vistatec.ocelot.plugins.freme.FremeMenu;
 import com.vistatec.ocelot.plugins.freme.FremePlugin;
 import com.vistatec.ocelot.plugins.freme.FremePluginManager;
-import com.vistatec.ocelot.project.ProjectFile;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.services.SegmentService;
@@ -110,6 +114,7 @@ public class PluginManager implements OcelotEventQueueListener {
 	private List<String> qualityPluginClassNames = new ArrayList<String>();
 	private List<String> timerPluginClassNames = new ArrayList<String>();
 	private String dqfPluginClassName;
+
 	private HashMap<ITSPlugin, Boolean> itsPlugins;
 	private HashMap<SegmentPlugin, Boolean> segPlugins;
 	private HashMap<ReportPlugin, Boolean> reportPlugins;
@@ -118,16 +123,18 @@ public class PluginManager implements OcelotEventQueueListener {
 	private HashMap<DQFPlugin, Boolean> dqfPlugins;
 	private JMenu dqfMenu;
 	private FremePluginManager fremeManager;
+	private PluginLicenseManager licenseManager;
 	private OcelotEventQueue eventQueue;
 	private ClassLoader classLoader;
 	private File pluginDir;
+
 	private final JsonConfigService cfgService;
 	private final LqiJsonConfigService lqiConfigService;
 	private QualityPluginManager qualityPluginManager;
 	private JMenu reportMenu;
 
 	public PluginManager(JsonConfigService cfgService, LqiJsonConfigService lqiConfigService, File pluginDir,
-			OcelotEventQueue eventQueue) {
+			File licenseDir, OcelotEventQueue eventQueue) {
 		this.itsPlugins = new HashMap<ITSPlugin, Boolean>();
 		this.segPlugins = new HashMap<SegmentPlugin, Boolean>();
 		this.reportPlugins = new HashMap<ReportPlugin, Boolean>();
@@ -140,6 +147,7 @@ public class PluginManager implements OcelotEventQueueListener {
 		this.lqiConfigService = lqiConfigService;
 		this.pluginDir = pluginDir;
 		qualityPluginManager = new QualityPluginManager();
+		licenseManager = new PluginLicenseManager(licenseDir);
 	}
 
 	public File getPluginDir() {
@@ -230,6 +238,13 @@ public class PluginManager implements OcelotEventQueueListener {
 	}
 
 	public void setEnabled(Plugin plugin, boolean enabled) throws TransferException {
+		setEnabled(plugin, enabled, false);
+	}
+
+	public void setEnabled(Plugin plugin, boolean enabled, boolean licenseVarified) throws TransferException {
+		if (enabled) {
+			enabled = licenseManager.verifyPluginLicense(plugin);
+		}
 		if (plugin instanceof ITSPlugin) {
 			ITSPlugin itsPlugin = (ITSPlugin) plugin;
 			itsPlugins.put(itsPlugin, enabled);
@@ -239,7 +254,9 @@ public class PluginManager implements OcelotEventQueueListener {
 		} else if (plugin instanceof ReportPlugin) {
 			ReportPlugin reportPlugin = (ReportPlugin) plugin;
 			reportPlugins.put(reportPlugin, enabled);
-			reportMenu.setEnabled(enabled);
+			if (reportMenu != null) {
+				reportMenu.setEnabled(enabled);
+			}
 		} else if (plugin instanceof FremePlugin) {
 			FremePlugin fremePlugin = (FremePlugin) plugin;
 			fremePlugins.put(fremePlugin, enabled);
@@ -254,6 +271,9 @@ public class PluginManager implements OcelotEventQueueListener {
 			timerPlugins.put(timerPlugin, enabled);
 			timerPlugin.getTimerWidget().setEnabled(enabled);
 		} else if (plugin instanceof DQFPlugin) {
+			DQFPlugin dqfPlugin = (DQFPlugin) plugin;
+			dqfPlugin.setLQIConfigService(lqiConfigService);
+			dqfPlugin.setOcelotEventQueue(eventQueue);
 			dqfPlugins.put((DQFPlugin) plugin, enabled);
 			dqfMenu.setEnabled(enabled);
 		}
@@ -363,13 +383,26 @@ public class PluginManager implements OcelotEventQueueListener {
 		}
 	}
 
-	public void notifyOpenFile(String filename, List<OcelotSegment> segments) {
+	public void notifyOpenFile(String filename, List<OcelotSegment> segments, JFrame ocelotMainFrame) {
 		for (SegmentPlugin segPlugin : segPlugins.keySet()) {
 			if (isEnabled(segPlugin)) {
-				try {
-					segPlugin.onFileOpen(filename);
-				} catch (Exception e) {
-					LOG.error("Segment plugin '" + segPlugin.getPluginName() + "' threw an exception on file open", e);
+				if (licenseManager.verifyPluginLicense(segPlugin)) {
+					try {
+						segPlugin.onFileOpen(filename);
+					} catch (Exception e) {
+						LOG.error("Segment plugin '" + segPlugin.getPluginName() + "' threw an exception on file open",
+								e);
+					}
+				} else {
+					try {
+						setEnabled(segPlugin, false);
+					} catch (TransferException e) {
+						LOG.warn("Impossible to save the plugin configuration to the conf file.", e);
+					}
+					JOptionPane.showMessageDialog(ocelotMainFrame,
+							"The plugin " + segPlugin.getPluginName() + " v." + segPlugin.getPluginVersion()
+									+ " has been disabled as its license is not verified.",
+							"Plugin License Error", JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		}
@@ -444,108 +477,30 @@ public class PluginManager implements OcelotEventQueueListener {
 			scanJar(f);
 		}
 
-		for (String s : itsPluginClassNames) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends ITSPlugin> c = (Class<ITSPlugin>) Class.forName(s, false, classLoader);
-				ITSPlugin plugin = c.newInstance();
-				itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-			} catch (ClassNotFoundException e) {
-				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		for (String s : segPluginClassNames) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends SegmentPlugin> c = (Class<SegmentPlugin>) Class.forName(s, false, classLoader);
-				SegmentPlugin plugin = c.newInstance();
-				segPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-			} catch (ClassNotFoundException e) {
-				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		for (String s : reportPluginClassNames) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends ReportPlugin> c = (Class<ReportPlugin>) Class.forName(s, false, classLoader);
-				ReportPlugin plugin = c.newInstance();
-				reportPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-			} catch (ClassNotFoundException e) {
-				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		initializePlugins(itsPluginClassNames);
+		initializePlugins(segPluginClassNames);
+		initializePlugins(reportPluginClassNames);
+		initializePlugins(fremePluginClassNames);
+		initializePlugins(timerPluginClassNames);
+		initializePlugins(qualityPluginClassNames);
+		initializePlugins(Arrays.asList(new String[] { dqfPluginClassName }));
+	}
 
-		for (String s : fremePluginClassNames) {
+	private void initializePlugins(List<String> classNames) {
+
+		for (String className : classNames) {
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends FremePlugin> c = (Class<FremePlugin>) Class.forName(s, false, classLoader);
-				Constructor<? extends FremePlugin> constructor = c.getDeclaredConstructor(String.class);
-				FremePlugin plugin = constructor.newInstance(pluginDir.getAbsolutePath());
-				fremePlugins.put(plugin, false);
+				Class<? extends Plugin> c = (Class<? extends Plugin>) Class.forName(className, false, classLoader);
+				Plugin plugin = c.newInstance();
 				setEnabled(plugin, cfgService.wasPluginEnabled(plugin));
+				// itsPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
 			} catch (ClassNotFoundException e) {
 				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
+				LOG.warn("Error while initializing the plugin " + className, e);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		for (String s : qualityPluginClassNames) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends QualityPlugin> c = (Class<QualityPlugin>) Class.forName(s, false, classLoader);
-				QualityPlugin plugin = c.newInstance();
-				qualityPluginManager.getPlugins().put(plugin, cfgService.wasPluginEnabled(plugin));
-			} catch (ClassNotFoundException e) {
-				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		for (String s : timerPluginClassNames) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends TimerPlugin> c = (Class<TimerPlugin>) Class.forName(s, false, classLoader);
-				TimerPlugin plugin = c.newInstance();
-				timerPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-			} catch (ClassNotFoundException e) {
-				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if (dqfPluginClassName != null) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends DQFPlugin> c = (Class<DQFPlugin>) Class.forName(dqfPluginClassName, false, classLoader);
-				DQFPlugin plugin = c.newInstance();
-				dqfPlugins.put(plugin, cfgService.wasPluginEnabled(plugin));
-				plugin.setLQIConfigService(lqiConfigService);
-				plugin.setOcelotEventQueue(eventQueue);
-			} catch (ClassNotFoundException e) {
-				// XXX Shouldn't happen?
-				System.out.println("Warning: " + e.getMessage());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Error while initializing the plugin " + className, e);
 			}
 		}
 	}
@@ -573,15 +528,12 @@ public class PluginManager implements OcelotEventQueueListener {
 
 	void scanJar(final File file) {
 		try {
-			System.out.println("******************************");
-			System.out.println("jar name = " + file.getName());
 			Enumeration<JarEntry> e = new JarFile(file).entries();
 			while (e.hasMoreElements()) {
 				JarEntry entry = e.nextElement();
 				String name = entry.getName();
 				if (name.endsWith(".class")) {
 					name = convertFileNameToClass(name);
-					System.out.println("-----" + name);
 					try {
 						Class<?> clazz = Class.forName(name, false, classLoader);
 						// Skip non-instantiable classes
@@ -594,8 +546,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// the
 							// real classloader (I think)
 							if (itsPluginClassNames.contains(name)) {
-								// TODO: log this
-								System.out.println("Warning: found multiple implementations of plugin class " + name);
+								LOG.warn("Found multiple implementations of plugin class " + name);
 							} else {
 								itsPluginClassNames.add(name);
 							}
@@ -605,8 +556,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// the
 							// real classloader (I think)
 							if (segPluginClassNames.contains(name)) {
-								// TODO: log this
-								System.out.println("Warning: found multiple implementations of plugin class " + name);
+								LOG.warn("Found multiple implementations of plugin class " + name);
 							} else {
 								segPluginClassNames.add(name);
 							}
@@ -616,8 +566,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// the
 							// real classloader (I think)
 							if (reportPluginClassNames.contains(name)) {
-								// TODO: log this
-								System.out.println("Warning: found multiple implementations of plugin class " + name);
+								LOG.warn("Found multiple implementations of plugin class " + name);
 							} else {
 								reportPluginClassNames.add(name);
 							}
@@ -627,8 +576,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// the
 							// real classloader (I think)
 							if (fremePluginClassNames.contains(name)) {
-								// TODO: log this
-								System.out.println("Warning: found multiple implementations of plugin class " + name);
+								LOG.warn("Found multiple implementations of plugin class " + name);
 							} else {
 								fremePluginClassNames.add(name);
 							}
@@ -638,8 +586,7 @@ public class PluginManager implements OcelotEventQueueListener {
 							// the
 							// real classloader (I think)
 							if (qualityPluginClassNames.contains(name)) {
-								// TODO: log this
-								System.out.println("Warning: found multiple implementations of plugin class " + name);
+								LOG.warn("Found multiple implementations of plugin class " + name);
 							} else {
 								qualityPluginClassNames.add(name);
 							}
@@ -649,39 +596,26 @@ public class PluginManager implements OcelotEventQueueListener {
 							// the
 							// real classloader (I think)
 							if (timerPluginClassNames.contains(name)) {
-								// TODO: log this
-								System.out.println("Warning: found multiple implementations of plugin class " + name);
+								LOG.warn("Found multiple implementations of plugin class " + name);
 							} else {
 								timerPluginClassNames.add(name);
 							}
-						} else if (DQFPlugin.class.isAssignableFrom(clazz)) {
-							dqfPluginClassName = name;
 						}
-					} catch (ClassNotFoundException | NoClassDefFoundError ex) {
-						// XXX shouldn't happen?
-						System.out.println("Warning: " + ex.getMessage());
-						// URLClassLoader loader =
-						// (URLClassLoader)ClassLoader.getSystemClassLoader();
-						// MyClassLoader l = new
-						// MyClassLoader(loader.getURLs());
-						// l.addURL(new URL(file.getAbsolutePath()));
-						// try {
-						// Class c = l.loadClass(name);
-						// System.out.println(c.getName());
-						// } catch (ClassNotFoundException e1) {
-						// e1.printStackTrace();
-						// }
+					} catch (ClassNotFoundException ex) {
+						LOG.warn("Error while scanning file " + file, ex);
+					} catch (Error e2) {
+						LOG.warn("Error while scanning file " + file);
 					}
 				}
 			}
 
 		} catch (IOException e) {
-			// XXX Log this and continue
-			e.printStackTrace();
+			LOG.error("Error while scanning jar " + file, e);
 		}
 	}
 
 	private boolean isValidJar(File f) throws IOException {
+
 		JarInputStream is = new JarInputStream(new FileInputStream(f));
 		boolean rv = (is.getNextEntry() != null);
 		is.close();
@@ -1006,6 +940,37 @@ public class PluginManager implements OcelotEventQueueListener {
 
 	}
 
+	public void checkPluginLicenseFromSwing(final JCheckBox checkbox, final JLabel licenseLabel, final Plugin plugin) {
+		PropertyChangeListener listener = new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if ("state".equals(evt.getPropertyName()) && evt.getNewValue().equals(StateValue.DONE)) {
+					try {
+						boolean canEnablePlugin = licenseManager.isLicenseValid((Licensable) plugin);
+						setEnabled(plugin, canEnablePlugin, true);
+					} catch (TransferException e) {
+						LOG.warn("Impossible to save the plugin status to the configuration file", e);
+					}
+				}
+			}
+		};
+		licenseManager.checkLicenseWithSwingWorker(checkbox, licenseLabel, (Licensable) plugin, listener);
+	}
+
+	public Integer getLicenseStatus(Plugin plugin) {
+
+		Integer status = null;
+		if (plugin instanceof Licensable) {
+			status = licenseManager.getLicenseStatus((Licensable) plugin);
+		}
+		return status;
+	}
+
+	public List<PluginLicenseError> getPluginLicenseErrors() {
+		return licenseManager.getPluginLicenseErrors();
+	}
+
 }
 
 class MyClassLoader extends URLClassLoader {
@@ -1027,3 +992,5 @@ class MyClassLoader extends URLClassLoader {
 	}
 
 }
+
+	

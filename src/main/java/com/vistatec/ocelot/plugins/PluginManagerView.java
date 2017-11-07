@@ -32,6 +32,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -66,6 +68,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
     protected JButton selectPluginDir;
     protected PluginManager pluginManager;
     private HashMap<JCheckBox, Plugin> checkboxToPlugin;
+    private HashMap<Plugin, JLabel> plugin2LicenseLabel;
     private JButton export;
     private GridBagConstraints gridBag;
 
@@ -124,6 +127,15 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         gridBag.gridx = 3;
         gridBag.gridwidth = 1;
         add(title3, gridBag);
+        
+        JLabel title4 = new JLabel("License");
+        title4.setFont(font);
+        title4.setBorder(new EmptyBorder(0,0,0,0));
+        gridBag.gridx = 4;
+        gridBag.gridwidth = 2;
+        add(title4, gridBag);
+        
+        
 
         initPlugins(pluginManager.getPlugins());
     }
@@ -153,6 +165,7 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
             }
             checkboxToPlugin = new HashMap<JCheckBox, Plugin>();
         }
+        plugin2LicenseLabel = new HashMap<>();
         for (Plugin plugin : plugins) {
             addPluginRow(gridy++, plugin);
         }
@@ -184,7 +197,21 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         pluginLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
         pluginLabel.setFont(font);
         add(pluginLabel, gridBag);
+        
+        JLabel licenseLabel = new JLabel();
+        LicenseUtils.setLicenseLabel(plugin, licenseLabel, pluginManager.getLicenseStatus(plugin));
+        gridBag.gridx = 4;
+        gridBag.gridwidth = 2;
+        licenseLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        licenseLabel.setFont(font);
+        add(licenseLabel, gridBag);
+        plugin2LicenseLabel.put(plugin, licenseLabel);
+        
+        
     }
+    
+   
+    
     
     private String getPluginType(Plugin plugin) {
         return (plugin instanceof ITSPlugin) ? "ITS" :
@@ -197,9 +224,19 @@ public class PluginManagerView extends ODialogPanel implements ActionListener, I
         Object source = e.getItemSelectable();
         if (source.getClass().equals(JCheckBox.class)) {
             JCheckBox checkbox = (JCheckBox) source;
+            Plugin plugin = checkboxToPlugin.get(checkbox);
             try {
-                pluginManager.setEnabled(checkboxToPlugin.get(checkbox),
-                        e.getStateChange() == ItemEvent.SELECTED);
+            	if(plugin instanceof Licensable && e.getStateChange() == ItemEvent.SELECTED){
+            		Toolkit kit = Toolkit.getDefaultToolkit();
+            		ImageIcon icon = new ImageIcon(kit.createImage(getClass().getResource(
+            		        "loader.gif")));
+            		JLabel licenseLabel = plugin2LicenseLabel.get(plugin);
+            		licenseLabel.setIcon(icon);
+            		licenseLabel.setText("");
+            		pluginManager.checkPluginLicenseFromSwing(checkbox, licenseLabel, plugin);
+            	} else {
+            		pluginManager.setEnabled(plugin, e.getStateChange() == ItemEvent.SELECTED);
+            	}
             } catch (TransferException ex) {
                 LOG.error("Failed to save enabling plugin", ex);
                 JOptionPane.showMessageDialog(getDialog(), "Could not save plugin enabled.");

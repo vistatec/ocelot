@@ -66,20 +66,19 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -97,15 +96,11 @@ import com.vistatec.ocelot.config.json.OcelotAzureConfig;
 import com.vistatec.ocelot.di.OcelotModule;
 import com.vistatec.ocelot.dqf.DQFOcelotGuiHelper;
 import com.vistatec.ocelot.events.ConfigTmRequestEvent;
-import com.vistatec.ocelot.events.DQFFileClosedEvent;
-import com.vistatec.ocelot.events.DQFFileOpenedEvent;
-import com.vistatec.ocelot.events.DQFProjectOpenedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationSelectionChangedEvent;
 import com.vistatec.ocelot.events.LQIConfigurationsChangedEvent;
 import com.vistatec.ocelot.events.NewPluginsInstalled;
 import com.vistatec.ocelot.events.OcelotEditingEvent;
 import com.vistatec.ocelot.events.OpenFileEvent;
-import com.vistatec.ocelot.events.OpenProjectFileEvent;
 import com.vistatec.ocelot.events.PluginAddedEvent;
 import com.vistatec.ocelot.events.ProfileChangedEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
@@ -118,6 +113,7 @@ import com.vistatec.ocelot.lqi.LQIKeyEventHandler;
 import com.vistatec.ocelot.lqi.LQIKeyEventManager;
 import com.vistatec.ocelot.lqi.model.LQIGridConfiguration;
 import com.vistatec.ocelot.lqi.model.LQIGridConfigurations;
+import com.vistatec.ocelot.plugins.PluginLicenseError;
 import com.vistatec.ocelot.plugins.PluginManagerView;
 import com.vistatec.ocelot.profile.ProfileManager;
 import com.vistatec.ocelot.rules.FilterView;
@@ -421,6 +417,7 @@ public class Ocelot extends JPanel
 	// }
 
 	private Ocelot(Injector ocelotScope) throws IOException, InstantiationException, IllegalAccessException {
+
 		super(new BorderLayout());
 		this.ocelotScope = ocelotScope;
 		this.eventQueue = ocelotScope.getInstance(OcelotEventQueue.class);
@@ -595,7 +592,7 @@ public class Ocelot extends JPanel
 	public void openFile(File file, boolean temporary) {
 		if (file != null) {
 			try {
-				ocelotApp.openFile(file, temporary);
+				ocelotApp.openFile(file, temporary, mainframe);
 			} catch (FileNotFoundException ex) {
 				LOG.error("Failed to parse file '" + file.getName() + "'", ex);
 			} catch (Exception e) {
@@ -813,6 +810,7 @@ public class Ocelot extends JPanel
 		menuFindReplace = new JMenuItem("Find and Replace");
 		menuFindReplace.addActionListener(this);
 		mnuEdit.add(menuFindReplace);
+		menuFindReplace.setEnabled(ocelotApp.getOpenFile() != null);
 		menuBar.add(mnuEdit);
 
 		menuView = new JMenu("View");
@@ -958,7 +956,52 @@ public class Ocelot extends JPanel
 		}
 		addEditingListenerToTxtFields();
 		profileManager.checkProfileAndPromptMessage(mainframe);
+		promptPluginErrorMessage();
 	}
+
+//	private Dimension getUserDefinedWindowSize() {
+//		String val = System.getProperty("ocelot.windowSize");
+//		if (val == null) {
+//			return null;
+//		}
+//		Matcher m = Pattern.compile("(\\d+)x(\\d+)").matcher(val);
+//		if (m.matches()) {
+//			LOG.info("Using user-defined window size {}", val);
+//			return new Dimension(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2)));
+//		}
+//		LOG.warn("Ignoring unparsable ocelot.windowSize value '{}'", val);
+//		return null;
+//	}
+//
+//	@Subscribe
+//	public void onProfileChanged(ProfileChangedEvent event) {
+//		restart();
+//	}
+//
+//	@Subscribe
+//	public void handleLqiConfigSavedEvent(LQIConfigurationsChangedEvent event) {
+//		try {
+//			toolBar.setLQIConfigurations(event.getLqiGridSavedConfigurations());
+//			if (event.isActiveConfChanged()) {
+//				loadLQIKeyListener(event.getOldActiveConfiguration(),
+//						event.getLqiGridSavedConfigurations().getActiveConfiguration());
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+//
+//	@Subscribe
+//	public void handleNewLqiConfigSelected(LQIConfigurationSelectionChangedEvent event) {
+//		// TODO
+//		try {
+//			loadLQIKeyListener(event.getOldSelectedConfiguration(), event.getNewSelectedConfiguration());
+//			ocelotApp.saveLqiConfiguration(event.getNewSelectedConfiguration().getName());
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//	}
 
 	private Dimension getUserDefinedWindowSize() {
 		String val = System.getProperty("ocelot.windowSize");
@@ -1243,6 +1286,31 @@ public class Ocelot extends JPanel
 			enableStorage = ocelotAzureConfiguration.isComplete();
 
 		}
+	}
+
+	private void promptPluginErrorMessage() {
+
+		List<PluginLicenseError> errorList = ocelotApp.getPluginLicenseErrors();
+		if (errorList != null && !errorList.isEmpty()) {
+
+			JPanel panel = new JPanel();
+			JLabel descr = new JLabel("Plugins listed below have been disabled as the license is not verified.");
+			descr.setFont(descr.getFont().deriveFont(Font.PLAIN));
+			String[] pluginListModel = new String[errorList.size()];
+			for (int i = 0; i < errorList.size(); i++) {
+				pluginListModel[i] = " -   " + errorList.get(i).getPlugin().getPluginName() + " v."
+						+ errorList.get(i).getPlugin().getPluginVersion();
+			}
+			JList<String> pluginList = new JList<>(pluginListModel);
+			pluginList.setFont(pluginList.getFont().deriveFont(Font.PLAIN));
+			pluginList.setBorder(new EmptyBorder(10, 0, 10, 0));
+			pluginList.setBackground(panel.getBackground());
+			panel.setLayout(new BorderLayout());
+			panel.add(descr, BorderLayout.NORTH);
+			panel.add(pluginList, BorderLayout.CENTER );
+			JOptionPane.showMessageDialog(mainframe, panel, "Ocelot Plugin Error", JOptionPane.WARNING_MESSAGE);
+		}
+
 	}
 
 	/**

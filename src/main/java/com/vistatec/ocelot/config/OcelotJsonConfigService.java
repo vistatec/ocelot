@@ -84,11 +84,9 @@ public class OcelotJsonConfigService implements JsonConfigService {
 	public UserProvenance getUserProvenance() {
 		UserProvenance prov = null;
 		if (config.getUserProvenance() != null) {
-			prov = new UserProvenance(
-			        config.getUserProvenance().getRevPerson(), config
-			                .getUserProvenance().getRevOrg(), config
-			                .getUserProvenance().getExtRef(), config
-			                .getUserProvenance().getLangCode());
+			prov = new UserProvenance(config.getUserProvenance().getRevPerson(), config.getUserProvenance().getRevOrg(),
+					config.getUserProvenance().getExtRef(), config.getUserProvenance().getEmail(),
+					config.getUserProvenance().getLangCode());
 		}
 		return prov;
 	}
@@ -100,6 +98,7 @@ public class OcelotJsonConfigService implements JsonConfigService {
 		ProvenanceConfig provConf = new ProvenanceConfig();
 		provConf.setRevPerson(prov.getRevPerson());
 		provConf.setRevOrg(prov.getRevOrg());
+		provConf.setEmail(prov.getEmail());
 		provConf.setExtRef(prov.getProvRef());
 		provConf.setLangCode(prov.getLangCode());
 		config.setUserProvenance(provConf);

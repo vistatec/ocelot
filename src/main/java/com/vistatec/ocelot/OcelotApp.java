@@ -58,6 +58,7 @@ import com.vistatec.ocelot.events.SegmentEditEvent;
 import com.vistatec.ocelot.events.SegmentNoteEditEvent;
 import com.vistatec.ocelot.events.api.OcelotEventQueue;
 import com.vistatec.ocelot.events.api.OcelotEventQueueListener;
+import com.vistatec.ocelot.plugins.PluginLicenseError;
 import com.vistatec.ocelot.plugins.PluginManager;
 import com.vistatec.ocelot.project.ProjectFile;
 import com.vistatec.ocelot.segment.model.BaseSegmentVariant;
@@ -137,22 +138,12 @@ public class OcelotApp implements OcelotEventQueueListener {
     	return defFileName; 
     }
     
-//    @Deprecated
-//    public void openProjectFile(ProjectFile projectFile ) throws FileNotFoundException, IOException, XMLStreamException{
-//    	
-//    	this.openedProjectFile = projectFile;
-//    	openFile(projectFile.getFile(), false);
-//    	pluginManager.notifyOpenProjectFile(projectFile);
-//    }
-
-    
-    
-    public void openFile(File openFile, boolean temporaryFile) throws IOException, FileNotFoundException, XMLStreamException {
+    public void openFile(File openFile, boolean temporaryFile, JFrame ocelotMainFrame) throws IOException, FileNotFoundException, XMLStreamException {
         openXliffFile = xliffService.parse(openFile);
         segmentService.clearAllSegments();
         segmentService.setSegments(openXliffFile);
 
-        this.pluginManager.notifyOpenFile(openFile.getName(), openXliffFile.getSegments());
+        this.pluginManager.notifyOpenFile(openFile.getName(), openXliffFile.getSegments(), ocelotMainFrame);
         this.pluginManager.setSourceAndTargetLangs(openXliffFile.getSrcLocale().toString(), openXliffFile.getTgtLocale().toString());
         this.pluginManager.enrichSegments(openXliffFile.getSegments());
         this.openFile = openFile;
@@ -272,6 +263,10 @@ public class OcelotApp implements OcelotEventQueueListener {
 			final boolean target, Window ownerWindow) {
 		return pluginManager.getSegmentTextContextMenuItems(segment, text,
 				offset, target, ownerWindow);
+	}
+	
+	public List<PluginLicenseError> getPluginLicenseErrors(){
+		return pluginManager.getPluginLicenseErrors();
 	}
 
 	public void closeDQFProject() {

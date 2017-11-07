@@ -315,9 +315,11 @@ public class QualityPluginManager implements ActionListener {
 
 	public void enablePlugin(QualityPlugin qualityPlugin, boolean enabled) {
 		qualityPlugins.put(qualityPlugin, enabled);
-		qualityPluginMenu.setEnabled(enabled);
-		if(!enabled){
-			mnuOnTheFly.setSelected(false);
+		if(qualityPluginMenu != null){
+			qualityPluginMenu.setEnabled(enabled);
+			if(!enabled){
+				mnuOnTheFly.setSelected(false);
+			}
 		}
 	}
 
