@@ -600,6 +600,8 @@ public class PluginManager implements OcelotEventQueueListener {
 							} else {
 								timerPluginClassNames.add(name);
 							}
+						} else if (DQFPlugin.class.isAssignableFrom(clazz)) {
+							dqfPluginClassName = name;
 						}
 					} catch (ClassNotFoundException ex) {
 						LOG.warn("Error while scanning file " + file, ex);
