@@ -30,11 +30,9 @@ package com.vistatec.ocelot.xliff.okapi;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Objects;
@@ -252,7 +250,7 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
     }
 
     @Override
-    public void save(File source) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+    public void save(File source) throws IOException {
         saveEvents(parser.getFilter(), parser.getSegmentEvents(),
                 source.getAbsolutePath(), LocaleId.fromString(parser.getTargetLang()));
         resetSavedData();
@@ -309,7 +307,7 @@ public class OkapiXLIFF12Writer implements XLIFFWriter {
     }
 	
 
-    private void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+    private void saveEvents(IFilter filter, List<Event> events, String output, LocaleId locId) throws IOException {
         StringBuilder tmp = new StringBuilder();
         ISkeletonWriter skelWriter = filter.createSkeletonWriter();
         EncoderManager encoderManager = filter.getEncoderManager();

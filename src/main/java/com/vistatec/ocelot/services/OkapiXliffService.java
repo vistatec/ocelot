@@ -29,7 +29,6 @@
 package com.vistatec.ocelot.services;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -109,7 +108,7 @@ public class OkapiXliffService implements XliffService {
     }
 
     @Override
-    public void save(XLIFFDocument xliffFile, File dest) throws FileNotFoundException, IOException {
+    public void save(XLIFFDocument xliffFile, File dest) throws IOException {
     	
         OkapiXLIFFDocument okapiFile = getDoc(xliffFile);
         okapiFile.getWriter().updateTiming(time);
