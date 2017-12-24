@@ -77,7 +77,7 @@ public class SegmentTextCell extends JTextPane {
         StyleConstants.setBackground(s, Color.LIGHT_GRAY);
 
         Style insert = styles.addStyle(insertStyle, s);
-        StyleConstants.setForeground(insert, Color.BLUE);
+        StyleConstants.setForeground(insert, new Color(0, 204, 0)); // #00CC00
         StyleConstants.setUnderline(insert, true);
 
         Style delete = styles.addStyle(deleteStyle, insert);
