@@ -12,9 +12,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<okapi.version>0.35-SNAPSHOT</okapi.version>
+		<okapi.version>0.35</okapi.version>
 		<okapi.xliff2.version>1.1</okapi.xliff2.version>
-        <languagetool.version>3.8</languagetool.version>
+		<languagetool.version>3.8</languagetool.version>
 		<dmg.title>${project.artifactId} ${project.version}</dmg.title>
 		<final.name>${project.artifactId}-${project.version}</final.name>
 	</properties>
