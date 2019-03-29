@@ -190,6 +190,8 @@ public class SegmentView extends JScrollPane implements RuleListener,
         private List<Integer> highlightedSegments;
 	private BaseSegmentVariant currHLVariant;
 
+	private static boolean isWindows = checkIfWindows();
+
 	/**
 	 * Table implementation that recalculates row heights when doLayout() is
 	 * called. To try to minimize redraw time, we avoid recalculating the whole
@@ -1285,7 +1287,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 				        });
 				editingRow = row;
 				editorComponent.setFont(font);
-                editorComponent.prepareEditingUI();
+				// Bug where UI flickers on Windows, so the UI is disabled. User must instead use right click menu
+				if (!isWindows) {
+					editorComponent.prepareEditingUI();
+				}
                 ToolTipManager.sharedInstance().registerComponent(editorComponent);
 			}
 			return new JScrollPane(editorComponent);
@@ -1712,5 +1717,10 @@ public class SegmentView extends JScrollPane implements RuleListener,
 
 	public JTable getTable() {
 		return sourceTargetTable;
+	}
+
+	public static boolean checkIfWindows(){
+		final String OS = System.getProperty("os.name").toLowerCase();
+		return OS.contains("windows");
 	}
 }
