@@ -432,7 +432,8 @@ public class SegmentTextEditorCell extends SegmentTextCell {
     class ContextMenuListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
-            if (e.isPopupTrigger()) {
+            // Right click trigger. isPopupTrigger() for Mac, getButton() for Windows.
+            if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
                 doContextPopup(e.getComponent(), e.getPoint());
             }
         }
