@@ -48,6 +48,11 @@ public abstract class OkapiSegmentVariant extends BaseSegmentVariant {
     }
 
     public String getCodeText(Code code, boolean verbose) {
+        // Wrap in LRE and PDF markers so tags always render LTR in RTL locales
+        return "\u202A" + getRawCodeText(code, verbose) + "\u202C";
+    }
+
+    private String getRawCodeText(Code code, boolean verbose) {
         if (verbose) {
             return code.hasOuterData() ? code.getOuterData() : code.getData();
         }
