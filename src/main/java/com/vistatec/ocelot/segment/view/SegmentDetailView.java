@@ -60,11 +60,11 @@ public class SegmentDetailView extends JScrollPane {
     private JTable table;
     private DetailTableModel tableModel;
 
-    public SegmentDetailView() {
+    public SegmentDetailView(boolean isSourceBidi, boolean isTargetBidi) {
         tableModel = new DetailTableModel();
         table = new JTable(tableModel);
         table.getTableHeader().setReorderingAllowed(false);
-        table.setDefaultRenderer(Object.class, new TextRenderer());
+        table.setDefaultRenderer(Object.class, new TextRenderer(isSourceBidi, isTargetBidi));
         TableColumnModel tableColumnModel = table.getColumnModel();
         tableColumnModel.getColumn(0).setMinWidth(15);
         tableColumnModel.getColumn(0).setPreferredWidth(60);
@@ -208,11 +208,18 @@ public class SegmentDetailView extends JScrollPane {
     }
 
     public class TextRenderer implements TableCellRenderer {
-        private final SegmentTextCell renderTextPane = SegmentTextCell.createCell();
+        private final boolean isSourceBidi;
+        private final boolean isTargetBidi;
+
+        public TextRenderer(boolean isSourceBidi, boolean isTargetBidi) {
+            this.isSourceBidi = isSourceBidi;
+            this.isTargetBidi = isTargetBidi;
+        }
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object o,
             boolean isSelected, boolean hasFocus, int row, int col) {
+            SegmentTextCell renderTextPane = SegmentTextCell.createCell();
             if (tableModel.getRowCount() > row) {
                 if (col > 0) {
                     if (row > 2) {
@@ -221,9 +228,15 @@ public class SegmentDetailView extends JScrollPane {
                     } else {
                         renderTextPane.setVariant(row, (SegmentVariant) o, true);
                     }
+                    if (row == 0) {
+                        renderTextPane.setBidi(isSourceBidi);
+                    } else if (row == 1 || row == 2) {
+                        renderTextPane.setBidi(isTargetBidi);
+                    }
                 } else {
                     String s = (String)tableModel.getValueAt(row, col);
                     renderTextPane.setText(s);
+                    renderTextPane.setBidi(false);
                 }
                 renderTextPane.setBackground(isSelected ? jtable.getSelectionBackground() : jtable.getBackground());
                 renderTextPane.setForeground(isSelected ? jtable.getSelectionForeground() : jtable.getForeground());

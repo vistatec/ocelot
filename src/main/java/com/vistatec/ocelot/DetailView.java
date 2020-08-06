@@ -49,6 +49,8 @@ import com.vistatec.ocelot.its.view.ProvenanceView;
 import com.vistatec.ocelot.segment.model.OcelotSegment;
 import com.vistatec.ocelot.segment.view.SegmentDetailView;
 
+import net.sf.okapi.common.LocaleId;
+
 /**
  * Detail pane displaying data related to a selected segment in the SegmentView.
  */
@@ -62,6 +64,8 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
     private LqiJsonConfigService lqiService;
     
     private final OcelotEventQueue eventQueue;
+    private boolean isSourceBidi;
+    private boolean isTargetBidi;
 
     @Inject
     public DetailView(OcelotEventQueue eventQueue, LqiJsonConfigService lqiService) {
@@ -125,13 +129,19 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     @Subscribe
     public void openFile(OpenFileEvent e) {
+        isSourceBidi = LocaleId.isBidirectional(e.getDocument().getSrcLocale());
+        isTargetBidi = LocaleId.isBidirectional(e.getDocument().getTgtLocale());
         showSegmentDetailView(null);
     }
 
     private void showSegmentDetailView(OcelotSegment segment) {
         removeProvenanceDetailView();
         removeLQIDetailView();
-        addSegmentDetailView();
+        if (segDetailView != null) {
+            remove(segDetailView);
+        }
+        segDetailView = new SegmentDetailView(isSourceBidi, isTargetBidi);
+        add(segDetailView);
         segDetailView.setSegment(segment);
     }
 
@@ -170,7 +180,7 @@ public class DetailView extends JPanel implements OcelotEventQueueListener {
 
     public void addSegmentDetailView() {
         if (segDetailView == null) {
-            segDetailView = new SegmentDetailView();
+            segDetailView = new SegmentDetailView(isSourceBidi, isTargetBidi);
             add(segDetailView);
         }
     }
