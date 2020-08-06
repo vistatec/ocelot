@@ -47,6 +47,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.DropMode;
@@ -76,6 +77,7 @@ import com.vistatec.ocelot.Ocelot;
 import com.vistatec.ocelot.segment.model.CodeAtom;
 import com.vistatec.ocelot.segment.model.PositionAtom;
 import com.vistatec.ocelot.segment.model.SegmentVariant;
+import com.vistatec.ocelot.segment.model.TextAtom;
 
 /**
  * Representation of source/target segment text in segment table view.
@@ -452,9 +454,29 @@ public class SegmentTextEditorCell extends SegmentTextCell {
     }
 
     JPopupMenu makeContextPopup(int insertionPoint) {
+        JPopupMenu menu = new JPopupMenu();
+        addMissingTagMenus(insertionPoint, menu);
+        if (v.canInsertAt(getCaretPosition())) {
+            addImplicitDirectionalMarkToMenu("Insert Left-to-right (LRM) Mark", '\u200E', menu);
+            addImplicitDirectionalMarkToMenu("Insert Right-to-left (RLM) Mark", '\u200F', menu);
+            addImplicitDirectionalMarkToMenu("Insert Arabic Letter (ALM) Mark", '\u061C', menu);
+        }
+        return menu;
+    }
+
+    private void addImplicitDirectionalMarkToMenu(String menuString, char mark, JPopupMenu menu) {
+        menu.add(menuString)
+                .addActionListener(event -> {
+                    int caretPosition = getCaretPosition();
+                    v.replaceSelection(caretPosition, caretPosition,
+                            Collections.singletonList(new TextAtom(String.valueOf(mark))));
+                    syncModelToView();
+                });
+    }
+
+    private void addMissingTagMenus(int insertionPoint, JPopupMenu menu) {
         final List<CodeAtom> missing = v.getMissingTags(vOrig);
         final int correctedPoint = v.findSelectionEnd(insertionPoint);
-        JPopupMenu menu = new JPopupMenu();
         for (final CodeAtom atom : missing) {
             JMenuItem restoreOneItem = menu.add("Restore Missing Tag: " + atom.getData());
             restoreOneItem.addActionListener(new ActionListener() {
@@ -479,7 +501,6 @@ public class SegmentTextEditorCell extends SegmentTextCell {
             });
             restoreAllItem.setEnabled(!missing.isEmpty());
         }
-        return menu;
     }
 
     void prepareEditingUI() {
