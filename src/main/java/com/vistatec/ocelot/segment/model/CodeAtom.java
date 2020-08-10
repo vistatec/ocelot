@@ -37,14 +37,18 @@ public class CodeAtom implements SegmentAtom {
         return SegmentTextCell.tagStyle;
     }
 
+    private static String noMark(String s) {
+        return s.replaceAll("[\u202A\u202C]", "");
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
         if (o == null || !(o instanceof CodeAtom)) return false;
         CodeAtom c = (CodeAtom)o;
         return Objects.equals(id, c.id) &&
-               Objects.equals(data, c.data) &&
-               Objects.equals(verboseData, c.verboseData);
+               Objects.equals(noMark(data), noMark(c.data)) &&
+               Objects.equals(noMark(verboseData), noMark(c.verboseData));
     }
 
     @Override

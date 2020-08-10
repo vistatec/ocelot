@@ -74,7 +74,7 @@ public class TestSegmentTextCell {
             {
                 SegmentVariant v = newTextContainerVariant();
                 SegmentTextCell cell = SegmentTextCell.createCell(0, v, false, false);
-                assertEquals("A<b1>B</b1>", cell.getText());
+                assertEquals("A<b1>B</b1>", noMark(cell.getText()));
             }
         } catch (HeadlessException ex) {
             // Can't perform this test while headless.
@@ -83,18 +83,18 @@ public class TestSegmentTextCell {
 
     @Test
     public void testCopyFromTextContainerVariant() throws Exception {
-        // A < b 1 > B < / b 1 >
-        // 0 1 2 3 4 5 6 7 8 9 10
+        // A   LRE   <   b   1   >   PDF   B   LRE   <   /   b   1   >   PDF
+        // 0   1     2   3   4   5   6     7   8     9   10  11  12  13  14
 
         try {
             SegmentVariant v = newTextContainerVariant();
             SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
-            assertEquals("A<b1>B</b1>", cell.getText());
+            assertEquals("A<b1>B</b1>", noMark(cell.getText()));
 
             TransferHandler handler = cell.getTransferHandler();
 
             cell.setSelectionStart(1);
-            cell.setSelectionEnd(6);
+            cell.setSelectionEnd(8);
 
             Clipboard cb = new Clipboard("test");
             handler.exportToClipboard(cell, cb, TransferHandler.COPY);
@@ -112,17 +112,17 @@ public class TestSegmentTextCell {
                 Object data = svt.getTransferData(SegmentTextEditorCell.SELECTION_FLAVOR);
                 assertTrue(data instanceof SegmentVariantSelection);
                 SegmentVariantSelection sel = (SegmentVariantSelection) data;
-                assertEquals("<b1>B", sel.getDisplayText());
+                assertEquals("<b1>B", noMark(sel.getDisplayText()));
             }
             {
                 Object data = svt.getTransferData(DataFlavor.stringFlavor);
                 assertTrue(data instanceof String);
-                assertEquals("<b1>B", (String) data);
+                assertEquals("<b1>B", noMark((String) data));
             }
 
             assertTrue(cell.canStopEditing());
-            assertEquals("A<b1>B</b1>", cell.getText());
-            assertEquals("A<b1>B</b1>", cell.getVariant().getDisplayText());
+            assertEquals("A<b1>B</b1>", noMark(cell.getText()));
+            assertEquals("A<b1>B</b1>", noMark(cell.getVariant().getDisplayText()));
         } catch (HeadlessException ex) {
             // Can't perform this test while headless.
         }
@@ -177,18 +177,18 @@ public class TestSegmentTextCell {
     
     @Test
     public void testCutFromTextContainerVariant() throws Exception {
-        // A < b 1 > B < / b 1 >
-        // 0 1 2 3 4 5 6 7 8 9 10
+        // A   LRE   <   b   1   >   PDF   B   LRE   <   /   b   1   >   PDF
+        // 0   1     2   3   4   5   6     7   8     9   10  11  12  13  14
 
         try {
             SegmentVariant v = newTextContainerVariant();
             SegmentTextEditorCell cell = SegmentTextEditorCell.createCell(0, v, false, false);
-            assertEquals("A<b1>B</b1>", cell.getText());
+            assertEquals("A<b1>B</b1>", noMark(cell.getText()));
 
             TransferHandler handler = cell.getTransferHandler();
 
             cell.setSelectionStart(1);
-            cell.setSelectionEnd(6);
+            cell.setSelectionEnd(8);
 
             Clipboard cb = new Clipboard("test");
             handler.exportToClipboard(cell, cb, TransferHandler.MOVE);
@@ -206,17 +206,17 @@ public class TestSegmentTextCell {
                 Object data = svt.getTransferData(SegmentTextEditorCell.SELECTION_FLAVOR);
                 assertTrue(data instanceof SegmentVariantSelection);
                 SegmentVariantSelection sel = (SegmentVariantSelection) data;
-                assertEquals("<b1>B", sel.getDisplayText());
+                assertEquals("<b1>B", noMark(sel.getDisplayText()));
             }
             {
                 Object data = svt.getTransferData(DataFlavor.stringFlavor);
                 assertTrue(data instanceof String);
-                assertEquals("<b1>B", (String) data);
+                assertEquals("<b1>B", noMark((String) data));
             }
 
             assertFalse(cell.canStopEditing());
-            assertEquals("A</b1>", cell.getText());
-            assertEquals("A</b1>", cell.getVariant().getDisplayText());
+            assertEquals("A</b1>", noMark(cell.getText()));
+            assertEquals("A</b1>", noMark(cell.getVariant().getDisplayText()));
         } catch (HeadlessException ex) {
             // Can't perform this test while headless.
         }
@@ -271,8 +271,8 @@ public class TestSegmentTextCell {
 
     @Test
     public void testPasteWithinTextContainerVariant() throws Exception {
-        // A < b 1 > B < / b 1 >
-        // 0 1 2 3 4 5 6 7 8 9 10
+        // A   LRE   <   b   1   >   PDF   B   LRE   <   /   b   1   >   PDF
+        // 0   1     2   3   4   5   6     7   8     9   10  11  12  13  14
 
         try {
             SegmentVariant v = newTextContainerVariant();
@@ -281,7 +281,7 @@ public class TestSegmentTextCell {
             TransferHandler handler = cell.getTransferHandler();
 
             cell.setSelectionStart(1);
-            cell.setSelectionEnd(6);
+            cell.setSelectionEnd(8);
 
             Clipboard cb = new Clipboard("test");
             handler.exportToClipboard(cell, cb, TransferHandler.COPY);
@@ -294,16 +294,16 @@ public class TestSegmentTextCell {
             assertTrue(handler.canImport(support));
             assertTrue(handler.importData(support));
             assertFalse(cell.canStopEditing());
-            assertEquals("A<b1>B<b1>B</b1>", cell.getText());
-            assertEquals("A<b1>B<b1>B</b1>", cell.getVariant().getDisplayText());
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell.getText()));
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell.getVariant().getDisplayText()));
 
             // Paste into the middle of a tag.
             cell.setCaretPosition(2);
             assertTrue(handler.canImport(support));
             assertFalse(handler.importData(support));
             assertFalse(cell.canStopEditing());
-            assertEquals("A<b1>B<b1>B</b1>", cell.getText());
-            assertEquals("A<b1>B<b1>B</b1>", cell.getVariant().getDisplayText());
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell.getText()));
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell.getVariant().getDisplayText()));
         } catch (HeadlessException ex) {
             // Can't perform this test while headless.
         }
@@ -351,8 +351,8 @@ public class TestSegmentTextCell {
 
     @Test
     public void testPasteToOtherTextContainerVariant() throws Exception {
-        // A < b 1 > B < / b 1 >
-        // 0 1 2 3 4 5 6 7 8 9 10
+        // A   LRE   <   b   1   >   PDF   B   LRE   <   /   b   1   >   PDF
+        // 0   1     2   3   4   5   6     7   8     9   10  11  12  13  14
 
         try {
             SegmentVariant v = newTextContainerVariant();
@@ -361,7 +361,7 @@ public class TestSegmentTextCell {
             TransferHandler handler = cell.getTransferHandler();
 
             cell.setSelectionStart(1);
-            cell.setSelectionEnd(6);
+            cell.setSelectionEnd(8);
 
             Clipboard cb = new Clipboard("test");
             handler.exportToClipboard(cell, cb, TransferHandler.COPY);
@@ -378,16 +378,16 @@ public class TestSegmentTextCell {
             assertTrue(handler.canImport(support));
             assertTrue(handler.importData(support));
             assertTrue(cell2.canStopEditing());
-            assertEquals("A<b1>B<b1>B</b1>", cell2.getText());
-            assertEquals("A<b1>B<b1>B</b1>", cell2.getVariant().getDisplayText());
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell2.getText()));
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell2.getVariant().getDisplayText()));
 
             // Paste into the middle of a tag.
-            cell2.setCaretPosition(7);
+            cell2.setCaretPosition(10);
             assertTrue(handler.canImport(support));
             assertFalse(handler.importData(support));
             assertTrue(cell2.canStopEditing());
-            assertEquals("A<b1>B<b1>B</b1>", cell2.getText());
-            assertEquals("A<b1>B<b1>B</b1>", cell2.getVariant().getDisplayText());
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell2.getText()));
+            assertEquals("A<b1>B<b1>B</b1>", noMark(cell2.getVariant().getDisplayText()));
         } catch (HeadlessException ex) {
             // Can't perform this test while headless.
         }
@@ -469,16 +469,16 @@ public class TestSegmentTextCell {
             assertTrue(handler.canImport(support));
             assertTrue(handler.importData(support));
             assertTrue(cell2.canStopEditing());
-            assertEquals("A<pcid1>B<b1>B</b1>", cell2.getText());
-            assertEquals("A<pcid1>B<b1>B</b1>", cell2.getVariant().getDisplayText());
+            assertEquals("A<pcid1>B<b1>B</b1>", noMark(cell2.getText()));
+            assertEquals("A<pcid1>B<b1>B</b1>", noMark(cell2.getVariant().getDisplayText()));
 
             // Paste into the middle of a tag.
             cell2.setCaretPosition(11);
             assertTrue(handler.canImport(support));
             assertFalse(handler.importData(support));
             assertTrue(cell2.canStopEditing());
-            assertEquals("A<pcid1>B<b1>B</b1>", cell2.getText());
-            assertEquals("A<pcid1>B<b1>B</b1>", cell2.getVariant().getDisplayText());
+            assertEquals("A<pcid1>B<b1>B</b1>", noMark(cell2.getText()));
+            assertEquals("A<pcid1>B<b1>B</b1>", noMark(cell2.getVariant().getDisplayText()));
         } catch (HeadlessException ex) {
             // Can't perform this test while headless.
         }
@@ -488,9 +488,9 @@ public class TestSegmentTextCell {
         TextContainer tc = new TextContainer();
         TextFragment tf = tc.getFirstContent();
         tf.append("A");
-        tf.append(new Code(TextFragment.TagType.OPENING, "b", "<b id=\"1\">"));
+        tf.append(new Code(TextFragment.TagType.OPENING, "b", "\u202A<b id=\"1\">\u202C"));
         tf.append("B");
-        tf.append(new Code(TextFragment.TagType.CLOSING, "b", "</b>"));
+        tf.append(new Code(TextFragment.TagType.CLOSING, "b", "\u202A</b>\u202C"));
 
         return new TextContainerVariant(tc);
     }
@@ -505,5 +505,9 @@ public class TestSegmentTextCell {
         fragment.append(TagType.CLOSING, "id1", "</b>", false);
         segment.setSource(fragment);
         return new FragmentVariant(segment, fragment.isTarget());
+    }
+
+    private String noMark(String s) {
+        return s.replaceAll("[\u202A\u202C]", "");
     }
 }

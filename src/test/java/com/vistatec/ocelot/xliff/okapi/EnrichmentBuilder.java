@@ -2176,7 +2176,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=59,65", Arrays.asList(new String[]{"pairing"}), Arrays.asList(new String[]{"jumelage"}), "information technology and data processing", "The process of establishing a Bluetooth link or connection between two Bluetooth–enabled devices.");
+			termEnrich = new TerminologyEnrichment("char=63,69", Arrays.asList(new String[]{"pairing"}), Arrays.asList(new String[]{"jumelage"}), "information technology and data processing", "The process of establishing a Bluetooth link or connection between two Bluetooth–enabled devices.");
 			termEnrich.setOffsetNoTagsStartIdx(43);
 			termEnrich.setOffsetNoTagsEndIdx(49);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=59,65");
@@ -2191,7 +2191,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=59,65", Arrays.asList(new String[]{"pair"}), Arrays.asList(new String[]{"paire"}), "natural and applied sciences", null);
+			termEnrich = new TerminologyEnrichment("char=63,69", Arrays.asList(new String[]{"pair"}), Arrays.asList(new String[]{"paire"}), "natural and applied sciences", null);
 			termEnrich.setOffsetNoTagsStartIdx(43);
 			termEnrich.setOffsetNoTagsEndIdx(49);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=59,65");
@@ -2205,7 +2205,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=59,65", Arrays.asList(new String[]{"Pairing"}), Arrays.asList(new String[]{"Appariement"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=63,69", Arrays.asList(new String[]{"Pairing"}), Arrays.asList(new String[]{"Appariement"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(43);
 			termEnrich.setOffsetNoTagsEndIdx(49);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=59,65");
@@ -2218,7 +2218,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=59,65", Arrays.asList(new String[]{"pair"}), Arrays.asList(new String[]{"jumeler"}), "information technology and data processing", "To establish a Bluetooth link or connection between two Bluetooth–enabled devices.");
+			termEnrich = new TerminologyEnrichment("char=63,69", Arrays.asList(new String[]{"pair"}), Arrays.asList(new String[]{"jumeler"}), "information technology and data processing", "To establish a Bluetooth link or connection between two Bluetooth–enabled devices.");
 			termEnrich.setOffsetNoTagsStartIdx(43);
 			termEnrich.setOffsetNoTagsEndIdx(49);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=59,65");
@@ -2233,7 +2233,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=59,65", Arrays.asList(new String[]{"pair"}), Arrays.asList(new String[]{"couple"}), "information and information processing", null);
+			termEnrich = new TerminologyEnrichment("char=63,69", Arrays.asList(new String[]{"pair"}), Arrays.asList(new String[]{"couple"}), "information and information processing", null);
 			termEnrich.setOffsetNoTagsStartIdx(43);
 			termEnrich.setOffsetNoTagsEndIdx(49);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=59,65");
@@ -2247,7 +2247,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"balise"}), "information technology and data processing", "A marker used to identify a physical object. An RFID tag is an electronic marker that stores identification data.");
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"balise"}), "information technology and data processing", "A marker used to identify a physical object. An RFID tag is an electronic marker that stores identification data.");
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2262,7 +2262,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"bout", "étiquette"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"bout", "étiquette"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2277,7 +2277,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"mot-clé"}), "information technology and data processing", "One or more characters containing information about a file, record type, or other structure.");
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"mot-clé"}), "information technology and data processing", "One or more characters containing information about a file, record type, or other structure.");
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2292,7 +2292,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"étiquette"}), "international trade", null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"étiquette"}), "international trade", null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2306,7 +2306,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"graff", "inscription murale faite à l'aérosol", "tag"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"graff", "inscription murale faite à l'aérosol", "tag"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2323,7 +2323,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag", "HTML tag", "document control marker"}), Arrays.asList(new String[]{"marqueur", "balise", "ferret", "étiquette"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag", "HTML tag", "document control marker"}), Arrays.asList(new String[]{"marqueur", "balise", "ferret", "étiquette"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2346,7 +2346,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"étiqueter"}), "information technology and data processing", "To apply an identification marker to an item, case, or pallet.");
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"étiqueter"}), "information technology and data processing", "To apply an identification marker to an item, case, or pallet.");
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2361,7 +2361,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"ear tag", "tag"}), Arrays.asList(new String[]{"pendentif"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"ear tag", "tag"}), Arrays.asList(new String[]{"pendentif"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2376,7 +2376,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77",  Arrays.asList(new String[]{"market"}), Arrays.asList(new String[]{"repère"}), "natural and applied sciences", null);
+			termEnrich = new TerminologyEnrichment("char=78,82",  Arrays.asList(new String[]{"market"}), Arrays.asList(new String[]{"repère"}), "natural and applied sciences", null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2391,7 +2391,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"bracelet électronique"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"bracelet électronique"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2404,7 +2404,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"mot-clef"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"mot-clef"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2417,7 +2417,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"étiquette"}), "communications", null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"étiquette"}), "communications", null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2431,7 +2431,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"repère"}), "information technology and data processing", "A geometrical arrangement of shapes that define a value that the Surface Vision System can recognize. These geometrical arrangements are added to physical objects (then called tagged objects) to work with Surface applications (for example, a glass tile that acts as a puzzle piece in a puzzle application)." );
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"repère"}), "information technology and data processing", "A geometrical arrangement of shapes that define a value that the Surface Vision System can recognize. These geometrical arrangements are added to physical objects (then called tagged objects) to work with Surface applications (for example, a glass tile that acts as a puzzle piece in a puzzle application)." );
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");
@@ -2446,7 +2446,7 @@ public class EnrichmentBuilder {
 			termEnrich.setTermTriples(termTriples);
 			enrichments.add(termEnrich);
 			
-			termEnrich = new TerminologyEnrichment("char=73,77", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"attache"}), null, null);
+			termEnrich = new TerminologyEnrichment("char=78,82", Arrays.asList(new String[]{"tag"}), Arrays.asList(new String[]{"attache"}), null, null);
 			termEnrich.setOffsetNoTagsStartIdx(50);
 			termEnrich.setOffsetNoTagsEndIdx(54);
 			termEnrich.setTermInfoRef("http://freme-project.eu/#char=73,77");

@@ -717,10 +717,10 @@ protected List<HighlightData> highlightDataList;
 			while (tagIdx < enrichedText.length() && noTagIdx < plainText.length()) {
 				if( !inTag && (enrichedText.charAt(tagIdx) == plainText.charAt(noTagIdx)) ){
 					enrichIndexMapping[tagIdx] = noTagIdx++;
-				} else if (enrichedText.charAt(tagIdx) == '<'){
+				} else if (enrichedText.charAt(tagIdx) == '\u202A'){
 					inTag = true;
 					enrichIndexMapping[tagIdx] = noTagIdx;
-				} else if (enrichedText.charAt(tagIdx) == '>'){
+				} else if (enrichedText.charAt(tagIdx) == '\u202C'){
 					inTag = false;
 				}
 				tagIdx++;
