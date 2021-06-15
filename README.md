@@ -6,7 +6,7 @@ Ocelot is an open source workbench for working with XLIFF files in a post-editin
 
 ## Downloading and Running ##
 A pre-compiled version of Ocelot is available from the [Okapi downloads
-page](https://bintray.com/okapi/Distribution/Ocelot).  Ocelot is distributed
+page](https://okapiframework.org/binaries/ocelot).  Ocelot is distributed
 as a JAR file that will run on any platform that has Java 1.7 or later
 installed. There are also native executables for the Windows and Mac platforms.
 
